@@ -8,9 +8,7 @@ const Calendar: React.FC = () => {
     const [date] = useState(new Date());
 
     return (
-        <div>
-            <CalendarSlice startDate={{ day: date.getDate(), month: date.getMonth(), year: date.getFullYear() }} />
-        </div>
+        <CalendarSlice startDate={{ day: date.getDate(), month: date.getMonth(), year: date.getFullYear() }} />
     );
 };
 

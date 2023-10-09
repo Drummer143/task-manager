@@ -1,6 +1,7 @@
 "use client";
 
 import React, { useEffect, useRef, useState } from "react";
+import GridCell from "./GridCell";
 
 type CalendarSliceProps = {
     startDate: CalendarSliceDate;
@@ -24,25 +25,29 @@ const CalendarSlice: React.FC<CalendarSliceProps> = ({ startDate }) => {
     }, []);
 
     return (
-        <div ref={wrapper}>
-            <div className="grid grid-cols-[repeat(7,150px)]">
+        <div ref={wrapper} className="h-full overflow-y-auto p-2">
+            <div className="grid gap-1 grid-cols-[repeat(7,minmax(100px,1fr))] font-semibold text-lg mb-2">
                 {weekdayOrder.map(day => (
-                    <p className="capitalize" key={day}>
+                    <p className="capitalize text-center" key={day}>
                         {day}
                     </p>
                 ))}
             </div>
 
-            <div className="grid grid-cols-[repeat(7,150px)]">
+            <div className="grid gap-1 grid-cols-[repeat(7,minmax(100px,1fr))]">
                 {firstDayOfMonth.getDay() !== 0 &&
-                    new Array(firstDayOfMonth.getDay()).fill(undefined).map((_, index) => <div key={index}></div>)}
+                    new Array(firstDayOfMonth.getDay()).fill(undefined).map((_, index) => (
+                        <div key={index} className="pointer-events-none"></div>
+                    ))}
 
                 {new Array(countOfDayInMonth).fill(undefined).map((_, index) => (
-                    <div key={index}>{index + 1}</div>
+                    <GridCell key={index} day={index + 1} month={startDate.month} year={startDate.year} />
                 ))}
 
-                {lastDayOfMonth.getDay() !== 6 &&
-                    new Array(6 - lastDayOfMonth.getDay()).fill(undefined).map((_, index) => <div key={index}></div>)}
+                {/* {lastDayOfMonth.getDay() !== 6 &&
+                    new Array(6 - lastDayOfMonth.getDay()).fill(undefined).map((_, index) => (
+                        <div className="pointer-events-none" key={index}></div>
+                    ))} */}
             </div>
         </div>
     );
