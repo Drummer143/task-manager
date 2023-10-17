@@ -5,7 +5,7 @@ import NavPanel from "@/components/NavPanel";
 import Providers from "@/components/Providers";
 import LayoutResizeButton from "@/components/LayoutResizeButton";
 
-import "./globals.css";
+import "./globals.scss";
 
 export const metadata: Metadata = {
     title: "Task Manager"
@@ -27,7 +27,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
                         <LayoutResizeButton />
 
-                        <main className="grid-area-[content] overflow-auto">
+                        <main className="grid-area-[content] overflow-y-auto p-2">
                             {children}
                         </main>
                     </div>

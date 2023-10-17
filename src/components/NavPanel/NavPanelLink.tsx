@@ -8,8 +8,6 @@ type NavPanelLinkProps = Omit<Parameters<typeof Link>[0], "className"> & { icon:
 const NavPanelLink: React.FC<NavPanelLinkProps> = ({ icon, children, href, ...props }) => {
     const pathname = usePathname();
 
-    console.log(pathname);
-
     return (
         <Link
             href={href}

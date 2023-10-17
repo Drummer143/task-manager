@@ -2,13 +2,27 @@
 
 import React, { useState } from "react";
 
+import DatePicker from "../DatePicker";
 import CalendarSlice from "./CalendarSlice";
 
 const Calendar: React.FC = () => {
-    const [date] = useState(new Date());
+    const [currentDate] = useState(new Date());
+    const [intl] = useState(new Intl.DateTimeFormat(navigator.language, { year: "numeric", month: "long" }));
 
     return (
-        <CalendarSlice startDate={{ day: date.getDate(), month: date.getMonth(), year: date.getFullYear() }} />
+        <div className="h-full">
+            <div className="relative flex w-fit">
+                <p>{intl.format(currentDate)}</p>
+
+                <DatePicker />
+            </div>
+
+            <CalendarSlice
+                day={currentDate.getDate()}
+                month={currentDate.getMonth()}
+                year={currentDate.getFullYear()}
+            />
+        </div>
     );
 };
 

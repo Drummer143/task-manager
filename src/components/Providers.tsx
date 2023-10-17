@@ -12,7 +12,7 @@ const Providers: React.FC<ProvidersProps> = ({ children }) => {
         <UserProvider>
             {children}
         </UserProvider>
-    )
-}
+    );
+};
 
 export default Providers;

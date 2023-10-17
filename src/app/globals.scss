@@ -1,0 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+* {
+    box-sizing: border-box;
+
+    outline: none;
+}
+
+body {
+    overflow: hidden;
+}
+
+input[type='number'].number-input-arrows-hidden {
+    appearance: textfield;
+}
+
+input[type='number'].number-input-arrows-hidden::-webkit-outer-spin-button,
+input[type='number'].number-input-arrows-hidden::-webkit-inner-spin-button {
+    appearance: none;
+}
