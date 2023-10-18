@@ -1,27 +1,35 @@
 import React, { useEffect, useState } from "react";
-import Image from "next/image";
-import { AnimatePresence, motion } from "framer-motion";
 
 import { months } from "@/shared";
+import { useDatePickerStore } from "../store";
+import { LeftArrowMonthPickerSVG, ReturnMonthPickerSVG, RightArrowMonthPickerSVG } from "@/SVGs";
 
 type PickerHeadProps = {
-    view: "month" | "day";
     displayedTime: Date;
     minDate: Date;
     maxDate: Date;
 
     onDateChange: React.Dispatch<React.SetStateAction<Date>>;
     onMonthButtonClick: React.MouseEventHandler<HTMLButtonElement>;
+
+    hideViews?: {
+        day?: false;
+        month?: true;
+    } | {
+        day?: true;
+        month?: false
+    }
 };
 
 const PickerHead: React.FC<PickerHeadProps> = ({
-    view,
     onDateChange,
     displayedTime,
     maxDate,
     minDate,
-    onMonthButtonClick
+    hideViews
 }) => {
+    const { view, setView } = useDatePickerStore();
+
     const [realInputValue, setRealInputValue] = useState(displayedTime.getFullYear());
 
     const setNextYear = () => {
@@ -93,6 +101,8 @@ const PickerHead: React.FC<PickerHeadProps> = ({
         e.currentTarget.blur();
     };
 
+    const handleToggleViewButtonClick = () => setView(prev => prev === "day" ? "month" : "day");
+
     useEffect(() => {
         setRealInputValue(displayedTime.getFullYear());
     }, [displayedTime]);
@@ -102,45 +112,43 @@ const PickerHead: React.FC<PickerHeadProps> = ({
             <button
                 type="button"
                 onClick={setPrevYear}
-                disabled={view === "month"
-                    ? displayedTime.getFullYear() <= minDate.getFullYear()
-                    : displayedTime.getFullYear() <= minDate.getFullYear() && displayedTime.getMonth() <= minDate.getMonth()
-                }
+                disabled={displayedTime.getTime() <= minDate.getTime()}
                 className={"transition-bg p-1 min-w-[38px] rounded hover:bg-neutral-500"
                     .concat(" active:bg-neutral-600 disabled:pointer-events-none disabled:opacity-50")}
             >
-                <Image src="left-arrow-month-picker.svg" alt="left arrow" width="30" height="30" />
+                <LeftArrowMonthPickerSVG width={30} height={30} />
             </button>
 
-            <AnimatePresence>
-                {view === "day" &&
-                    <motion.button
-                        onClick={onMonthButtonClick}
-                        initial={{ width: 0, padding: 0 }}
-                        exit={{ width: 0, padding: 0, transition: { duration: 0.15 } }}
-                        animate={{ width: "170%", padding: "0 6px", transition: { duration: 0.15 } }}
-                        className={"h-[38px] text-center text-xl rounded transition-[background-color,padding]"
-                            .concat(" overflow-hidden capitalize")
+            <div className={"w-full".concat(hideViews?.day ? "" : " grid gap-1 grid-cols-[min-content,1fr]")}>
+                {!hideViews?.day && (
+                    <button
+                        onClick={handleToggleViewButtonClick}
+                        className={"h-[38px] text-center text-lg rounded transition-[background-color,padding]"
+                            .concat(" overflow-hidden capitalize transition-[width] grid place-content-center")
+                            .concat(" ", view === "day" ? "w-[100px]" : "w-[38px]")
                             .concat(" hover:bg-neutral-500 active:bg-neutral-600")}
                     >
-                        {months[displayedTime.getMonth()]}
-                    </motion.button>
-                }
-            </AnimatePresence>
+                        {view === "day"
+                            ? months[displayedTime.getMonth()]
+                            : <ReturnMonthPickerSVG stroke="#fff" width={30} height={30} />
+                        }
+                    </button>
+                )}
 
-            <input
-                value={realInputValue}
-                onChange={handleInputValueChange}
-                onKeyDown={handleInputEscapeKeyDown}
-                onBlur={handleInputBlur}
-                type="number"
-                min={minDate.getFullYear()}
-                max={maxDate.getFullYear()}
-                className={"w-full h-[38px] text-center text-xl rounded bg-transparent number-input-arrows-hidden"
-                    .concat(" border border-transparent transition-[background-color,border-color]")
-                    .concat(" hover:bg-neutral-500 focus:valid:border-white focus:bg-neutral-800")
-                    .concat(" invalid:border-red-700")}
-            />
+                <input
+                    value={realInputValue}
+                    onChange={handleInputValueChange}
+                    onKeyDown={handleInputEscapeKeyDown}
+                    onBlur={handleInputBlur}
+                    type="number"
+                    min={minDate.getFullYear()}
+                    max={maxDate.getFullYear()}
+                    className={"w-full h-[38px] text-center text-lg rounded bg-transparent number-input-arrows-hidden"
+                        .concat(" border border-transparent transition-[background-color,border-color]")
+                        .concat(" hover:bg-neutral-500 focus:valid:border-white focus:bg-neutral-800")
+                        .concat(" invalid:border-red-700")}
+                />
+            </div>
 
             <button
                 type="button"
@@ -151,7 +159,7 @@ const PickerHead: React.FC<PickerHeadProps> = ({
                 className={"transition-bg p-1 min-w-[38px] rounded hover:bg-neutral-500"
                     .concat(" active:bg-neutral-600 disabled:pointer-events-none disabled:opacity-50")}
             >
-                <Image src="right-arrow-month-picker.svg" alt="left arrow" width="30" height="30" />
+                <RightArrowMonthPickerSVG width={30} height={30} />
             </button>
         </div>
     );

@@ -3,6 +3,7 @@
 import React from "react";
 
 import NavPanelLink from "./NavPanelLink";
+import { CalendarNavSVG, FriendsNavSVG } from "@/SVGs";
 
 const NavPanel: React.FC = () => {
     return (
@@ -11,8 +12,8 @@ const NavPanel: React.FC = () => {
             className={"grid-area-[nav] h-full min-w-[62px] max-w-[300px] flex flex-col gap-1 p-2"
                 .concat(" overflow-hidden bg-[rgb(36,36,36)]")}
         >
-            <NavPanelLink icon="calendar-nav.svg" href="/">Calendar</NavPanelLink>
-            <NavPanelLink icon="friends-nav.svg" href="/friends">Friends</NavPanelLink>
+            <NavPanelLink icon={<CalendarNavSVG width={30} height={30} />} href="/">Calendar</NavPanelLink>
+            <NavPanelLink icon={<FriendsNavSVG width={30} height={30} />} href="/friends">Friends</NavPanelLink>
         </nav>
     );
 };

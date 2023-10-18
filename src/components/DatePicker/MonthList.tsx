@@ -2,11 +2,11 @@ import React from "react";
 
 import { months } from "@/shared";
 
-type MonthPickerProps = {
+type MonthListProps = {
     onChange: (month: number) => void
 };
 
-const MonthPicker: React.FC<MonthPickerProps> = ({ onChange }) => {
+const MonthList: React.FC<MonthListProps> = ({ onChange }) => {
     const handleMonthClick: React.MouseEventHandler<HTMLDivElement> = e => {
         const monthNumber = (e.target as HTMLElement | null)?.dataset.month;
 
@@ -38,4 +38,4 @@ const MonthPicker: React.FC<MonthPickerProps> = ({ onChange }) => {
     );
 }
 
-export default MonthPicker;
+export default MonthList;

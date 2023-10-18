@@ -1,15 +1,15 @@
-import React, { useEffect, useMemo, useRef } from "react";
+import React, { useMemo } from "react";
 
 import Day from "./Day";
 import { mapMonthDays, weekdayOrder } from "@/shared";
 
-type DayPickerProps = {
+type DayListProps = {
     currentDate: Date;
 
-    onDayClick: (dayNumber: number) => void
+    onDayClick: (date: Date) => void
 };
 
-const DayPicker: React.FC<DayPickerProps> = ({ currentDate, onDayClick }) => {
+const DayList: React.FC<DayListProps> = ({ currentDate, onDayClick }) => {
     const { current, previous, next } = useMemo(() => mapMonthDays(currentDate), [currentDate]);
     const { nextMonth, nextMonthYear, prevMonth, prevMonthYear, currentMonth, currentMonthYear } = useMemo(() => {
         const nextMonth = new Date(currentDate);
@@ -28,12 +28,23 @@ const DayPicker: React.FC<DayPickerProps> = ({ currentDate, onDayClick }) => {
         };
     }, [currentDate]);
 
-    const handleDayClick: React.MouseEventHandler<HTMLDivElement> = e => {
-        if ((e.target as HTMLElement | null)?.tagName !== "BUTTON") {
+    const handleDayClick: React.MouseEventHandler<HTMLDivElement> = (e) => {
+        const target = e.target as HTMLElement | null;
+
+        if ((target as HTMLElement | null)?.tagName !== "BUTTON" || !target?.dataset) {
             return;
         }
 
-        console.log(e);
+        const day = +target.dataset.day!;
+        const month = +target.dataset.month!;
+        const year = +target.dataset.year!;
+        const date = new Date(currentDate);
+
+        date.setDate(day);
+        date.setMonth(month);
+        date.setFullYear(year);
+
+        onDayClick(date);
     };
 
     return (
@@ -82,4 +93,4 @@ const DayPicker: React.FC<DayPickerProps> = ({ currentDate, onDayClick }) => {
     );
 };
 
-export default DayPicker;
+export default DayList;
