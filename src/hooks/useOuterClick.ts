@@ -4,8 +4,8 @@ interface UseOuterClickProps {
     handler: DocumentEventHandler<"pointerdown">;
 
     ref?: RefObject<Element | null>;
-    listenOnMount?: boolean
-};
+    listenOnMount?: boolean;
+}
 
 export const useOuterClick = ({ handler, ref, listenOnMount }: UseOuterClickProps) => {
     const togglers = useRef({
@@ -26,17 +26,20 @@ export const useOuterClick = ({ handler, ref, listenOnMount }: UseOuterClickProp
         }
     });
 
-    const handleOuterClick = useCallback((e: PointerEvent) => {
-        const target = e.target as HTMLElement;
+    const handleOuterClick = useCallback(
+        (e: PointerEvent) => {
+            const target = e.target as HTMLElement;
 
-        const isOuterClick = ref && ref.current?.contains(target);
+            const isOuterClick = ref && ref.current?.contains(target);
 
-        if (!isOuterClick) {
-            handler(e);
+            if (!isOuterClick) {
+                handler(e);
 
-            document.removeEventListener("pointerdown", handleOuterClick);
-        }
-    }, [handler, ref]);
+                document.removeEventListener("pointerdown", handleOuterClick);
+            }
+        },
+        [handler, ref]
+    );
 
     const handlerRef = useRef(handleOuterClick);
 

@@ -14,8 +14,9 @@ const Day: React.FC<DayProps> = ({ date, month, year, variant, ...buttonProps })
         data-day={date}
         data-month={month}
         data-year={year}
-        className={"text-center rounded transition-bg hover:bg-neutral-500 active:bg-neutral-600"
-            .concat(variant === "half-transparent" ? " opacity-50" : "")}
+        className={"text-center rounded transition-bg hover:bg-neutral-500 active:bg-neutral-600".concat(
+            variant === "half-transparent" ? " opacity-50" : ""
+        )}
         {...buttonProps}
     >
         {date}

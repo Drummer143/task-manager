@@ -2,7 +2,7 @@ import React from "react";
 
 type ExpandMonthPickerSVGProps = React.JSX.IntrinsicElements["svg"];
 
-export const ExpandMonthPickerSVG: React.FC<ExpandMonthPickerSVGProps> = (props) => (
+export const ExpandMonthPickerSVG: React.FC<ExpandMonthPickerSVGProps> = props => (
     <svg
         width="800px"
         height="800px"

@@ -14,9 +14,10 @@ const ToggleNavbarButton: React.FC = () => {
         <button
             id="toggleNavBarButton"
             onClick={handleClick}
-            className={"p-0.5 rounded transition-[background-color,border-color] border border-transparent"
-                .concat(isOpened ? " border-white" : "")
-                .concat(" hover:bg-neutral-700 active:bg-black md:hidden")}
+            className={"p-0.5 rounded transition-[background-color,border-color] border border-transparent".concat(
+                isOpened ? " border-white" : "",
+                " hover:bg-neutral-700 active:bg-black md:hidden"
+            )}
         >
             <MenuSVG className="pointer-events-none" width={24} height={24} />
         </button>

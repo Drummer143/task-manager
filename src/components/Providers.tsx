@@ -7,12 +7,6 @@ type ProvidersProps = {
     children?: React.ReactNode;
 };
 
-const Providers: React.FC<ProvidersProps> = ({ children }) => {
-    return (
-        <UserProvider>
-            {children}
-        </UserProvider>
-    );
-};
+const Providers: React.FC<ProvidersProps> = ({ children }) => <UserProvider>{children}</UserProvider>;
 
 export default Providers;

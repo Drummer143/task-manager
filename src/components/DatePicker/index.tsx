@@ -13,13 +13,15 @@ type DatePickerProps = {
     current?: Date;
     from?: Date;
     to?: Date;
-    hideViews?: {
-        day?: false;
-        month?: true;
-    } | {
-        day?: true;
-        month?: false
-    }
+    hideViews?:
+        | {
+              day?: false;
+              month?: true;
+          }
+        | {
+              day?: true;
+              month?: false;
+          };
 };
 
 const DatePicker: React.FC<DatePickerProps> = ({
@@ -36,7 +38,6 @@ const DatePicker: React.FC<DatePickerProps> = ({
     const animationControls = useAnimationControls();
 
     const handleMonthChange = (monthNumber: number) => {
-
         if (hideViews?.day) {
             setOpened(false);
 
@@ -85,8 +86,9 @@ const DatePicker: React.FC<DatePickerProps> = ({
 
     return (
         <motion.div
-            className={"bg-[rgb(32,32,32)] rounded-t-lg transition-[border-radius] relative"
-                .concat(opened ? "" : " rounded-b-lg")}
+            className={"bg-[rgb(32,32,32)] rounded-t-lg transition-[border-radius] relative".concat(
+                opened ? "" : " rounded-b-lg"
+            )}
         >
             <AnimatePresence>
                 {opened && (
@@ -110,7 +112,9 @@ const DatePicker: React.FC<DatePickerProps> = ({
 
                         <div className="w-full overflow-hidden mt-4">
                             <motion.div className="flex" animate={animationControls}>
-                                {!hideViews?.day && <DayList currentDate={displayedTime} onDayClick={handleSelectDate} />}
+                                {!hideViews?.day && (
+                                    <DayList currentDate={displayedTime} onDayClick={handleSelectDate} />
+                                )}
 
                                 {!hideViews?.month && <MonthList onChange={handleMonthChange} />}
                             </motion.div>
@@ -121,14 +125,9 @@ const DatePicker: React.FC<DatePickerProps> = ({
 
             <button
                 onClick={handleToggleButtonClick}
-                className={"w-8 h-8 grid place-items-center transition-transform"
-                    .concat(opened ? " -rotate-180" : "")}
+                className={"w-8 h-8 grid place-items-center transition-transform".concat(opened ? " -rotate-180" : "")}
             >
-                <ExpandMonthPickerSVG
-                    stroke="#fff"
-                    width={20}
-                    height={20}
-                />
+                <ExpandMonthPickerSVG stroke="#fff" width={20} height={20} />
             </button>
         </motion.div>
     );

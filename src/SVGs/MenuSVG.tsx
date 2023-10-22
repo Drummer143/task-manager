@@ -2,7 +2,7 @@ import React from "react";
 
 type MenuSVGProps = React.JSX.IntrinsicElements["svg"];
 
-export const MenuSVG: React.FC<MenuSVGProps> = (props) => (
+export const MenuSVG: React.FC<MenuSVGProps> = props => (
     <svg
         width="800px"
         height="800px"
@@ -12,11 +12,6 @@ export const MenuSVG: React.FC<MenuSVGProps> = (props) => (
         stroke="#fff"
         {...props}
     >
-        <path
-            d="M4 6H20M4 12H20M4 18H20"
-            strokeWidth="2"
-            strokeLinecap="round"
-            strokeLinejoin="round"
-        />
+        <path d="M4 6H20M4 12H20M4 18H20" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
     </svg>
 );

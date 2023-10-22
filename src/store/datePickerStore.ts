@@ -5,19 +5,19 @@ export interface DatePickerState {
     opened: boolean;
 
     setOpened: TransformFunction<boolean>;
-    setView: TransformFunction<DatePickerState["view"]>
+    setView: TransformFunction<DatePickerState["view"]>;
 }
 
-export const useDatePickerStore = create<DatePickerState>((set) => ({
+export const useDatePickerStore = create<DatePickerState>(set => ({
     view: "day",
     opened: false,
 
-    setView: (view) =>
+    setView: view =>
         set(prev => ({
             view: typeof view === "function" ? view(prev.view) : view
         })),
 
-    setOpened: (opened) =>
+    setOpened: opened =>
         set(prev => ({
             opened: typeof opened === "function" ? opened(prev.opened) : opened
         }))

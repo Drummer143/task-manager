@@ -31,9 +31,10 @@ const LayoutResizeButton: React.FC = () => {
     return (
         <button
             onMouseDown={handleResizeButtonClick}
-            className={"w-3 h-full cursor-w-resize relative max-lg:hidden"
-                .concat(" before:h-full before:w-0.5 before:bg-neutral-500 before:transition-[background-color,_width]")
-                .concat(" before:block hover:before:w-full active:before:w-full active:before:bg-neutral-700")}
+            className={"w-3 h-full cursor-w-resize relative max-lg:hidden".concat(
+                " before:h-full before:w-0.5 before:bg-neutral-500 before:transition-[background-color,_width]",
+                " before:block hover:before:w-full active:before:w-full active:before:bg-neutral-700"
+            )}
         />
     );
 };

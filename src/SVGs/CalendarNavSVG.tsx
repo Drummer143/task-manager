@@ -2,7 +2,7 @@ import React from "react";
 
 type CalendarNavSVGProps = React.JSX.IntrinsicElements["svg"];
 
-export const CalendarNavSVG: React.FC<CalendarNavSVGProps> = (props) => (
+export const CalendarNavSVG: React.FC<CalendarNavSVGProps> = props => (
     <svg width="800px" height="800px" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg" {...props}>
         <path
             d="M3 9H21M7 3V5M17 3V5M6 12H8M11 12H13M16 12H18M6 15H8M11 15H13M16 15H18M6 18H8M11 18H13M16 18H18M6.2 

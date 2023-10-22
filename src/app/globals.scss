@@ -13,11 +13,11 @@
     outline: none;
 }
 
-input[type='number'].number-input-arrows-hidden {
+input[type="number"].number-input-arrows-hidden {
     appearance: textfield;
 }
 
-input[type='number'].number-input-arrows-hidden::-webkit-outer-spin-button,
-input[type='number'].number-input-arrows-hidden::-webkit-inner-spin-button {
+input[type="number"].number-input-arrows-hidden::-webkit-outer-spin-button,
+input[type="number"].number-input-arrows-hidden::-webkit-inner-spin-button {
     appearance: none;
 }

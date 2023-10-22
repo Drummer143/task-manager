@@ -12,15 +12,19 @@ const CalendarSlice: React.FC<CalendarSliceProps> = ({ month, year }) => {
 
     return (
         <div>
-            <div className="grid gap-1 grid-cols-[repeat(7,minmax(100px,1fr))] font-semibold text-lg mb-2">
+            <div
+                className={"grid gap-1 grid-cols-[repeat(7,minmax(100px,1fr))] font-semibold text-lg mb-2".concat(
+                    " max-lg:grid-cols-7"
+                )}
+            >
                 {weekdayOrder.map(day => (
-                    <p className="capitalize text-center" key={day}>
+                    <p className="capitalize text-center overflow-hidden max-lg:w-[3ch] text-clip" key={day}>
                         {day}
                     </p>
                 ))}
             </div>
 
-            <div className="grid gap-1 grid-cols-[repeat(7,minmax(100px,1fr))]">
+            <div className="grid gap-1 grid-cols-[repeat(7,minmax(100px,1fr))] max-lg:grid-cols-7">
                 {previous.map((_, index) => (
                     <div key={index} className="pointer-events-none"></div>
                 ))}

@@ -17,8 +17,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <html lang="en">
                 <body>
                     <div
-                        className={"grid h-screen overflow-hidden bg-[rgb(40,40,40)] text-white"
-                            .concat(" grid-rows-[min-content,1fr]")}
+                        className={"grid h-screen overflow-hidden bg-[rgb(40,40,40)] text-white".concat(
+                            " grid-rows-[min-content,1fr]"
+                        )}
                     >
                         <Header />
 
@@ -27,9 +28,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
                             <LayoutResizeButton />
 
-                            <main className="relative p-2">
-                                {children}
-                            </main>
+                            <main className="relative p-2">{children}</main>
                         </div>
                     </div>
                 </body>

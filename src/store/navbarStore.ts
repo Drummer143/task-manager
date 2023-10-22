@@ -9,6 +9,5 @@ export interface NavbarStoreState {
 export const useNavbarStore = create<NavbarStoreState>((set, get) => ({
     isOpened: true,
 
-    setIsOpened: (value) => set(prev =>
-        ({ isOpened: typeof value === "function" ? value(prev.isOpened) : value }))
+    setIsOpened: value => set(prev => ({ isOpened: typeof value === "function" ? value(prev.isOpened) : value }))
 }));

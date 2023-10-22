@@ -2,9 +2,10 @@ import React from "react";
 
 type FriendsNavSVGProps = React.JSX.IntrinsicElements["svg"];
 
-export const FriendsNavSVG: React.FC<FriendsNavSVGProps> = (props) => (
+export const FriendsNavSVG: React.FC<FriendsNavSVGProps> = props => (
     <svg fill="#fff" width="800px" height="800px" viewBox="0 -6 44 44" xmlns="http://www.w3.org/2000/svg" {...props}>
-        <path d="M42.001,32.000 L14.010,32.000 C12.908,32.000 12.010,31.104 12.010,30.001 L12.010,28.002 C12.010,27.636 
+        <path
+            d="M42.001,32.000 L14.010,32.000 C12.908,32.000 12.010,31.104 12.010,30.001 L12.010,28.002 C12.010,27.636 
  12.211,27.300 12.532,27.124 L22.318,21.787 C19.040,18.242 19.004,13.227 19.004,12.995 L19.010,7.002 C19.010,6.946 
  19.015,6.891 19.024,6.837 C19.713,2.751 24.224,0.007 28.005,0.007 C28.006,0.007 28.008,0.007 28.009,0.007 
  C31.788,0.007 36.298,2.749 36.989,6.834 C36.998,6.889 37.003,6.945 37.003,7.000 L37.006,12.994 C37.006,13.225 

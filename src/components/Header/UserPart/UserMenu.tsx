@@ -7,7 +7,7 @@ import { UserProfile } from "@auth0/nextjs-auth0/client";
 import { useOuterClick } from "@/hooks/useOuterClick";
 
 type UserMenuProps = {
-    user: UserProfile
+    user: UserProfile;
 };
 
 const UserMenu: React.FC<UserMenuProps> = ({ user }) => {
@@ -37,11 +37,12 @@ const UserMenu: React.FC<UserMenuProps> = ({ user }) => {
             <button
                 ref={menuRef}
                 onClick={handleUserButtonClick}
-                className={"relative z-50 h-7 flex items-center gap-1 p-0.5 md:pr-2 border border-neutral-300"
-                    .concat(" text-white bg-neutral-800 overflow-hidden rounded-t-[14px]")
-                    .concat(" cursor-pointer transition-[background-color,_border-radius]")
-                    .concat(isMenuOpened ? " border-b-transparent bg-neutral-700" : " rounded-b-[14px]")
-                    .concat(" hover:bg-neutral-600 active:bg-transparent")}
+                className={"relative z-50 h-7 flex items-center gap-1 p-0.5 md:pr-2 border border-neutral-300".concat(
+                    " text-white bg-neutral-800 overflow-hidden rounded-t-[14px]",
+                    " cursor-pointer transition-[background-color,_border-radius]",
+                    isMenuOpened ? " border-b-transparent bg-neutral-700" : " rounded-b-[14px]",
+                    " hover:bg-neutral-600 active:bg-transparent"
+                )}
             >
                 {user.picture ? (
                     <Image
@@ -59,9 +60,10 @@ const UserMenu: React.FC<UserMenuProps> = ({ user }) => {
             </button>
 
             <div
-                className={"absolute z-[49] top-[calc(100%-1px)] right-0 min-w-[200px] w-full flex flex-col"
-                    .concat(" bg-black rounded-b-lg max-md:rounded-tl-lg overflow-hidden border border-neutral-300")
-                    .concat(isMenuOpened ? "" : " hidden")}
+                className={"absolute z-[49] top-[calc(100%-1px)] right-0 min-w-[200px] w-full flex flex-col".concat(
+                    " bg-black rounded-b-lg max-md:rounded-tl-lg overflow-hidden border border-neutral-300",
+                    isMenuOpened ? "" : " hidden"
+                )}
             >
                 <UserMenuLink href="/profile">Profile</UserMenuLink>
                 <UserMenuLink href="/api/auth/logout">Log Out</UserMenuLink>

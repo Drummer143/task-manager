@@ -5,7 +5,7 @@ type UseResizeObserverProps = {
 
     onResize: ResizeObserverCallback;
 
-    skip?: boolean
+    skip?: boolean;
 };
 
 export const useResizeObserver = ({ onResize, element, skip }: UseResizeObserverProps) => {

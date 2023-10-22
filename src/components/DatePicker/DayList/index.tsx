@@ -6,7 +6,7 @@ import { mapMonthDays, weekdayOrder } from "@/shared";
 type DayListProps = {
     currentDate: Date;
 
-    onDayClick: (date: Date) => void
+    onDayClick: (date: Date) => void;
 };
 
 const DayList: React.FC<DayListProps> = ({ currentDate, onDayClick }) => {
@@ -28,7 +28,7 @@ const DayList: React.FC<DayListProps> = ({ currentDate, onDayClick }) => {
         };
     }, [currentDate]);
 
-    const handleDayClick: React.MouseEventHandler<HTMLDivElement> = (e) => {
+    const handleDayClick: React.MouseEventHandler<HTMLDivElement> = e => {
         const target = e.target as HTMLElement | null;
 
         if ((target as HTMLElement | null)?.tagName !== "BUTTON" || !target?.dataset) {
@@ -48,9 +48,7 @@ const DayList: React.FC<DayListProps> = ({ currentDate, onDayClick }) => {
     };
 
     return (
-        <div
-            className="min-w-full"
-        >
+        <div className="min-w-full">
             <div className="grid gap-1 grid-cols-7 font-normal mb-2">
                 {weekdayOrder.map(day => (
                     <p className="capitalize text-center" key={day}>
@@ -61,32 +59,15 @@ const DayList: React.FC<DayListProps> = ({ currentDate, onDayClick }) => {
 
             <div className="grid gap-1 grid-cols-7" onClick={handleDayClick}>
                 {previous.map(day => (
-                    <Day
-                        date={day}
-                        month={prevMonth}
-                        year={prevMonthYear}
-                        key={day}
-                        variant="half-transparent"
-                    />
+                    <Day date={day} month={prevMonth} year={prevMonthYear} key={day} variant="half-transparent" />
                 ))}
 
                 {current.map(day => (
-                    <Day
-                        month={currentMonth}
-                        year={currentMonthYear}
-                        date={day}
-                        key={day}
-                    />
+                    <Day month={currentMonth} year={currentMonthYear} date={day} key={day} />
                 ))}
 
                 {next.map(day => (
-                    <Day
-                        month={nextMonth}
-                        year={nextMonthYear}
-                        date={day}
-                        key={day}
-                        variant="half-transparent"
-                    />
+                    <Day month={nextMonth} year={nextMonthYear} date={day} key={day} variant="half-transparent" />
                 ))}
             </div>
         </div>

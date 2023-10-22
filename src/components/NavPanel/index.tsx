@@ -17,7 +17,7 @@ const NavPanel: React.FC = () => {
     const [isMobile, setIsMobile] = useState(false);
 
     const { listen, unlisten } = useOuterClick({
-        handler: (e) => {
+        handler: e => {
             if ((e.target as HTMLElement | null)?.id !== "toggleNavBarButton") {
                 setIsOpened(false);
             }
@@ -64,14 +64,19 @@ const NavPanel: React.FC = () => {
                     style={{
                         width: isMobile
                             ? "100%"
-                            : `var(--navbar-width, ${localStorage.getItem("navbar-width") || 200}px)`,
+                            : `var(--navbar-width, ${localStorage.getItem("navbar-width") || 200}px)`
                     }}
-                    className={"flex-shrink-0 h-full min-w-[var(--navbar-min-width)] flex flex-col gap-1"
-                        .concat(" p-2 overflow-hidden bg-[rgb(36,36,36)]")
-                        .concat(isMobile ? " fixed z-30 max-w-[75vw]" : " max-w-[300px]")}
+                    className={"flex-shrink-0 h-full min-w-[var(--navbar-min-width)] flex flex-col gap-1".concat(
+                        " p-2 overflow-hidden bg-[rgb(36,36,36)]",
+                        isMobile ? " fixed z-30 max-w-[75vw]" : " max-w-[300px]"
+                    )}
                 >
-                    <NavPanelLink icon={<CalendarNavSVG width={30} height={30} />} href="/">Calendar</NavPanelLink>
-                    <NavPanelLink icon={<FriendsNavSVG width={30} height={30} />} href="/friends">Friends</NavPanelLink>
+                    <NavPanelLink icon={<CalendarNavSVG width={30} height={30} />} href="/">
+                        Calendar
+                    </NavPanelLink>
+                    <NavPanelLink icon={<FriendsNavSVG width={30} height={30} />} href="/friends">
+                        Friends
+                    </NavPanelLink>
                 </motion.nav>
             )}
         </AnimatePresence>
