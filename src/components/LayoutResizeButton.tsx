@@ -1,13 +1,13 @@
 "use client";
 
-import React, { useCallback } from "react";
+import React, { memo } from "react";
 
 const LayoutResizeButton: React.FC = () => {
-    const handleResize = useCallback((e: MouseEvent) => {
+    const handleResize = (e: MouseEvent) => {
         document.body.style.setProperty("--navbar-width", e.clientX + "px");
-    }, []);
+    };
 
-    const handleStopResize = useCallback(() => {
+    const handleStopResize = () => {
         document.documentElement.style.removeProperty("cursor");
         document.body.style.removeProperty("pointer-events");
 
@@ -18,24 +18,24 @@ const LayoutResizeButton: React.FC = () => {
         if (width) {
             localStorage.setItem("navbar-width", width.toString());
         }
-    }, [handleResize]);
+    };
 
-    const handleResizeButtonClick: React.MouseEventHandler = useCallback(e => {
+    const handleResizeButtonClick: React.MouseEventHandler = e => {
         document.documentElement.style.cursor = "w-resize";
         document.body.style.pointerEvents = "none";
 
         document.addEventListener("mouseup", handleStopResize, { once: true });
         document.addEventListener("mousemove", handleResize);
-    }, [handleResize, handleStopResize]);
+    };
 
     return (
         <button
             onMouseDown={handleResizeButtonClick}
-            className={"grid-area-[resize] w-3 h-full cursor-w-resize relative"
+            className={"w-3 h-full cursor-w-resize relative max-lg:hidden"
                 .concat(" before:h-full before:w-0.5 before:bg-neutral-500 before:transition-[background-color,_width]")
                 .concat(" before:block hover:before:w-full active:before:w-full active:before:bg-neutral-700")}
         />
     );
 };
 
-export default LayoutResizeButton;
+export default memo(LayoutResizeButton);

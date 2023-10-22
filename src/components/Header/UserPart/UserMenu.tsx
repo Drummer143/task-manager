@@ -1,10 +1,10 @@
 "use client";
 
 import Image from "next/image";
-import React, { useCallback, useState } from "react";
-import { UserProfile } from "@auth0/nextjs-auth0/client";
-import Link from "next/link";
+import React, { useRef, useState } from "react";
 import UserMenuLink from "./UserMenuLink";
+import { UserProfile } from "@auth0/nextjs-auth0/client";
+import { useOuterClick } from "@/hooks/useOuterClick";
 
 type UserMenuProps = {
     user: UserProfile
@@ -13,39 +13,29 @@ type UserMenuProps = {
 const UserMenu: React.FC<UserMenuProps> = ({ user }) => {
     const [isMenuOpened, setIsMenuOpened] = useState(false);
 
-    const handleCloseMenuOnClickAway = useCallback((e: MouseEvent) => {
-        const target = e.target as Element | null;
+    const menuRef = useRef<HTMLButtonElement | null>(null);
 
-        const closestTarget = target?.closest("#userMenu");
-
-        if (!closestTarget) {
-            setIsMenuOpened(false);
-
-            document.removeEventListener("click", handleCloseMenuOnClickAway);
-        }
-
-    }, []);
+    const { listen, unlisten } = useOuterClick({
+        ref: menuRef,
+        handler: () => setIsMenuOpened(false)
+    });
 
     const handleUserButtonClick = () => {
-        let isMenuOpened = false;
-
         setIsMenuOpened(prev => {
-            isMenuOpened = prev;
+            if (!prev) {
+                listen();
+            } else {
+                unlisten();
+            }
 
             return !prev;
         });
-
-        if (!isMenuOpened) {
-            document.addEventListener("click", handleCloseMenuOnClickAway);
-        } else {
-            document.removeEventListener("click", handleCloseMenuOnClickAway);
-        }
     };
 
     return (
         <div className="relative z-50">
             <button
-                id="userMenu"
+                ref={menuRef}
                 onClick={handleUserButtonClick}
                 className={"relative z-50 h-7 flex items-center gap-1 p-0.5 md:pr-2 border border-neutral-300"
                     .concat(" text-white bg-neutral-800 overflow-hidden rounded-t-[14px]")

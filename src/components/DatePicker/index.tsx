@@ -4,7 +4,7 @@ import { AnimatePresence, motion, useAnimationControls } from "framer-motion";
 import DayList from "./DayList";
 import MonthList from "./MonthList";
 import PickerHead from "./PickerHead";
-import { useDatePickerStore, DatePickerState } from "../store";
+import { useDatePickerStore } from "@/store";
 import { ExpandMonthPickerSVG } from "@/SVGs";
 
 type DatePickerProps = {

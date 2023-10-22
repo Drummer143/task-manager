@@ -1,3 +1,4 @@
+export * from "./MenuSVG";
 export * from "./FriendsNavSVG";
 export * from "./CalendarNavSVG";
 export * from "./ExpandMonthPickerSVG";

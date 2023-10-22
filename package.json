@@ -14,9 +14,11 @@
         "framer-motion": "^10.16.4",
         "mongoose": "^7.5.4",
         "next": "latest",
+        "overlayscrollbars-react": "^0.5.3",
         "react": "latest",
         "react-datepicker": "^4.20.0",
         "react-dom": "latest",
+        "react-modal": "^3.16.1",
         "zustand": "^4.4.1"
     },
     "devDependencies": {
@@ -24,6 +26,7 @@
         "@types/react": "latest",
         "@types/react-datepicker": "^4.15.1",
         "@types/react-dom": "latest",
+        "@types/react-modal": "^3.16.2",
         "autoprefixer": "latest",
         "eslint": "latest",
         "eslint-config-next": "latest",

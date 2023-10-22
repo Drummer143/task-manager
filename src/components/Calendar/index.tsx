@@ -7,10 +7,10 @@ import CalendarSlice from "./CalendarSlice";
 
 const Calendar: React.FC = () => {
     const [currentDate, setCurrentDate] = useState(new Date());
-    const [intl] = useState(new Intl.DateTimeFormat(navigator.language, { year: "numeric", month: "long" }));
+    const [intl] = useState(new Intl.DateTimeFormat(global.navigator?.language, { year: "numeric", month: "long" }));
 
     return (
-        <div className="h-full">
+        <>
             <div className="relative flex w-fit">
                 <p>{intl.format(currentDate)}</p>
 
@@ -22,7 +22,7 @@ const Calendar: React.FC = () => {
                 month={currentDate.getMonth()}
                 year={currentDate.getFullYear()}
             />
-        </div>
+        </>
     );
 };
 

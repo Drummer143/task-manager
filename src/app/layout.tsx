@@ -18,18 +18,19 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <body>
                     <div
                         className={"grid h-screen overflow-hidden bg-[rgb(40,40,40)] text-white"
-                            .concat(" grid-rows-[min-content,1fr] grid-cols-[min-content_min-content_1fr]")
-                            .concat(" grid-areas-['header_header_header''nav_resize_content']")}
+                            .concat(" grid-rows-[min-content,1fr]")}
                     >
                         <Header />
 
-                        <NavPanel />
+                        <div className="flex relative overflow-auto">
+                            <NavPanel />
 
-                        <LayoutResizeButton />
+                            <LayoutResizeButton />
 
-                        <main className="grid-area-[content] overflow-y-auto p-2">
-                            {children}
-                        </main>
+                            <main className="relative p-2">
+                                {children}
+                            </main>
+                        </div>
                     </div>
                 </body>
             </html>

@@ -1,13 +1,11 @@
 import { create } from "zustand";
 
-type CallbackHandler<ArgType = any, ReturnType = void> = (value: ArgType | ((prev: ArgType) => ArgType)) => ReturnType;
-
 export interface DatePickerState {
     view: "month" | "day";
     opened: boolean;
 
-    setOpened: CallbackHandler<boolean>;
-    setView: CallbackHandler<DatePickerState["view"]>
+    setOpened: TransformFunction<boolean>;
+    setView: TransformFunction<DatePickerState["view"]>
 }
 
 export const useDatePickerStore = create<DatePickerState>((set) => ({

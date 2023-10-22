@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 
 import { months } from "@/shared";
-import { useDatePickerStore } from "../store";
+import { useDatePickerStore } from "@/store";
 import { LeftArrowMonthPickerSVG, ReturnMonthPickerSVG, RightArrowMonthPickerSVG } from "@/SVGs";
 
 type PickerHeadProps = {

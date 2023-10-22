@@ -22,7 +22,7 @@ export const isURL = (urlToCheck: string) => {
     }
 };
 
-export const mapMonths = (locale = navigator.language) => {
+export const mapMonths = (locale = global.navigator?.language) => {
     const intl = new Intl.DateTimeFormat(locale, { month: "long" });
     const date = new Date();
 
@@ -33,7 +33,7 @@ export const mapMonths = (locale = navigator.language) => {
     });
 };
 
-export const mapMonthDays = (date = new Date(), skip?: { prev?: boolean; next?: boolean; current?: boolean; }, locale = navigator.language) => {
+export const mapMonthDays = (date = new Date(), skip?: { prev?: boolean; next?: boolean; current?: boolean; }, locale = global.navigator?.language) => {
     const firstDayOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
     const lastDayOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0);
 

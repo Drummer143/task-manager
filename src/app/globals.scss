@@ -2,14 +2,15 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+    --navbar-min-width: 62px;
+    --header-height: 3rem;
+}
+
 * {
     box-sizing: border-box;
 
     outline: none;
-}
-
-body {
-    overflow: hidden;
 }
 
 input[type='number'].number-input-arrows-hidden {

@@ -28,10 +28,6 @@ const CalendarSlice: React.FC<CalendarSliceProps> = ({ month, year }) => {
                 {current.map((_, index) => (
                     <GridCell key={index} day={index + 1} month={month} year={year} />
                 ))}
-
-                {/* {next.map((_, index) => (
-                    <GridCell day={_} month={month} year={year} key={index} />
-                ))} */}
             </div>
         </div>
     );
