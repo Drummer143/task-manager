@@ -1,41 +1,30 @@
 "use client";
 
-import React, { useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
 import NavPanelLink from "./NavPanelLink";
-import { screens } from "@/shared";
-import { useNavbarStore } from "@/store";
-import { useOuterClick, useResizeObserver } from "@/hooks";
+import { Screens } from "@/shared";
+import { useOuterClick } from "@/hooks";
+import { useLayoutStore } from "@/store";
 import { CalendarNavSVG, FriendsNavSVG } from "@/SVGs";
 
 const NavPanel: React.FC = () => {
-    const { isOpened, setIsOpened } = useNavbarStore();
+    const { isOpened, setIsOpened, screen } = useLayoutStore();
 
     const navRef = useRef<HTMLElement | null>(null);
 
     const [isMobile, setIsMobile] = useState(false);
 
-    const { listen, unlisten } = useOuterClick({
-        handler: e => {
-            if ((e.target as HTMLElement | null)?.id !== "toggleNavBarButton") {
-                setIsOpened(false);
-            }
-        },
-        ref: navRef
-    });
-
-    useResizeObserver({
-        element: document.body,
-        onResize: ([e]) => {
-            if (e?.contentRect.width > screens.md && isMobile) {
-                setIsMobile(false);
-                setIsOpened(true);
-            } else if (e?.contentRect.width < screens.md && !isMobile) {
-                setIsMobile(true);
-                setIsOpened(false);
-            }
+    const outerClickCallback: DocumentEventHandler<"pointerdown"> = useCallback(e => {
+        if ((e.target as HTMLElement | null)?.id !== "toggleNavBarButton") {
+            setIsOpened(false);
         }
+    }, [setIsOpened]);
+
+    const { listen, unlisten } = useOuterClick({
+        handler: outerClickCallback,
+        ref: navRef
     });
 
     useEffect(() => {
@@ -49,6 +38,16 @@ const NavPanel: React.FC = () => {
             unlisten();
         }
     }, [isMobile, isOpened, listen, unlisten]);
+
+    useEffect(() => {
+        if (screen > Screens.md && isMobile) {
+            setIsMobile(false);
+            setIsOpened(true);
+        } else if (screen <= Screens.md && !isMobile) {
+            setIsMobile(true);
+            setIsOpened(false);
+        }
+    }, [isMobile, screen, setIsOpened]);
 
     return (
         <AnimatePresence>
@@ -68,7 +67,7 @@ const NavPanel: React.FC = () => {
                     }}
                     className={"flex-shrink-0 h-full min-w-[var(--navbar-min-width)] flex flex-col gap-1".concat(
                         " p-2 overflow-hidden bg-[rgb(36,36,36)]",
-                        isMobile ? " fixed z-30 max-w-[75vw]" : " max-w-[300px]"
+                        isMobile ? " fixed z-30 max-w-[75vw]" : " max-w-[300px] max-lg:w-[0px_!important]"
                     )}
                 >
                     <NavPanelLink icon={<CalendarNavSVG width={30} height={30} />} href="/">

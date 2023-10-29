@@ -3,10 +3,10 @@
 import React from "react";
 
 import { MenuSVG } from "@/SVGs";
-import { useNavbarStore } from "@/store";
+import { useLayoutStore } from "@/store";
 
 const ToggleNavbarButton: React.FC = () => {
-    const { setIsOpened, isOpened } = useNavbarStore();
+    const { setIsOpened, isOpened } = useLayoutStore();
 
     const handleClick = () => setIsOpened(prev => !prev);
 

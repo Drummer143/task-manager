@@ -3,7 +3,7 @@ export const DEFAULT_CALENDAR_CELL_WIDTH = 100;
 
 export const MILLISECONDS_IN_DAY = 86_400_000;
 
-export const weekdayOrder = ["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"];
+export const weekdayOrder = ["sunday", "monday", "tuesday", "wednesday", "thursday", "friday", "saturday"] as const;
 
 export const months = [
     "january",
@@ -18,12 +18,12 @@ export const months = [
     "october",
     "november",
     "december"
-];
+] as const;
 
-export const screens = {
-    sm: 640,
-    md: 768,
-    lg: 1024,
-    xl: 1280,
-    "2xl": 1536
-} as const;
+export enum Screens {
+    sm = 640,
+    md = 768,
+    lg = 1024,
+    xl = 1280,
+    "2xl" = 1536
+};

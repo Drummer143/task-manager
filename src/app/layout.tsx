@@ -4,6 +4,7 @@ import Header from "@/components/Header";
 import NavPanel from "@/components/NavPanel";
 import Providers from "@/components/Providers";
 import LayoutResizeButton from "@/components/LayoutResizeButton";
+import BodyResizeObserver from "@/components/BodyResizeObserver";
 
 import "./globals.scss";
 
@@ -22,6 +23,8 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                         )}
                     >
                         <Header />
+
+                        <BodyResizeObserver />
 
                         <div className="flex relative overflow-auto">
                             <NavPanel />

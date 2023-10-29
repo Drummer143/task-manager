@@ -1,2 +1,2 @@
-export * from "./navbarStore";
+export * from "./layoutStore";
 export * from "./datePickerStore";

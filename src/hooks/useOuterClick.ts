@@ -9,21 +9,8 @@ interface UseOuterClickProps {
 
 export const useOuterClick = ({ handler, ref, listenOnMount }: UseOuterClickProps) => {
     const togglers = useRef({
-        isListening: false,
-        listen: () => {
-            if (togglers.current.isListening) {
-                togglers.current.unlisten();
-            } else {
-                togglers.current.isListening = true;
-            }
-            document.addEventListener("pointerdown", handlerRef.current);
-        },
-        unlisten: () => {
-            if (togglers.current.isListening) {
-                document.removeEventListener("pointerdown", handlerRef.current);
-                togglers.current.isListening = false;
-            }
-        }
+        listen: () => document.addEventListener("pointerdown", handlerRef.current),
+        unlisten: () => document.removeEventListener("pointerdown", handlerRef.current)
     });
 
     const handleOuterClick = useCallback(
@@ -44,7 +31,11 @@ export const useOuterClick = ({ handler, ref, listenOnMount }: UseOuterClickProp
     const handlerRef = useRef(handleOuterClick);
 
     useEffect(() => {
+        togglers.current.unlisten();
+        
         handlerRef.current = handleOuterClick;
+
+        togglers.current.listen();
     }, [handleOuterClick]);
 
     useEffect(() => {
@@ -57,8 +48,5 @@ export const useOuterClick = ({ handler, ref, listenOnMount }: UseOuterClickProp
         };
     }, [listenOnMount]);
 
-    return {
-        listen: togglers.current.listen,
-        unlisten: togglers.current.unlisten
-    };
+    return togglers.current;
 };

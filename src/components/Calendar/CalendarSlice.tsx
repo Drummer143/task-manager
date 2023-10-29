@@ -3,7 +3,8 @@
 import React, { useMemo } from "react";
 
 import GridCell from "./GridCell";
-import { mapMonthDays, weekdayOrder } from "@/shared";
+import WeekDays from "./WeekDays";
+import { mapMonthDays } from "@/shared";
 
 type CalendarSliceProps = CalendarSliceDate;
 
@@ -12,19 +13,9 @@ const CalendarSlice: React.FC<CalendarSliceProps> = ({ month, year }) => {
 
     return (
         <div>
-            <div
-                className={"grid gap-1 grid-cols-[repeat(7,minmax(100px,1fr))] font-semibold text-lg mb-2".concat(
-                    " max-lg:grid-cols-7"
-                )}
-            >
-                {weekdayOrder.map(day => (
-                    <p className="capitalize text-center overflow-hidden max-lg:w-[3ch] text-clip" key={day}>
-                        {day}
-                    </p>
-                ))}
-            </div>
+            <WeekDays />
 
-            <div className="grid gap-1 grid-cols-[repeat(7,minmax(100px,1fr))] max-lg:grid-cols-7">
+            <div className="grid gap-1 grid-cols-7">
                 {previous.map((_, index) => (
                     <div key={index} className="pointer-events-none"></div>
                 ))}
