@@ -28,7 +28,7 @@
         "@types/react-dom": "latest",
         "@types/react-modal": "^3.16.2",
         "autoprefixer": "latest",
-        "eslint": "latest",
+        "eslint": "^8.50.0",
         "eslint-config-next": "latest",
         "postcss": "latest",
         "prettier": "^3.0.3",

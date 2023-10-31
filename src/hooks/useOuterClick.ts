@@ -4,7 +4,7 @@ interface UseOuterClickProps {
     handler: DocumentEventHandler<"pointerdown">;
     ref: RefObject<Element | null>;
 
-    active?: boolean
+    active?: boolean;
 }
 
 export const useOuterClick = ({ handler, ref, active = false }: UseOuterClickProps) => {
@@ -13,7 +13,6 @@ export const useOuterClick = ({ handler, ref, active = false }: UseOuterClickPro
     useEffect(() => {
         handlerRef.current = handler;
     }, [handler]);
-
 
     useEffect(() => {
         if (!active) {

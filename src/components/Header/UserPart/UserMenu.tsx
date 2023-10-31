@@ -21,9 +21,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ user }) => {
         active: isMenuOpened
     });
 
-    const handleUserButtonClick = () => {
-        setIsMenuOpened(prev =>  !prev);
-    };
+    const handleUserButtonClick = () => setIsMenuOpened(prev => !prev);
 
     return (
         <div className="relative z-50">

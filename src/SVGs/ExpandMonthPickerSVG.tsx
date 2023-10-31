@@ -15,8 +15,6 @@ export const ExpandMonthPickerSVG: React.FC<ExpandMonthPickerSVGProps> = props =
         strokeWidth="2"
         {...props}
     >
-        <path
-            d="M4.343 4.343l11.314 11.314m0 0h-9.9m9.9 0v-9.9"
-        />
+        <path d="M4.343 4.343l11.314 11.314m0 0h-9.9m9.9 0v-9.9" />
     </svg>
 );

@@ -32,9 +32,9 @@ const MonthList: React.FC<MonthListProps> = ({ onChange }) => {
                     className={"capitalize grid place-items-center h-10 rounded text-[15px]".concat(
                         " hover:bg-neutral-500 active:bg-neutral-600",
                         compareDates(new Date(displayedDate.getFullYear(), i), currentDate, "month")
-                            ? selectedDateStyle : "",
-                        isToday(new Date(currentDate.getFullYear(), i), "month")
-                            ? todayStyle : ""
+                            ? selectedDateStyle
+                            : "",
+                        isToday(new Date(currentDate.getFullYear(), i), "month") ? todayStyle : ""
                     )}
                 >
                     {month}

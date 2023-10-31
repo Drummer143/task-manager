@@ -49,23 +49,23 @@ export const mapMonthDays = (
     const firstWeekPlaceholders: number[] = skip?.prev
         ? []
         : new Array(countOfFirstWeekPlaceholders)
-            .fill(undefined)
-            .map((_, i) =>
-                new Date(
-                    lastDayOfPrevMonth.getFullYear(),
-                    lastDayOfPrevMonth.getMonth(),
-                    lastDayOfPrevMonth.getDate() - countOfFirstWeekPlaceholders + i + 1
-                ).getDate()
-            );
+              .fill(undefined)
+              .map((_, i) =>
+                  new Date(
+                      lastDayOfPrevMonth.getFullYear(),
+                      lastDayOfPrevMonth.getMonth(),
+                      lastDayOfPrevMonth.getDate() - countOfFirstWeekPlaceholders + i + 1
+                  ).getDate()
+              );
 
     const countOfLastWeekPlaceholders = 6 - lastDayOfMonth.getDay();
     const lastWeekPlaceholders: number[] = skip?.next
         ? []
         : new Array(countOfLastWeekPlaceholders)
-            .fill(undefined)
-            .map((_, i) =>
-                new Date(firstDayOfNextMonth.getFullYear(), firstDayOfNextMonth.getMonth(), i + 1).getDate()
-            );
+              .fill(undefined)
+              .map((_, i) =>
+                  new Date(firstDayOfNextMonth.getFullYear(), firstDayOfNextMonth.getMonth(), i + 1).getDate()
+              );
 
     const current: number[] = skip?.current
         ? []

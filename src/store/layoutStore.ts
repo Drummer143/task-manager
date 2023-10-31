@@ -12,14 +12,14 @@ export interface LayoutStoreState {
     setScreen: (documentWidth: number) => void;
 }
 
-export const useLayoutStore = createWithEqualityFn<LayoutStoreState>()(devtools(
-    (set, get) => ({
+export const useLayoutStore = createWithEqualityFn<LayoutStoreState>()(
+    devtools((set, get) => ({
         isOpened: true,
         screen: Screens["2xl"],
 
         setIsOpened: value => set(prev => ({ isOpened: typeof value === "function" ? value(prev.isOpened) : value })),
 
-        setScreen: (width) => {
+        setScreen: width => {
             let screen: Screens = Screens["2xl"];
 
             if (width < Screens.sm) {
@@ -34,5 +34,6 @@ export const useLayoutStore = createWithEqualityFn<LayoutStoreState>()(devtools(
 
             set({ screen });
         }
-    })
-), shallow);
+    })),
+    shallow
+);

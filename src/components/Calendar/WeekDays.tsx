@@ -19,9 +19,7 @@ const WeekDays: React.FC = () => {
     }, [screen]);
 
     return (
-        <div
-            className={"grid gap-1 grid-cols-7 font-semibold text-lg mb-2"}
-        >
+        <div className={"grid gap-1 grid-cols-7 font-semibold text-lg mb-2"}>
             {weekdayOrder.map(day => (
                 <p className="capitalize text-center overflow-hidden text-clip" key={day}>
                     {day.slice(0, sliceCount)}

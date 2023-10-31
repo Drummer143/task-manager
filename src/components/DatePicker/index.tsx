@@ -15,14 +15,14 @@ type DatePickerProps = {
     fromDate?: Date;
     toDate?: Date;
     hideViews?:
-    | {
-        day?: false;
-        month?: true;
-    }
-    | {
-        day?: true;
-        month?: false;
-    };
+        | {
+              day?: false;
+              month?: true;
+          }
+        | {
+              day?: true;
+              month?: false;
+          };
 };
 
 const DatePicker: React.FC<DatePickerProps> = ({
