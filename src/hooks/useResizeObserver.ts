@@ -12,16 +12,24 @@ export const useResizeObserver = ({ onResize, element, skip }: UseResizeObserver
     const disconnect = useRef<(() => void) | null>(null);
 
     const resizeObserver = useMemo(() => {
+        if (!global.ResizeObserver) {
+            return;
+        }
+
         if (disconnect.current) {
             disconnect.current();
         }
 
-        return new ResizeObserver(onResize);
+        return new global.ResizeObserver(onResize);
     }, [onResize]);
 
     useEffect(() => {
+        if (!resizeObserver) {
+            return;
+        }
+
         if (skip) {
-            resizeObserver.disconnect();
+            return resizeObserver.disconnect();
         }
 
         const target = element instanceof Element ? element : element.current;
