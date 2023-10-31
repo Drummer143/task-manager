@@ -49,23 +49,23 @@ export const mapMonthDays = (
     const firstWeekPlaceholders: number[] = skip?.prev
         ? []
         : new Array(countOfFirstWeekPlaceholders)
-              .fill(undefined)
-              .map((_, i) =>
-                  new Date(
-                      lastDayOfPrevMonth.getFullYear(),
-                      lastDayOfPrevMonth.getMonth(),
-                      lastDayOfPrevMonth.getDate() - countOfFirstWeekPlaceholders + i + 1
-                  ).getDate()
-              );
+            .fill(undefined)
+            .map((_, i) =>
+                new Date(
+                    lastDayOfPrevMonth.getFullYear(),
+                    lastDayOfPrevMonth.getMonth(),
+                    lastDayOfPrevMonth.getDate() - countOfFirstWeekPlaceholders + i + 1
+                ).getDate()
+            );
 
     const countOfLastWeekPlaceholders = 6 - lastDayOfMonth.getDay();
     const lastWeekPlaceholders: number[] = skip?.next
         ? []
         : new Array(countOfLastWeekPlaceholders)
-              .fill(undefined)
-              .map((_, i) =>
-                  new Date(firstDayOfNextMonth.getFullYear(), firstDayOfNextMonth.getMonth(), i + 1).getDate()
-              );
+            .fill(undefined)
+            .map((_, i) =>
+                new Date(firstDayOfNextMonth.getFullYear(), firstDayOfNextMonth.getMonth(), i + 1).getDate()
+            );
 
     const current: number[] = skip?.current
         ? []
@@ -77,3 +77,21 @@ export const mapMonthDays = (
         next: lastWeekPlaceholders
     };
 };
+
+export const compareDates = (a: Date, b: Date, compareUntil: "year" | "month" | "day" = "year") => {
+    let isEqual = true;
+
+    switch (compareUntil) {
+        case "day":
+            isEqual = a.getDate() === b.getDate();
+        case "month":
+            isEqual = isEqual && a.getMonth() === b.getMonth();
+        case "year":
+            isEqual = isEqual && a.getFullYear() === b.getFullYear();
+    }
+
+    return isEqual;
+};
+
+export const isToday = (date: Date, compareUntil: Parameters<typeof compareDates>[2] = "day") =>
+    compareDates(date, new Date(), compareUntil);

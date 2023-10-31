@@ -1,32 +1,36 @@
+/* eslint-disable no-console */
+/* eslint-disable max-len */
+
 import React, { useMemo } from "react";
 
 import Day from "./Day";
-import { mapMonthDays, weekdayOrder } from "@/shared";
+import { useDatePickerStore } from "@/store";
+import { compareDates, isToday, mapMonthDays, weekdayOrder } from "@/shared";
 
 type DayListProps = {
-    currentDate: Date;
-
     onDayClick: (date: Date) => void;
 };
 
-const DayList: React.FC<DayListProps> = ({ currentDate, onDayClick }) => {
-    const { current, previous, next } = useMemo(() => mapMonthDays(currentDate), [currentDate]);
-    const { nextMonth, nextMonthYear, prevMonth, prevMonthYear, currentMonth, currentMonthYear } = useMemo(() => {
-        const nextMonth = new Date(currentDate);
-        const prevMonth = new Date(currentDate);
+const DayList: React.FC<DayListProps> = ({ onDayClick }) => {
+    const { currentDate, displayedDate } = useDatePickerStore();
 
-        nextMonth.setMonth(currentDate.getMonth() + 1);
-        prevMonth.setMonth(currentDate.getMonth() - 1);
+    const { current, previous, next } = useMemo(() => mapMonthDays(displayedDate), [displayedDate]);
+    const { nextMonth, nextMonthYear, prevMonth, prevMonthYear, currentMonth, currentMonthYear } = useMemo(() => {
+        const nextMonth = new Date(displayedDate);
+        const prevMonth = new Date(displayedDate);
+
+        nextMonth.setMonth(displayedDate.getMonth() + 1);
+        prevMonth.setMonth(displayedDate.getMonth() - 1);
 
         return {
             prevMonth: prevMonth.getMonth(),
             prevMonthYear: prevMonth.getFullYear(),
-            currentMonth: currentDate.getMonth(),
-            currentMonthYear: currentDate.getFullYear(),
+            currentMonth: displayedDate.getMonth(),
+            currentMonthYear: displayedDate.getFullYear(),
             nextMonth: nextMonth.getMonth(),
             nextMonthYear: nextMonth.getFullYear()
         };
-    }, [currentDate]);
+    }, [displayedDate]);
 
     const handleDayClick: React.MouseEventHandler<HTMLDivElement> = e => {
         const target = e.target as HTMLElement | null;
@@ -38,7 +42,7 @@ const DayList: React.FC<DayListProps> = ({ currentDate, onDayClick }) => {
         const day = +target.dataset.day!;
         const month = +target.dataset.month!;
         const year = +target.dataset.year!;
-        const date = new Date(currentDate);
+        const date = new Date(displayedDate);
 
         date.setDate(day);
         date.setMonth(month);
@@ -59,15 +63,36 @@ const DayList: React.FC<DayListProps> = ({ currentDate, onDayClick }) => {
 
             <div className="grid gap-1 grid-cols-7" onClick={handleDayClick}>
                 {previous.map(day => (
-                    <Day date={day} month={prevMonth} year={prevMonthYear} key={day} variant="half-transparent" />
+                    <Day
+                        date={day}
+                        month={prevMonth}
+                        year={prevMonthYear}
+                        key={day}
+                        isSelected={compareDates(new Date(prevMonthYear, prevMonth, day), currentDate, "day")}
+                        variant="half-transparent"
+                    />
                 ))}
 
                 {current.map(day => (
-                    <Day month={currentMonth} year={currentMonthYear} date={day} key={day} />
+                    <Day
+                        month={currentMonth}
+                        year={currentMonthYear}
+                        date={day}
+                        key={day}
+                        isSelected={compareDates(new Date(currentMonthYear, currentMonth, day), currentDate, "day")}
+                        isToday={isToday(new Date(currentMonthYear, currentMonth, day), "day")}
+                    />
                 ))}
 
                 {next.map(day => (
-                    <Day month={nextMonth} year={nextMonthYear} date={day} key={day} variant="half-transparent" />
+                    <Day
+                        month={nextMonth}
+                        year={nextMonthYear}
+                        date={day}
+                        key={day}
+                        isSelected={compareDates(new Date(nextMonthYear, nextMonth, day), currentDate, "day")}
+                        variant="half-transparent"
+                    />
                 ))}
             </div>
         </div>

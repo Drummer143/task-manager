@@ -67,7 +67,9 @@ const NavPanel: React.FC = () => {
                     }}
                     className={"flex-shrink-0 h-full min-w-[var(--navbar-min-width)] flex flex-col gap-1".concat(
                         " p-2 overflow-hidden bg-[rgb(36,36,36)]",
-                        isMobile ? " fixed z-30 max-w-[75vw]" : " max-w-[300px] max-lg:w-[0px_!important]"
+                        isMobile
+                            ? " fixed z-30 max-w-[75vw]"
+                            : " max-w-[300px] sticky top-0 left-0 max-lg:w-[0px_!important]"
                     )}
                 >
                     <NavPanelLink icon={<CalendarNavSVG width={30} height={30} />} href="/">

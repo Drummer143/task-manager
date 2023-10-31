@@ -10,12 +10,12 @@ export const ExpandMonthPickerSVG: React.FC<ExpandMonthPickerSVGProps> = props =
         xmlns="http://www.w3.org/2000/svg"
         fill="none"
         stroke="#000000"
+        strokeLinecap="round"
+        strokeLinejoin="round"
+        strokeWidth="2"
         {...props}
     >
         <path
-            strokeLinecap="round"
-            strokeLinejoin="round"
-            strokeWidth="2"
             d="M4.343 4.343l11.314 11.314m0 0h-9.9m9.9 0v-9.9"
         />
     </svg>

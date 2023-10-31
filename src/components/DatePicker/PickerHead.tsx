@@ -1,35 +1,33 @@
 import React, { useEffect, useState } from "react";
 
-import { months } from "@/shared";
 import { useDatePickerStore } from "@/store";
+import { compareDates, isToday, months, selectedDateStyle, todayStyle } from "@/shared";
 import { LeftArrowMonthPickerSVG, ReturnMonthPickerSVG, RightArrowMonthPickerSVG } from "@/SVGs";
 
 type PickerHeadProps = {
-    displayedTime: Date;
     minDate: Date;
     maxDate: Date;
 
     onDateChange: React.Dispatch<React.SetStateAction<Date>>;
-    onMonthButtonClick: React.MouseEventHandler<HTMLButtonElement>;
 
     hideViews?:
-        | {
-              day?: false;
-              month?: true;
-          }
-        | {
-              day?: true;
-              month?: false;
-          };
+    | {
+        day?: false;
+        month?: true;
+    }
+    | {
+        day?: true;
+        month?: false;
+    };
 };
 
-const PickerHead: React.FC<PickerHeadProps> = ({ onDateChange, displayedTime, maxDate, minDate, hideViews }) => {
-    const { view, setView } = useDatePickerStore();
+const PickerHead: React.FC<PickerHeadProps> = ({ onDateChange, maxDate, minDate, hideViews }) => {
+    const { view, setView, displayedDate, currentDate } = useDatePickerStore();
 
-    const [realInputValue, setRealInputValue] = useState(displayedTime.getFullYear());
+    const [realInputValue, setRealInputValue] = useState(displayedDate.getFullYear());
 
     const setNextYear = () => {
-        if (displayedTime.getFullYear() > maxDate.getFullYear()) {
+        if (displayedDate.getFullYear() > maxDate.getFullYear()) {
             return;
         }
 
@@ -47,7 +45,7 @@ const PickerHead: React.FC<PickerHeadProps> = ({ onDateChange, displayedTime, ma
     };
 
     const setPrevYear = () => {
-        if (displayedTime.getFullYear() < minDate.getFullYear()) {
+        if (displayedDate.getFullYear() < minDate.getFullYear()) {
             return;
         }
 
@@ -94,21 +92,19 @@ const PickerHead: React.FC<PickerHeadProps> = ({ onDateChange, displayedTime, ma
         e.stopPropagation();
         e.preventDefault();
 
-        e.currentTarget.blur();
+        e.currentTarget.parentElement?.focus();
     };
 
     const handleToggleViewButtonClick = () => setView(prev => (prev === "day" ? "month" : "day"));
 
-    useEffect(() => {
-        setRealInputValue(displayedTime.getFullYear());
-    }, [displayedTime]);
+    useEffect(() => setRealInputValue(displayedDate.getFullYear()), [displayedDate]);
 
     return (
         <div className="flex pt-1 gap-1 justify-between items-center">
             <button
                 type="button"
                 onClick={setPrevYear}
-                disabled={displayedTime.getTime() <= minDate.getTime()}
+                disabled={displayedDate.getTime() <= minDate.getTime()}
                 className={"transition-bg p-1 min-w-[38px] rounded hover:bg-neutral-500".concat(
                     " active:bg-neutral-600 disabled:pointer-events-none disabled:opacity-50"
                 )}
@@ -116,18 +112,23 @@ const PickerHead: React.FC<PickerHeadProps> = ({ onDateChange, displayedTime, ma
                 <LeftArrowMonthPickerSVG width={30} height={30} />
             </button>
 
-            <div className={"w-full".concat(hideViews?.day ? "" : " grid gap-1 grid-cols-[min-content,1fr]")}>
+            <div
+                tabIndex={-1}
+                className={"w-full".concat(hideViews?.day ? "" : " grid gap-1 grid-cols-[min-content,1fr]")}
+            >
                 {!hideViews?.day && (
                     <button
                         onClick={handleToggleViewButtonClick}
                         className={"h-[38px] text-center text-lg rounded transition-[background-color,padding]".concat(
                             " overflow-hidden capitalize transition-[width] grid place-content-center",
                             view === "day" ? " w-[100px]" : " w-[38px]",
-                            " hover:bg-neutral-500 active:bg-neutral-600"
+                            isToday(displayedDate, "month") ? todayStyle : "",
+                            compareDates(displayedDate, currentDate, "month") ? selectedDateStyle : " bg-transparent",
+                            " hover:bg-neutral-500 active:bg-neutral-600",
                         )}
                     >
                         {view === "day" ? (
-                            months[displayedTime.getMonth()]
+                            months[displayedDate.getMonth()]
                         ) : (
                             <ReturnMonthPickerSVG stroke="#fff" width={30} height={30} />
                         )}
@@ -142,10 +143,11 @@ const PickerHead: React.FC<PickerHeadProps> = ({ onDateChange, displayedTime, ma
                     type="number"
                     min={minDate.getFullYear()}
                     max={maxDate.getFullYear()}
-                    className={"w-full h-[38px] text-center text-lg bg-transparent number-input-arrows-hidden".concat(
+                    className={"w-full h-[38px] text-center text-lg number-input-arrows-hidden".concat(
                         " border border-transparent transition-[background-color,border-color] rounded",
-                        " hover:bg-neutral-500 focus:valid:border-white focus:bg-neutral-800",
-                        " invalid:border-red-700"
+                        " hover:bg-neutral-500 focus:valid:border-white focus:bg-neutral-800 invalid:border-red-700",
+                        isToday(displayedDate, "year") ? todayStyle : "",
+                        compareDates(displayedDate, currentDate, "year") ? selectedDateStyle : " bg-transparent",
                     )}
                 />
             </div>
@@ -154,9 +156,9 @@ const PickerHead: React.FC<PickerHeadProps> = ({ onDateChange, displayedTime, ma
                 type="button"
                 disabled={
                     view === "month"
-                        ? displayedTime.getFullYear() >= maxDate.getFullYear()
-                        : displayedTime.getFullYear() >= maxDate.getFullYear() &&
-                          displayedTime.getMonth() >= maxDate.getMonth()
+                        ? displayedDate.getFullYear() >= maxDate.getFullYear()
+                        : displayedDate.getFullYear() >= maxDate.getFullYear() &&
+                        displayedDate.getMonth() >= maxDate.getMonth()
                 }
                 onClick={setNextYear}
                 className={"transition-bg p-1 min-w-[38px] rounded hover:bg-neutral-500".concat(

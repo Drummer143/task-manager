@@ -2,12 +2,13 @@ import { RefObject, useCallback, useEffect, useRef } from "react";
 
 interface UseOuterClickProps {
     handler: DocumentEventHandler<"pointerdown">;
+    ref: RefObject<Element | null>;
 
-    ref?: RefObject<Element | null>;
     listenOnMount?: boolean;
+    active?: boolean
 }
 
-export const useOuterClick = ({ handler, ref, listenOnMount }: UseOuterClickProps) => {
+export const useOuterClick = ({ handler, ref, listenOnMount, active = false }: UseOuterClickProps) => {
     const togglers = useRef({
         listen: () => document.addEventListener("pointerdown", handlerRef.current),
         unlisten: () => document.removeEventListener("pointerdown", handlerRef.current)
@@ -17,7 +18,7 @@ export const useOuterClick = ({ handler, ref, listenOnMount }: UseOuterClickProp
         (e: PointerEvent) => {
             const target = e.target as HTMLElement;
 
-            const isOuterClick = ref && ref.current?.contains(target);
+            const isOuterClick = ref.current?.contains(target);
 
             if (!isOuterClick) {
                 handler(e);
@@ -47,6 +48,14 @@ export const useOuterClick = ({ handler, ref, listenOnMount }: UseOuterClickProp
             document.removeEventListener("pointerdown", handlerRef.current);
         };
     }, [listenOnMount]);
+
+    useEffect(() => {
+        if (active) {
+            togglers.current.listen();
+        } else {
+            togglers.current.unlisten();
+        }
+    }, [active]);
 
     return togglers.current;
 };

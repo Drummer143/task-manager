@@ -14,7 +14,7 @@ const BodyResizeObserver: React.FC = () => {
     );
 
     useResizeObserver({
-        element: document.body,
+        element: global.document?.body,
         onResize: observerCallback
     });
 
