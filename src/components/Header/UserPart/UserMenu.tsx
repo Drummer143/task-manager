@@ -15,21 +15,14 @@ const UserMenu: React.FC<UserMenuProps> = ({ user }) => {
 
     const menuRef = useRef<HTMLButtonElement | null>(null);
 
-    const { listen, unlisten } = useOuterClick({
+    useOuterClick({
         ref: menuRef,
-        handler: () => setIsMenuOpened(false)
+        handler: () => setIsMenuOpened(false),
+        active: isMenuOpened
     });
 
     const handleUserButtonClick = () => {
-        setIsMenuOpened(prev => {
-            if (!prev) {
-                listen();
-            } else {
-                unlisten();
-            }
-
-            return !prev;
-        });
+        setIsMenuOpened(prev =>  !prev);
     };
 
     return (

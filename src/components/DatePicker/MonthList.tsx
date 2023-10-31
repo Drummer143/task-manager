@@ -11,8 +11,6 @@ type MonthListProps = {
 const MonthList: React.FC<MonthListProps> = ({ onChange }) => {
     const { displayedDate, currentDate } = useDatePickerStore();
 
-    console.log("rerender");
-
     const handleMonthClick: React.MouseEventHandler<HTMLDivElement> = e => {
         const monthNumber = (e.target as HTMLElement | null)?.dataset.month;
 

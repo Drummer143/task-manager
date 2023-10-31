@@ -16,28 +16,15 @@ const NavPanel: React.FC = () => {
 
     const [isMobile, setIsMobile] = useState(false);
 
-    const outerClickCallback: DocumentEventHandler<"pointerdown"> = useCallback(e => {
-        if ((e.target as HTMLElement | null)?.id !== "toggleNavBarButton") {
-            setIsOpened(false);
-        }
-    }, [setIsOpened]);
-
-    const { listen, unlisten } = useOuterClick({
-        handler: outerClickCallback,
-        ref: navRef
+    useOuterClick({
+        handler: e => {
+            if ((e.target as HTMLElement | null)?.id !== "toggleNavBarButton") {
+                setIsOpened(false);
+            }
+        },
+        ref: navRef,
+        active: isMobile && isOpened
     });
-
-    useEffect(() => {
-        if (!isMobile) {
-            return unlisten();
-        }
-
-        if (isOpened) {
-            listen();
-        } else {
-            unlisten();
-        }
-    }, [isMobile, isOpened, listen, unlisten]);
 
     useEffect(() => {
         if (screen > Screens.md && isMobile) {
@@ -54,10 +41,7 @@ const NavPanel: React.FC = () => {
             {isOpened && (
                 <motion.nav
                     ref={navRef}
-                    animate={{
-                        translateX: 0,
-                        transition: { duration: 0.15 }
-                    }}
+                    animate={{ translateX: 0, transition: { duration: 0.15 } }}
                     exit={{ translateX: "-100%", transition: { duration: 0.15 } }}
                     initial={{ translateX: "-100%" }}
                     style={{

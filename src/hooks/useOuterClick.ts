@@ -4,58 +4,36 @@ interface UseOuterClickProps {
     handler: DocumentEventHandler<"pointerdown">;
     ref: RefObject<Element | null>;
 
-    listenOnMount?: boolean;
     active?: boolean
 }
 
-export const useOuterClick = ({ handler, ref, listenOnMount, active = false }: UseOuterClickProps) => {
-    const togglers = useRef({
-        listen: () => document.addEventListener("pointerdown", handlerRef.current),
-        unlisten: () => document.removeEventListener("pointerdown", handlerRef.current)
-    });
+export const useOuterClick = ({ handler, ref, active = false }: UseOuterClickProps) => {
+    const handlerRef = useRef(handler);
 
-    const handleOuterClick = useCallback(
-        (e: PointerEvent) => {
+    useEffect(() => {
+        handlerRef.current = handler;
+    }, [handler]);
+
+
+    useEffect(() => {
+        if (!active) {
+            return;
+        }
+
+        const handler: DocumentEventHandler<"pointerdown"> = e => {
             const target = e.target as HTMLElement;
 
             const isOuterClick = ref.current?.contains(target);
 
             if (!isOuterClick) {
-                handler(e);
-
-                document.removeEventListener("pointerdown", handleOuterClick);
+                handlerRef.current(e);
             }
-        },
-        [handler, ref]
-    );
+        };
 
-    const handlerRef = useRef(handleOuterClick);
-
-    useEffect(() => {
-        togglers.current.unlisten();
-        
-        handlerRef.current = handleOuterClick;
-
-        togglers.current.listen();
-    }, [handleOuterClick]);
-
-    useEffect(() => {
-        if (listenOnMount) {
-            togglers.current.listen();
-        }
+        document.addEventListener("pointerdown", handler, { once: true });
 
         return () => {
-            document.removeEventListener("pointerdown", handlerRef.current);
+            document.removeEventListener("pointerdown", handler);
         };
-    }, [listenOnMount]);
-
-    useEffect(() => {
-        if (active) {
-            togglers.current.listen();
-        } else {
-            togglers.current.unlisten();
-        }
-    }, [active]);
-
-    return togglers.current;
+    }, [active, ref]);
 };

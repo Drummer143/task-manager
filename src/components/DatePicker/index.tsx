@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
 import DayList from "./DayList";
@@ -58,8 +58,6 @@ const DatePicker: React.FC<DatePickerProps> = ({
         onSelect(date);
     };
 
-    useEffect(() => setCurrentDate(currentDate), [currentDate, setCurrentDate]);
-
     const handleEscapeKeyDown: React.KeyboardEventHandler<HTMLDivElement> = e => {
         if (e.code === "Escape") {
             e.stopPropagation();
@@ -69,15 +67,15 @@ const DatePicker: React.FC<DatePickerProps> = ({
         }
     };
 
-    const handleCloseDatePicker = useCallback(() => setOpened(false), [setOpened]);
-
     useOuterClick({
         active: opened,
-        handler: handleCloseDatePicker,
+        handler: () => setOpened(false),
         ref: datePickerRef
     });
 
     useEffect(() => setView(hideViews?.day ? "month" : "day"), [hideViews?.day, setView]);
+
+    useEffect(() => setCurrentDate(currentDate), [currentDate, setCurrentDate]);
 
     useEffect(() => {
         if (opened) {
