@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 
 import NavPanelLink from "./NavPanelLink";
@@ -47,7 +47,7 @@ const NavPanel: React.FC = () => {
                     style={{
                         width: isMobile
                             ? "100%"
-                            : `var(--navbar-width, ${localStorage.getItem("navbar-width") || 200}px)`
+                            : `var(--navbar-width, ${global.localStorage?.getItem("navbar-width") || 200}px)`
                     }}
                     className={"flex-shrink-0 h-full min-w-[var(--navbar-min-width)] flex flex-col gap-1".concat(
                         " p-2 overflow-hidden bg-[rgb(36,36,36)]",

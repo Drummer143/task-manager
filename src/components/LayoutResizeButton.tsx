@@ -16,7 +16,7 @@ const LayoutResizeButton: React.FC = () => {
         const width = parseInt(document.body.style.getPropertyValue("--navbar-width"));
 
         if (width) {
-            localStorage.setItem("navbar-width", width.toString());
+            global.localStorage?.setItem("navbar-width", width.toString());
         }
     };
 
