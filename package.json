@@ -13,27 +13,22 @@
         "@auth0/nextjs-auth0": "^3.1.0",
         "framer-motion": "^10.16.4",
         "mongoose": "^7.5.4",
-        "next": "latest",
-        "overlayscrollbars-react": "^0.5.3",
-        "react": "latest",
-        "react-datepicker": "^4.20.0",
-        "react-dom": "latest",
-        "react-modal": "^3.16.1",
+        "next": "^13.5.4",
+        "react": "^18.2.0",
+        "react-dom": "^18.2.0",
         "zustand": "^4.4.1"
     },
     "devDependencies": {
-        "@types/node": "latest",
-        "@types/react": "latest",
-        "@types/react-datepicker": "^4.15.1",
-        "@types/react-dom": "latest",
-        "@types/react-modal": "^3.16.2",
-        "autoprefixer": "latest",
+        "@types/node": "^20.8.2",
+        "@types/react": "^18.2.25",
+        "@types/react-dom": "^18.2.10",
+        "autoprefixer": "^10.4.16",
         "eslint": "^8.50.0",
-        "eslint-config-next": "latest",
-        "postcss": "latest",
+        "eslint-config-next": "^13.5.4",
+        "postcss": "^8.4.31",
         "prettier": "^3.0.3",
         "sass": "^1.69.2",
-        "tailwindcss": "latest",
-        "typescript": "latest"
+        "tailwindcss": "^3.3.3",
+        "typescript": "^5.2.2"
     }
 }
