@@ -22,17 +22,6 @@ export const isURL = (urlToCheck: string) => {
     }
 };
 
-export const mapMonths = (locale = global.navigator?.language) => {
-    const intl = new Intl.DateTimeFormat(locale, { month: "long" });
-    const date = new Date();
-
-    return [...new Array(12)].map((_, i) => {
-        date.setMonth(i);
-
-        return intl.format(date);
-    });
-};
-
 export const mapMonthDays = (
     date = new Date(),
     skip?: { prev?: boolean; next?: boolean; current?: boolean },

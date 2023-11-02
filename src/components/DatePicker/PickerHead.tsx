@@ -146,7 +146,7 @@ const PickerHead: React.FC<PickerHeadProps> = ({ onDateChange, maxDate, minDate,
                     className={"w-full h-[38px] text-center text-lg number-input-arrows-hidden".concat(
                         " border border-transparent transition-[background-color,border-color] rounded",
                         " hover:bg-neutral-500 focus:valid:border-white focus:bg-neutral-800 invalid:border-red-700",
-                        isToday(displayedDate, "year") ? todayStyle : "",
+                        isToday(displayedDate, "year") ? " outline outline-2 outline-slate-500 -outline-offset-2" : "",
                         compareDates(displayedDate, currentDate, "year") ? selectedDateStyle : " bg-transparent"
                     )}
                 />

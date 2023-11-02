@@ -5,6 +5,7 @@ import NavPanel from "@/components/NavPanel";
 import Providers from "@/components/Providers";
 import LayoutResizeButton from "@/components/LayoutResizeButton";
 import BodyResizeObserver from "@/components/BodyResizeObserver";
+import { i18n } from "@/i18n";
 
 import "./globals.scss";
 
@@ -12,10 +13,21 @@ export const metadata: Metadata = {
     title: "Task Manager"
 };
 
-export default function RootLayout({ children }: { children: React.ReactNode }) {
+export async function generateStaticParams() {
+    return i18n.locales.map((locale) => ({ lang: locale }));
+}
+
+interface RootLayoutProps {
+    children: React.ReactNode;
+    params: {
+        lang: I18NLocale;
+    }
+}
+
+export default function RootLayout({ children, params: { lang } }: RootLayoutProps) {
     return (
         <Providers>
-            <html lang="en">
+            <html lang={lang}>
                 <body>
                     <div
                         className={"grid h-screen overflow-hidden bg-[rgb(40,40,40)] text-white".concat(

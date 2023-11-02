@@ -34,7 +34,7 @@ const MonthList: React.FC<MonthListProps> = ({ onChange }) => {
                         compareDates(new Date(displayedDate.getFullYear(), i), currentDate, "month")
                             ? selectedDateStyle
                             : "",
-                        isToday(new Date(currentDate.getFullYear(), i), "month") ? todayStyle : ""
+                        isToday(new Date(displayedDate.getFullYear(), i), "month") ? todayStyle : ""
                     )}
                 >
                     {month}

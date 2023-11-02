@@ -67,8 +67,9 @@ const DayList: React.FC<DayListProps> = ({ onDayClick }) => {
                         date={day}
                         month={prevMonth}
                         year={prevMonthYear}
-                        key={day}
+                        key={`${prevMonth}${day}`}
                         isSelected={compareDates(new Date(prevMonthYear, prevMonth, day), currentDate, "day")}
+                        isToday={isToday(new Date(prevMonthYear, prevMonth, day), "day")}
                         variant="half-transparent"
                     />
                 ))}
@@ -78,7 +79,7 @@ const DayList: React.FC<DayListProps> = ({ onDayClick }) => {
                         month={currentMonth}
                         year={currentMonthYear}
                         date={day}
-                        key={day}
+                        key={`${currentMonth}${day}`}
                         isSelected={compareDates(new Date(currentMonthYear, currentMonth, day), currentDate, "day")}
                         isToday={isToday(new Date(currentMonthYear, currentMonth, day), "day")}
                     />
@@ -89,8 +90,9 @@ const DayList: React.FC<DayListProps> = ({ onDayClick }) => {
                         month={nextMonth}
                         year={nextMonthYear}
                         date={day}
-                        key={day}
+                        key={`${nextMonth}${day}`}
                         isSelected={compareDates(new Date(nextMonthYear, nextMonth, day), currentDate, "day")}
+                        isToday={isToday(new Date(nextMonthYear, nextMonth, day), "day")}
                         variant="half-transparent"
                     />
                 ))}

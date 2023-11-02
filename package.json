@@ -11,14 +11,17 @@
     },
     "dependencies": {
         "@auth0/nextjs-auth0": "^3.1.0",
+        "@formatjs/intl-localematcher": "^0.4.2",
         "framer-motion": "^10.16.4",
         "mongoose": "^7.5.4",
+        "negotiator": "^0.6.3",
         "next": "^13.5.4",
         "react": "^18.2.0",
         "react-dom": "^18.2.0",
         "zustand": "^4.4.1"
     },
     "devDependencies": {
+        "@types/negotiator": "^0.6.2",
         "@types/node": "^20.8.2",
         "@types/react": "^18.2.25",
         "@types/react-dom": "^18.2.10",

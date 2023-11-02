@@ -9,3 +9,5 @@ type TransformFunction<ArgType = any, ReturnType = void> = (
 ) => ReturnType;
 
 type DocumentEventHandler<E extends keyof DocumentEventMap = "DOMContentLoaded"> = (e: DocumentEventMap[E]) => void;
+
+type I18NLocale = typeof import("../i18n")["i18n"]["locales"][number];

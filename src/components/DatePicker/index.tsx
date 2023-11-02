@@ -14,15 +14,16 @@ type DatePickerProps = {
     currentDate?: Date;
     fromDate?: Date;
     toDate?: Date;
+    lang: I18NLocale;
     hideViews?:
-        | {
-              day?: false;
-              month?: true;
-          }
-        | {
-              day?: true;
-              month?: false;
-          };
+    | {
+        day?: false;
+        month?: true;
+    }
+    | {
+        day?: true;
+        month?: false;
+    };
 };
 
 const DatePicker: React.FC<DatePickerProps> = ({
@@ -30,11 +31,12 @@ const DatePicker: React.FC<DatePickerProps> = ({
     toDate = new Date(3187209600000),
     currentDate = new Date(),
     onSelect,
-    hideViews
+    hideViews,
+    lang
 }) => {
     const { setView, view, opened, setOpened, setCurrentDate, displayedDate, setDisplayedDate } = useDatePickerStore();
 
-    const [intl] = useState(new Intl.DateTimeFormat(undefined, { year: "numeric", month: "long" }));
+    const [intl] = useState(new Intl.DateTimeFormat(lang, { year: "numeric", month: "long" }));
 
     const datePickerRef = useRef<HTMLDivElement | null>(null);
 
