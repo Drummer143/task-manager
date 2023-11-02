@@ -5,7 +5,7 @@ import { AnimatePresence, motion } from "framer-motion";
 
 import NavPanelLink from "./NavPanelLink";
 import { Screens } from "@/shared";
-import { useOuterClick } from "@/hooks";
+import { useLocalStorage, useOuterClick } from "@/hooks";
 import { useLayoutStore } from "@/store";
 import { CalendarNavSVG, FriendsNavSVG } from "@/SVGs";
 
@@ -15,6 +15,8 @@ const NavPanel: React.FC = () => {
     const navRef = useRef<HTMLElement | null>(null);
 
     const [isMobile, setIsMobile] = useState(false);
+
+    const { value } = useLocalStorage("navbar-width", 200);
 
     useOuterClick({
         handler: e => {
@@ -47,7 +49,7 @@ const NavPanel: React.FC = () => {
                     style={{
                         width: isMobile
                             ? "100%"
-                            : `var(--navbar-width, ${global.localStorage?.getItem("navbar-width") || 200}px)`
+                            : `var(--navbar-width, ${value}px)`
                     }}
                     className={"flex-shrink-0 h-full min-w-[var(--navbar-min-width)] flex flex-col gap-1".concat(
                         " p-2 overflow-hidden bg-[rgb(36,36,36)]",

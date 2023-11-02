@@ -1,4 +1,4 @@
-import { RefObject, useCallback, useEffect, useRef } from "react";
+import { RefObject, useEffect, useRef } from "react";
 
 interface UseOuterClickProps {
     handler: DocumentEventHandler<"pointerdown">;

@@ -2,7 +2,11 @@
 
 import React, { memo } from "react";
 
+import { useLocalStorage } from "@/hooks";
+
 const LayoutResizeButton: React.FC = () => {
+    const { setValue } = useLocalStorage("navbar-width", 200);
+
     const handleResize = (e: MouseEvent) => {
         document.body.style.setProperty("--navbar-width", e.clientX + "px");
     };
@@ -16,7 +20,7 @@ const LayoutResizeButton: React.FC = () => {
         const width = parseInt(document.body.style.getPropertyValue("--navbar-width"));
 
         if (width) {
-            global.localStorage?.setItem("navbar-width", width.toString());
+            setValue(width);
         }
     };
 
