@@ -5,7 +5,7 @@ import NavPanel from "@/components/NavPanel";
 import Providers from "@/components/Providers";
 import LayoutResizeButton from "@/components/LayoutResizeButton";
 import BodyResizeObserver from "@/components/BodyResizeObserver";
-import { i18n } from "@/i18n";
+import { settings, useTranslation } from "@/i18n";
 
 import "./globals.scss";
 
@@ -14,7 +14,7 @@ export const metadata: Metadata = {
 };
 
 export async function generateStaticParams() {
-    return i18n.locales.map((locale) => ({ lang: locale }));
+    return settings.locales.map((locale) => ({ lang: locale }));
 }
 
 interface RootLayoutProps {
