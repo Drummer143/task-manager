@@ -8,13 +8,15 @@ const initI18next = async (lng: I18NLocale, ns: string) => {
 
     await i18nInstance
         .use(initReactI18next)
-        .use(resourcesToBackend((language: string) => import(`./locales/${language}.json`)))
+        .use(resourcesToBackend(
+            (language: string, namespace: string) => import(`./locales/${language}/${namespace}.json`)
+        ))
         .init(getOptions(lng, ns));
 
     return i18nInstance;
 };
 
-export const useTranslation = async (lng: I18NLocale, ns = "translation", keyPrefix?: string ) => {
+export const useServerTranslation = async (lng: I18NLocale, ns: string, keyPrefix?: string) => {
     const i18nextInstance = await initI18next(lng, ns);
 
     return {

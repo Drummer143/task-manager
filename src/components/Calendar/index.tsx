@@ -11,14 +11,14 @@ interface CalendarProps {
     }
 }
 
-const Calendar: React.FC<CalendarProps> = (props) => {
+const Calendar: React.FC<CalendarProps> = ({ params: { lang } }) => {
     const [currentDate, setCurrentDate] = useState(new Date());
 
     return (
         <>
             <DatePicker
                 /* hideViews={{ day: true }} */
-                lang="en"
+                lang={lang}
                 currentDate={currentDate}
                 onSelect={setCurrentDate}
             />

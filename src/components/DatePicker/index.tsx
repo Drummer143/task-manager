@@ -128,7 +128,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
                     opened ? "" : " rounded-b-lg"
                 )}
             >
-                <p className="font-semibold text-lg">{intl.format(currentDate)}</p>
+                <p className="font-semibold text-lg capitalize">{intl.format(currentDate)}</p>
 
                 <ExpandMonthPickerSVG
                     stroke="#fff"

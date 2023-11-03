@@ -5,7 +5,7 @@ import NavPanel from "@/components/NavPanel";
 import Providers from "@/components/Providers";
 import LayoutResizeButton from "@/components/LayoutResizeButton";
 import BodyResizeObserver from "@/components/BodyResizeObserver";
-import { settings, useTranslation } from "@/i18n";
+import { settings } from "@/i18n";
 
 import "./globals.scss";
 
@@ -39,7 +39,7 @@ export default function RootLayout({ children, params: { lang } }: RootLayoutPro
                         <BodyResizeObserver />
 
                         <div className="flex relative overflow-auto">
-                            <NavPanel />
+                            <NavPanel lang={lang} />
 
                             <LayoutResizeButton />
 

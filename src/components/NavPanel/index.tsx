@@ -5,11 +5,16 @@ import { AnimatePresence, motion } from "framer-motion";
 
 import NavPanelLink from "./NavPanelLink";
 import { Screens } from "@/shared";
-import { useLocalStorage, useOuterClick } from "@/hooks";
 import { useLayoutStore } from "@/store";
+import { useClientTranslation } from "@/i18n";
 import { CalendarNavSVG, FriendsNavSVG } from "@/SVGs";
+import { useLocalStorage, useOuterClick } from "@/hooks";
 
-const NavPanel: React.FC = () => {
+interface NavPanelProps {
+    lang: I18NLocale;
+}
+
+const NavPanel: React.FC<NavPanelProps> = ({ lang }) => {
     const { isOpened, setIsOpened, screen } = useLayoutStore();
 
     const navRef = useRef<HTMLElement | null>(null);
@@ -17,6 +22,8 @@ const NavPanel: React.FC = () => {
     const [isMobile, setIsMobile] = useState(false);
 
     const { value } = useLocalStorage("navbar-width", 200);
+
+    const { t } = useClientTranslation(lang, "navbar");
 
     useOuterClick({
         handler: e => {
@@ -59,10 +66,10 @@ const NavPanel: React.FC = () => {
                     )}
                 >
                     <NavPanelLink icon={<CalendarNavSVG width={30} height={30} />} href="/">
-                        Calendar
+                        {t("calendar")}
                     </NavPanelLink>
                     <NavPanelLink icon={<FriendsNavSVG width={30} height={30} />} href="/friends">
-                        Friends
+                        {t("friends")}
                     </NavPanelLink>
                 </motion.nav>
             )}

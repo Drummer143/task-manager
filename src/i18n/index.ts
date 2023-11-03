@@ -1,2 +1,3 @@
 export { settings } from "./settings";
-export * from "./useTranslation";
+export * from "./useServerTranslation";
+export * from "./useClientTranslation";

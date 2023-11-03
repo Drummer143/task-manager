@@ -1,6 +1,7 @@
 export const settings = {
     defaultLocale: "en",
-    locales: ["en", "ru"]
+    locales: ["en", "ru"],
+    cookieName: "app_lng"
 } as const;
 
 const defaultNS = "translation";
