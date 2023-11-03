@@ -1,18 +1,15 @@
-/* eslint-disable no-console */
-/* eslint-disable max-len */
-
 import React, { useMemo } from "react";
 
-import Day from "./Day";
+import MapDays from "./MapDays";
 import { useDatePickerStore } from "@/store";
-import { compareDates, isToday, mapMonthDays, weekdayOrder } from "@/shared";
+import { mapMonthDays, weekdayOrder } from "@/shared";
 
 type DayListProps = {
     onDayClick: (date: Date) => void;
 };
 
 const DayList: React.FC<DayListProps> = ({ onDayClick }) => {
-    const { currentDate, displayedDate } = useDatePickerStore();
+    const displayedDate = useDatePickerStore(state => state.displayedDate);
 
     const { current, previous, next } = useMemo(() => mapMonthDays(displayedDate), [displayedDate]);
     const { nextMonth, nextMonthYear, prevMonth, prevMonthYear, currentMonth, currentMonthYear } = useMemo(() => {
@@ -62,40 +59,9 @@ const DayList: React.FC<DayListProps> = ({ onDayClick }) => {
             </div>
 
             <div className="grid gap-1 grid-cols-7" onClick={handleDayClick}>
-                {previous.map(day => (
-                    <Day
-                        date={day}
-                        month={prevMonth}
-                        year={prevMonthYear}
-                        key={`${prevMonth}${day}`}
-                        isSelected={compareDates(new Date(prevMonthYear, prevMonth, day), currentDate, "day")}
-                        isToday={isToday(new Date(prevMonthYear, prevMonth, day), "day")}
-                        variant="half-transparent"
-                    />
-                ))}
-
-                {current.map(day => (
-                    <Day
-                        month={currentMonth}
-                        year={currentMonthYear}
-                        date={day}
-                        key={`${currentMonth}${day}`}
-                        isSelected={compareDates(new Date(currentMonthYear, currentMonth, day), currentDate, "day")}
-                        isToday={isToday(new Date(currentMonthYear, currentMonth, day), "day")}
-                    />
-                ))}
-
-                {next.map(day => (
-                    <Day
-                        month={nextMonth}
-                        year={nextMonthYear}
-                        date={day}
-                        key={`${nextMonth}${day}`}
-                        isSelected={compareDates(new Date(nextMonthYear, nextMonth, day), currentDate, "day")}
-                        isToday={isToday(new Date(nextMonthYear, nextMonth, day), "day")}
-                        variant="half-transparent"
-                    />
-                ))}
+                <MapDays days={previous} month={prevMonth} year={prevMonthYear} dayVariant="half-transparent" />
+                <MapDays days={current} month={currentMonth} year={currentMonthYear} />
+                <MapDays days={next} month={nextMonth} year={nextMonthYear} dayVariant="half-transparent" />
             </div>
         </div>
     );
