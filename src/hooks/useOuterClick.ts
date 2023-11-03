@@ -26,10 +26,12 @@ export const useOuterClick = ({ handler, ref, active = false }: UseOuterClickPro
 
             if (!isOuterClick) {
                 handlerRef.current(e);
+
+                document.removeEventListener("pointerdown", handler);
             }
         };
 
-        document.addEventListener("pointerdown", handler, { once: true });
+        document.addEventListener("pointerdown", handler);
 
         return () => {
             document.removeEventListener("pointerdown", handler);
