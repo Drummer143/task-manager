@@ -5,12 +5,18 @@ import { useDatePickerStore } from "@/store";
 
 interface OpenPickerButtonProps {
     lang: I18NLocale;
+
+    hideDayPicker?: boolean
 }
 
-const OpenPickerButton: React.FC<OpenPickerButtonProps> = ({ lang }) => {
+const OpenPickerButton: React.FC<OpenPickerButtonProps> = ({ lang, hideDayPicker }) => {
     const { currentDate, opened, setOpened } = useDatePickerStore();
 
-    const [intl] = useState(new Intl.DateTimeFormat(lang, { year: "numeric", month: "long" }));
+    const [intl] = useState(new Intl.DateTimeFormat(lang, {
+        year: "numeric",
+        month: "long",
+        day: hideDayPicker ? undefined : "numeric"
+    }));
 
     const handleToggleButtonClick = () => setOpened(prev => !prev);
 

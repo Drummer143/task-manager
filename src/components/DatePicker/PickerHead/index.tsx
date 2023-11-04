@@ -11,18 +11,10 @@ type PickerHeadProps = {
     minDate: Date;
     maxDate: Date;
 
-    hideViews?:
-    | {
-        day?: false;
-        month?: true;
-    }
-    | {
-        day?: true;
-        month?: false;
-    };
+    hideDayPicker?: boolean
 };
 
-const PickerHead: React.FC<PickerHeadProps> = ({ maxDate, minDate, hideViews }) => {
+const PickerHead: React.FC<PickerHeadProps> = ({ maxDate, minDate, hideDayPicker }) => {
     const { view, displayedDate, setDisplayedDate } = useDatePickerStore();
 
     const setNextYear = () => {
@@ -76,9 +68,9 @@ const PickerHead: React.FC<PickerHeadProps> = ({ maxDate, minDate, hideViews }) 
 
             <div
                 tabIndex={-1}
-                className={`w-full ${hideViews?.day ? "" : " grid gap-1 grid-cols-[min-content,1fr]"}`}
+                className={`w-full ${hideDayPicker ? "" : " grid gap-1 grid-cols-[min-content,1fr]"}`}
             >
-                {!hideViews?.day && <MonthSwitchButton />}
+                {!hideDayPicker && <MonthSwitchButton />}
 
                 <YearInput maxDate={maxDate} minDate={minDate} />
             </div>

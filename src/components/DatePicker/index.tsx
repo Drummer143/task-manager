@@ -15,15 +15,7 @@ type DatePickerProps = {
     fromDate?: Date;
     toDate?: Date;
     lang: I18NLocale;
-    hideViews?:
-    | {
-        day?: false;
-        month?: true;
-    }
-    | {
-        day?: true;
-        month?: false;
-    };
+    hideDayPicker?: boolean;
 };
 
 const DatePicker: React.FC<DatePickerProps> = ({
@@ -31,7 +23,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
     toDate = new Date(3187209600000),
     currentDate = new Date(),
     onSelect,
-    hideViews,
+    hideDayPicker,
     lang
 }) => {
     const { setView, view, opened, setOpened, setCurrentDate, displayedDate, setDisplayedDate } = useDatePickerStore();
@@ -39,7 +31,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
     const datePickerRef = useRef<HTMLDivElement | null>(null);
 
     const handleMonthChange = (monthNumber: number) => {
-        if (hideViews?.day) {
+        if (hideDayPicker) {
             setOpened(false);
         } else {
             setView("day");
@@ -69,7 +61,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
         ref: datePickerRef
     });
 
-    useEffect(() => setView(hideViews?.day ? "month" : "day"), [hideViews?.day, setView]);
+    useEffect(() => setView(hideDayPicker ? "month" : "day"), [hideDayPicker, setView]);
 
     useEffect(() => setCurrentDate(currentDate), [currentDate, setCurrentDate]);
 
@@ -77,7 +69,7 @@ const DatePicker: React.FC<DatePickerProps> = ({
         if (opened) {
             setDisplayedDate(currentDate);
 
-            if (!hideViews?.day) {
+            if (!hideDayPicker) {
                 setView("day");
             }
         } else {
@@ -102,25 +94,25 @@ const DatePicker: React.FC<DatePickerProps> = ({
                         <PickerHead
                             maxDate={toDate}
                             minDate={fromDate}
-                            hideViews={hideViews}
+                            hideDayPicker={hideDayPicker}
                         />
 
                         <div className="w-full h-max overflow-hidden mt-4">
                             <div
                                 className={"h-max flex transition-transform".concat(
-                                    view === "month" && !hideViews?.day ? " -translate-x-full" : ""
+                                    view === "month" && !hideDayPicker ? " -translate-x-full" : ""
                                 )}
                             >
-                                {!hideViews?.day && <DayList onDayClick={handleSelectDate} />}
+                                {!hideDayPicker && <DayList onDayClick={handleSelectDate} />}
 
-                                {!hideViews?.month && <MonthList onChange={handleMonthChange} />}
+                                <MonthList onChange={handleMonthChange} />
                             </div>
                         </div>
                     </motion.div>
                 )}
             </AnimatePresence>
 
-            <OpenPickerButton lang={lang} />
+            <OpenPickerButton hideDayPicker={hideDayPicker} lang={lang} />
         </motion.div>
     );
 };
