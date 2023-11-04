@@ -17,7 +17,7 @@ const Calendar: React.FC<CalendarProps> = ({ params: { lang } }) => {
     return (
         <>
             <DatePicker
-                /* hideViews={{ day: true }} */
+                hideViews={{ day: true }}
                 lang={lang}
                 currentDate={currentDate}
                 onSelect={setCurrentDate}

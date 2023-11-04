@@ -1,15 +1,38 @@
 {
-    "extends": "next/core-web-vitals",
+    "env": {
+        "browser": true,
+        "es2021": true
+    },
+    "extends": [
+        "next/core-web-vitals",
+        "plugin:@typescript-eslint/recommended"
+    ],
+    "overrides": [],
+    "parser": "@typescript-eslint/parser",
+    "parserOptions": {
+        "ecmaVersion": "latest",
+        "sourceType": "module"
+    },
+    "plugins": [
+        "@typescript-eslint"
+    ],
     "rules": {
         "react/react-in-jsx-scope": "off",
         "linebreak-style": "off",
         "no-console": [
             "warn",
             {
-                "allow": ["warn", "error", "info"]
+                "allow": [
+                    "warn",
+                    "error",
+                    "info"
+                ]
             }
         ],
-        "comma-dangle": ["warn", "never"],
+        "comma-dangle": [
+            "warn",
+            "never"
+        ],
         "camelcase": "error",
         "eqeqeq": "error",
         "max-len": [
@@ -44,6 +67,9 @@
                 "omitLastInOneLineBlock": true
             }
         ],
-        "quotes": ["warn", "double"]
+        "quotes": [
+            "warn",
+            "double"
+        ]
     }
 }

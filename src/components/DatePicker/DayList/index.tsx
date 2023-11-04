@@ -39,11 +39,7 @@ const DayList: React.FC<DayListProps> = ({ onDayClick }) => {
         const day = +target.dataset.day!;
         const month = +target.dataset.month!;
         const year = +target.dataset.year!;
-        const date = new Date(displayedDate);
-
-        date.setDate(day);
-        date.setMonth(month);
-        date.setFullYear(year);
+        const date = new Date(year, month, day);
 
         onDayClick(date);
     };

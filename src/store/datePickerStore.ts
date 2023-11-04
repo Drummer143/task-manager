@@ -1,4 +1,5 @@
-import { create } from "zustand";
+import { shallow } from "zustand/shallow";
+import { createWithEqualityFn } from "zustand/traditional";
 
 export interface DatePickerState {
     view: "month" | "day";
@@ -12,7 +13,7 @@ export interface DatePickerState {
     setDisplayedDate: TransformFunction<Date>;
 }
 
-export const useDatePickerStore = create<DatePickerState>(set => ({
+export const useDatePickerStore = createWithEqualityFn<DatePickerState>(set => ({
     view: "day",
     opened: false,
     displayedDate: new Date(),
@@ -30,11 +31,11 @@ export const useDatePickerStore = create<DatePickerState>(set => ({
 
     setCurrentDate: date =>
         set(prev => ({
-            currentDate: typeof date === "function" ? date(prev.currentDate) : date
+            currentDate: new Date(typeof date === "function" ? date(prev.currentDate) : date)
         })),
 
     setDisplayedDate: date =>
         set(prev => ({
-            displayedDate: typeof date === "function" ? date(prev.displayedDate) : date
+            displayedDate: new Date(typeof date === "function" ? date(prev.displayedDate) : date)
         }))
-}));
+}), shallow);
