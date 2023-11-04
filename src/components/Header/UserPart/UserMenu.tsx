@@ -57,7 +57,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ user }) => {
                 )}
             >
                 <UserMenuLink href="/profile">Profile</UserMenuLink>
-                <UserMenuLink href="/api/auth/logout">Log Out</UserMenuLink>
+                <UserMenuLink href="/api/auth/logout" prefetch={false}>Log Out</UserMenuLink>
             </div>
         </div>
     );

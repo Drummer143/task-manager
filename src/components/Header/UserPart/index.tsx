@@ -14,7 +14,7 @@ const UserPart: React.FC = () => {
     }
 
     if (!user) {
-        return <Link href="/api/auth/login">Login</Link>;
+        return <Link href="/api/auth/login" prefetch={false}>Login</Link>;
     }
 
     return <UserMenu user={user} />;
