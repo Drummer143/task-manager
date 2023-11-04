@@ -13,7 +13,7 @@ export interface LayoutStoreState {
 }
 
 export const useLayoutStore = createWithEqualityFn<LayoutStoreState>()(
-    devtools((set, get) => ({
+    devtools((set) => ({
         isOpened: true,
         screen: Screens["2xl"],
 

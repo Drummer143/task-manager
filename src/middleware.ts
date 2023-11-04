@@ -10,11 +10,12 @@ function getLocale(request: NextRequest): string | undefined {
 
     request.headers.forEach((value, key) => (negotiatorHeaders[key] = value));
 
+    // eslint-disable-next-line @typescript-eslint/ban-ts-comment
     // @ts-ignore locales are readonly
     const locales: string[] = settings.locales;
 
     // Use negotiator and intl-localematcher to get best locale
-    let languages = new Negotiator({ headers: negotiatorHeaders }).languages(
+    const languages = new Negotiator({ headers: negotiatorHeaders }).languages(
         locales
     );
 

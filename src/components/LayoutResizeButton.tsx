@@ -24,7 +24,7 @@ const LayoutResizeButton: React.FC = () => {
         }
     };
 
-    const handleResizeButtonClick: React.MouseEventHandler = e => {
+    const handleResizeButtonClick: React.MouseEventHandler = () => {
         document.documentElement.style.cursor = "w-resize";
         document.body.style.pointerEvents = "none";
 

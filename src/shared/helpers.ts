@@ -24,8 +24,7 @@ export const isURL = (urlToCheck: string) => {
 
 export const mapMonthDays = (
     date = new Date(),
-    skip?: { prev?: boolean; next?: boolean; current?: boolean },
-    locale = global.navigator?.language
+    skip?: { prev?: boolean; next?: boolean; current?: boolean }
 ) => {
     const firstDayOfMonth = new Date(date.getFullYear(), date.getMonth(), 1);
     const lastDayOfMonth = new Date(date.getFullYear(), date.getMonth() + 1, 0);

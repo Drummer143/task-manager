@@ -1,10 +1,12 @@
 import { useCallback, useEffect, useState } from "react";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 interface UseLocalStorageReturnValue<T = any> {
     value: T,
     setValue: TransformFunction<T>;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export const useLocalStorage = <T = any>(key: string, defaultValue: T): UseLocalStorageReturnValue<T> => {
     const [value, setValue] = useState<T>(defaultValue);
 
