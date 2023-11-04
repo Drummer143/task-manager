@@ -16,27 +16,29 @@ const YearInput: React.FC<YearInputProps> = ({ maxDate, minDate }) => {
     const handleInputValueChange: React.ChangeEventHandler<HTMLInputElement> = e => {
         const value = +e.target.value;
 
-        setRealInputValue(value);
-
-        if (isNaN(value) || minDate.getFullYear() > value || maxDate.getFullYear() < value) {
-            return;
+        if (!isNaN(value)) {
+            setRealInputValue(value);
         }
     };
 
     const handleInputBlur: React.FocusEventHandler<HTMLInputElement> = () => {
+        let year: number = realInputValue;
+
         if (realInputValue > maxDate.getFullYear()) {
             setRealInputValue(maxDate.getFullYear());
-            setDisplayedDate(prev => new Date(prev.setFullYear(maxDate.getFullYear())));
+
+            year = maxDate.getFullYear();
         } else if (realInputValue < minDate.getFullYear()) {
             setRealInputValue(minDate.getFullYear());
-            setDisplayedDate(prev => new Date(prev.setFullYear(minDate.getFullYear())));
-        } else {
-            setDisplayedDate(prev => new Date(prev.setFullYear(realInputValue)));
+
+            year = minDate.getFullYear();
         }
+
+        setDisplayedDate(prev => prev.getFullYear() === realInputValue ? prev : new Date(prev.setFullYear(year)));
     };
 
     const handleInputEscapeKeyDown: React.KeyboardEventHandler<HTMLInputElement> = e => {
-        if (e.code !== "Escape") {
+        if (e.code !== "Escape" && e.code !== "Enter") {
             return;
         }
 

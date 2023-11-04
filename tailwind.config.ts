@@ -1,5 +1,4 @@
 import type { Config } from "tailwindcss";
-import type plugin from "tailwindcss/plugin";
 
 const config: Config = {
     content: [

@@ -31,13 +31,13 @@ const DatePicker: React.FC<DatePickerProps> = ({
     const datePickerRef = useRef<HTMLDivElement | null>(null);
 
     const handleMonthChange = (monthNumber: number) => {
+        setDisplayedDate(prev => new Date(prev.setMonth(monthNumber)));
+
         if (hideDayPicker) {
             setOpened(false);
         } else {
             setView("day");
         }
-
-        setDisplayedDate(prev => new Date(prev.setMonth(monthNumber)));
     };
 
     const handleSelectDate = (date: Date) => {
@@ -67,13 +67,22 @@ const DatePicker: React.FC<DatePickerProps> = ({
 
     useEffect(() => {
         if (opened) {
-            setDisplayedDate(currentDate);
+            if (displayedDate.getTime() !== currentDate.getTime()) {
+                setDisplayedDate(currentDate);
+            }
 
             if (!hideDayPicker) {
                 setView("day");
             }
         } else {
-            onSelect(displayedDate);
+            setDisplayedDate(prev => {
+                if (prev.getTime() !== currentDate.getTime()) {
+                    setCurrentDate(displayedDate);
+                    onSelect(displayedDate);
+                }
+
+                return currentDate;
+            });
         }
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [opened]);
@@ -89,7 +98,10 @@ const DatePicker: React.FC<DatePickerProps> = ({
                         onKeyDown={handleEscapeKeyDown}
                         tabIndex={-1}
                         ref={ref => ref?.focus()}
-                        className="absolute p-1 top-full rounded-b rounded-tr overflow-hidden bg-[rgb(32,32,32)]"
+                        className={"absolute p-1 top-full rounded-b rounded-tr overflow-hidden".concat(
+                            " bg-[rgb(32,32,32)] transition-shadow duration-75",
+                            opened ? " shadow-[0_0_5px_5px_#0002]" : ""
+                        )}
                     >
                         <PickerHead
                             maxDate={toDate}

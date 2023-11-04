@@ -4,7 +4,7 @@ import React, { useEffect, useState } from "react";
 
 import DatePicker from "../DatePicker";
 import CalendarSlice from "./CalendarSlice";
-import { useSearchParams } from "next/navigation";
+import { useSearchParams, useRouter } from "next/navigation";
 
 interface CalendarProps {
     params: {
@@ -17,6 +17,13 @@ const Calendar: React.FC<CalendarProps> = ({ params: { lang } }) => {
     const [{ minDate, maxDate }] = useState({ minDate: new Date(0), maxDate: new Date(3187209600000) });
 
     const searchParams = useSearchParams();
+    const { replace } = useRouter();
+
+    const handleCurrentDateChange = (date: Date) => {
+        setCurrentDate(date);
+
+        replace(location.origin + location.pathname + `?year=${date.getFullYear()}&month=${date.getMonth() + 1}`);
+    };
 
     useEffect(() => {
         if (!searchParams) {
@@ -58,7 +65,7 @@ const Calendar: React.FC<CalendarProps> = ({ params: { lang } }) => {
         if (currentDate.getTime() !== updatedCurrentDate.getTime()) {
             setCurrentDate(updatedCurrentDate);
         }
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
 
     return (
@@ -67,7 +74,7 @@ const Calendar: React.FC<CalendarProps> = ({ params: { lang } }) => {
                 hideDayPicker
                 lang={lang}
                 currentDate={currentDate}
-                onSelect={setCurrentDate}
+                onSelect={handleCurrentDateChange}
                 fromDate={minDate}
                 toDate={maxDate}
             />

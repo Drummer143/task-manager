@@ -23,10 +23,10 @@ const OpenPickerButton: React.FC<OpenPickerButtonProps> = ({ lang, hideDayPicker
     return (
         <button
             onClick={handleToggleButtonClick}
-            className={"px-2 py-1 flex items-center justify-center gap-2 bg-[rgb(32,32,32)]".concat(
-                " transition-[border-radius,background-color] rounded-t-lg",
+            className={"px-2 py-1 relative z-[1] flex items-center justify-center gap-2 bg-[rgb(32,32,32)]".concat(
+                " transition-[border-radius,background-color,box-shadow] rounded-t-lg",
                 " hover:bg-neutral-700 active:bg-neutral-900",
-                opened ? "" : " rounded-b-lg"
+                opened ? " shadow-[5px_-5px_5px_#0002,-5px_-5px_5px_#0002]" : " rounded-b-lg"
             )}
         >
             <p className="font-semibold text-lg capitalize">{intl.format(currentDate)}</p>

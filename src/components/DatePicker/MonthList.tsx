@@ -20,7 +20,7 @@ const MonthList: React.FC<MonthListProps> = ({ onChange }) => {
                         type="button"
                         key={month}
                         onClick={onChange ? () => onChange(i) : undefined}
-                        className={"capitalize grid place-items-center h-10 rounded text-[15px]".concat(
+                        className={"capitalize grid place-items-center h-10 rounded text-[15px] transition-bg".concat(
                             " hover:bg-neutral-500 active:bg-neutral-600",
                             compareDates(date, currentDate, "month") ? selectedDateStyle : "",
                             isToday(date, "month") ? todayStyle : ""

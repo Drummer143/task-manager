@@ -17,7 +17,7 @@ type PickerHeadProps = {
 const PickerHead: React.FC<PickerHeadProps> = ({ maxDate, minDate, hideDayPicker }) => {
     const { view, displayedDate, setDisplayedDate } = useDatePickerStore();
 
-    const setNextYear = () => {
+    const setNextDate = () => {
         if (displayedDate.getFullYear() > maxDate.getFullYear()) {
             return;
         }
@@ -35,7 +35,7 @@ const PickerHead: React.FC<PickerHeadProps> = ({ maxDate, minDate, hideDayPicker
         });
     };
 
-    const setPrevYear = () => {
+    const setPrevDate = () => {
         if (displayedDate.getFullYear() < minDate.getFullYear()) {
             return;
         }
@@ -57,7 +57,7 @@ const PickerHead: React.FC<PickerHeadProps> = ({ maxDate, minDate, hideDayPicker
         <div className="flex pt-1 gap-1 justify-between items-stretch">
             <button
                 type="button"
-                onClick={setPrevYear}
+                onClick={setPrevDate}
                 disabled={displayedDate.getTime() <= minDate.getTime()}
                 className={"transition-bg p-1 min-w-[38px] rounded grid place-items-center".concat(
                     " hover:bg-neutral-500 active:bg-neutral-600 disabled:pointer-events-none disabled:opacity-50"
@@ -83,7 +83,7 @@ const PickerHead: React.FC<PickerHeadProps> = ({ maxDate, minDate, hideDayPicker
                         : displayedDate.getFullYear() >= maxDate.getFullYear() &&
                         displayedDate.getMonth() >= maxDate.getMonth()
                 }
-                onClick={setNextYear}
+                onClick={setNextDate}
                 className={"transition-bg p-1 min-w-[38px] rounded grid place-items-center".concat(
                     " hover:bg-neutral-500 active:bg-neutral-600 disabled:pointer-events-none disabled:opacity-50"
                 )}
