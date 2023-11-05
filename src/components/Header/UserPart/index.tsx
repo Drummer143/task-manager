@@ -1,13 +1,17 @@
 "use client";
 
 import Link from "next/link";
-import React from "react";
+import React, { useEffect } from "react";
 import { useUser } from "@auth0/nextjs-auth0/client";
 
 import UserMenu from "./UserMenu";
 
 const UserPart: React.FC = () => {
-    const { isLoading, user } = useUser();
+    const { isLoading, user, checkSession } = useUser();
+
+    useEffect(() => {
+        checkSession();
+    }, []);
 
     if (isLoading) {
         return <p>Loading</p>;

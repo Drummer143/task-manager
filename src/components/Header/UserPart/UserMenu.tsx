@@ -13,7 +13,7 @@ type UserMenuProps = {
 const UserMenu: React.FC<UserMenuProps> = ({ user }) => {
     const [isMenuOpened, setIsMenuOpened] = useState(false);
 
-    const menuRef = useRef<HTMLButtonElement | null>(null);
+    const menuRef = useRef<HTMLDivElement | null>(null);
 
     useOuterClick({
         ref: menuRef,
@@ -24,9 +24,8 @@ const UserMenu: React.FC<UserMenuProps> = ({ user }) => {
     const handleUserButtonClick = () => setIsMenuOpened(prev => !prev);
 
     return (
-        <div className="relative z-50">
+        <div ref={menuRef} className="relative z-50">
             <button
-                ref={menuRef}
                 onClick={handleUserButtonClick}
                 className={"relative z-50 h-7 flex items-center gap-1 p-0.5 md:pr-2 border border-neutral-300".concat(
                     " text-white bg-neutral-800 overflow-hidden rounded-t-[14px]",
