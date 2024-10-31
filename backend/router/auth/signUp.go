@@ -3,6 +3,7 @@ package authRouter
 import (
 	"main/auth"
 	"main/dbClient"
+	"main/mail"
 	"main/router/errorHandlers"
 	"main/validation"
 	"net/http"
@@ -24,7 +25,7 @@ import (
 // @Failure			400 {object} errorHandlers.Error "Invalid request"
 // @Failure			500 {object} errorHandlers.Error "Internal server error if server fails"
 // @Router			/auth/sign-up [post]
-func signUp(auth *auth.Auth, validate *validator.Validate, db *gorm.DB) gin.HandlerFunc {
+func signUp(auth *auth.Auth, validate *validator.Validate, db *gorm.DB, mailer *mail.Mailer) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var body signUpBody
 
@@ -81,5 +82,7 @@ func signUp(auth *auth.Auth, validate *validator.Validate, db *gorm.DB) gin.Hand
 		session.Save()
 
 		ctx.JSON(http.StatusCreated, user)
+
+		mailer.SendEmailConfirmationMessage(user.Email, token)
 	}
 }
