@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Password Confirmation</title>
+    <style>
+      body {
+        font-family: Arial, sans-serif;
+        background-color: #f4f4f4;
+        margin: 0;
+        padding: 0;
+      }
+      .container {
+        max-width: 600px;
+        margin: 50px auto;
+        background: white;
+        padding: 20px;
+        border-radius: 8px;
+        box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+      }
+      h1 {
+        color: #333;
+        text-align: center;
+      }
+      p {
+        color: #555;
+        line-height: 1.5;
+      }
+      .button {
+        display: block;
+        width: fit-content;
+        background-color: #007bff;
+        color: white;
+        padding: 15px 25px;
+        text-decoration: none;
+        border-radius: 5px;
+        text-align: center;
+        margin: 20px auto;
+        font-size: 16px;
+        transition: background-color 0.3s;
+      }
+      .button:hover {
+        background-color: #0056b3;
+      }
+      .footer {
+        text-align: center;
+        color: #888;
+        font-size: 12px;
+        margin-top: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Password Confirmation</h1>
+      <p>Hello!</p>
+      <p>
+        You received this email because we received a request to change the
+        password for your account. Please click the button below to confirm the
+        password change.
+      </p>
+      <a href="{{.ConfirmationLink}}" class="button" role="button"
+        >Confirm Password</a
+      >
+      <p>If you did not request a password change, please ignore this email.</p>
+      <p>Thank you for being with us!</p>
+      <div class="footer">
+        <p>Best regards</p>
+      </div>
+    </div>
+  </body>
+</html>
