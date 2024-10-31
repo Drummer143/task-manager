@@ -1,52 +1,46 @@
 package auth
 
 import (
-	"context"
 	"errors"
 	"os"
+	"time"
 
-	"github.com/coreos/go-oidc/v3/oidc"
-	"golang.org/x/oauth2"
+	"github.com/golang-jwt/jwt/v5"
 )
 
 type Auth struct {
-	*oidc.Provider
-	oauth2.Config
+	secretKey []byte
 }
 
 func New() (*Auth, error) {
-	provider, err := oidc.NewProvider(
-		context.Background(),
-		"https://"+os.Getenv("AUTH0_DOMAIN")+"/",
-	)
+	secretKey := os.Getenv("JWT_SECRET_KEY")
 
-	if err != nil {
-		return nil, err
-	}
-
-	conf := oauth2.Config{
-		ClientID:     os.Getenv("AUTH0_CLIENT_ID"),
-		ClientSecret: os.Getenv("AUTH0_CLIENT_SECRET"),
-		RedirectURL:  os.Getenv("AUTH0_CALLBACK_URL"),
-		Endpoint:     provider.Endpoint(),
-		Scopes:       []string{oidc.ScopeOpenID, "profile"},
+	if secretKey == "" {
+		return nil, errors.New("JWT_SECRET_KEY is not set")
 	}
 
 	return &Auth{
-		Provider: provider,
-		Config:   conf,
+		secretKey: []byte(secretKey),
 	}, nil
 }
 
-func (a *Auth) VerifyIDToken(ctx context.Context, token *oauth2.Token) (*oidc.IDToken, error) {
-	rawIDToken, ok := token.Extra("id_token").(string)
-	if !ok {
-		return nil, errors.New("no id_token field in oauth2 token")
+func (a *Auth) GenerateJWT(email string) (string, error) {
+	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"email":  email,
+		"exp": time.Now().Add(24 * 7 * time.Hour).Unix(),
+	})
+
+	return token.SignedString(a.secretKey)
+}
+
+func (a *Auth) ValidateJWT(tokenStr string) (jwt.MapClaims, error) {
+	token, err := jwt.Parse(tokenStr, func(token *jwt.Token) (interface{}, error) {
+		return a.secretKey, nil
+	})
+
+	if claims, ok := token.Claims.(jwt.MapClaims); ok && token.Valid {
+		return claims, nil
 	}
 
-	oidcConfig := &oidc.Config{
-		ClientID: a.ClientID,
-	}
-
-	return a.Verifier(oidcConfig).Verify(ctx, rawIDToken)
+	return nil, err
 }

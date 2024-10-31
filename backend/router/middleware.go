@@ -1,17 +1,32 @@
 package router
 
 import (
+	"main/auth"
 	"main/router/errorHandlers"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 )
 
-func IsAuthenticated(ctx *gin.Context) {
-	if sessions.Default(ctx).Get("profile") == nil {
-		errorHandlers.Unauthorized(ctx, "Session is missing or invalid")
-		ctx.Abort()
-	} else {
-		ctx.Next()
+func IsAuthenticated(auth *auth.Auth) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		session := sessions.Default(ctx)
+
+		token := session.Get("token")
+
+		if token == nil {
+			errorHandlers.Unauthorized(ctx, "Session is missing or invalid")
+			ctx.Abort()
+		}
+
+		if _, err := auth.ValidateJWT(token.(string)); err != nil {
+			session.Save()
+			session.Clear()
+
+			errorHandlers.Unauthorized(ctx, "Session is missing or invalid")
+			ctx.Abort()
+		} else {
+			ctx.Next()
+		}
 	}
 }

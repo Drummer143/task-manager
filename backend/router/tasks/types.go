@@ -2,6 +2,8 @@ package tasksRouter
 
 import (
 	"main/dbClient"
+
+	"github.com/google/uuid"
 )
 
 type taskStatus = string
@@ -18,7 +20,7 @@ type createTaskBody struct {
 	Title               string     `json:"title" validate:"required,max=63"`
 	Description         *string    `json:"description,omitempty" validate:"omitempty,max=255"`
 	DueDate             *string    `json:"dueDate,omitempty" validate:"omitempty,iso8601"`
-	AssignedTo          *string    `json:"assignedTo,omitempty" validate:"omitempty,uuid4"`
+	AssignedTo          *uuid.UUID `json:"assignedTo,omitempty" validate:"omitempty,uuid4"`
 }
 
 type updateTaskBody struct {
@@ -27,7 +29,7 @@ type updateTaskBody struct {
 	Title               *string     `json:"title,omitempty" validate:"omitempty,max=63"`
 	Description         *string     `json:"description,omitempty" validate:"omitempty,max=255"`
 	DueDate             *string     `json:"dueDate,omitempty" validate:"omitempty,iso8601"`
-	AssignedTo          *string     `json:"assignedTo,omitempty" validate:"omitempty,uuid4"`
+	AssignedTo          *uuid.UUID  `json:"assignedTo,omitempty" validate:"omitempty,uuid4"`
 }
 
 type changeTaskStatusBody struct {

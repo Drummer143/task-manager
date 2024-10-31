@@ -8,6 +8,7 @@ import (
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -27,7 +28,7 @@ func getTaskList(db *gorm.DB) gin.HandlerFunc {
 		if ownerID == "" {
 			session := sessions.Default(ctx)
 
-			ownerID = session.Get("profile").(map[string]interface{})["sub"].(string)
+			ownerID = session.Get("id").(uuid.UUID).String()
 		}
 
 		var tasks []dbClient.Task

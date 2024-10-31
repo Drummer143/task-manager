@@ -1,13 +1,11 @@
 package main
 
 import (
-	"main/apiClient"
 	"main/auth"
 	"main/dbClient"
 	"main/router"
 	"main/storage"
 	"main/validation"
-	"os"
 	"time"
 
 	"github.com/gin-contrib/cors"
@@ -45,14 +43,9 @@ func main() {
 		panic(err)
 	}
 
-	auth0Api := apiClient.New("https://"+os.Getenv("AUTH0_DOMAIN"), map[string]string{
-		"Authorization": "Bearer " + os.Getenv("AUTH0_MANAGEMENT_API_TOKEN"),
-		"Content-Type":  "application/json",
-	})
-
 	validate := validation.New()
 
-	r := router.New(auth, storage, auth0Api, DB, validate)
+	r := router.New(auth, storage, DB, validate)
 
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://localhost:3000"},

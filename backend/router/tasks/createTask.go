@@ -9,6 +9,7 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -26,10 +27,6 @@ import (
 // @Router 			/tasks [post]
 func createTask(db *gorm.DB, validate *validator.Validate) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		session := sessions.Default(ctx)
-
-		profile, _ := session.Get("profile").(map[string]interface{})
-
 		var body createTaskBody
 
 		if err := ctx.BindJSON(&body); err != nil {
@@ -47,6 +44,10 @@ func createTask(db *gorm.DB, validate *validator.Validate) gin.HandlerFunc {
 			return
 		}
 
+		session := sessions.Default(ctx)
+
+		userId, _ := session.Get("id").(uuid.UUID)
+
 		var task dbClient.Task = dbClient.Task{
 			DeletableNotByOwner: body.DeletableNotByOwner,
 			Status:              body.Status,
@@ -54,7 +55,7 @@ func createTask(db *gorm.DB, validate *validator.Validate) gin.HandlerFunc {
 			Description:         body.Description,
 			DueDate:             body.DueDate,
 			AssignedTo:          body.AssignedTo,
-			OwnerID:             profile["sub"].(string),
+			OwnerID:             userId,
 		}
 
 		if err := db.Create(&task).Error; err != nil {

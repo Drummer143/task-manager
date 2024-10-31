@@ -2,36 +2,44 @@ package dbClient
 
 import (
 	"time"
+
+	"github.com/google/uuid"
 )
 
-type Task struct {
-	ID                  string    `json:"id" gorm:"type:uuid;primary_key;default:uuid_generate_v4()"`
-	OwnerID             string    `json:"-" gorm:"type:varchar(63);not null;foreignKey:UserID"`
-	DeletableNotByOwner bool      `json:"deletableNotByOwner" gorm:"type:boolean;not null;default:true"`
-	Status              string    `json:"status" gorm:"type:task_statuses;not null"`
-	Title               string    `json:"title" gorm:"type:varchar(255);not null"`
-	Description         *string   `json:"description,omitempty" gorm:"type:text;not null"`
-	DueDate             *string   `json:"dueDate,omitempty" gorm:"type:timestamp"`
-	AssignedTo          *string   `json:"-" gorm:"type:varchar(63)"`
-	CreatedAt           time.Time `json:"createdAt" gorm:"type:timestamptz;not null;default:CURRENT_TIMESTAMP"`
-	DeletedAt           *string   `json:"deletedAt,omitempty" gorm:"type:timestamp"`
-	Assignee            *User     `json:"assignee,omitempty" gorm:"foreignKey:AssignedTo"`
-	Author              *User     `json:"author,omitempty" gorm:"foreignKey:OwnerID"`
+type User struct {
+	ID                uuid.UUID  `gorm:"type:uuid;primaryKey;default:uuid_generate_v4()" json:"id"`
+	Email             string     `gorm:"type:varchar(63);unique;not null" json:"email"`
+	EmailVerified     bool       `gorm:"default:false" json:"email_verified"`
+	Picture           *string    `gorm:"type:varchar(255)" json:"picture,omitempty"`
+	Username          string     `gorm:"type:varchar(63);not null" json:"username"`
+	LastPasswordReset *time.Time `gorm:"column:last_password_reset" json:"last_password_reset,omitempty"`
+	LastLogin         *time.Time `gorm:"column:last_login" json:"last_login,omitempty"`
+	CreatedAt         *time.Time  `gorm:"type:timestamptz,default:CURRENT_TIMESTAMP" json:"createdAt"`
+	UpdatedAt         *time.Time  `gorm:"type:timestamptz,default:CURRENT_TIMESTAMP" json:"updatedAt"`
+	DeletedAt         *time.Time `gorm:"type:timestamptz" json:"deletedAt,omitempty"`
 }
 
-type User struct {
-	CreatedAt         string  `json:"createdAt" gorm:"type:timestamptz;not null;default:CURRENT_TIMESTAMP"`
-	Email             string  `json:"email" gorm:"type:varchar(63);not null"`
-	EmailVerified     bool    `json:"emailVerified" gorm:"type:boolean;not null;default:false"`
-	Name              string  `json:"name" gorm:"type:varchar(63);not null"`
-	Nickname          string  `json:"nickname" gorm:"type:varchar(63);not null"`
-	Picture           *string `json:"picture,omitempty" gorm:"type:varchar(255)"`
-	UpdatedAt         string  `json:"updatedAt" gorm:"type:timestamptz;not null;default:CURRENT_TIMESTAMP"`
-	UserID            string  `json:"userId" gorm:"type:varchar(63);primary_key;not null"`
-	Username          string  `json:"username" gorm:"type:varchar(63);not null"`
-	LastPasswordReset *string `json:"lastPasswordReset,omitempty" gorm:"type:timestamptz"`
-	LastIP            string  `json:"lastIp" gorm:"type:varchar(15)"`
-	LastLogin         string  `json:"lastLogin" gorm:"type:timestamptz;not null;default:CURRENT_TIMESTAMP"`
-	LoginsCount       int     `json:"loginsCount" gorm:"type:int;not null;default:0"`
-	DeletedAt         *string `json:"deletedAt,omitempty" gorm:"type:timestamp"`
+type Task struct {
+	ID                  uuid.UUID  `gorm:"type:uuid;primaryKey;default:uuid_generate_v4()" json:"id"`
+	OwnerID             uuid.UUID  `gorm:"type:uuid;not null" json:"owner_id"`
+	DeletableNotByOwner bool       `gorm:"default:true" json:"deletableNotByOwner"`
+	Status              string     `gorm:"type:task_statuses;not null" json:"status"`
+	Title               string     `gorm:"type:varchar(255);not null" json:"title"`
+	Description         *string    `gorm:"type:text" json:"description,omitempty"`
+	DueDate             *string    `gorm:"type:timestamp" json:"dueDate,omitempty"`
+	AssignedTo          *uuid.UUID `gorm:"type:uuid" json:"assignedTo,omitempty"`
+	CreatedAt           *time.Time  `gorm:"type:timestamptz,default:CURRENT_TIMESTAMP" json:"createdAt"`
+	UpdatedAt           *time.Time  `gorm:"type:timestamptz,default:CURRENT_TIMESTAMP" json:"updatedAt"`
+	DeletedAt           *time.Time `gorm:"type:timestamptz" json:"deletedAt,omitempty"`
+}
+
+type UserCredentials struct {
+	ID                     uuid.UUID  `gorm:"type:uuid;primaryKey;unique;default:uuid_generate_v4()"`
+	UserID                 uuid.UUID  `gorm:"type:uuid;not null"`
+	PasswordHash           string     `gorm:"type:varchar(255);not null"`
+	PasswordResetToken     *string    `gorm:"type:varchar(255)"`
+	EmailVerificationToken *string    `gorm:"type:varchar(255)"`
+	CreatedAt              *time.Time  `gorm:"type:timestamptz,default:CURRENT_TIMESTAMP"`
+	UpdatedAt              *time.Time  `gorm:"type:timestamptz,default:CURRENT_TIMESTAMP"`
+	DeletedAt              *time.Time `gorm:"type:timestamptz"`
 }

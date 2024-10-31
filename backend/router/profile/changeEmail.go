@@ -10,6 +10,7 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -22,18 +23,18 @@ import (
 // @Success			200 {object} dbClient.User "User profile data"
 // @Failure			400 {object} errorHandlers.Error "Email is invalid or missing"
 // @Failure			401 {object} errorHandlers.Error "Unauthorized if session is missing or invalid"
-// @Failure			404 {object} errorHandlers.BadRequestError "User not found in database"
+// @Failure			404 {object} errorHandlers.Error "User not found in database"
 // @Failure			500 {object} errorHandlers.Error "Internal server error if server fails"
 // @Router			/profile/email [patch]
 func changeEmail(validate *validator.Validate, db *gorm.DB) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		session := sessions.Default(ctx)
 
-		profile, _ := session.Get("profile").(map[string]interface{})
+		userId := session.Get("id").(uuid.UUID)
 
 		var user dbClient.User
 
-		if err := db.First(&user, "user_id = ?", profile["sub"].(string)).Error; err != nil {
+		if err := db.First(&user, "id = ?", userId).Error; err != nil {
 			if err == gorm.ErrRecordNotFound {
 				errorHandlers.NotFound(ctx, "user not found")
 				return

@@ -1,9 +1,10 @@
-import { createBrowserRouter, redirect } from "react-router-dom";
+import { createBrowserRouter } from "react-router-dom";
 
 import { lazySuspense } from "shared/HOCs/lazySuspense";
 
 const Tasks = lazySuspense(() => import("pages/tasks"))
 const Profile = lazySuspense(() => import("pages/profile"))
+const Login = lazySuspense(() => import("pages/Login"))
 
 export default createBrowserRouter([
 	{
@@ -16,6 +17,6 @@ export default createBrowserRouter([
     },
     {
         path: "/login",
-        loader: () => redirect("http://localhost:8080/auth/login"),
+		Component: Login
 	}
 ])

@@ -17,6 +17,7 @@ import (
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -103,11 +104,11 @@ func uploadAvatar(storage *storage.Storage, db *gorm.DB) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		session := sessions.Default(ctx)
 
-		profile, _ := session.Get("profile").(map[string]interface{})
+		userId := session.Get("id").(uuid.UUID)
 
 		var user dbClient.User
 
-		if err := db.First(&user, "user_id = ?", profile["sub"]).Error; err != nil {
+		if err := db.First(&user, "user_id = ?", userId).Error; err != nil {
 			if err == gorm.ErrRecordNotFound {
 				errorHandlers.NotFound(ctx, "user not found in database")
 				return

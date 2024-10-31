@@ -10,6 +10,7 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -30,11 +31,11 @@ func patchProfile(validate *validator.Validate, db *gorm.DB) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		session := sessions.Default(ctx)
 
-		profile, _ := session.Get("profile").(map[string]interface{})
+		userId := session.Get("id").(uuid.UUID)
 
 		var user dbClient.User
 
-		if err := db.First(&user, "user_id = ?", profile["sub"].(string)).Error; err != nil {
+		if err := db.First(&user, "user_id = ?", userId).Error; err != nil {
 			if err == gorm.ErrRecordNotFound {
 				errorHandlers.NotFound(ctx, "user not found")
 				return
@@ -61,9 +62,7 @@ func patchProfile(validate *validator.Validate, db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		user.Name = body.Name
 		user.Username = body.Username
-		user.Nickname = body.Nickname
 		user.UpdatedAt = utils.GetTimestampTz()
 
 		if err := db.Save(&user).Error; err != nil {

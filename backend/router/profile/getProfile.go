@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -26,9 +27,9 @@ func getProfile(db *gorm.DB) gin.HandlerFunc {
 
 		var dbUser dbClient.User
 
-		profile := session.Get("profile").(map[string]interface{})
+		userId := session.Get("id").(uuid.UUID)
 
-		if err := db.First(&dbUser, "user_id = ?", profile["sub"].(string)).Error; err != nil {
+		if err := db.First(&dbUser, "id = ?", userId).Error; err != nil {
 			if err == gorm.ErrRecordNotFound {
 				errorHandlers.NotFound(ctx, "user not found")
 				return

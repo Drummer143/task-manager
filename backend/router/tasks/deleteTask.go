@@ -7,6 +7,7 @@ import (
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -22,10 +23,6 @@ import (
 // @Router			/tasks/{id} [delete]
 func deleteTask(db *gorm.DB) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		session := sessions.Default(ctx)
-
-		profile, _ := session.Get("profile").(map[string]interface{})
-
 		var task dbClient.Task
 
 		if err := db.First(&task, "id = ?", ctx.Param("id")); err.Error != nil {
@@ -38,7 +35,11 @@ func deleteTask(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		if task.OwnerID != profile["sub"].(string) {
+		session := sessions.Default(ctx)
+
+		userId, _ := session.Get("id").(uuid.UUID)
+
+		if task.OwnerID != userId {
 			errorHandlers.Forbidden(ctx, "owner of task forbade deletion. Only the owner and admin can delete tasks.")
 			return
 		}
