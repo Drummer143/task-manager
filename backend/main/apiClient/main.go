@@ -1,144 +1,104 @@
 package apiClient
 
-// import (
-// 	"bytes"
-// 	"encoding/json"
-// 	"io"
-// 	"net/http"
-// )
+import (
+	"bytes"
+	"encoding/json"
+	"io"
+	"net/http"
+)
 
-// type ApiClient struct {
-// 	client  *http.Client
-// 	baseUrl string
-// 	headers map[string]string
-// }
+type ApiError = any
 
-// type ApiError = any
+func prepareRequest(url string, method string, body any, headers map[string]string) (*http.Request, error) {
+	json, err := json.Marshal(body)
 
-// func New(baseUrl string, headers map[string]string) *ApiClient {
-// 	client := &http.Client{}
+	if err != nil {
+		return nil, err
+	}
 
-// 	return &ApiClient{
-// 		client:  client,
-// 		baseUrl: baseUrl,
-// 		headers: headers,
-// 	}
-// }
+	req, err := http.NewRequest(method, url, bytes.NewReader(json))
 
-// func (a *ApiClient) prepareRequest(method string, endpoint string, body any, headers map[string]string) (*http.Request, error) {
-// 	url := a.baseUrl + endpoint
+	if err != nil {
+		return nil, err
+	}
 
-// 	json, err := json.Marshal(body)
+	for k, v := range headers {
+		req.Header.Set(k, v)
+	}
 
-// 	if err != nil {
-// 		return nil, err
-// 	}
+	return req, nil
+}
 
-// 	req, err := http.NewRequest(method, url, bytes.NewReader(json))
+func parseResponse(resp *http.Response, result any) error {
+	defer resp.Body.Close()
 
-// 	if err != nil {
-// 		return nil, err
-// 	}
+	data, err := io.ReadAll(resp.Body)
 
-// 	for k, v := range headers {
-// 		req.Header.Set(k, v)
-// 	}
+	if err != nil {
+		return err
+	}
 
-// 	for k, v := range a.headers {
-// 		req.Header.Set(k, v)
-// 	}
+	return json.Unmarshal(data, &result)
+}
 
-// 	return req, nil
-// }
+func callEndpoint(req *http.Request) (*http.Response, error) {
+	client := http.Client{}
 
-// func parseResponse(resp *http.Response, result any) error {
-// 	defer resp.Body.Close()
+	resp, err := client.Do(req)
 
-// 	data, err := io.ReadAll(resp.Body)
+	if err != nil {
+		return nil, err
+	}
 
-// 	if err != nil {
-// 		return err
-// 	}
+	return resp, nil
+}
 
-// 	return json.Unmarshal(data, &result)
-// }
+func Get(url string, headers map[string]string, result any) error {
+	req, err := prepareRequest(url, "GET", nil, headers)
 
-// func (a *ApiClient) callEndpoint(req *http.Request) (*http.Response, string, error) {
-// 	resp, err := a.client.Do(req)
+	if err != nil {
+		return err
+	}
 
-// 	if err != nil {
-// 		return nil, "", err
-// 	}
+	resp, err := callEndpoint(req)
 
-// 	if resp.StatusCode >= 400 {
-// 		var message string
+	if err != nil {
+		return err
+	}
 
-// 		if resp.Body != nil {
-// 			defer resp.Body.Close()
+	return parseResponse(resp, &result)
+}
 
-// 			data, err := io.ReadAll(resp.Body)
+func mutation(method string, endpoint string, reqBody any, headers map[string]string, result any) error {
+	req, err := prepareRequest(method, endpoint, reqBody, headers)
 
-// 			if err != nil {
-// 				return nil, "", err
-// 			}
+	if err != nil {
+		return err
+	}
 
-// 			message = string(data)
-// 		}
+	resp, err := callEndpoint(req)
 
-// 		return nil, message, nil
-// 	}
+	if err != nil {
+		return err
+	}
 
-// 	return resp, "", nil
-// }
+	err = parseResponse(resp, result)
 
-// func (a *ApiClient) Get(endpoint string, headers map[string]string, result any) (apiError string, err error) {
-// 	req, err := a.prepareRequest("GET", endpoint, nil, headers)
+	return err
+}
 
-// 	if err != nil {
-// 		return "", err
-// 	}
+func Post(url string, reqBody any, headers map[string]string, result any) error {
+	return mutation(url, "POST", reqBody, headers, result)
+}
 
-// 	resp, apiError, err := a.callEndpoint(req)
+func Patch(url string, reqBody any, headers map[string]string, result any) error {
+	return mutation(url, "PATCH", reqBody, headers, result)
+}
 
-// 	if err != nil || apiError != "" {
-// 		return apiError, err
-// 	}
+func Put(url string, reqBody any, headers map[string]string, result any) error {
+	return mutation(url, "PUT", reqBody, headers, result)
+}
 
-// 	err = parseResponse(resp, &result)
-
-// 	return "", err
-// }
-
-// func (a *ApiClient) mutation(method string, endpoint string, reqBody any, headers map[string]string, result any) (apiError string, err error) {
-// 	req, err := a.prepareRequest(method, endpoint, reqBody, headers)
-
-// 	if err != nil {
-// 		return "", err
-// 	}
-
-// 	resp, apiError, err := a.callEndpoint(req)
-
-// 	if err != nil || apiError != "" {
-// 		return apiError, err
-// 	}
-
-// 	err = parseResponse(resp, result)
-
-// 	return "", err
-// }
-
-// func (a *ApiClient) Post(endpoint string, reqBody any, headers map[string]string, result any) (apiError string, err error) {
-// 	return a.mutation("POST", endpoint, reqBody, headers, result)
-// }
-
-// func (a *ApiClient) Patch(endpoint string, reqBody any, headers map[string]string, result any) (apiError string, err error) {
-// 	return a.mutation("PATCH", endpoint, reqBody, headers, result)
-// }
-
-// func (a *ApiClient) Put(endpoint string, reqBody any, headers map[string]string, result any) (apiError string, err error) {
-// 	return a.mutation("PUT", endpoint, reqBody, headers, result)
-// }
-
-// func (a *ApiClient) Delete(endpoint string, reqBody any, headers map[string]string, result any) (apiError string, err error) {
-// 	return a.mutation("DELETE", endpoint, reqBody, headers, result)
-// }
+func Delete(url string, reqBody any, headers map[string]string, result any) error {
+	return mutation(url, "DELETE", reqBody, headers, result)
+}

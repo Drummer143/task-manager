@@ -22,7 +22,7 @@ COPY --from=builder /app/main ./
 
 COPY --from=builder /app/docs ./docs
 
-COPY --from=builder /app/.docker.env ./.env
+COPY --from=builder /app/.env.docker ./.env
 
 COPY --from=builder /app/migrations ./migrations
 

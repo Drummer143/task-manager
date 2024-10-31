@@ -4,7 +4,7 @@ import { lazySuspense } from "shared/HOCs/lazySuspense";
 
 const Tasks = lazySuspense(() => import("pages/tasks"))
 const Profile = lazySuspense(() => import("pages/profile"))
-const Login = lazySuspense(() => import("pages/Login"))
+const Login = lazySuspense(() => import("pages/login"))
 
 export default createBrowserRouter([
 	{

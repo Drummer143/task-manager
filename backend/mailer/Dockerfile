@@ -24,6 +24,8 @@ COPY --from=builder /app/docs ./docs
 
 COPY --from=builder /app/.env ./.env
 
+COPY --from=builder /app/mail/templates ./mail/templates
+
 EXPOSE 8081
 
 CMD ["./mailer"]

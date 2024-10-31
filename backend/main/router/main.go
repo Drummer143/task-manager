@@ -6,7 +6,6 @@ import (
 
 	"main/auth"
 	_ "main/docs"
-	"main/mail"
 
 	// authRouter "main/router/auth"
 	authRouter "main/router/auth"
@@ -25,7 +24,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func New(auth *auth.Auth, storage *storage.Storage, db *gorm.DB, validate *validator.Validate, mailer *mail.Mailer) *gin.Engine {
+func New(auth *auth.Auth, storage *storage.Storage, db *gorm.DB, validate *validator.Validate) *gin.Engine {
 	router := gin.Default()
 
 	gob.Register(uuid.UUID{})
@@ -43,7 +42,7 @@ func New(auth *auth.Auth, storage *storage.Storage, db *gorm.DB, validate *valid
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	router.GET("/api", func(ctx *gin.Context) { ctx.Redirect(http.StatusFound, "/swagger/index.html") })
 
-	authRouter.AddRoutes(router.Group("auth"), auth, validate, db, mailer)
+	authRouter.AddRoutes(router.Group("auth"), auth, validate, db)
 	profileRouter.AddRoutes(router.Group("profile", IsAuthenticated(auth)), storage, validate, db)
 	tasksRouter.AddRoutes(router.Group("tasks", IsAuthenticated(auth)), db, validate)
 

@@ -15,7 +15,7 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
-        "/sendEmailConfirmation": {
+        "/send-email-confirmation": {
             "post": {
                 "description": "Send email confirmation mail",
                 "consumes": [

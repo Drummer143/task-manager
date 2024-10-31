@@ -26,7 +26,7 @@ type SendEmailConfirmationResponse struct {
 // @Success			200 {object} SendEmailConfirmationResponse "Email confirmation sent"
 // @Failure			400 {object} errorHandlers.Error "Invalid request"
 // @Failure			500 {object} errorHandlers.Error "Internal server error if server fails"
-// @Router			/sendEmailConfirmation [post]
+// @Router			/send-email-confirmation [post]
 func sendEmailConfirmation(mailer *mail.Mailer) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var body SendEmailConfirmationRequest

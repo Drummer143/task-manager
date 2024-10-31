@@ -3,7 +3,6 @@ package main
 import (
 	"main/auth"
 	"main/dbClient"
-	"main/mail"
 	"main/router"
 	"main/storage"
 	"main/validation"
@@ -46,9 +45,7 @@ func main() {
 
 	validate := validation.New()
 
-	mailer := mail.New()
-
-	r := router.New(auth, storage, DB, validate, mailer)
+	r := router.New(auth, storage, DB, validate)
 
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://localhost:3000"},
