@@ -56,6 +56,13 @@ services:
     volumes:
       - storage:/static
 
+  frontend:
+    image: frontend:latest
+    ports:
+      - 5173:80
+    networks:
+      - net
+
 networks:
   net:
 
