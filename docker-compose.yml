@@ -1,0 +1,64 @@
+services:
+  postgres:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB_NAME}
+    ports:
+      - 5432:5432
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - net
+
+  main-service:
+    image: main-service:latest
+    ports:
+      - 8080:8080
+    networks:
+      - net
+    depends_on:
+      - postgres
+    environment:
+      SELF_PORT: 8080
+      MAILER_HOST: mailer-service
+      MAILER_PORT: 8081
+      CLOUDINARY_URL: ${CLOUDINARY_URL}
+      POSTGRES_DB_NAME: ${POSTGRES_DB_NAME}
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_HOST: postgres
+      POSTGRES_PORT: 5432
+      POSTGRES_SSL_MODE: disable
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+
+  mailer-service:
+    image: mailer-service:latest
+    ports:
+      - 8081:8081
+    environment:
+      PORT: 8081
+      EMAIL_ADDRESS: ${EMAIL_ADDRESS}
+      EMAIL_PASSWORD: ${EMAIL_PASSWORD}
+      CONFIRM_EMAIL_URL: ${CONFIRM_EMAIL_URL}
+    networks:
+      - net
+
+  storage-service:
+    image: storage-service:latest
+    ports:
+      - 8082:8082
+    environment:
+      PORT: 8082
+    networks:
+      - net
+    volumes:
+      - storage:/static
+
+networks:
+  net:
+
+volumes:
+  pgdata:
+  storage:

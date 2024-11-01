@@ -12,19 +12,12 @@ import (
 )
 
 func New() (*gorm.DB, error) {
-	/* POSTGRES_USER
-	POSTGRES_PASSWORD
-	POSTGRES_DB_NAME
-	POSTGRES_HOST
-	POSTGRES_PORT
-	POSTGRES_SLL_MODE */
-
 	user := os.Getenv("POSTGRES_USER")
 	password := os.Getenv("POSTGRES_PASSWORD")
 	dbName := os.Getenv("POSTGRES_DB_NAME")
 	host := os.Getenv("POSTGRES_HOST")
 	port := os.Getenv("POSTGRES_PORT")
-	sllMode := os.Getenv("POSTGRES_SLL_MODE")
+	sllMode := os.Getenv("POSTGRES_SSL_MODE")
 
 	dsn := "host=" + host + " user=" + user + " password=" + password + " dbname=" + dbName + " port=" + port + " sslmode=" + sllMode
 
@@ -37,7 +30,7 @@ func Migrate() error {
 	dbName := os.Getenv("POSTGRES_DB_NAME")
 	host := os.Getenv("POSTGRES_HOST")
 	port := os.Getenv("POSTGRES_PORT")
-	sslMode := os.Getenv("POSTGRES_SLL_MODE")
+	sslMode := os.Getenv("POSTGRES_SSL_MODE")
 
 	dbUrl := fmt.Sprintf("postgres://%s:%s@%s:%s/%s?sslmode=%s", user, password, host, port, dbName, sslMode)
 
