@@ -1,9 +1,12 @@
 import { useMutation } from '@tanstack/react-query'
-import { Button, Form, Input } from 'antd'
+import { Form, Input } from 'antd'
 import api from 'api'
-import React from 'react'
-import { StyledForm } from './styles'
+import React, { useMemo } from 'react'
 import { composeRules, email, required } from 'shared/validation'
+import { useNavigate } from 'react-router-dom'
+import { parseUseQueryError } from 'shared/utils/errors'
+import ErrorMessage from 'shared/ui/ErrorMessage'
+import LoginForm from 'widgets/LoginForm'
 
 const rules = {
     email: composeRules(required(), email()),
@@ -11,24 +14,37 @@ const rules = {
 }
 
 const Login: React.FC = () => {
-    const { mutateAsync } = useMutation({
-        mutationFn: api.auth.login
+    const navigate = useNavigate()
+
+    const { mutateAsync, error, reset } = useMutation({
+        mutationFn: api.auth.login,
+        onSuccess: () => {
+            navigate('/profile')
+        }
     })
 
+    const parsedError = useMemo(() => parseUseQueryError(error, undefined, [400]), [error])
+
     return (
-        <StyledForm onFinish={mutateAsync} layout='vertical'>
+        <LoginForm
+            onFinish={mutateAsync}
+            onValuesChange={reset}
+            layout="vertical"
+            submitText="Login"
+            submitDisabled={!!parsedError}
+        >
             <Form.Item name="email" label="Email" rules={rules.email}>
                 <Input placeholder="email@example.com" />
             </Form.Item>
 
             <Form.Item name="password" label="Password" rules={rules.password}>
-                <Input placeholder="********" />
+                <Input.Password placeholder="********" />
             </Form.Item>
 
-            <Form.Item>
-                <Button htmlType="submit">Login</Button>
+            <Form.Item status={parsedError ? 'error' : undefined}>
+                <ErrorMessage error={parsedError} />
             </Form.Item>
-        </StyledForm>
+        </LoginForm>
     )
 }
 

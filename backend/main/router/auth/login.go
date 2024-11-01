@@ -54,7 +54,7 @@ func login(auth *auth.Auth, validate *validator.Validate, db *gorm.DB) gin.Handl
 
 		var credentials dbClient.UserCredentials
 
-		if err := db.Where("id = ?", user.ID).First(&credentials).Error; err != nil {
+		if err := db.Where("user_id = ?", user.ID).First(&credentials).Error; err != nil {
 			if err == gorm.ErrRecordNotFound {
 				errorHandlers.BadRequest(ctx, "user with that email not found", nil)
 				return

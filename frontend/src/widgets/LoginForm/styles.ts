@@ -1,7 +1,7 @@
 import { Form as AntForm } from "antd";
 import styled from "styled-components";
 
-export const Form = styled(AntForm)`
+export const FormContainer = styled.div`
 	height: 100%;
 
 	display: flex;
@@ -12,14 +12,12 @@ export const Form = styled(AntForm)`
 	@media screen and (max-width: 480px) {
 		padding: 0 0.5rem;
 	}
-` as typeof AntForm
+`
 
-export const FormItem = styled(AntForm.Item)`
+export const Form = styled(AntForm)`
 	width: 25%;
 
-	transition: width 0.5s ease;
-
-	@media screen and (max-width: 1024px) {
+	@media screen and (max-width: 1200px) {
 		width: 40%;
 	}
 
@@ -30,4 +28,9 @@ export const FormItem = styled(AntForm.Item)`
 	@media screen and (max-width: 480px) {
 		width: 100%;
 	}
+` as typeof AntForm
+
+export const SubmitButtonContainer = styled(AntForm.Item)`
+	display: flex;
+	justify-content: center;
 `
