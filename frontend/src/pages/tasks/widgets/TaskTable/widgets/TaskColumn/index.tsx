@@ -5,7 +5,7 @@ import TaskItem from '../TaskItem'
 import { useTasksStore } from 'store/tasks'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 import api from 'api'
-import { useStyles } from './styles'
+import { StyledTaskColumn } from './styles'
 
 interface TaskColumnProps {
     tasks: Task[]
@@ -14,11 +14,6 @@ interface TaskColumnProps {
 
 const TaskColumn: React.FC<TaskColumnProps> = ({ status, tasks }) => {
     const { dropTarget } = useTasksStore()
-
-    const { styles } = useStyles({
-        bgColor: statusColors[status],
-        outlineColor: dropTarget === status ? statusColors[status] : undefined
-    })
 
     const queryClient = useQueryClient()
 
@@ -86,8 +81,9 @@ const TaskColumn: React.FC<TaskColumnProps> = ({ status, tasks }) => {
     )
 
     return (
-        <div
-            className={styles.wrapper}
+        <StyledTaskColumn
+            status={status}
+            outlineColor={dropTarget === status ? statusColors[status] : undefined}
             onDragOver={preventDefault}
             onDragEnter={handleDragEnter}
             onDragLeave={handleDragLeave}
@@ -99,7 +95,7 @@ const TaskColumn: React.FC<TaskColumnProps> = ({ status, tasks }) => {
                     <TaskItem key={task.id} task={task} onDragStart={handleDragStart} />
                 ))}
             </div>
-        </div>
+        </StyledTaskColumn>
     )
 }
 
