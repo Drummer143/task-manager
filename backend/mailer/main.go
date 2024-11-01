@@ -11,10 +11,10 @@ import (
 func main() {
 	godotenv.Load()
 
-	port := os.Getenv("PORT")
+	port := os.Getenv("SELF_PORT")
 
 	if port == "" {
-		panic("PORT must be set")
+		panic("SELF_PORT must be set")
 	}
 
 	mailer := mail.New()

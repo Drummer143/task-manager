@@ -1,8 +1,8 @@
 package router
 
 import (
-	_ "fileStorage/docs"
 	"net/http"
+	_ "storage/docs"
 
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"

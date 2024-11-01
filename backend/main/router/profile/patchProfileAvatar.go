@@ -2,6 +2,7 @@ package profileRouter
 
 import (
 	"bytes"
+	"encoding/json"
 	"fmt"
 	"image"
 	"image/draw"
@@ -9,23 +10,24 @@ import (
 	"image/png"
 	"main/dbClient"
 	"main/router/errorHandlers"
-	"main/storage"
 	"main/utils"
 	"mime/multipart"
 	"net/http"
+	"os"
 	"strconv"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	"github.com/go-resty/resty/v2"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
-func convertFormDataToImage(file *multipart.FileHeader) (image.Image, string, string, error) {
+func convertFormDataToImage(file *multipart.FileHeader) (image.Image, string, error) {
 	fileContent, err := file.Open()
 
 	if err != nil {
-		return nil, "", "", fmt.Errorf("failed to open file")
+		return nil, "", fmt.Errorf("failed to open file")
 	}
 
 	defer fileContent.Close()
@@ -33,10 +35,10 @@ func convertFormDataToImage(file *multipart.FileHeader) (image.Image, string, st
 	img, ext, err := image.Decode(fileContent)
 
 	if err != nil {
-		return nil, "", "", fmt.Errorf("failed to decode image")
+		return nil, "", fmt.Errorf("failed to decode image")
 	}
 
-	return img, file.Filename, ext, nil
+	return img, ext, nil
 }
 
 func validateImageSizes(ctx *gin.Context, imageWidth int, imageHeight int) (int, int, int, int, error) {
@@ -100,7 +102,7 @@ func validateImageSizes(ctx *gin.Context, imageWidth int, imageHeight int) (int,
 // @Failure			429 {object} errorHandlers.Error "Rate limit exceeded"
 // @Failure			500 {object} errorHandlers.Error "Internal server error if request to Auth0 fails"
 // @Router			/profile/avatar [patch]
-func uploadAvatar(storage *storage.Storage, db *gorm.DB) gin.HandlerFunc {
+func uploadAvatar(db *gorm.DB) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		session := sessions.Default(ctx)
 
@@ -108,7 +110,7 @@ func uploadAvatar(storage *storage.Storage, db *gorm.DB) gin.HandlerFunc {
 
 		var user dbClient.User
 
-		if err := db.First(&user, "user_id = ?", userId).Error; err != nil {
+		if err := db.First(&user, "id = ?", userId).Error; err != nil {
 			if err == gorm.ErrRecordNotFound {
 				errorHandlers.NotFound(ctx, "user not found in database")
 				return
@@ -118,6 +120,13 @@ func uploadAvatar(storage *storage.Storage, db *gorm.DB) gin.HandlerFunc {
 			}
 		}
 
+		storageUrl := os.Getenv("STORAGE_URL")
+
+		if storageUrl == "" {
+			errorHandlers.InternalServerError(ctx, "unable to update user profile picture")
+			return
+		}
+
 		file, err := ctx.FormFile("file")
 
 		if err != nil {
@@ -125,10 +134,15 @@ func uploadAvatar(storage *storage.Storage, db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		img, filename, ext, err := convertFormDataToImage(file)
+		img, ext, err := convertFormDataToImage(file)
 
 		if err != nil {
 			errorHandlers.InternalServerError(ctx, err.Error())
+			return
+		}
+
+		if ext != "jpg" && ext != "jpeg" && ext != "png" {
+			errorHandlers.BadRequest(ctx, "invalid file type", map[string]string{"file": "invalid file type. Only jpg, jpeg, and png are supported."})
 			return
 		}
 
@@ -163,14 +177,25 @@ func uploadAvatar(storage *storage.Storage, db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		imageUrl, err := storage.Upload(filename, &buffer, ctx)
+		resp, err := resty.New().R().SetHeader("Content-Type", "multipart/form-data").SetFileReader("file", file.Filename, &buffer).SetFormData(map[string]string{
+			"folder": "avatars",
+		}).Post(storageUrl + "/upload")
 
-		if err != nil {
+		if resp.StatusCode() > 299 || err != nil {
 			errorHandlers.InternalServerError(ctx, "failed to upload file to storage")
 			return
 		}
 
-		user.Picture = &imageUrl
+		var body map[string]interface{}
+
+		if err := json.Unmarshal(resp.Body(), &body); err != nil {
+			errorHandlers.InternalServerError(ctx, "failed to upload file to storage")
+			return
+		}
+
+		link := body["link"].(string)
+
+		user.Picture = &link
 		user.UpdatedAt = utils.GetTimestampTz()
 
 		if err := db.Save(&user).Error; err != nil {

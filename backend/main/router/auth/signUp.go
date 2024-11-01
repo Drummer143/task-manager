@@ -82,7 +82,7 @@ func signUp(auth *auth.Auth, validate *validator.Validate, db *gorm.DB) gin.Hand
 		session.Set("id", user.ID)
 		session.Save()
 
-		url := "http://" + os.Getenv("MAILER_HOST") + ":" + os.Getenv("MAILER_PORT") + "/send-email-confirmation"
+		url := os.Getenv("MAILER_URL") + "/send-email-confirmation"
 
 		var result map[string]interface{}
 

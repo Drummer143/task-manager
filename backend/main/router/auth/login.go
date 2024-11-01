@@ -54,7 +54,7 @@ func login(auth *auth.Auth, validate *validator.Validate, db *gorm.DB) gin.Handl
 
 		var credentials dbClient.UserCredentials
 
-		if err := db.Where("user_id = ?", user.ID).First(&credentials).Error; err != nil {
+		if err := db.Where("id = ?", user.ID).First(&credentials).Error; err != nil {
 			if err == gorm.ErrRecordNotFound {
 				errorHandlers.BadRequest(ctx, "user with that email not found", nil)
 				return
@@ -72,8 +72,6 @@ func login(auth *auth.Auth, validate *validator.Validate, db *gorm.DB) gin.Handl
 		token, err := auth.GenerateJWT(user.Email)
 
 		if err != nil {
-			println(err.Error())
-
 			errorHandlers.InternalServerError(ctx, "failed to generate token")
 			return
 		}
@@ -84,7 +82,6 @@ func login(auth *auth.Auth, validate *validator.Validate, db *gorm.DB) gin.Handl
 		session.Set("token", token)
 		
 		if err := session.Save(); err != nil {
-			println(err.Error())
 			errorHandlers.InternalServerError(ctx, "failed to save session")
 			return
 		}

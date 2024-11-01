@@ -1,12 +1,12 @@
 package router
 
 import (
-	"fileStorage/router/errorHandlers"
 	"fmt"
 	"io"
 	"net/http"
 	"os"
 	"path/filepath"
+	"storage/router/errorHandlers"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -14,7 +14,7 @@ import (
 )
 
 type uploadResponse struct {
-	Link string `json:"path"`
+	Link string `json:"link"`
 }
 
 // @Summary Upload file
@@ -71,7 +71,6 @@ func upload(ctx *gin.Context) {
 
 	if err != nil {
 		errorHandlers.InternalServerError(ctx, "failed to save file")
-		println(err.Error())
 		return
 	}
 
@@ -89,7 +88,12 @@ func upload(ctx *gin.Context) {
 		scheme = "https"
 	}
 
-	host := ctx.Request.Host
+	host := os.Getenv("SELF_HOST") + ":" + os.Getenv("SELF_PORT")
+
+	if host == "" {
+		host = "localhost:8082"
+	}
+
 	link := fmt.Sprintf("%s://%s/files/%s/%s", scheme, host, folder, filename)
 
 	ctx.JSON(http.StatusCreated, uploadResponse{Link: link})

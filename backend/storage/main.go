@@ -1,8 +1,8 @@
 package main
 
 import (
-	"fileStorage/router"
 	"os"
+	"storage/router"
 
 	"github.com/joho/godotenv"
 )
@@ -20,7 +20,7 @@ func main() {
 		}
 	}
 
-	port := os.Getenv("PORT")
+	port := os.Getenv("SELF_PORT")
 
 	if port == "" {
 		panic("port is not set")

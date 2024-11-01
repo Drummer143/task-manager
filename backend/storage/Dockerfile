@@ -12,13 +12,13 @@ RUN go install github.com/swaggo/swag/cmd/swag@latest
 
 RUN swag init
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o fileStorage
+RUN CGO_ENABLED=0 GOOS=linux go build -o storage
 
 FROM alpine:latest
 
 WORKDIR /root/
 
-COPY --from=builder /app/fileStorage ./
+COPY --from=builder /app/storage ./
 
 COPY --from=builder /app/docs ./docs
 
@@ -26,4 +26,4 @@ COPY --from=builder /app/.env ./.env
 
 EXPOSE 8082
 
-CMD ["./fileStorage"]
+CMD ["./storage"]

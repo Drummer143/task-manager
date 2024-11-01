@@ -4,7 +4,6 @@ import (
 	"main/auth"
 	"main/dbClient"
 	"main/router"
-	"main/storage"
 	"main/validation"
 	"time"
 
@@ -37,15 +36,9 @@ func main() {
 		panic(err)
 	}
 
-	storage, err := storage.New()
-
-	if err != nil {
-		panic(err)
-	}
-
 	validate := validation.New()
 
-	r := router.New(auth, storage, DB, validate)
+	r := router.New(auth, DB, validate)
 
 	r.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://localhost:3000"},

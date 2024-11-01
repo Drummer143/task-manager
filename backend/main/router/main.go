@@ -11,7 +11,6 @@ import (
 	authRouter "main/router/auth"
 	profileRouter "main/router/profile"
 	tasksRouter "main/router/tasks"
-	"main/storage"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/sessions"
@@ -24,7 +23,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func New(auth *auth.Auth, storage *storage.Storage, db *gorm.DB, validate *validator.Validate) *gin.Engine {
+func New(auth *auth.Auth, db *gorm.DB, validate *validator.Validate) *gin.Engine {
 	router := gin.Default()
 
 	gob.Register(uuid.UUID{})
@@ -43,7 +42,7 @@ func New(auth *auth.Auth, storage *storage.Storage, db *gorm.DB, validate *valid
 	router.GET("/api", func(ctx *gin.Context) { ctx.Redirect(http.StatusFound, "/swagger/index.html") })
 
 	authRouter.AddRoutes(router.Group("auth"), auth, validate, db)
-	profileRouter.AddRoutes(router.Group("profile", IsAuthenticated(auth)), storage, validate, db)
+	profileRouter.AddRoutes(router.Group("profile", IsAuthenticated(auth)), validate, db)
 	tasksRouter.AddRoutes(router.Group("tasks", IsAuthenticated(auth)), db, validate)
 
 	return router

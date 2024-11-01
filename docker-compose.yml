@@ -22,9 +22,8 @@ services:
       - postgres
     environment:
       SELF_PORT: 8080
-      MAILER_HOST: mailer-service
-      MAILER_PORT: 8081
-      CLOUDINARY_URL: ${CLOUDINARY_URL}
+      MAILER_URL: http://mailer-service:8081
+      STORAGE_URL: http://storage-service:8082
       POSTGRES_DB_NAME: ${POSTGRES_DB_NAME}
       POSTGRES_USER: ${POSTGRES_USER}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -38,7 +37,7 @@ services:
     ports:
       - 8081:8081
     environment:
-      PORT: 8081
+      SELF_PORT: 8081
       EMAIL_ADDRESS: ${EMAIL_ADDRESS}
       EMAIL_PASSWORD: ${EMAIL_PASSWORD}
       CONFIRM_EMAIL_URL: ${CONFIRM_EMAIL_URL}
@@ -50,7 +49,8 @@ services:
     ports:
       - 8082:8082
     environment:
-      PORT: 8082
+      SELF_PORT: 8082
+      SELF_HOST: localhost
     networks:
       - net
     volumes:

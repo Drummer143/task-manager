@@ -35,7 +35,7 @@ func patchProfile(validate *validator.Validate, db *gorm.DB) gin.HandlerFunc {
 
 		var user dbClient.User
 
-		if err := db.First(&user, "user_id = ?", userId).Error; err != nil {
+		if err := db.First(&user, "id = ?", userId).Error; err != nil {
 			if err == gorm.ErrRecordNotFound {
 				errorHandlers.NotFound(ctx, "user not found")
 				return
