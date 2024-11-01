@@ -18,13 +18,14 @@ const SignUp: React.FC = () => {
 
     const { mutateAsync, error, isPending, reset } = useMutation({
         mutationFn: api.auth.signUp,
-        onSuccess: () => navigate('/login')
+        onSuccess: () => navigate('/profile', { replace: true })
     })
 
     const parsedError = useMemo(() => parseUseQueryError(error, undefined, [400]), [error])
 
     return (
         <LoginForm
+            headingText="Sign Up"
             submitText="Sign Up"
             onFinish={mutateAsync}
             error={parsedError}

@@ -1,4 +1,11 @@
 definitions:
+  authRouter.confirmEmailBody:
+    properties:
+      token:
+        type: string
+    required:
+    - token
+    type: object
   authRouter.loginBody:
     properties:
       email:
@@ -12,6 +19,8 @@ definitions:
   authRouter.signUpBody:
     properties:
       email:
+        maxLength: 30
+        minLength: 5
         type: string
       password:
         type: string
@@ -55,13 +64,13 @@ definitions:
         type: string
       email:
         type: string
-      email_verified:
+      emailVerified:
         type: boolean
       id:
         type: string
-      last_login:
+      lastLogin:
         type: string
-      last_password_reset:
+      lastPasswordReset:
         type: string
       picture:
         type: string
@@ -157,6 +166,38 @@ definitions:
 info:
   contact: {}
 paths:
+  /auth/confirm-email:
+    post:
+      consumes:
+      - application/json
+      description: Confirm email
+      parameters:
+      - description: Confirm email object
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/authRouter.confirmEmailBody'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "401":
+          description: Unauthorized if token is invalid
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "500":
+          description: Internal server error if server fails
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+      summary: Confirm email
+      tags:
+      - Auth
   /auth/login:
     post:
       consumes:

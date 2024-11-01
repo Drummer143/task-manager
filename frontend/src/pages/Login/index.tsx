@@ -17,7 +17,7 @@ const Login: React.FC = () => {
 
     const { mutateAsync, error, reset, isPending } = useMutation({
         mutationFn: api.auth.login,
-        onSuccess: () => navigate('/profile')
+        onSuccess: () => navigate('/profile', { replace: true })
     })
 
     const parsedError = useMemo(() => parseUseQueryError(error, undefined, [400]), [error])
@@ -27,6 +27,7 @@ const Login: React.FC = () => {
             onFinish={mutateAsync}
             onValuesChange={reset}
             submitText="Login"
+            headingText="Login"
             submitDisabled={!!parsedError}
             error={parsedError}
             submitLoading={isPending}

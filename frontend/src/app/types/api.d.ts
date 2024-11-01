@@ -1,17 +1,16 @@
 interface User {
-	createdAt: string;
+	id: string;
 	email: string;
-	emailVerified: boolean;
-	name: string;
-	nickname: string;
-	picture: string;
-	updatedAt: string;
-	userId: string;
 	username: string;
-	lastPasswordReset: string;
-	lastIp: string;
+	emailVerified: boolean;
+	
+	createdAt: string;
 	lastLogin: string;
-	loginsCount: number;
+	updatedAt: string;
+	lastPasswordReset: string;
+	
+	picture?: string | null;
+	deletedAt?: string | null;
 }
 
 type TaskStatus = 'not_done' | 'in_progress' | 'done';

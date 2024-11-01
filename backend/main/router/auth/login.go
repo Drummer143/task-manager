@@ -14,6 +14,11 @@ import (
 	"gorm.io/gorm"
 )
 
+type loginBody struct {
+	Email    string `json:"email" validate:"required"`
+	Password string `json:"password" validate:"required"`
+}
+
 // @Summary			Login
 // @Description		Login
 // @Tags			Auth
@@ -69,7 +74,7 @@ func login(auth *auth.Auth, validate *validator.Validate, db *gorm.DB) gin.Handl
 			return
 		}
 
-		token, err := auth.GenerateJWT(user.Email)
+		token, err := auth.GenerateJWT(user.Email, SESSION_TOKEN_LIFETIME)
 
 		if err != nil {
 			errorHandlers.InternalServerError(ctx, "failed to generate token")

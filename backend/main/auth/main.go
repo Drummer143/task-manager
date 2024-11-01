@@ -24,10 +24,10 @@ func New() (*Auth, error) {
 	}, nil
 }
 
-func (a *Auth) GenerateJWT(email string) (string, error) {
+func (a *Auth) GenerateJWT(email string, expiration time.Duration) (string, error) {
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
 		"email":  email,
-		"exp": time.Now().Add(24 * 7 * time.Hour).Unix(),
+		"exp": time.Now().Add(expiration).Unix(),
 	})
 
 	return token.SignedString(a.secretKey)

@@ -15,6 +15,55 @@ const docTemplate = `{
     "host": "{{.Host}}",
     "basePath": "{{.BasePath}}",
     "paths": {
+        "/auth/confirm-email": {
+            "post": {
+                "description": "Confirm email",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Auth"
+                ],
+                "summary": "Confirm email",
+                "parameters": [
+                    {
+                        "description": "Confirm email object",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/authRouter.confirmEmailBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized if token is invalid",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error if server fails",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/auth/login": {
             "post": {
                 "description": "Login",
@@ -670,6 +719,17 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "authRouter.confirmEmailBody": {
+            "type": "object",
+            "required": [
+                "token"
+            ],
+            "properties": {
+                "token": {
+                    "type": "string"
+                }
+            }
+        },
         "authRouter.loginBody": {
             "type": "object",
             "required": [
@@ -694,7 +754,9 @@ const docTemplate = `{
             ],
             "properties": {
                 "email": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 30,
+                    "minLength": 5
                 },
                 "password": {
                     "type": "string"
@@ -754,16 +816,16 @@ const docTemplate = `{
                 "email": {
                     "type": "string"
                 },
-                "email_verified": {
+                "emailVerified": {
                     "type": "boolean"
                 },
                 "id": {
                     "type": "string"
                 },
-                "last_login": {
+                "lastLogin": {
                     "type": "string"
                 },
-                "last_password_reset": {
+                "lastPasswordReset": {
                     "type": "string"
                 },
                 "picture": {

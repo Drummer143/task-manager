@@ -1,6 +1,7 @@
 package router
 
 import (
+	"fmt"
 	"net/http"
 
 	"mailer/mail"
@@ -35,6 +36,8 @@ func sendEmailConfirmation(mailer *mail.Mailer) gin.HandlerFunc {
 			errorHandlers.BadRequest(ctx, "invalid request", err)
 			return
 		}
+
+		fmt.Println(body.Token)
 
 		if err := mailer.SendEmailConfirmationMessage(body.Email, body.Token); err != nil {
 			errorHandlers.InternalServerError(ctx, "failed to send email confirmation")

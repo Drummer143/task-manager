@@ -1,4 +1,4 @@
-import { Button, FormProps } from 'antd'
+import { Button, Form, FormProps, Typography } from 'antd'
 import * as s from './styles'
 import ErrorMessage from 'shared/ui/ErrorMessage'
 import { memo } from 'react'
@@ -9,6 +9,7 @@ type LoginFormProps<Values> = Omit<FormProps<Values>, 'children' | 'layout'> & {
 
     error?: React.ReactNode
     bottomLink?: React.ReactNode
+    headingText?: React.ReactNode
     submitLoading?: boolean
     submitDisabled?: boolean
 }
@@ -20,11 +21,18 @@ const LoginForm = <Values,>({
     bottomLink,
     error,
     submitLoading,
+    headingText = 'Login',
     ...props
 }: LoginFormProps<Values>) => {
     return (
         <s.FormContainer>
             <s.Form {...props} layout="vertical">
+                <Form.Item>
+                    <Typography.Title className="text-center" level={3}>
+                        {headingText}
+                    </Typography.Title>
+                </Form.Item>
+
                 {children}
 
                 {error !== null && (
@@ -34,7 +42,12 @@ const LoginForm = <Values,>({
                 )}
 
                 <s.CenteredFormItem>
-                    <Button htmlType="submit" type="primary" disabled={submitDisabled} loading={submitLoading}>
+                    <Button
+                        htmlType="submit"
+                        type="primary"
+                        disabled={submitDisabled}
+                        loading={submitLoading}
+                    >
                         {submitText}
                     </Button>
                 </s.CenteredFormItem>

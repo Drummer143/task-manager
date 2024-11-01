@@ -9,13 +9,13 @@ import (
 type User struct {
 	ID                uuid.UUID  `gorm:"type:uuid;primaryKey;default:uuid_generate_v4()" json:"id"`
 	Email             string     `gorm:"type:varchar(63);unique;not null" json:"email"`
-	EmailVerified     bool       `gorm:"default:false" json:"email_verified"`
+	EmailVerified     bool       `gorm:"default:false" json:"emailVerified"`
 	Picture           *string    `gorm:"type:varchar(255)" json:"picture,omitempty"`
 	Username          string     `gorm:"type:varchar(63);not null" json:"username"`
-	LastPasswordReset *time.Time `gorm:"column:last_password_reset" json:"last_password_reset,omitempty"`
-	LastLogin         *time.Time `gorm:"column:last_login" json:"last_login,omitempty"`
-	CreatedAt         *time.Time  `gorm:"type:timestamptz,default:CURRENT_TIMESTAMP" json:"createdAt"`
-	UpdatedAt         *time.Time  `gorm:"type:timestamptz,default:CURRENT_TIMESTAMP" json:"updatedAt"`
+	LastPasswordReset *time.Time `gorm:"type:timestamptz" json:"lastPasswordReset,omitempty"`
+	LastLogin         time.Time  `gorm:"type:timestamptz" json:"lastLogin,omitempty"`
+	CreatedAt         *time.Time `gorm:"type:timestamptz,default:CURRENT_TIMESTAMP" json:"createdAt"`
+	UpdatedAt         *time.Time `gorm:"type:timestamptz,default:CURRENT_TIMESTAMP" json:"updatedAt"`
 	DeletedAt         *time.Time `gorm:"type:timestamptz" json:"deletedAt,omitempty"`
 }
 
@@ -28,8 +28,8 @@ type Task struct {
 	Description         *string    `gorm:"type:text" json:"description,omitempty"`
 	DueDate             *string    `gorm:"type:timestamp" json:"dueDate,omitempty"`
 	AssignedTo          *uuid.UUID `gorm:"type:uuid" json:"assignedTo,omitempty"`
-	CreatedAt           *time.Time  `gorm:"type:timestamptz,default:CURRENT_TIMESTAMP" json:"createdAt"`
-	UpdatedAt           *time.Time  `gorm:"type:timestamptz,default:CURRENT_TIMESTAMP" json:"updatedAt"`
+	CreatedAt           *time.Time `gorm:"type:timestamptz,default:CURRENT_TIMESTAMP" json:"createdAt"`
+	UpdatedAt           *time.Time `gorm:"type:timestamptz,default:CURRENT_TIMESTAMP" json:"updatedAt"`
 	DeletedAt           *time.Time `gorm:"type:timestamptz" json:"deletedAt,omitempty"`
 }
 
@@ -39,7 +39,7 @@ type UserCredentials struct {
 	PasswordHash           string     `gorm:"type:varchar(255);not null"`
 	PasswordResetToken     *string    `gorm:"type:varchar(255)"`
 	EmailVerificationToken *string    `gorm:"type:varchar(255)"`
-	CreatedAt              *time.Time  `gorm:"type:timestamptz,default:CURRENT_TIMESTAMP"`
-	UpdatedAt              *time.Time  `gorm:"type:timestamptz,default:CURRENT_TIMESTAMP"`
+	CreatedAt              *time.Time `gorm:"type:timestamptz,default:CURRENT_TIMESTAMP"`
+	UpdatedAt              *time.Time `gorm:"type:timestamptz,default:CURRENT_TIMESTAMP"`
 	DeletedAt              *time.Time `gorm:"type:timestamptz"`
 }
