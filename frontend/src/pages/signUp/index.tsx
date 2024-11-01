@@ -2,50 +2,55 @@ import { useMutation } from '@tanstack/react-query'
 import { Form, Input } from 'antd'
 import api from 'api'
 import React, { useMemo } from 'react'
-import { composeRules, email, required } from 'shared/validation'
 import { Link, useNavigate } from 'react-router-dom'
 import { parseUseQueryError } from 'shared/utils/errors'
+import { composeRules, email, password, range, required } from 'shared/validation'
 import LoginForm from 'widgets/LoginForm'
 
 const rules = {
+    username: composeRules(required(), range({ min: 5, max: 20, type: 'string' })),
     email: composeRules(required(), email()),
-    password: required()
+    password: composeRules(required(), password())
 }
 
-const Login: React.FC = () => {
+const SignUp: React.FC = () => {
     const navigate = useNavigate()
 
-    const { mutateAsync, error, reset, isPending } = useMutation({
-        mutationFn: api.auth.login,
-        onSuccess: () => navigate('/profile')
+    const { mutateAsync, error, isPending, reset } = useMutation({
+        mutationFn: api.auth.signUp,
+        onSuccess: () => navigate('/login')
     })
 
     const parsedError = useMemo(() => parseUseQueryError(error, undefined, [400]), [error])
 
     return (
         <LoginForm
+            submitText="Sign Up"
             onFinish={mutateAsync}
-            onValuesChange={reset}
-            submitText="Login"
-            submitDisabled={!!parsedError}
             error={parsedError}
             submitLoading={isPending}
+            submitDisabled={!!parsedError}
+            onValuesChange={reset}
             bottomLink={
                 <>
-                    Don't have an account?
-                    <Link to="/sign-up"> Sign up</Link>
+                    Already have an account?
+                    <Link to="/login"> Login</Link>
                 </>
             }
         >
+            <Form.Item name="username" label="Username" rules={rules.username}>
+                <Input placeholder="username" type="text" autoComplete="name" />
+            </Form.Item>
+
             <Form.Item name="email" label="Email" rules={rules.email}>
-                <Input placeholder="email@example.com" />
+                <Input type="email" placeholder="email@example.com" />
             </Form.Item>
 
             <Form.Item name="password" label="Password" rules={rules.password}>
-                <Input.Password placeholder="********" />
+                <Input.Password placeholder="********" autoComplete="new-password" />
             </Form.Item>
         </LoginForm>
     )
 }
 
-export default Login
+export default SignUp

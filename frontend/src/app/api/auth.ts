@@ -1,3 +1,5 @@
 import { axiosInstance } from "./base";
 
 export const login = async (body: { username: string, password: string }) => axiosInstance.post<User>("/auth/login", body)
+
+export const signUp = async (body: { username: string, email: string, password: string }) => axiosInstance.post<User>("/auth/sign-up", body)

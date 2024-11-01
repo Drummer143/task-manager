@@ -30,7 +30,7 @@ export const Form = styled(AntForm)`
 	}
 ` as typeof AntForm
 
-export const SubmitButtonContainer = styled(AntForm.Item)`
+export const CenteredFormItem = styled(AntForm.Item)`
 	display: flex;
 	justify-content: center;
 `

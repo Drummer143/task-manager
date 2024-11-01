@@ -32,8 +32,13 @@ export const max: MakeRuleFunc<{ max: number; type?: RuleObject["type"] | undefi
     { message: generateLengthMessage(args.type, "max", args.max), ...args }
 ];
 
+export const range: MakeRuleFunc<{ min: number; max: number; type?: RuleObject["type"] | undefined; }> = args => [
+    { message: generateLengthMessage(args.type, "min", args.min), min: args.min },
+    { message: generateLengthMessage(args.type, "max", args.max), max: args.max }
+]
+
 export const password: MakeRuleFunc = () => [
-    ...min({ min: 8, type: "string" }),
+    ...range({ min: 8, max: 16, type: "string" }),
     { pattern: /(?=.*[a-z])/, message: "Password must contain at least one lowercase letter" },
     { pattern: /(?=.*[A-Z])/, message: "Password must contain at least one uppercase letter" },
     { pattern: /(?=.*[0-9])/, message: "Password must contain at least one digit" },
@@ -41,7 +46,6 @@ export const password: MakeRuleFunc = () => [
         pattern: /(?=.*[!@#$%^&*()\-_=+[\]{}|;:'",<.>/?])/,
         message: "Password must contain at least one special character"
     },
-    ...max({ max: 16, type: "string" })
 ];
 
 export const composeRules = (...rules: Array<Rule[] | Rule>) => rules.flat();
