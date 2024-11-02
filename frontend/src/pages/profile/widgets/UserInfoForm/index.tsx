@@ -1,4 +1,4 @@
-import React, { useMemo } from 'react'
+import React from 'react'
 import { Button, Form, Input } from 'antd'
 
 import { required } from 'shared/validation'
@@ -6,17 +6,13 @@ import { useMutation, useQueryClient } from '@tanstack/react-query'
 import api from 'api'
 
 interface UserInfoFormProps {
-    name: string
-    nickname: string
     username: string
 }
 
 const requiredRule = required()
 
-const UserInfoForm: React.FC<UserInfoFormProps> = ({ name, nickname, username }) => {
+const UserInfoForm: React.FC<UserInfoFormProps> = (props) => {
     const queryClient = useQueryClient()
-
-    const initialValues = useMemo(() => ({ name, nickname, username }), [name, nickname, username])
 
     const { mutateAsync } = useMutation({
         mutationFn: api.profile.update,
@@ -26,17 +22,9 @@ const UserInfoForm: React.FC<UserInfoFormProps> = ({ name, nickname, username })
     })
 
     return (
-        <Form layout="vertical" initialValues={initialValues} onFinish={mutateAsync}>
-            <Form.Item label="Name" name="name" rules={requiredRule}>
-                <Input value={name} placeholder="Enter your name" />
-            </Form.Item>
-
-            <Form.Item label="Nickname" name="nickname" rules={requiredRule}>
-                <Input value={nickname} placeholder="Enter your nickname" />
-            </Form.Item>
-
+        <Form layout="vertical" initialValues={props} onFinish={mutateAsync}>
             <Form.Item label="Username" name="username" rules={requiredRule}>
-                <Input value={username} placeholder="Enter your username" />
+                <Input placeholder="Enter your username" />
             </Form.Item>
 
             <Form.Item>

@@ -16,4 +16,5 @@ func AddRoutes(group *gin.RouterGroup, auth *auth.Auth, validate *validator.Vali
 	group.POST("/login", login(auth, validate, db))
 	group.POST("/sign-up", signUp(auth, validate, db))
 	group.POST("/confirm-email", confirmEmail(auth, validate, db))
+	group.POST("/reset-password", resetPassword(auth, validate, db))
 }

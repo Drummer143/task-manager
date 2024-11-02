@@ -17,7 +17,8 @@ func New(mailer *mail.Mailer) *gin.Engine {
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	router.GET("/api", func(ctx *gin.Context) { ctx.Redirect(http.StatusFound, "/swagger/index.html") })
 
-	router.POST("/send-email-confirmation", sendEmailConfirmation(mailer))
+	router.POST("/send-email-confirmation", emailConfirmation(mailer))
+	router.POST("/send-reset-password", resetPassword(mailer))
 
 	return router
 }

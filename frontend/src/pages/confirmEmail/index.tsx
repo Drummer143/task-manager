@@ -3,22 +3,9 @@ import { Flex, Spin, Typography } from 'antd'
 import api from 'api'
 import React, { useEffect, useMemo, useRef } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import AuthPageMessageWrapper from 'shared/ui/AuthPageMessageWrapper'
 import { parseUseQueryError } from 'shared/utils/errors'
 import { useAuthStore } from 'store/auth'
-import styled from 'styled-components'
-
-const CenteredTypography = styled(Typography)`
-    height: 100%;
-
-	padding: 0 1rem;
-
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-
-    text-align: center;
-`
 
 const ConfirmEmail: React.FC = () => {
     const user = useAuthStore((state) => state.user)
@@ -59,7 +46,7 @@ const ConfirmEmail: React.FC = () => {
 
     if (!token) {
         return (
-            <CenteredTypography>
+            <AuthPageMessageWrapper>
                 <Typography.Title level={3}>Verification Error</Typography.Title>
 
                 <Typography.Paragraph>
@@ -73,7 +60,7 @@ const ConfirmEmail: React.FC = () => {
                 </Typography.Paragraph>
 
                 <Link to={user ? '/profile' : '/login'}>back to main page</Link>
-            </CenteredTypography>
+            </AuthPageMessageWrapper>
         )
     }
 
@@ -89,7 +76,7 @@ const ConfirmEmail: React.FC = () => {
 
     if (error) {
         return (
-            <CenteredTypography>
+            <AuthPageMessageWrapper>
                 <Typography.Title level={3}>Verification Error</Typography.Title>
 
                 <Typography.Paragraph>
@@ -98,12 +85,12 @@ const ConfirmEmail: React.FC = () => {
                 </Typography.Paragraph>
 
                 <Link to={user ? '/profile' : '/login'}>back to main page</Link>
-            </CenteredTypography>
+            </AuthPageMessageWrapper>
         )
     }
 
     return (
-        <CenteredTypography>
+        <AuthPageMessageWrapper>
             <Typography.Title level={3}>Email Confirmed</Typography.Title>
 
             <Typography.Paragraph>
@@ -115,7 +102,7 @@ const ConfirmEmail: React.FC = () => {
             </Typography.Paragraph>
 
             <Link to={user ? '/profile' : '/login'} replace>back to main page</Link>
-        </CenteredTypography>
+        </AuthPageMessageWrapper>
     )
 }
 

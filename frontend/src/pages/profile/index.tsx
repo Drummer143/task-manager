@@ -26,7 +26,7 @@ const Profile: React.FC = () => {
     return (
         <StyledFlex gap="2rem">
             <FormsContainer>
-                <UserInfoForm name={data.name} nickname={data.nickname} username={data.username} />
+                <UserInfoForm username={data.username} />
                 <EmailForm email={data.email} />
             </FormsContainer>
 

@@ -95,9 +95,7 @@ func signUp(auth *auth.Auth, validate *validator.Validate, db *gorm.DB) gin.Hand
 
 		url := os.Getenv("MAILER_URL") + "/send-email-confirmation"
 
-		var result map[string]interface{}
-
-		apiClient.Post(url, gin.H{"email": user.Email, "token": emailVerificationToken}, nil, result)
+		apiClient.Post(url, gin.H{"email": user.Email, "token": emailVerificationToken}, nil, nil)
 
 		ctx.JSON(http.StatusCreated, user)
 	}

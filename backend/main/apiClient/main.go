@@ -38,6 +38,10 @@ func parseResponse(resp *http.Response, result any) error {
 		return err
 	}
 
+	if resp.StatusCode == http.StatusNoContent {
+		return nil
+	}
+
 	return json.Unmarshal(data, &result)
 }
 

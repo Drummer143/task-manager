@@ -3,7 +3,7 @@ import * as s from './styles'
 import ErrorMessage from 'shared/ui/ErrorMessage'
 import { memo } from 'react'
 
-type LoginFormProps<Values> = Omit<FormProps<Values>, 'children' | 'layout'> & {
+type AuthFormProps<Values> = Omit<FormProps<Values>, 'children' | 'layout'> & {
     children: React.ReactNode
     submitText: string
 
@@ -14,7 +14,7 @@ type LoginFormProps<Values> = Omit<FormProps<Values>, 'children' | 'layout'> & {
     submitDisabled?: boolean
 }
 
-const LoginForm = <Values,>({
+const AuthForm = <Values,>({
     submitDisabled,
     submitText,
     children,
@@ -23,7 +23,7 @@ const LoginForm = <Values,>({
     submitLoading,
     headingText = 'Login',
     ...props
-}: LoginFormProps<Values>) => {
+}: AuthFormProps<Values>) => {
     return (
         <s.FormContainer>
             <s.Form {...props} layout="vertical">
@@ -58,4 +58,4 @@ const LoginForm = <Values,>({
     )
 }
 
-export default memo(LoginForm) as typeof LoginForm
+export default memo(AuthForm) as typeof AuthForm

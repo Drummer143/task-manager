@@ -3,7 +3,7 @@ import { axiosInstance } from "./base";
 
 export const get = async () => (await axiosInstance.get<User>("/profile")).data;
 
-export const update = async (data: Partial<Pick<User, "nickname" | "name" | "username">>) =>
+export const update = async (data: { username: string }) =>
 	(await axiosInstance.patch<User>("/profile", removeEmptyFields(data))).data;
 
 export const changeEmail = async (body: { email: string }) =>

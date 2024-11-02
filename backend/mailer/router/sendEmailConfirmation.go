@@ -10,27 +10,23 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-type SendEmailConfirmationRequest struct {
+type emailConfirmationRequest struct {
 	Email string `json:"email"`
 	Token string `json:"token"`
-}
-
-type SendEmailConfirmationResponse struct {
-	Message string `json:"message"`
 }
 
 // @Summary			Send email confirmation mail
 // @Description		Send email confirmation mail
 // @Accept			json
 // @Produce			json
-// @Param			body body SendEmailConfirmationRequest true "Send email confirmation object"
-// @Success			200 {object} SendEmailConfirmationResponse "Email confirmation sent"
+// @Param			body body emailConfirmationRequest true "Send email confirmation object"
+// @Success			204 "No Content"
 // @Failure			400 {object} errorHandlers.Error "Invalid request"
 // @Failure			500 {object} errorHandlers.Error "Internal server error if server fails"
 // @Router			/send-email-confirmation [post]
-func sendEmailConfirmation(mailer *mail.Mailer) gin.HandlerFunc {
+func emailConfirmation(mailer *mail.Mailer) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		var body SendEmailConfirmationRequest
+		var body emailConfirmationRequest
 
 		if err := ctx.BindJSON(&body); err != nil {
 			errorHandlers.BadRequest(ctx, "invalid request", err)
@@ -44,6 +40,6 @@ func sendEmailConfirmation(mailer *mail.Mailer) gin.HandlerFunc {
 			return
 		}
 
-		ctx.JSON(http.StatusOK, SendEmailConfirmationResponse{Message: "Email confirmation sent"})
+		ctx.Status(http.StatusNoContent)
 	}
 }

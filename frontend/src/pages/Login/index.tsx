@@ -5,7 +5,8 @@ import React, { useMemo } from 'react'
 import { composeRules, email, required } from 'shared/validation'
 import { Link, useNavigate } from 'react-router-dom'
 import { parseUseQueryError } from 'shared/utils/errors'
-import LoginForm from 'widgets/LoginForm'
+import AuthForm from 'widgets/AuthForm'
+import { ResetPasswordLink } from './styles'
 
 const rules = {
     email: composeRules(required(), email()),
@@ -23,7 +24,7 @@ const Login: React.FC = () => {
     const parsedError = useMemo(() => parseUseQueryError(error, undefined, [400]), [error])
 
     return (
-        <LoginForm
+        <AuthForm
             onFinish={mutateAsync}
             onValuesChange={reset}
             submitText="Login"
@@ -42,10 +43,15 @@ const Login: React.FC = () => {
                 <Input placeholder="email@example.com" />
             </Form.Item>
 
-            <Form.Item name="password" label="Password" rules={rules.password}>
+            <Form.Item
+                name="password"
+                label="Password"
+                rules={rules.password}
+                extra={<ResetPasswordLink to="/reset-password">Forgot password?</ResetPasswordLink>}
+            >
                 <Input.Password placeholder="********" />
             </Form.Item>
-        </LoginForm>
+        </AuthForm>
     )
 }
 

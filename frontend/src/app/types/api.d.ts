@@ -9,8 +9,8 @@ interface User {
 	updatedAt: string;
 	lastPasswordReset: string;
 	
-	picture?: string | null;
-	deletedAt?: string | null;
+	picture?: string;
+	deletedAt?: string;
 }
 
 type TaskStatus = 'not_done' | 'in_progress' | 'done';

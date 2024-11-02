@@ -16,6 +16,13 @@ definitions:
     - email
     - password
     type: object
+  authRouter.resetPasswordBody:
+    properties:
+      email:
+        type: string
+    required:
+    - email
+    type: object
   authRouter.signUpBody:
     properties:
       email:
@@ -226,6 +233,34 @@ paths:
           schema:
             $ref: '#/definitions/errorHandlers.Error'
       summary: Login
+      tags:
+      - Auth
+  /auth/reset-password:
+    post:
+      consumes:
+      - application/json
+      description: Reset password
+      parameters:
+      - description: Reset password object
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/authRouter.resetPasswordBody'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "500":
+          description: Internal server error if server fails
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+      summary: Reset password
       tags:
       - Auth
   /auth/sign-up:

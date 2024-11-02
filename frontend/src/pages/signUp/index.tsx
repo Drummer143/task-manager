@@ -5,7 +5,7 @@ import React, { useMemo } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { parseUseQueryError } from 'shared/utils/errors'
 import { composeRules, email, password, range, required } from 'shared/validation'
-import LoginForm from 'widgets/LoginForm'
+import AuthForm from 'widgets/AuthForm'
 
 const rules = {
     username: composeRules(required(), range({ min: 5, max: 20, type: 'string' })),
@@ -24,7 +24,7 @@ const SignUp: React.FC = () => {
     const parsedError = useMemo(() => parseUseQueryError(error, undefined, [400]), [error])
 
     return (
-        <LoginForm
+        <AuthForm
             headingText="Sign Up"
             submitText="Sign Up"
             onFinish={mutateAsync}
@@ -50,7 +50,7 @@ const SignUp: React.FC = () => {
             <Form.Item name="password" label="Password" rules={rules.password}>
                 <Input.Password placeholder="********" autoComplete="new-password" />
             </Form.Item>
-        </LoginForm>
+        </AuthForm>
     )
 }
 
