@@ -9,7 +9,7 @@ import (
 )
 
 type resetPasswordRequest struct {
-	Link  string `json:"link"`
+	Email  string `json:"email"`
 	Token string `json:"token"`
 }
 
@@ -26,9 +26,12 @@ func resetPassword(mailer *mail.Mailer) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var body resetPasswordRequest
 
-		ctx.BindJSON(&body)
+		if err := ctx.BindJSON(&body); err != nil {
+			errorHandlers.BadRequest(ctx, "invalid request", err)
+			return
+		}
 
-		if err := mailer.SendResetPasswordMessage(body.Link, body.Token); err != nil {
+		if err := mailer.SendResetPasswordMessage(body.Email, body.Token); err != nil {
 			errorHandlers.InternalServerError(ctx, "error while sending email")
 			return
 		}

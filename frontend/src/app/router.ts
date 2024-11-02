@@ -8,6 +8,7 @@ const Login = lazySuspense(() => import("pages/login"))
 const SignUp = lazySuspense(() => import("pages/signUp"))
 const ConfirmEmail = lazySuspense(() => import("pages/confirmEmail"))
 const ResetPassword = lazySuspense(() => import("pages/resetPassword"))
+const NewPassword = lazySuspense(() => import("pages/newPassword"))
 
 export default createBrowserRouter([
 	{
@@ -25,6 +26,10 @@ export default createBrowserRouter([
 	{
 		path: "/reset-password",
 		Component: ResetPassword
+	},
+	{
+		path: "/new-password",
+		Component: NewPassword
 	},
 	{
 		path: "/profile",

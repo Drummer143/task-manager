@@ -38,6 +38,13 @@ definitions:
     - password
     - username
     type: object
+  authRouter.verifyResetPasswordTokenRequest:
+    properties:
+      token:
+        type: string
+    required:
+    - token
+    type: object
   dbClient.Task:
     properties:
       assignedTo:
@@ -291,6 +298,34 @@ paths:
           schema:
             $ref: '#/definitions/errorHandlers.Error'
       summary: Sign up
+      tags:
+      - Auth
+  /auth/verify-reset-password-token:
+    post:
+      consumes:
+      - application/json
+      description: Verify reset password token
+      parameters:
+      - description: Verify reset password token object
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/authRouter.verifyResetPasswordTokenRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "500":
+          description: Internal server error if server fails
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+      summary: Verify reset password token
       tags:
       - Auth
   /profile:

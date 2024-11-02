@@ -19,7 +19,7 @@ import (
 
 type signUpBody struct {
 	Email    string `json:"email" validate:"required,email,min=5,max=30"`
-	Password string `json:"password" validate:"required"`
+	Password string `json:"password" validate:"required,min=8,max=16"`
 	Username string `json:"username" validate:"required"`
 }
 

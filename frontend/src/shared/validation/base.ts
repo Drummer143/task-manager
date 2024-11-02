@@ -48,4 +48,17 @@ export const password: MakeRuleFunc = () => [
     },
 ];
 
+export const confirmPassword: MakeRuleFunc = () => [
+    ...required(),
+    ({ getFieldValue }) => ({
+        validator: (_, value) => {
+            if (!value || getFieldValue('password') === value) {
+                return Promise.resolve()
+            }
+
+            return Promise.reject(new Error("Passwords do not match"));
+        }
+    })
+]
+
 export const composeRules = (...rules: Array<Rule[] | Rule>) => rules.flat();

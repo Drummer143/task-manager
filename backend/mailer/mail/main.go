@@ -40,12 +40,12 @@ func (m *Mailer) createBody(body io.Writer, tmplFile string, data any) error {
 	return tmpl.Execute(body, data)
 }
 
-func (m *Mailer) createMessage(to string, body string) *gomail.Message {
+func (m *Mailer) createMessage(to string, body string, subject string) *gomail.Message {
 	message := gomail.NewMessage()
 
 	message.SetHeader("From", m.dialer.Username)
 	message.SetHeader("To", "<"+to+">")
-	message.SetHeader("Subject", "Confirm your email address")
+	message.SetHeader("Subject", subject)
 
 	message.SetBody("text/html", body)
 
@@ -61,11 +61,11 @@ func (m *Mailer) SendEmailConfirmationMessage(to string, token string) error {
 		return err
 	}
 
-	return m.dialer.DialAndSend(m.createMessage(to, body.String()))
+	return m.dialer.DialAndSend(m.createMessage(to, body.String(), "Confirm your email address"))
 }
 
 func (m *Mailer) SendResetPasswordMessage(to string, token string) error {
-	url := os.Getenv("RESET_PASSWORD_EMAIL_URL")
+	url := os.Getenv("RESET_PASSWORD_EMAIL_URL") + token
 
 	var body strings.Builder
 
@@ -73,5 +73,5 @@ func (m *Mailer) SendResetPasswordMessage(to string, token string) error {
 		return nil
 	}
 
-	return m.dialer.DialAndSend(m.createMessage(to, body.String()))
+	return m.dialer.DialAndSend(m.createMessage(to, body.String(), "Reset your password"))
 }

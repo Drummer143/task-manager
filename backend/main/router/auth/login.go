@@ -6,6 +6,7 @@ import (
 	"main/router/errorHandlers"
 	"main/validation"
 	"net/http"
+	"time"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -80,6 +81,8 @@ func login(auth *auth.Auth, validate *validator.Validate, db *gorm.DB) gin.Handl
 			errorHandlers.InternalServerError(ctx, "failed to generate token")
 			return
 		}
+
+		db.Model(&user).Update("last_login", time.Now())
 
 		session := sessions.Default(ctx)
 

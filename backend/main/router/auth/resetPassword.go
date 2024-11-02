@@ -67,7 +67,7 @@ func resetPassword(auth *auth.Auth, validate *validator.Validate, db *gorm.DB) g
 			return
 		}
 
-		url := os.Getenv("MAILER_URL") + "/send-email-confirmation"
+		url := os.Getenv("MAILER_URL") + "/send-reset-password"
 
 		if err := apiClient.Post(url, gin.H{"email": user.Email, "token": resetPasswordToken}, nil, nil); err != nil {
 			println(err.Error())
