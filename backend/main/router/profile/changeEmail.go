@@ -14,6 +14,10 @@ import (
 	"gorm.io/gorm"
 )
 
+type changeEmailBody struct {
+	Email string `json:"email" validate:"required,email"`
+}
+
 // @Summary			Change user email
 // @Description		Update email of the current user
 // @Tags			Profile

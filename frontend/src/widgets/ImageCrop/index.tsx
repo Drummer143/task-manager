@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useRef, useState } from 'react'
 import Cropper, { Area } from 'react-easy-crop'
 import { Modal } from 'antd'
-import { useStyles } from './styles'
+import { CropWrapper } from './styles'
 
 interface ImageCropProps {
     onCropFinish: (croppedAreaPixels: Area) => void
@@ -17,8 +17,6 @@ const ImageCrop: React.FC<ImageCropProps> = ({ image, isOpen, onCancel, onCropFi
     const [crop, setCrop] = useState({ x: 0, y: 0 })
     const [imageUrl, setImageUrl] = useState<string | undefined>(undefined)
     const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | undefined>(undefined)
-
-    const { styles } = useStyles()
 
     const cropWrapperRef = useRef<HTMLDivElement | null>(null)
 
@@ -49,7 +47,7 @@ const ImageCrop: React.FC<ImageCropProps> = ({ image, isOpen, onCancel, onCropFi
             onCancel={handleClose}
             onOk={() => onCropFinish(croppedAreaPixels!)}
         >
-            <div className={styles.cropWrapper} ref={cropWrapperRef}>
+            <CropWrapper ref={cropWrapperRef}>
                 <Cropper
                     crop={crop}
                     zoom={zoom}
@@ -59,7 +57,7 @@ const ImageCrop: React.FC<ImageCropProps> = ({ image, isOpen, onCancel, onCropFi
                     image={imageUrl}
                     onCropComplete={handleCropComplete}
                 />
-            </div>
+            </CropWrapper>
         </Modal>
     )
 }

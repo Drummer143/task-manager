@@ -1,12 +1,10 @@
-import { createStyles } from 'antd-style'
+import { styled } from "styled-components"
 
-export const useStyles = createStyles(({ css }) => ({
-	cropWrapper: css`
-        position: relative;
+export const CropWrapper = styled.div`
+    position: relative;
 
-        width: 100%;
-        height: 350px;
+    width: 100%;
+    height: 350px;
 
-        margin-top: 1rem;
-    `
-}))
+    margin-top: 1rem;
+`

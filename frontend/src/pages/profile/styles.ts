@@ -1,10 +1,10 @@
-import { createStyles } from "antd-style"
+import { Flex } from "antd"
+import styled from "styled-components"
 
-export const useStyles = createStyles(({ css }) => ({
-	wrapper: css`
-		padding: 1rem 16%;
-	`,
-	formsContainer: css`
-		flex: 1;
-	`,
-}))
+export const StyledFlex = styled(Flex)`
+	padding: 1rem 16%;
+`
+
+export const FormsContainer = styled.div`
+	flex: 1;
+`

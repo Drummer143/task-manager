@@ -6,6 +6,7 @@ import (
 	"main/router/errorHandlers"
 	"main/validation"
 	"net/http"
+	"time"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -13,6 +14,11 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
+
+type loginBody struct {
+	Email    string `json:"email" validate:"required"`
+	Password string `json:"password" validate:"required"`
+}
 
 // @Summary			Login
 // @Description		Login
@@ -54,7 +60,7 @@ func login(auth *auth.Auth, validate *validator.Validate, db *gorm.DB) gin.Handl
 
 		var credentials dbClient.UserCredentials
 
-		if err := db.Where("id = ?", user.ID).First(&credentials).Error; err != nil {
+		if err := db.Where("user_id = ?", user.ID).First(&credentials).Error; err != nil {
 			if err == gorm.ErrRecordNotFound {
 				errorHandlers.BadRequest(ctx, "user with that email not found", nil)
 				return
@@ -69,12 +75,14 @@ func login(auth *auth.Auth, validate *validator.Validate, db *gorm.DB) gin.Handl
 			return
 		}
 
-		token, err := auth.GenerateJWT(user.Email)
+		token, err := auth.GenerateJWT(user.Email, SESSION_TOKEN_LIFETIME)
 
 		if err != nil {
 			errorHandlers.InternalServerError(ctx, "failed to generate token")
 			return
 		}
+
+		db.Model(&user).Update("last_login", time.Now())
 
 		session := sessions.Default(ctx)
 

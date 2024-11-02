@@ -14,6 +14,10 @@ import (
 	"gorm.io/gorm"
 )
 
+type patchProfileBody struct {
+	Username string `json:"username" validate:"required"`
+}
+
 // @Summary			Update current user profile
 // @Description		This endpoint updates the user profile information in the Auth0 Management API using the user's ID from the session. The ID is obtained from the session and used to query the user data from the external identity provider (Auth0). The user must be authenticated, and a valid session must exist. The request body must contain valid JSON data representing the user profile information.
 // @Tags			Profile

@@ -8,6 +8,7 @@ import (
 	"main/validation"
 	"net/http"
 	"os"
+	"time"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -15,6 +16,12 @@ import (
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
+
+type signUpBody struct {
+	Email    string `json:"email" validate:"required,email,min=5,max=30"`
+	Password string `json:"password" validate:"required,min=8,max=16"`
+	Username string `json:"username" validate:"required"`
+}
 
 // @Summary			Sign up
 // @Description		Sign up
@@ -45,6 +52,7 @@ func signUp(auth *auth.Auth, validate *validator.Validate, db *gorm.DB) gin.Hand
 		if err := db.Create(&dbClient.User{
 			Email:    body.Email,
 			Username: body.Username,
+			LastLogin: time.Now(),
 		}).Error; err != nil {
 			if err.Error() == "ERROR: duplicate key value violates unique constraint \"users_email_key\" (SQLSTATE 23505)" {
 				errorHandlers.BadRequest(ctx, "user with this email already exists", nil)
@@ -63,9 +71,12 @@ func signUp(auth *auth.Auth, validate *validator.Validate, db *gorm.DB) gin.Hand
 
 		db.First(&user, "email = ?", body.Email)
 
+		emailVerificationToken, _ := auth.GenerateJWT(user.Email, EMAIL_VERIFICATION_TOKEN_LIFETIME)
+
 		if err := db.Create(&dbClient.UserCredentials{
 			UserID:       user.ID,
 			PasswordHash: string(passwordHash),
+			EmailVerificationToken: &emailVerificationToken,
 		}).Error; err != nil {
 			errorHandlers.InternalServerError(ctx, "failed to create user credentials")
 
@@ -74,7 +85,7 @@ func signUp(auth *auth.Auth, validate *validator.Validate, db *gorm.DB) gin.Hand
 			return
 		}
 
-		token, _ := auth.GenerateJWT(user.Email)
+		token, _ := auth.GenerateJWT(user.Email, SESSION_TOKEN_LIFETIME)
 
 		session := sessions.Default(ctx)
 
@@ -84,9 +95,7 @@ func signUp(auth *auth.Auth, validate *validator.Validate, db *gorm.DB) gin.Hand
 
 		url := os.Getenv("MAILER_URL") + "/send-email-confirmation"
 
-		var result map[string]interface{}
-
-		apiClient.Post(url, gin.H{"email": user.Email, "token": token}, nil, result)
+		apiClient.Post(url, gin.H{"email": user.Email, "token": emailVerificationToken}, nil, nil)
 
 		ctx.JSON(http.StatusCreated, user)
 	}
