@@ -7,6 +7,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { parseUseQueryError } from 'shared/utils/errors'
 import AuthForm from 'widgets/AuthForm'
 import { ResetPasswordLink } from './styles'
+import { withAuthPageProtection } from 'shared/HOCs/withAuthPageProtection'
 
 const rules = {
     email: composeRules(required(), email()),
@@ -55,4 +56,4 @@ const Login: React.FC = () => {
     )
 }
 
-export default Login
+export default withAuthPageProtection(Login)

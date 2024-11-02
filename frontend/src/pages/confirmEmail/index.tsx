@@ -101,7 +101,9 @@ const ConfirmEmail: React.FC = () => {
                 You will be redirected to the main page in 5 seconds.
             </Typography.Paragraph>
 
-            <Link to={user ? '/profile' : '/login'} replace>back to main page</Link>
+            <Link to={user ? '/profile' : '/login'} replace>
+                back to main page
+            </Link>
         </AuthPageMessageWrapper>
     )
 }

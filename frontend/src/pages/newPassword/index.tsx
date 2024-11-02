@@ -4,6 +4,7 @@ import { Rule } from 'antd/es/form'
 import api from 'api'
 import React, { useCallback, useEffect, useMemo, useRef } from 'react'
 import { Link, useNavigate, useSearchParams } from 'react-router-dom'
+import { withAuthPageProtection } from 'shared/HOCs/withAuthPageProtection'
 import AuthPageMessageWrapper from 'shared/ui/AuthPageMessageWrapper'
 import { parseUseQueryError } from 'shared/utils/errors'
 import { confirmPassword, password } from 'shared/validation'
@@ -157,4 +158,4 @@ const NewPassword: React.FC = () => {
     )
 }
 
-export default NewPassword
+export default withAuthPageProtection(NewPassword)

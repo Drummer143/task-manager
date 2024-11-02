@@ -3,6 +3,7 @@ import { Form, Input } from 'antd'
 import api from 'api'
 import React, { useMemo } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
+import { withAuthPageProtection } from 'shared/HOCs/withAuthPageProtection'
 import { parseUseQueryError } from 'shared/utils/errors'
 import { composeRules, email, password, range, required } from 'shared/validation'
 import AuthForm from 'widgets/AuthForm'
@@ -54,4 +55,4 @@ const SignUp: React.FC = () => {
     )
 }
 
-export default SignUp
+export default withAuthPageProtection(SignUp)
