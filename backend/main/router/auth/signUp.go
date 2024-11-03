@@ -1,7 +1,6 @@
 package authRouter
 
 import (
-	"main/apiClient"
 	"main/auth"
 	"main/dbClient"
 	"main/router/errorHandlers"
@@ -13,6 +12,7 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+	"github.com/go-resty/resty/v2"
 	"golang.org/x/crypto/bcrypt"
 	"gorm.io/gorm"
 )
@@ -95,7 +95,7 @@ func signUp(auth *auth.Auth, validate *validator.Validate, db *gorm.DB) gin.Hand
 
 		url := os.Getenv("MAILER_URL") + "/send-email-confirmation"
 
-		apiClient.Post(url, gin.H{"email": user.Email, "token": emailVerificationToken}, nil, nil)
+		resty.New().R().SetBody(gin.H{"email": user.Email, "token": emailVerificationToken}).Post(url)
 
 		ctx.JSON(http.StatusCreated, user)
 	}

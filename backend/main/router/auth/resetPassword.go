@@ -1,7 +1,6 @@
 package authRouter
 
 import (
-	"main/apiClient"
 	"main/auth"
 	"main/dbClient"
 	"main/router/errorHandlers"
@@ -11,6 +10,7 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+	"github.com/go-resty/resty/v2"
 	"gorm.io/gorm"
 )
 
@@ -69,8 +69,7 @@ func resetPassword(auth *auth.Auth, validate *validator.Validate, db *gorm.DB) g
 
 		url := os.Getenv("MAILER_URL") + "/send-reset-password"
 
-		if err := apiClient.Post(url, gin.H{"email": user.Email, "token": resetPasswordToken}, nil, nil); err != nil {
-			println(err.Error())
+		if resp, err := resty.New().R().SetBody(gin.H{"email": user.Email, "token": resetPasswordToken}).Post(url); err != nil || resp.StatusCode() > 299 {
 			errorHandlers.InternalServerError(ctx, "failed to send email")
 			return
 		}
