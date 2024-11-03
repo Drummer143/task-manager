@@ -4,21 +4,17 @@ import { create } from "zustand";
 interface authState {
 	user?: User
 
-	getSession: () => Promise<boolean>
+	getSession: () => Promise<void>
 }
 
 export const useAuthStore = create<authState>((set) => ({
 	getSession: async () => {
+		let user: User | undefined = undefined;
+
 		try {
-			const user = await api.profile.get();
+			user = await api.profile.get();
+		} catch { /* empty */ }
 
-			set({ user });
-
-			return true;
-		} catch {
-			set({ user: undefined });
-
-			return false;
-		}
+		set({ user });
 	}
 }));
