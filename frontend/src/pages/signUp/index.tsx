@@ -6,6 +6,7 @@ import { Link, useNavigate } from 'react-router-dom'
 import { withAuthPageProtection } from 'shared/HOCs/withAuthPageProtection'
 import { parseUseQueryError } from 'shared/utils/errors'
 import { composeRules, email, password, range, required } from 'shared/validation'
+import { useAuthStore } from 'store/auth'
 import AuthForm from 'widgets/AuthForm'
 
 const rules = {
@@ -15,11 +16,17 @@ const rules = {
 }
 
 const SignUp: React.FC = () => {
+    const setSession = useAuthStore((state) => state.setSession)
+
     const navigate = useNavigate()
 
     const { mutateAsync, error, isPending, reset } = useMutation({
         mutationFn: api.auth.signUp,
-        onSuccess: () => navigate('/profile', { replace: true })
+        onSuccess: (user) => {
+            setSession(user)
+
+            navigate('/profile', { replace: true })
+        }
     })
 
     const parsedError = useMemo(() => parseUseQueryError(error, undefined, [400]), [error])

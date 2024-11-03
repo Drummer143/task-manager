@@ -9,10 +9,11 @@ import (
 	"gorm.io/gorm"
 )
 
-const EMAIL_VERIFICATION_TOKEN_LIFETIME = 30 * time.Minute
 const SESSION_TOKEN_LIFETIME = 24 * 7 * time.Hour
+const EMAIL_VERIFICATION_TOKEN_LIFETIME = 30 * time.Minute
 
 func AddRoutes(group *gin.RouterGroup, auth *auth.Auth, validate *validator.Validate, db *gorm.DB) {
+	group.GET("/logout", logout)
 	group.GET("/verify-reset-password-token", verifyResetPasswordToken(auth, db))
 
 	group.POST("/login", login(auth, validate, db))
