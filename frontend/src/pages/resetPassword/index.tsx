@@ -3,7 +3,7 @@ import { Form, Input, Typography } from 'antd'
 import api from 'api'
 import React, { useMemo } from 'react'
 import { Link } from 'react-router-dom'
-import { withAuthPageProtection } from 'shared/HOCs/withAuthPageProtection'
+import { withAuthPageCheck } from 'shared/HOCs/withAuthPageCheck'
 import AuthPageMessageWrapper from 'shared/ui/AuthPageMessageWrapper'
 import { parseUseQueryError } from 'shared/utils/errors'
 import { composeRules, email, required } from 'shared/validation'
@@ -58,4 +58,4 @@ const ResetPassword: React.FC = () => {
     )
 }
 
-export default withAuthPageProtection(ResetPassword)
+export default withAuthPageCheck(ResetPassword, false)
