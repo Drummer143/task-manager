@@ -1,33 +1,13 @@
-import React, { useMemo } from 'react'
-import { Avatar, Dropdown, Flex, MenuProps, Spin } from 'antd'
+import React from 'react'
+import { Dropdown, Flex, Spin } from 'antd'
 import { useAuthStore } from 'store/auth'
-import { UserMenuTrigger } from './styles'
-import api from 'api'
-import { useNavigate } from 'react-router-dom'
-import { useMutation } from '@tanstack/react-query'
+import { useUserMenuItems } from 'widgets/Layout/useUserMenuItems'
+import UserMenuInfo from 'widgets/Layout/UserMenuInfo'
 
 const UserMenu: React.FC = () => {
-    const { user, loading, clear } = useAuthStore((state) => state)
+    const { user, loading } = useAuthStore((state) => state)
 
-    const navigate = useNavigate()
-
-    const { mutateAsync } = useMutation({
-        mutationFn: () => api.auth.logout().then(clear),
-        onSuccess: () => navigate('/login', { replace: true })
-    })
-
-    const menu: MenuProps = useMemo(
-        () => ({
-            items: [
-                {
-                    key: 'logout',
-                    label: 'Log out',
-                    onClick: async () => mutateAsync()
-                }
-            ]
-        }),
-        [mutateAsync]
-    )
+    const menu = useUserMenuItems()
 
     if (loading) {
         return (
@@ -39,11 +19,7 @@ const UserMenu: React.FC = () => {
 
     return (
         <Dropdown menu={menu} trigger={['click']} placement="bottomRight">
-            <UserMenuTrigger>
-                <p>{user?.username}</p>
-
-                <Avatar src={user?.picture || 'avatar-placeholder-32.jpg'} />
-            </UserMenuTrigger>
+            <UserMenuInfo username={user?.username} picture={user?.picture} />
         </Dropdown>
     )
 }
