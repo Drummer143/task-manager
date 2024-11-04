@@ -11,11 +11,9 @@ type AuthFormProps<Values> = Omit<FormProps<Values>, 'children' | 'layout'> & {
     bottomLink?: React.ReactNode
     headingText?: React.ReactNode
     submitLoading?: boolean
-    submitDisabled?: boolean
 }
 
 const AuthForm = <Values,>({
-    submitDisabled,
     submitText,
     children,
     bottomLink,
@@ -45,7 +43,6 @@ const AuthForm = <Values,>({
                     <Button
                         htmlType="submit"
                         type="primary"
-                        disabled={submitDisabled}
                         loading={submitLoading}
                     >
                         {submitText}

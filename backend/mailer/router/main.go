@@ -3,6 +3,7 @@ package router
 import (
 	"mailer/mail"
 	"net/http"
+	"os"
 
 	_ "mailer/docs"
 
@@ -12,6 +13,12 @@ import (
 )
 
 func New(mailer *mail.Mailer) *gin.Engine {
+	ginModeEnv := os.Getenv("GIN_MODE")
+
+	if ginModeEnv == "release" {
+		gin.SetMode(gin.ReleaseMode)
+	}
+
 	router := gin.Default()
 
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))

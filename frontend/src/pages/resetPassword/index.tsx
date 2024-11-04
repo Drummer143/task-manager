@@ -40,7 +40,6 @@ const ResetPassword: React.FC = () => {
             onFinish={mutateAsync}
             error={parsedError}
             submitLoading={isPending}
-            submitDisabled={!!parsedError}
             onValuesChange={reset}
             bottomLink={
                 <Link to="/login">Back to login</Link>

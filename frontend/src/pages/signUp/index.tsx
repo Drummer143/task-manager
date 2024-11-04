@@ -38,7 +38,6 @@ const SignUp: React.FC = () => {
             onFinish={mutateAsync}
             error={parsedError}
             submitLoading={isPending}
-            submitDisabled={!!parsedError}
             onValuesChange={reset}
             bottomLink={
                 <>

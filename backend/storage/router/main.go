@@ -2,6 +2,7 @@ package router
 
 import (
 	"net/http"
+	"os"
 	_ "storage/docs"
 
 	"github.com/gin-gonic/gin"
@@ -10,6 +11,12 @@ import (
 )
 
 func New() *gin.Engine {
+	ginModeEnv := os.Getenv("GIN_MODE")
+
+	if ginModeEnv == "release" {
+		gin.SetMode(gin.ReleaseMode)
+	}
+
 	router := gin.Default()
 
 	router.Static("/files", "./static")

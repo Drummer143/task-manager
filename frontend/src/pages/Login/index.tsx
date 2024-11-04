@@ -37,7 +37,6 @@ const Login: React.FC = () => {
             onValuesChange={reset}
             submitText="Login"
             headingText="Login"
-            submitDisabled={!!parsedError}
             error={parsedError}
             submitLoading={isPending}
             bottomLink={

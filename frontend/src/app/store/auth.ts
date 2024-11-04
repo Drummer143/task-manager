@@ -24,7 +24,9 @@ export const useAuthStore = create<authState>((set) => ({
 		let user: User | undefined = undefined;
 
 		try {
-			user = await api.profile.get();
+			if (document.cookie) {
+				user = await api.profile.get();
+			}
 		} catch { /* empty */ }
 
 		set({ user, loading: false });

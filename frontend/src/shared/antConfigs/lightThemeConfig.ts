@@ -8,8 +8,7 @@ export default {
             triggerBg: '#f5f5f5',
             headerBg: '#fafafa',
             siderBg: '#fafafa',
-        },
-
+        }
     },
     token: {
         colorBgLayout: '#fff',
