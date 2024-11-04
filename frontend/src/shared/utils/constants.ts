@@ -16,6 +16,6 @@ export const statusColors: Record<TaskStatus, string> = {
 
 export const updateOpacity = (rgba: string, opacity: number) => {
 	return rgba.replace(/rgba\((\d+),\s*(\d+),\s*(\d+),\s*(\d+(?:\.\d+)?)\)/, `rgba($1, $2, $3, ${opacity})`);
-}
+};
 
 export const today = dayjs();

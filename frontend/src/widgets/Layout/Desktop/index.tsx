@@ -1,33 +1,34 @@
-import { Layout } from 'antd'
-import React from 'react'
-import { Outlet } from 'react-router-dom'
-import UserMenu from './UserMenu'
-import * as s from './styles'
+import React from "react";
+
+import { Layout } from "antd";
+import { Outlet } from "react-router-dom";
+
+import * as s from "./styles";
+import UserMenu from "./UserMenu";
 
 const DesktopLayout: React.FC = () => {
-    return (
-        <Layout className="h-full">
-            <Layout.Sider collapsible breakpoint="xl">
-                sider
-            </Layout.Sider>
+	return (
+		<Layout className="h-full">
+			<Layout.Sider collapsible breakpoint="xl">
+				sider
+			</Layout.Sider>
 
-            <s.Divider type="vertical" className='h-full' />
+			<s.Divider type="vertical" className="h-full" />
 
-            <Layout className="h-full">
-                <s.Header>
-                    header
+			<Layout className="h-full">
+				<s.Header>
+					header
+					<UserMenu />
+				</s.Header>
 
-                    <UserMenu />
-                </s.Header>
+				<s.Divider />
 
-                <s.Divider />
+				<Layout.Content>
+					<Outlet />
+				</Layout.Content>
+			</Layout>
+		</Layout>
+	);
+};
 
-                <Layout.Content>
-                    <Outlet />
-                </Layout.Content>
-            </Layout>
-        </Layout>
-    )
-}
-
-export default DesktopLayout
+export default DesktopLayout;

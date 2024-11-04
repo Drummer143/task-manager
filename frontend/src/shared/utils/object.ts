@@ -10,4 +10,4 @@ export const removeEmptyFields = <T extends object>(obj: T) => {
 	}
 
 	return newObj;
-}
+};

@@ -2,7 +2,7 @@ import { Flex } from "antd";
 import styled from "styled-components";
 
 export const StyledFlex = styled(Flex)`
-    padding: 0.5rem 0;
+	padding: 0.5rem 0;
 
-    overflow-x: auto;
-`
+	overflow-x: auto;
+`;

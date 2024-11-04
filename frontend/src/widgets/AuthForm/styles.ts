@@ -12,7 +12,7 @@ export const FormContainer = styled.div`
 	@media screen and (max-width: 480px) {
 		padding: 0 0.5rem;
 	}
-`
+`;
 
 export const Form = styled(AntForm)`
 	width: 25%;
@@ -28,9 +28,9 @@ export const Form = styled(AntForm)`
 	@media screen and (max-width: 480px) {
 		width: 100%;
 	}
-` as typeof AntForm
+` as typeof AntForm;
 
 export const CenteredFormItem = styled(AntForm.Item)`
 	display: flex;
 	justify-content: center;
-`
+`;

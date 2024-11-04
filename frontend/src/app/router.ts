@@ -4,13 +4,13 @@ import { lazySuspense } from "shared/HOCs/lazySuspense";
 import AuthLayout from "widgets/AuthLayout";
 import Layout from "widgets/Layout";
 
-const Tasks = lazySuspense(() => import("pages/tasks"))
-const Profile = lazySuspense(() => import("pages/profile"))
-const Login = lazySuspense(() => import("pages/login"))
-const SignUp = lazySuspense(() => import("pages/signUp"))
-const ConfirmEmail = lazySuspense(() => import("pages/confirmEmail"))
-const ResetPassword = lazySuspense(() => import("pages/resetPassword"))
-const NewPassword = lazySuspense(() => import("pages/newPassword"))
+const Tasks = lazySuspense(() => import("pages/tasks"));
+const Profile = lazySuspense(() => import("pages/profile"));
+const Login = lazySuspense(() => import("pages/login"));
+const SignUp = lazySuspense(() => import("pages/signUp"));
+const ConfirmEmail = lazySuspense(() => import("pages/confirmEmail"));
+const ResetPassword = lazySuspense(() => import("pages/resetPassword"));
+const NewPassword = lazySuspense(() => import("pages/newPassword"));
 
 export default createBrowserRouter([
 	{
@@ -36,7 +36,7 @@ export default createBrowserRouter([
 			{
 				path: "/new-password",
 				Component: NewPassword
-			},
+			}
 		]
 	},
 	{
@@ -53,4 +53,4 @@ export default createBrowserRouter([
 			}
 		]
 	}
-])
+]);

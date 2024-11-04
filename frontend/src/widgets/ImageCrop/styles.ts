@@ -1,10 +1,10 @@
-import { styled } from "styled-components"
+import { styled } from "styled-components";
 
 export const CropWrapper = styled.div`
-    position: relative;
+	position: relative;
 
-    width: 100%;
-    height: 350px;
+	width: 100%;
+	height: 350px;
 
-    margin-top: 1rem;
-`
+	margin-top: 1rem;
+`;

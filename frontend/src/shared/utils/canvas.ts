@@ -1,4 +1,4 @@
-import { statusColors } from "./constants"
+import { statusColors } from "./constants";
 
 export const drawRoundedRect = (
 	context: CanvasRenderingContext2D,
@@ -8,45 +8,47 @@ export const drawRoundedRect = (
 	height: number,
 	radius: number
 ) => {
-	context.beginPath()
-	context.moveTo(x + radius, y)
-	context.lineTo(x + width - radius, y)
-	context.arcTo(x + width, y, x + width, y + radius, radius)
-	context.lineTo(x + width, y + height - radius)
-	context.arcTo(x + width, y + height, x + width - radius, y + height, radius)
-	context.lineTo(x + radius, y + height)
-	context.arcTo(x, y + height, x, y + height - radius, radius)
-	context.lineTo(x, y + radius)
-	context.arcTo(x, y, x + radius, y, radius)
-	context.closePath()
-}
+	context.beginPath();
+	context.moveTo(x + radius, y);
+	context.lineTo(x + width - radius, y);
+	context.arcTo(x + width, y, x + width, y + radius, radius);
+	context.lineTo(x + width, y + height - radius);
+	context.arcTo(x + width, y + height, x + width - radius, y + height, radius);
+	context.lineTo(x + radius, y + height);
+	context.arcTo(x, y + height, x, y + height - radius, radius);
+	context.lineTo(x, y + radius);
+	context.arcTo(x, y, x + radius, y, radius);
+	context.closePath();
+};
 
 export const drawTaskDragImage = (task: Task) => {
-	const canvas = document.createElement('canvas')
-	const context = canvas.getContext('2d')
-	if (!context) return
+	const canvas = document.createElement("canvas");
+	const context = canvas.getContext("2d");
 
-	const paddingX = 8
-	const paddingY = 4
-	const fontSize = 16
-	const font = `bold ${fontSize}px sans-serif`
-	context.font = font
+	if (!context) return;
 
-	const textWidth = context.measureText(task.title).width
-	const borderRadius = 4
+	const paddingX = 8;
+	const paddingY = 4;
+	const fontSize = 16;
+	const font = `bold ${fontSize}px sans-serif`;
 
-	canvas.width = textWidth + paddingX * 2
-	canvas.height = fontSize + paddingY * 2
+	context.font = font;
 
-	context.fillStyle = statusColors[task.status]
-	drawRoundedRect(context, 0, 0, canvas.width, canvas.height, borderRadius)
-	context.fill()
+	const textWidth = context.measureText(task.title).width;
+	const borderRadius = 4;
 
-	context.fillStyle = 'white'
-	context.font = font
-	context.textAlign = 'center'
-	context.textBaseline = 'middle'
-	context.fillText(task.title, canvas.width / 2, canvas.height / 2)
+	canvas.width = textWidth + paddingX * 2;
+	canvas.height = fontSize + paddingY * 2;
 
-	return canvas
-}
+	context.fillStyle = statusColors[task.status];
+	drawRoundedRect(context, 0, 0, canvas.width, canvas.height, borderRadius);
+	context.fill();
+
+	context.fillStyle = "white";
+	context.font = font;
+	context.textAlign = "center";
+	context.textBaseline = "middle";
+	context.fillText(task.title, canvas.width / 2, canvas.height / 2);
+
+	return canvas;
+};

@@ -2,21 +2,21 @@ import api from "api";
 import { create } from "zustand";
 
 interface authState {
-	loading: boolean
+	loading: boolean;
 
-	clear: () => void
-	getSession: () => Promise<void>
-	setSession: (user: User) => void
+	clear: () => void;
+	getSession: () => Promise<void>;
+	setSession: (user: User) => void;
 
-	user?: User
+	user?: User;
 }
 
-export const useAuthStore = create<authState>((set) => ({
+export const useAuthStore = create<authState>(set => ({
 	loading: false,
 
 	clear: () => set({ user: undefined, loading: false }),
 
-	setSession: (user) => set({ user, loading: false }),
+	setSession: user => set({ user, loading: false }),
 
 	getSession: async () => {
 		set({ loading: true });
@@ -27,7 +27,9 @@ export const useAuthStore = create<authState>((set) => ({
 			if (document.cookie) {
 				user = await api.profile.get();
 			}
-		} catch { /* empty */ }
+		} catch {
+			/* empty */
+		}
 
 		set({ user, loading: false });
 	}

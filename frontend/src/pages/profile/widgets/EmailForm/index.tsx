@@ -1,46 +1,41 @@
-import React, { useMemo } from 'react'
-import { Button, Form, Input } from 'antd'
+import React, { useMemo } from "react";
 
-import { composeRules, email, required } from 'shared/validation'
-import { useMutation, useQueryClient } from '@tanstack/react-query'
-import api from 'api'
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { Button, Form, Input } from "antd";
+import api from "api";
+
+import { composeRules, email, required } from "shared/validation";
 
 interface EmailFormProps {
-    email: string
+	email: string;
 }
 
-const requiredRule = composeRules(required(), email())
+const requiredRule = composeRules(required(), email());
 
 const EmailForm: React.FC<EmailFormProps> = ({ email }) => {
-    const queryClient = useQueryClient()
+	const queryClient = useQueryClient();
 
-    const initialValues = useMemo(() => ({ email }), [email])
+	const initialValues = useMemo(() => ({ email }), [email]);
 
-    const { mutateAsync } = useMutation({
-        mutationFn: api.profile.changeEmail,
-        onSuccess: () => {
-            queryClient.invalidateQueries({ queryKey: ['profile'] })
-        },
-        onError: (error) => console.debug(error.message)
-    })
+	const { mutateAsync } = useMutation({
+		mutationFn: api.profile.changeEmail,
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: ["profile"] });
+		}
+	});
 
-    return (
-        <Form
-            layout="vertical"
-            initialValues={initialValues}
-            onFinish={mutateAsync}
-            className="w-full"
-        >
-            <Form.Item label="Email" name="email" rules={requiredRule}>
-                <Input placeholder="Enter your email" />
-            </Form.Item>
-            <Form.Item>
-                <Button htmlType="submit" type="primary">
-                    Submit
-                </Button>
-            </Form.Item>
-        </Form>
-    )
-}
+	return (
+		<Form layout="vertical" initialValues={initialValues} onFinish={mutateAsync} className="w-full">
+			<Form.Item label="Email" name="email" rules={requiredRule}>
+				<Input placeholder="Enter your email" />
+			</Form.Item>
+			<Form.Item>
+				<Button htmlType="submit" type="primary">
+					Submit
+				</Button>
+			</Form.Item>
+		</Form>
+	);
+};
 
-export default EmailForm
+export default EmailForm;

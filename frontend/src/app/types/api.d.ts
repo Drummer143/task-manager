@@ -3,17 +3,17 @@ interface User {
 	email: string;
 	username: string;
 	emailVerified: boolean;
-	
+
 	createdAt: string;
 	lastLogin: string;
 	updatedAt: string;
 	lastPasswordReset: string;
-	
+
 	picture?: string;
 	deletedAt?: string;
 }
 
-type TaskStatus = 'not_done' | 'in_progress' | 'done';
+type TaskStatus = "not_done" | "in_progress" | "done";
 
 interface Task {
 	id: string;

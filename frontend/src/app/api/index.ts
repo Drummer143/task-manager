@@ -1,6 +1,6 @@
-import * as profile from "./profile"
-import * as tasks from "./tasks"
-import * as auth from "./auth"
+import * as auth from "./auth";
+import * as profile from "./profile";
+import * as tasks from "./tasks";
 
 const api = {
 	profile,
@@ -8,4 +8,4 @@ const api = {
 	auth
 };
 
-export default api
+export default api;

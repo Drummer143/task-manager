@@ -7,4 +7,4 @@ export const ResetPasswordLink = styled(Link)`
 	display: block;
 
 	margin: 3px 0 0 auto;
-`
+`;

@@ -1,4 +1,5 @@
 import { removeEmptyFields } from "shared/utils";
+
 import { axiosInstance } from "./base";
 
 export const get = async () => (await axiosInstance.get<User>("/profile")).data;
@@ -26,9 +27,11 @@ export const uploadAvatar = async ({ file, height, width, x, y }: AvatarUploader
 	formData.append("width", String(width));
 	formData.append("height", String(height));
 
-	return (await axiosInstance.patch<User>("/profile/avatar", formData, {
-		headers: {
-			"Content-Type": "multipart/form-data",
-		},
-	})).data;
+	return (
+		await axiosInstance.patch<User>("/profile/avatar", formData, {
+			headers: {
+				"Content-Type": "multipart/form-data"
+			}
+		})
+	).data;
 };

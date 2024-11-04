@@ -1,16 +1,16 @@
-import { Dayjs } from "dayjs"
+import { Dayjs } from "dayjs";
 
 export interface NewTaskFormProps {
-	open: boolean
+	open: boolean;
 
-	onClose: () => void
+	onClose: () => void;
 }
 
 export interface FormValues {
-	title: string
-	status: TaskStatus
+	title: string;
+	status: TaskStatus;
 
-	dueDate?: Dayjs
-	assignedTo?: string
-	description?: string
+	dueDate?: Dayjs;
+	assignedTo?: string;
+	description?: string;
 }

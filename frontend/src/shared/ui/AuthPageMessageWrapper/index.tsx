@@ -1,17 +1,17 @@
-import { Typography } from 'antd'
-import styled from 'styled-components'
+import { Typography } from "antd";
+import styled from "styled-components";
 
 const AuthPageMessageWrapper = styled(Typography)`
-    height: 100%;
+	height: 100%;
 
-    padding: 0 1rem;
+	padding: 0 1rem;
 
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
+	display: flex;
+	flex-direction: column;
+	justify-content: center;
+	align-items: center;
 
-    text-align: center;
-`
+	text-align: center;
+`;
 
-export default AuthPageMessageWrapper
+export default AuthPageMessageWrapper;

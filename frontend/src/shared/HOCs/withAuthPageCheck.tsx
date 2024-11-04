@@ -1,25 +1,24 @@
-import React from 'react'
-import { Navigate } from 'react-router-dom'
-import FullSizeLoader from 'shared/ui/FullSizeLoader'
-import { useAuthStore } from 'store/auth'
+import React from "react";
 
-export const withAuthPageCheck = <P extends object>(
-    Component: React.ComponentType<P>,
-    authRequired = true
-) => {
-    const ProtectedComponent: React.FC<P> = (props) => {
-        const { loading, user } = useAuthStore((state) => state)
+import { Navigate } from "react-router-dom";
 
-        if (loading) {
-            return <FullSizeLoader />
-        }
+import FullSizeLoader from "shared/ui/FullSizeLoader";
+import { useAuthStore } from "store/auth";
 
-        if (!user === authRequired) {
-            return <Navigate to={authRequired ? '/login' : '/profile'} replace />
-        }
+export const withAuthPageCheck = <P extends object>(Component: React.ComponentType<P>, authRequired = true) => {
+	const ProtectedComponent: React.FC<P> = props => {
+		const { loading, user } = useAuthStore(state => state);
 
-        return <Component {...props} />
-    }
+		if (loading) {
+			return <FullSizeLoader />;
+		}
 
-    return ProtectedComponent
-}
+		if (!user === authRequired) {
+			return <Navigate to={authRequired ? "/login" : "/profile"} replace />;
+		}
+
+		return <Component {...props} />;
+	};
+
+	return ProtectedComponent;
+};
