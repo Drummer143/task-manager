@@ -17,6 +17,7 @@ func IsAuthenticated(auth *auth.Auth) gin.HandlerFunc {
 		if token == nil {
 			errorHandlers.Unauthorized(ctx, "Session is missing or invalid")
 			ctx.Abort()
+			return
 		}
 
 		if _, err := auth.ValidateJWT(token.(string)); err != nil {

@@ -1,4 +1,4 @@
-import React, { useCallback, useState } from 'react'
+import React, { memo, useCallback, useState } from 'react'
 import { useMutation, useQueryClient } from '@tanstack/react-query'
 
 import api from 'api'
@@ -60,4 +60,4 @@ const AvatarUploader: React.FC<AvatarUploaderProps> = ({ avatarUrl }) => {
     )
 }
 
-export default AvatarUploader
+export default memo(AvatarUploader)

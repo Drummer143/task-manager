@@ -1,6 +1,8 @@
-import { Divider, Layout } from 'antd'
+import { Layout } from 'antd'
 import React from 'react'
 import { Outlet } from 'react-router-dom'
+import UserMenu from './UserMenu'
+import * as s from './styles'
 
 const DesktopLayout: React.FC = () => {
     return (
@@ -9,12 +11,16 @@ const DesktopLayout: React.FC = () => {
                 sider
             </Layout.Sider>
 
-            <Divider type="vertical" style={{ margin: 0, height: '100%' }} />
+            <s.Divider type="vertical" className='h-full' />
 
             <Layout className="h-full">
-                <Layout.Header style={{ paddingLeft: '1rem' }}>header</Layout.Header>
+                <s.Header>
+                    header
 
-                <Divider style={{ margin: 0 }} />
+                    <UserMenu />
+                </s.Header>
+
+                <s.Divider />
 
                 <Layout.Content>
                     <Outlet />

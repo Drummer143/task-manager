@@ -7,7 +7,8 @@ import { Link, useNavigate } from 'react-router-dom'
 import { parseUseQueryError } from 'shared/utils/errors'
 import AuthForm from 'widgets/AuthForm'
 import { ResetPasswordLink } from './styles'
-import { withAuthPageProtection } from 'shared/HOCs/withAuthPageProtection'
+import { withAuthPageCheck } from 'shared/HOCs/withAuthPageCheck'
+import { useAuthStore } from 'store/auth'
 
 const rules = {
     email: composeRules(required(), email()),
@@ -15,11 +16,17 @@ const rules = {
 }
 
 const Login: React.FC = () => {
+    const setSession = useAuthStore((state) => state.setSession)
+
     const navigate = useNavigate()
 
     const { mutateAsync, error, reset, isPending } = useMutation({
         mutationFn: api.auth.login,
-        onSuccess: () => navigate('/profile', { replace: true })
+        onSuccess: (user) => {
+            setSession(user)
+
+            navigate('/profile', { replace: true })
+        }
     })
 
     const parsedError = useMemo(() => parseUseQueryError(error, undefined, [400]), [error])
@@ -56,4 +63,4 @@ const Login: React.FC = () => {
     )
 }
 
-export default withAuthPageProtection(Login)
+export default withAuthPageCheck(Login, false)

@@ -8,6 +8,7 @@ import EmailForm from './widgets/EmailForm'
 import UserInfoForm from './widgets/UserInfoForm'
 import AvatarInput from './widgets/AvatarUpload'
 import { FormsContainer, StyledFlex } from './styles'
+import { withAuthPageCheck } from 'shared/HOCs/withAuthPageCheck'
 
 const Profile: React.FC = () => {
     const { data, isLoading, error } = useQuery({
@@ -35,4 +36,4 @@ const Profile: React.FC = () => {
     )
 }
 
-export default Profile
+export default withAuthPageCheck(Profile)

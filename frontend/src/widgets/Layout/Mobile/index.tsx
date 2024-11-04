@@ -1,20 +1,35 @@
 import { MenuOutlined } from '@ant-design/icons'
-import { Button, Divider, Drawer, Layout } from 'antd'
-import React, { useState } from 'react'
+import { Button, Divider, Layout } from 'antd'
+import React from 'react'
 import { Outlet } from 'react-router-dom'
+import styled from 'styled-components'
+import UserMenu from './UserMenu'
+import { useDisclosure } from 'shared/hooks'
+import MobileDrawer from 'widgets/MobileDrawer'
 
-const DesktopLayout: React.FC = () => {
-    const [open, setOpen] = useState(false)
+const MainDrawer = styled(MobileDrawer)`
+    .ant-drawer-body {
+        padding: var(--ant-padding-lg);
+
+        display: flex;
+        flex-direction: column;
+        justify-content: space-between;
+    }
+`
+
+const MobileLayout: React.FC = () => {
+    const { open, onOpen, onClose } = useDisclosure()
 
     return (
         <Layout className="h-full">
-            <Drawer placement="left" open={open} onClose={() => setOpen(false)}>
-                sider
-            </Drawer>
+            <MainDrawer open={open} onClose={onClose}>
+                nav
+                <UserMenu />
+            </MainDrawer>
 
             <Layout className="h-full">
                 <Layout.Header style={{ paddingLeft: 'var(--ant-padding-md)' }}>
-                    <Button icon={<MenuOutlined />} onClick={() => setOpen(true)} />
+                    <Button icon={<MenuOutlined />} onClick={onOpen} />
                     header
                 </Layout.Header>
 
@@ -28,4 +43,4 @@ const DesktopLayout: React.FC = () => {
     )
 }
 
-export default DesktopLayout
+export default MobileLayout
