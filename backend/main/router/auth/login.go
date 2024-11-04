@@ -88,7 +88,7 @@ func login(auth *auth.Auth, validate *validator.Validate, db *gorm.DB) gin.Handl
 
 		session.Set("id", user.ID)
 		session.Set("token", token)
-		
+
 		if err := session.Save(); err != nil {
 			errorHandlers.InternalServerError(ctx, "failed to save session")
 			return

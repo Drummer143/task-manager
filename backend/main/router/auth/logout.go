@@ -1,8 +1,6 @@
 package authRouter
 
 import (
-	"fmt"
-
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 )
@@ -16,10 +14,6 @@ import (
 // @Router /auth/logout [post]
 func logout(ctx *gin.Context) {
 	session := sessions.Default(ctx)
-
-	token := session.Get("token")
-
-	fmt.Println(token)
 
 	session.Clear()
 

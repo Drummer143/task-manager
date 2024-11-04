@@ -62,7 +62,6 @@ func resetPassword(auth *auth.Auth, validate *validator.Validate, db *gorm.DB) g
 		resetPasswordToken, _ := auth.GenerateJWT(user.Email, EMAIL_VERIFICATION_TOKEN_LIFETIME)
 
 		if err := db.Model(&userCredentials).Update("password_reset_token", resetPasswordToken).Error; err != nil {
-			println(err.Error())
 			errorHandlers.InternalServerError(ctx, "error while creating reset password token")
 			return
 		}

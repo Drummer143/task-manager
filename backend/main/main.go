@@ -5,9 +5,7 @@ import (
 	"main/dbClient"
 	"main/router"
 	"main/validation"
-	"time"
 
-	"github.com/gin-contrib/cors"
 	"github.com/joho/godotenv"
 )
 
@@ -39,15 +37,6 @@ func main() {
 	validate := validation.New()
 
 	r := router.New(auth, DB, validate)
-
-	r.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:5173"},
-		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE"},
-		AllowHeaders:     []string{"Origin", "Content-Type", "Authorization"},
-		ExposeHeaders:    []string{"Content-Length"},
-		AllowCredentials: true,
-		MaxAge:           12 * time.Hour,
-	}))
 
 	r.Run(":8080")
 }
