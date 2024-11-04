@@ -17,7 +17,7 @@ const MainDrawer = styled(MobileDrawer)`
     }
 `
 
-const DesktopLayout: React.FC = () => {
+const MobileLayout: React.FC = () => {
     const { open, onOpen, onClose } = useDisclosure()
 
     return (
@@ -43,4 +43,4 @@ const DesktopLayout: React.FC = () => {
     )
 }
 
-export default DesktopLayout
+export default MobileLayout

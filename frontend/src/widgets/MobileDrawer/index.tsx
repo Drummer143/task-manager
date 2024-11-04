@@ -1,5 +1,5 @@
 import { Drawer as AntDrawer, DrawerProps } from 'antd'
-import { useCallback, useState } from 'react'
+import { memo, useCallback, useState } from 'react'
 import styled from 'styled-components'
 
 const SWIPE_DISTANCE_TO_CLOSE = 50
@@ -88,4 +88,4 @@ const MobileDrawer: React.FC<MobileDrawerProps> = (props) => {
 	)
 }
 
-export default MobileDrawer
+export default memo(MobileDrawer)

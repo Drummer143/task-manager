@@ -1,5 +1,5 @@
 import { Flex, Spin, Menu as AntMenu } from 'antd'
-import React from 'react'
+import React, { memo } from 'react'
 import { useDisclosure } from 'shared/hooks'
 import { useAuthStore } from 'store/auth'
 import { useUserMenuItems } from 'widgets/Layout/useUserMenuItems'
@@ -47,4 +47,4 @@ const UserMenu: React.FC = () => {
     )
 }
 
-export default UserMenu
+export default memo(UserMenu)
