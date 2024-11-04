@@ -1,29 +1,23 @@
 import React, { memo, useCallback } from "react";
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import api from "api";
-
 import { drawTaskDragImage, preventDefault, statusColors, taskStatusLocale } from "shared/utils";
 import { useTasksStore } from "store/tasks";
+import { useWebsocketStore } from "store/websocketStore";
 
 import { StyledTaskColumn } from "./styles";
 
 import TaskItem from "../TaskItem";
 
 interface TaskColumnProps {
-	tasks: Task[];
 	status: TaskStatus;
+
+	tasks?: Task[];
 }
 
 const TaskColumn: React.FC<TaskColumnProps> = ({ status, tasks }) => {
 	const { dropTarget } = useTasksStore();
 
-	const queryClient = useQueryClient();
-
-	const { mutateAsync: changeTaskStatus } = useMutation({
-		mutationFn: api.tasks.changeStatus,
-		onSuccess: () => queryClient.invalidateQueries({ queryKey: ["tasks"] })
-	});
+	const send = useWebsocketStore(state => state.send);
 
 	const handleDragEnter: React.DragEventHandler<HTMLDivElement> = useCallback(
 		() => useTasksStore.setState({ dropTarget: status }),
@@ -38,20 +32,17 @@ const TaskColumn: React.FC<TaskColumnProps> = ({ status, tasks }) => {
 		useTasksStore.setState({ dropTarget: undefined });
 	}, []);
 
-	const handleDragEnd = useCallback(
-		(taskStatus: TaskStatus) => {
-			const { dragging: id, dropTarget: status } = useTasksStore.getState();
+	const handleDragEnd = useCallback((taskStatus: TaskStatus) => {
+		const { dragging: id, dropTarget: status } = useTasksStore.getState();
 
-			useTasksStore.setState({ dragging: undefined, dropTarget: undefined });
+		useTasksStore.setState({ dragging: undefined, dropTarget: undefined });
 
-			if (!id || !status || taskStatus === status) {
-				return;
-			}
+		if (!id || !status || taskStatus === status) {
+			return;
+		}
 
-			changeTaskStatus({ id, status });
-		},
-		[changeTaskStatus]
-	);
+		send({ type: "change-status", body: { id, status } });
+	}, [send]);
 
 	const setTransferData = useCallback((e: React.DragEvent<HTMLDivElement>, task: Task) => {
 		let text = task.title;
@@ -93,11 +84,7 @@ const TaskColumn: React.FC<TaskColumnProps> = ({ status, tasks }) => {
 		>
 			<p>{taskStatusLocale[status]}</p>
 
-			<div>
-				{tasks.map(task => (
-					<TaskItem key={task.id} task={task} onDragStart={handleDragStart} />
-				))}
-			</div>
+			<div>{tasks?.map(task => <TaskItem key={task.id} task={task} onDragStart={handleDragStart} />)}</div>
 		</StyledTaskColumn>
 	);
 };

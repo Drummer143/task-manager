@@ -110,6 +110,26 @@ const docTemplate = `{
                 }
             }
         },
+        "/auth/logout": {
+            "post": {
+                "description": "Log out",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "auth"
+                ],
+                "summary": "Log out",
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    }
+                }
+            }
+        },
         "/auth/reset-password": {
             "post": {
                 "description": "Reset password",
@@ -200,7 +220,7 @@ const docTemplate = `{
             }
         },
         "/auth/verify-reset-password-token": {
-            "post": {
+            "get": {
                 "description": "Verify reset password token",
                 "consumes": [
                     "application/json"
@@ -214,13 +234,11 @@ const docTemplate = `{
                 "summary": "Verify reset password token",
                 "parameters": [
                     {
-                        "description": "Verify reset password token object",
-                        "name": "body",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/authRouter.verifyResetPasswordTokenRequest"
-                        }
+                        "type": "string",
+                        "description": "Token",
+                        "name": "token",
+                        "in": "query",
+                        "required": true
                     }
                 ],
                 "responses": {
@@ -493,96 +511,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/tasks": {
-            "get": {
-                "description": "Get a list of tasks created by user with the given ID. If no ID is provided, the ID of the currently logged in user is used",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Tasks"
-                ],
-                "summary": "Get a list of tasks",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "ID of the user who created the tasks",
-                        "name": "owner_id",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/tasksRouter.groupedByStatusTasks"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized if session is missing or invalid",
-                        "schema": {
-                            "$ref": "#/definitions/errorHandlers.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/errorHandlers.Error"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "description": "Create a new task",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Tasks"
-                ],
-                "summary": "Create a new task",
-                "parameters": [
-                    {
-                        "description": "Task object that needs to be created",
-                        "name": "task",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/tasksRouter.createTaskBody"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/dbClient.Task"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/errorHandlers.Error"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized if session is missing or invalid",
-                        "schema": {
-                            "$ref": "#/definitions/errorHandlers.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/errorHandlers.Error"
-                        }
-                    }
-                }
-            }
-        },
         "/tasks/{id}": {
             "get": {
                 "description": "Get a task",
@@ -737,71 +665,6 @@ const docTemplate = `{
                     }
                 }
             }
-        },
-        "/tasks/{id}/status": {
-            "patch": {
-                "description": "Change task status",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Tasks"
-                ],
-                "summary": "Change task status",
-                "parameters": [
-                    {
-                        "type": "integer",
-                        "description": "Task ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Task status. Must be one of: not_done, in_progress, done",
-                        "name": "status",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/tasksRouter.changeTaskStatusBody"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/dbClient.Task"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/errorHandlers.Error"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized if session is missing or invalid",
-                        "schema": {
-                            "$ref": "#/definitions/errorHandlers.Error"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/errorHandlers.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/errorHandlers.Error"
-                        }
-                    }
-                }
-            }
         }
     },
     "definitions": {
@@ -856,20 +719,11 @@ const docTemplate = `{
                     "minLength": 5
                 },
                 "password": {
-                    "type": "string"
+                    "type": "string",
+                    "maxLength": 16,
+                    "minLength": 8
                 },
                 "username": {
-                    "type": "string"
-                }
-            }
-        },
-        "authRouter.verifyResetPasswordTokenRequest": {
-            "type": "object",
-            "required": [
-                "token"
-            ],
-            "properties": {
-                "token": {
                     "type": "string"
                 }
             }
@@ -984,60 +838,6 @@ const docTemplate = `{
             "properties": {
                 "username": {
                     "type": "string"
-                }
-            }
-        },
-        "tasksRouter.changeTaskStatusBody": {
-            "type": "object",
-            "required": [
-                "status"
-            ],
-            "properties": {
-                "status": {
-                    "type": "string",
-                    "enum": [
-                        "not_done",
-                        "in_progress",
-                        "done"
-                    ]
-                }
-            }
-        },
-        "tasksRouter.createTaskBody": {
-            "type": "object",
-            "required": [
-                "status",
-                "title"
-            ],
-            "properties": {
-                "assignedTo": {
-                    "type": "string"
-                },
-                "deletableNotByOwner": {
-                    "type": "boolean"
-                },
-                "description": {
-                    "type": "string",
-                    "maxLength": 255
-                },
-                "dueDate": {
-                    "type": "string"
-                },
-                "status": {
-                    "type": "string"
-                },
-                "title": {
-                    "type": "string",
-                    "maxLength": 63
-                }
-            }
-        },
-        "tasksRouter.groupedByStatusTasks": {
-            "type": "object",
-            "additionalProperties": {
-                "type": "array",
-                "items": {
-                    "$ref": "#/definitions/dbClient.Task"
                 }
             }
         },

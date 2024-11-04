@@ -1,24 +1,22 @@
-import React from "react";
-
-import { PlusOutlined } from "@ant-design/icons";
-import { Button } from "antd";
+import React, { useEffect } from "react";
 
 import { withAuthPageCheck } from "shared/HOCs/withAuthPageCheck";
-import { useDisclosure } from "shared/hooks";
+import { useWebsocketStore } from "store/websocketStore";
 
 import NewTaskForm from "./widgets/NewTaskForm";
 import TaskTable from "./widgets/TaskTable";
 
 const Tasks: React.FC = () => {
-	const { onClose, onOpen, open } = useDisclosure();
+	const { connect } = useWebsocketStore();
+
+	useEffect(() => {
+		connect();
+	}, [connect]);
 
 	return (
 		<>
-			<NewTaskForm open={open} onClose={onClose} />
+			<NewTaskForm />
 
-			<Button icon={<PlusOutlined />} type="primary" onClick={onOpen}>
-				New Task
-			</Button>
 			<TaskTable />
 		</>
 	);
