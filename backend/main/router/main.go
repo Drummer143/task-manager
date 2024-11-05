@@ -36,6 +36,14 @@ func New(auth *auth.Auth, db *gorm.DB, validate *validator.Validate) *gin.Engine
 	gob.Register(uuid.UUID{})
 
 	store := cookie.NewStore([]byte("secret"))
+	store.Options(sessions.Options{
+		Path:     "/",
+		Domain:   ".localhost",
+		Secure:   false,
+		HttpOnly: true,
+		MaxAge:   3600,
+	})
+
 	router.Use(sessions.Sessions("auth-session", store))
 
 	router.Use(cors.New(cors.Config{
