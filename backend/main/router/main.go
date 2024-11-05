@@ -47,7 +47,7 @@ func New(auth *auth.Auth, db *gorm.DB, validate *validator.Validate) *gin.Engine
 	router.Use(sessions.Sessions("auth-session", store))
 
 	router.Use(cors.New(cors.Config{
-		AllowOrigins:     []string{"http://localhost:4173", "http://localhost:5173"},
+		AllowOrigins:     []string{"http://localhost:4173", "http://localhost:4174", "http://localhost:5173", "http://localhost:5174"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
 		AllowHeaders:     []string{"Content-Type", "Origin", "Accept"},
 		MaxAge:           3600,

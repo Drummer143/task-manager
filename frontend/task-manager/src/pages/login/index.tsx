@@ -3,7 +3,7 @@ import React, { useMemo } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { Form, Input } from "antd";
 import api from "api";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useSearchParams } from "react-router-dom";
 
 import { withAuthPageCheck } from "shared/HOCs/withAuthPageCheck";
 import { parseUseQueryError } from "shared/utils/errors";
@@ -19,16 +19,20 @@ const rules = {
 };
 
 const Login: React.FC = () => {
-	const setSession = useAuthStore(state => state.setSession);
+	const [searchParams] = useSearchParams();
 
-	const navigate = useNavigate();
+	const setSession = useAuthStore(state => state.setSession);
 
 	const { mutateAsync, error, reset, isPending } = useMutation({
 		mutationFn: api.auth.login,
 		onSuccess: user => {
-			setSession(user);
+			const next = searchParams.get("next") || "";
 
-			navigate("/profile", { replace: true });
+			if (URL.canParse(next)) {
+				window.location.href = next;
+			} else {
+				setSession(user);
+			}
 		}
 	});
 

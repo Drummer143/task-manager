@@ -5,8 +5,7 @@ interface authState {
 	loading: boolean;
 
 	clear: () => void;
-	getSession: () => Promise<void>;
-	setSession: (user: User) => void;
+	getSession: () => Promise<User | undefined>;
 
 	user?: User;
 }
@@ -16,8 +15,6 @@ export const useAuthStore = create<authState>(set => ({
 
 	clear: () => set({ user: undefined, loading: false }),
 
-	setSession: user => set({ user, loading: false }),
-
 	getSession: async () => {
 		set({ loading: true });
 
@@ -25,10 +22,10 @@ export const useAuthStore = create<authState>(set => ({
 
 		try {
 			user = await api.profile.get();
-		} catch {
-			/* empty */
-		}
+		} catch { /* empty */ }
 
 		set({ user, loading: false });
+
+		return user;
 	}
 }));
