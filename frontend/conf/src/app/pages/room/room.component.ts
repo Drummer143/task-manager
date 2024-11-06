@@ -4,7 +4,7 @@ import { ButtonModule } from "primeng/button";
 import { ApiService } from "../../shared/services/api/api.service";
 import { ProgressSpinnerModule } from "primeng/progressspinner";
 import { AvatarModule } from "primeng/avatar";
-import { UserMediaService } from "../../shared/services/userMedia/user-media.service";
+import { UserMediaService } from "../../shared/services/userVideo/user-media.service";
 
 @Component({
 	selector: "page-room",
