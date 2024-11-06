@@ -1,0 +1,7 @@
+<video #userVideo [ngStyle]="{ opacity: videoState === 'on' ? 1 : 0 }" width="320" height="240" autoplay></video>
+
+<div *ngIf="videoState === 'loading'">Video loading...</div>
+<div *ngIf="videoState === 'off'">Camera off</div>
+
+<p-button (click)="onCameraToggleClick()">{{ videoState === "off" ? "Start Camera" : "Stop Camera" }}</p-button>
+<p>{{ videoState }}</p>
