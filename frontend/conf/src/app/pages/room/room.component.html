@@ -1,15 +1,3 @@
-<div class="video-wrapper">
-	<video #userVideo [ngStyle]="{ opacity: videoState === 'on' ? 1 : 0 }" class="user-video" autoplay></video>
+<app-player [media]="media" [avatar]="api.user?.picture" [username]="api.user?.username"></app-player>
 
-	<div *ngIf="videoState === 'loading'" class="loader">
-		<p-progressSpinner></p-progressSpinner>
-	</div>
-
-	<div *ngIf="videoState === 'off'" class="loader">
-		<p-avatar size="xlarge" [image]="api.user?.picture" icon="pi pi-user" shape="circle"></p-avatar>
-
-		<p>{{ api.user?.username }}</p>
-	</div>
-</div>
-
-<p-button (click)="onCameraToggleClick()">{{ videoState === "off" ? "Start Camera" : "Stop Camera" }}</p-button>
+<p-button (click)="onCameraToggleClick()">{{ media ? "Start Camera" : "Stop Camera" }}</p-button>

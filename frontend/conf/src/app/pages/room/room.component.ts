@@ -5,24 +5,21 @@ import { ApiService } from "../../shared/services/api/api.service";
 import { ProgressSpinnerModule } from "primeng/progressspinner";
 import { AvatarModule } from "primeng/avatar";
 import { UserMediaService } from "../../shared/services/userVideo/user-media.service";
+import { PlayerComponent } from "../../widgets/player/player.component";
 
 @Component({
 	selector: "page-room",
 	standalone: true,
-	imports: [CommonModule, ButtonModule, ProgressSpinnerModule, AvatarModule],
+	imports: [CommonModule, ButtonModule, ProgressSpinnerModule, AvatarModule, PlayerComponent],
 	templateUrl: "./room.component.html",
 	styleUrl: "./room.component.scss"
 })
 export class RoomComponent implements AfterViewInit, OnDestroy {
-	videoState: "off" | "loading" | "on" = "off";
+	media: MediaStream | undefined;
 
-	@ViewChild("userVideo") userVideo!: ElementRef<HTMLVideoElement>;
-
-	constructor(private userMediaService: UserMediaService, public api: ApiService) {}
+	constructor(public userMediaService: UserMediaService, public api: ApiService) {}
 
 	ngAfterViewInit() {
-		this.userVideo.nativeElement.addEventListener("loadeddata", () => (this.videoState = "on"));
-
 		this.userMediaService.listenPermissionChange();
 		this.getStream();
 	}
@@ -34,19 +31,16 @@ export class RoomComponent implements AfterViewInit, OnDestroy {
 	}
 
 	getStream() {
-		this.videoState = "loading";
 		this.userMediaService.getUserMedia().then(media => {
-			if (this.userVideo.nativeElement && media) {
-				this.userVideo.nativeElement.srcObject = media;
-			}
+			this.media = media;
 		});
 	}
 
 	onCameraToggleClick() {
-		if (this.videoState === "on") {
+		if (this.media) {
 			this.userMediaService.stopCamera();
-			this.videoState = "off";
-		} else if (this.videoState === "off") {
+			this.media = undefined;
+		} else {
 			this.getStream();
 		}
 	}
