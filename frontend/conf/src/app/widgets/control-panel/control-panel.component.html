@@ -1,0 +1,48 @@
+<div class="panelWrapper">
+	<button
+		pButton
+		tooltipPosition="top"
+		[disabled]="!cameras.length"
+		[pTooltip]="cameras.length ? 'Toggle camera' : 'No cameras available'"
+		[ngClass]="{ off: !userMediaService.videoPlaying, button: true, 'media-controller': true }"
+		(click)="onCameraToggleClick()"
+	>
+		<i class="pi pi-video"></i>
+	</button>
+
+	<button
+		pButton
+		class="button"
+		severity="info"
+		tooltipPosition="top"
+		(click)="cameraSelect.toggle($event)"
+		[disabled]="!userMediaService.cameraAllowed"
+		[pTooltip]="userMediaService.cameraAllowed ? 'Change Input/Output' : 'No access to devices'"
+	>
+		<i class="pi pi-sync"></i>
+	</button>
+
+	<p-overlayPanel #cameraSelect class="popover">
+		<p-dropdown
+			[placeholder]="
+				userMediaService.cameraAllowed
+					? cameras.length
+						? 'select camera'
+						: 'no cameras found'
+					: 'cameras are not allowed'
+			"
+			[disabled]="!userMediaService.cameraAllowed || !cameras.length"
+			[options]="cameras"
+			optionLabel="label"
+			optionValue="label"
+			class="select"
+			(onChange)="onCameraChange($event)"
+			[(ngModel)]="selectedCamera"
+		/>
+	</p-overlayPanel>
+</div>
+
+<p-dialog header="Unexpected error" [modal]="true" [(visible)]="errorDialogVisible">
+	<p>Unexpected error happened while trying to get camera or microphone.</p>
+	<p>Try reload page or restart browser</p>
+</p-dialog>

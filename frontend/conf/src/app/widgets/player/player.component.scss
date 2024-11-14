@@ -14,15 +14,42 @@
 	height: 100%;
 
 	object-fit: cover;
+	opacity: 0;
+
+	.playing & {
+		opacity: 1;
+	}
 }
 
 .loader {
 	position: absolute;
-	inset: 0;
+	bottom: 50%;
+	right: 50%;
+	transform: translate(50%, 50%);
+}
+
+.overlay {
+	position: absolute;
+	bottom: 50%;
+	right: 50%;
 
 	display: flex;
 	justify-content: center;
 	align-items: center;
 	flex-direction: column;
 	gap: 8px;
+	transform: translate(50%, 50%);
+	border-top-left-radius: 0.25rem;
+	background-color: inherit;
+
+	.playing &,
+	.loading & {
+		bottom: 0;
+		right: 0;
+		transform: none;
+	}
+
+	p {
+		margin: 0.125rem 0.25rem;
+	}
 }

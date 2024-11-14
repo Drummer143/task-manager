@@ -1,3 +1,11 @@
-<app-player [media]="media" [avatar]="api.user?.picture" [username]="api.user?.username"></app-player>
+<div class="pageWrapper">
+	<app-player
+		[videoPlaying]="userMediaService.videoPlaying"
+		[muted]="userMediaService.muted"
+		[media]="userVideo"
+		[avatar]="api.user?.picture"
+		[username]="api.user?.username"
+	></app-player>
 
-<p-button (click)="onCameraToggleClick()">{{ media ? "Start Camera" : "Stop Camera" }}</p-button>
+	<app-control-panel></app-control-panel>
+</div>

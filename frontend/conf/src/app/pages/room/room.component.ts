@@ -1,47 +1,30 @@
 import { CommonModule } from "@angular/common";
-import { AfterViewInit, Component, ElementRef, OnDestroy, ViewChild } from "@angular/core";
+import { Component, OnDestroy } from "@angular/core";
 import { ButtonModule } from "primeng/button";
 import { ApiService } from "../../shared/services/api/api.service";
 import { ProgressSpinnerModule } from "primeng/progressspinner";
 import { AvatarModule } from "primeng/avatar";
-import { UserMediaService } from "../../shared/services/userVideo/user-media.service";
+import { UserMediaService } from "../../shared/services/userMedia/user-media.service";
 import { PlayerComponent } from "../../widgets/player/player.component";
+import { ControlPanelComponent } from "../../widgets/control-panel/control-panel.component";
+import { Subscription } from "rxjs";
 
 @Component({
-	selector: "page-room",
+	selector: "app-room",
 	standalone: true,
-	imports: [CommonModule, ButtonModule, ProgressSpinnerModule, AvatarModule, PlayerComponent],
+	imports: [CommonModule, ButtonModule, ProgressSpinnerModule, AvatarModule, PlayerComponent, ControlPanelComponent],
 	templateUrl: "./room.component.html",
 	styleUrl: "./room.component.scss"
 })
-export class RoomComponent implements AfterViewInit, OnDestroy {
-	media: MediaStream | undefined;
+export class RoomComponent implements OnDestroy {
+	userVideoSubscription?: Subscription;
 
-	constructor(public userMediaService: UserMediaService, public api: ApiService) {}
-
-	ngAfterViewInit() {
-		this.userMediaService.listenPermissionChange();
-		this.getStream();
+	userVideo?: MediaStream;
+	constructor(public userMediaService: UserMediaService, public api: ApiService) {
+		this.userVideoSubscription = this.userMediaService.userVideo$.subscribe(stream => (this.userVideo = stream));
 	}
 
-	ngOnDestroy() {
-		this.userMediaService.stopAll();
-
-		this.userMediaService.unsubscribePermissionChange?.();
-	}
-
-	getStream() {
-		this.userMediaService.getUserMedia().then(media => {
-			this.media = media;
-		});
-	}
-
-	onCameraToggleClick() {
-		if (this.media) {
-			this.userMediaService.stopCamera();
-			this.media = undefined;
-		} else {
-			this.getStream();
-		}
+	ngOnDestroy(): void {
+		this.userVideoSubscription?.unsubscribe()
 	}
 }

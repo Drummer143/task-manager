@@ -1,0 +1,66 @@
+.panelWrapper {
+	height: 100%;
+
+	display: flex;
+	justify-content: center;
+	gap: 1rem;
+}
+
+.button {
+	position: relative;
+	width: 3.5rem;
+	height: 3.5rem;
+
+	display: grid;
+	place-items: center;
+
+	border-radius: 50%;
+
+	&:disabled {
+		pointer-events: unset;
+	}
+
+	&.media-controller {
+		&::after {
+			content: "";
+
+			position: absolute;
+			top: 50%;
+			left: 50%;
+
+			height: 1px;
+			width: 0%;
+
+			background-color: currentColor;
+			transform: translate(-50%, -50%) rotate(45deg);
+			transition: width 0.2s ease-in-out;
+		}
+
+		&.off {
+			background-color: var(--red-600);
+
+			&::after {
+				width: 60%;
+			}
+		}
+	}
+
+	i {
+		font-size: 1.25rem;
+	}
+}
+
+.popover {
+	display: flex;
+}
+
+.select ::ng-deep .p-dropdown {
+	width: 200px;
+
+	::ng-deep .p-element ::ng-deep .p-overlay {
+		bottom: 31px !important;
+		top: auto !important;
+		margin-top: 0 !important;
+		margin-bottom: var(--p-anchor-gutter);
+	}
+}

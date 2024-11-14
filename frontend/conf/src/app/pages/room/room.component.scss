@@ -1,28 +1,8 @@
-.video-wrapper {
-	position: relative;
-
-	width: 300px;
-	aspect-ratio: 16 / 9;
-	background-color: var(--bluegray-900);
-}
-
-.user-video {
-	position: absolute;
-	inset: 0;
-
-	width: 100%;
+.pageWrapper {
 	height: 100%;
 
-	object-fit: cover;
-}
+	display: grid;
+	grid-template-rows: 1fr min-content;
 
-.loader {
-	position: absolute;
-	inset: 0;
-
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	flex-direction: column;
-	gap: 8px;
+	padding: 1rem;
 }

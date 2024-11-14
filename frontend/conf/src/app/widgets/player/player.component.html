@@ -1,12 +1,18 @@
-<div class="video-wrapper">
-	<video #userVideo [ngStyle]="{ opacity: videoState === 'on' ? 1 : 0 }" class="user-video" autoplay></video>
+<div [ngClass]="{ 'video-wrapper': true, playing: videoState === 'on', loading: videoState === 'loading' }" class="video-wrapper">
+	<video #userVideo class="user-video" autoplay></video>
 
 	<div *ngIf="videoState === 'loading'" class="loader">
 		<p-progressSpinner></p-progressSpinner>
 	</div>
 
-	<div *ngIf="videoState === 'off'" class="loader">
-		<p-avatar size="xlarge" [image]="avatar" icon="pi pi-user" shape="circle"></p-avatar>
+	<div class="overlay">
+		<p-avatar
+			size="xlarge"
+			*ngIf="videoState === 'off'"
+			[image]="avatar"
+			icon="pi pi-user"
+			shape="circle"
+		></p-avatar>
 
 		<p>{{ username }}</p>
 	</div>
