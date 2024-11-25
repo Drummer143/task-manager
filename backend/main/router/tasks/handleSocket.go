@@ -18,6 +18,12 @@ var updrader = websocket.Upgrader{
 	},
 }
 
+// @Summary			Connect to tasks socket
+// @Description 	Connect to tasks socket
+// @Tags			Tasks
+// @Produce			json
+// @Success			101
+// @Router			/tasks/socket [get]
 func handleSocket(db *gorm.DB, validate *validator.Validate) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		conn, err := updrader.Upgrade(ctx.Writer, ctx.Request, nil)

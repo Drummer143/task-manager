@@ -431,4 +431,15 @@ paths:
       summary: Change user email
       tags:
       - Profile
+  /tasks/socket:
+    get:
+      description: Connect to tasks socket
+      produces:
+      - application/json
+      responses:
+        "101":
+          description: Switching Protocols
+      summary: Connect to tasks socket
+      tags:
+      - Tasks
 swagger: "2.0"

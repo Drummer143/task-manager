@@ -510,6 +510,23 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/tasks/socket": {
+            "get": {
+                "description": "Connect to tasks socket",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Tasks"
+                ],
+                "summary": "Connect to tasks socket",
+                "responses": {
+                    "101": {
+                        "description": "Switching Protocols"
+                    }
+                }
+            }
         }
     },
     "definitions": {
