@@ -42,6 +42,12 @@ func handleSocket(db *gorm.DB, validate *validator.Validate) gin.HandlerFunc {
 			}
 
 			switch req.Type {
+			case "get-task":
+				if task, err := getSingleTaskWS(db, req.Body); err != nil {
+					conn.WriteMessage(websocket.TextMessage, []byte(err.Error()))
+				} else {
+					conn.WriteJSON(SocketMessageResponse{Type: "get-task", Body: task})
+				}
 			case "get-tasks":
 				if tasks, err := getTaskListWS(db, ctx); err != nil {
 					conn.WriteMessage(websocket.TextMessage, []byte(err.Error()))
@@ -67,6 +73,14 @@ func handleSocket(db *gorm.DB, validate *validator.Validate) gin.HandlerFunc {
 					}
 				} else {
 					conn.WriteJSON(SocketMessageResponse{Type: "change-status", Body: task})
+				}
+			case "update-task":
+				if err := updateTaskWS(db, validate, req.Body); err != nil {
+					conn.WriteMessage(websocket.TextMessage, []byte(err.Error()))
+				}
+			case "delete-task":
+				if err := deleteTaskWS(db, req.Body); err != nil {
+					conn.WriteMessage(websocket.TextMessage, []byte(err.Error()))
 				}
 			}
 		}

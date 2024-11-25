@@ -19,11 +19,5 @@ type SocketMessageResponse struct {
 }
 
 func AddRoutes(group *gin.RouterGroup, db *gorm.DB, validate *validator.Validate) {
-	group.GET("/:id", getSingleTask(db))
-
-	group.PUT("/:id", updateTask(db, validate))
-
-	group.DELETE("/:id", deleteTask(db))
-
 	group.GET("/socket", handleSocket(db, validate))
 }

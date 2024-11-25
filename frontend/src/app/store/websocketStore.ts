@@ -1,52 +1,80 @@
 import { create } from "zustand";
 
-type SocketMessageRequest = {
-	type: "get-tasks";
-} | {
-	type: "create-task";
-	body: {
-		title: string;
-		status: TaskStatus;
+type SocketMessageRequest =
+	| {
+			type: "get-tasks";
+	  }
+	| {
+			type: "get-task" | "delete-task";
+			body: string;
+	  }
+	| {
+			type: "create-task";
+			body: {
+				title: string;
+				status: TaskStatus;
 
-		dueDate?: string;
-		assignedTo?: string;
-		description?: string;
-	}
-} | {
-	type: "change-status";
-	body: {
-		id: string;
-		status: TaskStatus;
-	}
-}
+				dueDate?: string;
+				assignedTo?: string;
+				description?: string;
+			};
+	  }
+	| {
+			type: "change-status";
+			body: {
+				id: string;
+				status: TaskStatus;
+			};
+	  }
+	| {
+		type: "update-task";
+		body: {
+			id: string;
+			title?: string;
+			dueDate?: string;
+			assignedTo?: string;
+			description?: string;
+			status?: TaskStatus;
+		}
+	};
 
-type SocketMessageResponse = {
-	type: "get-tasks";
-	body: Record<TaskStatus, Task[]>;
-} | {
-	type: "create-task";
-	body: Task
-} | {
-	type: "change-status";
-	body: {
-		prevStatus: TaskStatus;
-		task: Task;
-	}
-};
+type SocketMessageResponse =
+	| {
+			type: "get-tasks";
+			body: Record<TaskStatus, Task[]>;
+	  }
+	| {
+			type: "get-task";
+			body: Task;
+	  }
+	| {
+			type: "create-task";
+			body: Task;
+	  }
+	| {
+			type: "change-status";
+			body: {
+				prevStatus: TaskStatus;
+				task: Task;
+			};
+	  };
 
 interface SocketStoreState {
-	status: "connecting" | "opened" | "closed"
+	status: "connecting" | "opened" | "closed" | "errored";
 
-	error?: Event
-	tasks?: Partial<Record<TaskStatus, Task[]>>
-	socket?: WebSocket
+	task?: Task;
+	error?: Event;
+	tasks?: Partial<Record<TaskStatus, Task[]>>;
+	socket?: WebSocket;
 
 	send: (data: SocketMessageRequest) => void;
-	connect: () => WebSocket
+	connect: () => WebSocket;
 }
 
+const queue: SocketMessageRequest[] = [];
+
 export const useWebsocketStore = create<SocketStoreState>((set, get) => ({
-	status: "closed",
+	status: "closed" as const,
 
 	connect: () => {
 		if (get().status !== "closed") {
@@ -68,7 +96,7 @@ export const useWebsocketStore = create<SocketStoreState>((set, get) => ({
 						set({ tasks: message.body });
 						break;
 					case "create-task": {
-						const tasks = get().tasks || {} as Partial<Record<TaskStatus, Task[]>>;
+						const tasks = get().tasks || ({} as Partial<Record<TaskStatus, Task[]>>);
 
 						set({
 							tasks: {
@@ -81,23 +109,37 @@ export const useWebsocketStore = create<SocketStoreState>((set, get) => ({
 					}
 					case "change-status": {
 						const tasks = get().tasks;
-						const filtered = tasks
-							?.[message.body.prevStatus]?.filter(task => task.id !== message.body.task.id) || [];
+						const filtered =
+							tasks?.[message.body.prevStatus]?.filter(task => task.id !== message.body.task.id) || [];
 
 						set({
 							tasks: {
 								...tasks,
 								[message.body.prevStatus]: filtered,
-								[message.body.task.status]:
-									[...(tasks?.[message.body.task.status] || []), message.body.task]
+								[message.body.task.status]: [
+									...(tasks?.[message.body.task.status] || []),
+									message.body.task
+								]
 							}
 						});
+
+						break;
 					}
+					case "get-task":
+						set({ task: message.body });
 				}
-			} catch { /* empty */ }
+			} catch {
+				/* empty */
+			}
 		};
 
-		socket.onopen = () => set({ status: "opened" });
+		socket.onopen = () => {
+			set({ status: "opened" });
+
+			while (queue.length) {
+				get().send(queue.shift()!);
+			}
+		};
 
 		socket.onclose = () => {
 			set({ status: "closed", socket: undefined });
@@ -105,15 +147,23 @@ export const useWebsocketStore = create<SocketStoreState>((set, get) => ({
 
 		socket.onerror = error => {
 			console.error("WebSocket error:", error);
-			set({ status: "closed", socket: undefined, error });
+			set({ status: "errored", socket: undefined, error });
 		};
 
 		return socket;
 	},
 
 	send: (data: SocketMessageRequest) => {
+		const socket = get().socket;
+
+		if (socket?.readyState !== WebSocket.OPEN) {
+			return queue.push(data);
+		}
+
 		try {
-			get().socket?.send(JSON.stringify(data));
-		} catch { /* empty */ }
+			socket.send(JSON.stringify(data));
+		} catch {
+			/* empty */
+		}
 	}
 }));

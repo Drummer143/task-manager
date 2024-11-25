@@ -1,5 +1,7 @@
 import React, { memo, useCallback } from "react";
 
+import { useSearchParams } from "react-router-dom";
+
 import { drawTaskDragImage, preventDefault, statusColors, taskStatusLocale } from "shared/utils";
 import { useTasksStore } from "store/tasks";
 import { useWebsocketStore } from "store/websocketStore";
@@ -17,6 +19,8 @@ interface TaskColumnProps {
 const TaskColumn: React.FC<TaskColumnProps> = ({ status, tasks }) => {
 	const { dropTarget } = useTasksStore();
 
+	const setSearchParams = useSearchParams()[1];
+
 	const send = useWebsocketStore(state => state.send);
 
 	const handleDragEnter: React.DragEventHandler<HTMLDivElement> = useCallback(
@@ -32,17 +36,20 @@ const TaskColumn: React.FC<TaskColumnProps> = ({ status, tasks }) => {
 		useTasksStore.setState({ dropTarget: undefined });
 	}, []);
 
-	const handleDragEnd = useCallback((taskStatus: TaskStatus) => {
-		const { dragging: id, dropTarget: status } = useTasksStore.getState();
+	const handleDragEnd = useCallback(
+		(taskStatus: TaskStatus) => {
+			const { dragging: id, dropTarget: status } = useTasksStore.getState();
 
-		useTasksStore.setState({ dragging: undefined, dropTarget: undefined });
+			useTasksStore.setState({ dragging: undefined, dropTarget: undefined });
 
-		if (!id || !status || taskStatus === status) {
-			return;
-		}
+			if (!id || !status || taskStatus === status) {
+				return;
+			}
 
-		send({ type: "change-status", body: { id, status } });
-	}, [send]);
+			send({ type: "change-status", body: { id, status } });
+		},
+		[send]
+	);
 
 	const setTransferData = useCallback((e: React.DragEvent<HTMLDivElement>, task: Task) => {
 		let text = task.title;
@@ -58,7 +65,7 @@ const TaskColumn: React.FC<TaskColumnProps> = ({ status, tasks }) => {
 	}, []);
 
 	const handleDragStart = useCallback(
-		(e: React.DragEvent<HTMLDivElement>, task: Task) => {
+		(task: Task, e: React.DragEvent<HTMLDivElement>) => {
 			useTasksStore.setState({ dragging: task.id });
 
 			const canvas = drawTaskDragImage(task);
@@ -74,6 +81,15 @@ const TaskColumn: React.FC<TaskColumnProps> = ({ status, tasks }) => {
 		[handleDragEnd, setTransferData]
 	);
 
+	const handleOpenTask = useCallback(
+		(task: Task) =>
+			setSearchParams(prev => {
+				prev.set("task", task.id);
+				return prev;
+			}),
+		[setSearchParams]
+	);
+
 	return (
 		<StyledTaskColumn
 			status={status}
@@ -84,7 +100,11 @@ const TaskColumn: React.FC<TaskColumnProps> = ({ status, tasks }) => {
 		>
 			<p>{taskStatusLocale[status]}</p>
 
-			<div>{tasks?.map(task => <TaskItem key={task.id} task={task} onDragStart={handleDragStart} />)}</div>
+			<div>
+				{tasks?.map(task => (
+					<TaskItem key={task.id} task={task} onClick={handleOpenTask} onDragStart={handleDragStart} />
+				))}
+			</div>
 		</StyledTaskColumn>
 	);
 };
