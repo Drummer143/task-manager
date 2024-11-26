@@ -30,6 +30,8 @@ definitions:
         minLength: 5
         type: string
       password:
+        maxLength: 16
+        minLength: 8
         type: string
       username:
         type: string
@@ -38,17 +40,53 @@ definitions:
     - password
     - username
     type: object
-  authRouter.verifyResetPasswordTokenRequest:
+  boardsRouter.createBoardBody:
     properties:
-      token:
+      name:
         type: string
     required:
-    - token
+    - name
     type: object
+  boardsRouter.updateBoardBody:
+    properties:
+      name:
+        type: string
+    type: object
+  dbClient.Board:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      owner:
+        $ref: '#/definitions/dbClient.User'
+      updatedAt:
+        type: string
+    type: object
+  dbClient.BoardUserRole:
+    enum:
+    - owner
+    - admin
+    - member
+    - commentator
+    - guest
+    type: string
+    x-enum-varnames:
+    - BoardRoleOwner
+    - BoardRoleAdmin
+    - BoardRoleMember
+    - BoardRoleComment
+    - BoardRoleGuest
   dbClient.Task:
     properties:
       assignedTo:
         type: string
+      board:
+        $ref: '#/definitions/dbClient.Board'
       createdAt:
         type: string
       deletableNotByOwner:
@@ -61,8 +99,8 @@ definitions:
         type: string
       id:
         type: string
-      owner_id:
-        type: string
+      owner:
+        $ref: '#/definitions/dbClient.User'
       status:
         type: string
       title:
@@ -134,6 +172,8 @@ definitions:
     properties:
       assignedTo:
         type: string
+      boardId:
+        type: string
       deletableNotByOwner:
         type: boolean
       description:
@@ -147,6 +187,7 @@ definitions:
         maxLength: 63
         type: string
     required:
+    - boardId
     - status
     - title
     type: object
@@ -242,6 +283,19 @@ paths:
       summary: Login
       tags:
       - Auth
+  /auth/logout:
+    post:
+      consumes:
+      - application/json
+      description: Log out
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+      summary: Log out
+      tags:
+      - auth
   /auth/reset-password:
     post:
       consumes:
@@ -301,17 +355,16 @@ paths:
       tags:
       - Auth
   /auth/verify-reset-password-token:
-    post:
+    get:
       consumes:
       - application/json
       description: Verify reset password token
       parameters:
-      - description: Verify reset password token object
-        in: body
-        name: body
+      - description: Token
+        in: query
+        name: token
         required: true
-        schema:
-          $ref: '#/definitions/authRouter.verifyResetPasswordTokenRequest'
+        type: string
       produces:
       - application/json
       responses:
@@ -328,6 +381,248 @@ paths:
       summary: Verify reset password token
       tags:
       - Auth
+  /boards:
+    get:
+      description: Get list of boards user has access to
+      parameters:
+      - description: Include tasks in response
+        in: query
+        name: include
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dbClient.Board'
+            type: array
+        "401":
+          description: Unauthorized if session is missing or invalid
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+      summary: Get board list
+      tags:
+      - Boards
+    post:
+      consumes:
+      - application/json
+      description: Create a new board
+      parameters:
+      - description: Board object that needs to be created
+        in: body
+        name: board
+        required: true
+        schema:
+          $ref: '#/definitions/boardsRouter.createBoardBody'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dbClient.Board'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "401":
+          description: Unauthorized if session is missing or invalid
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+      summary: Create a new board
+      tags:
+      - Boards
+  /boards/{id}:
+    delete:
+      description: Delete board by id
+      parameters:
+      - description: Board ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dbClient.Board'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "401":
+          description: Unauthorized if session is missing or invalid
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+      summary: Delete board by id
+      tags:
+      - Boards
+    get:
+      description: Get board by id
+      parameters:
+      - description: Board ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dbClient.Board'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "401":
+          description: Unauthorized if session is missing or invalid
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "403":
+          description: No access to board
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+      summary: Get board by id
+      tags:
+      - Boards
+    put:
+      consumes:
+      - application/json
+      description: Update board by id
+      parameters:
+      - description: Board ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Board object that needs to be updated
+        in: body
+        name: board
+        required: true
+        schema:
+          $ref: '#/definitions/boardsRouter.updateBoardBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dbClient.Board'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "401":
+          description: Unauthorized if session is missing or invalid
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "403":
+          description: No access to board
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+      summary: Update board by id
+      tags:
+      - Boards
+  /boards/{id}/access:
+    post:
+      consumes:
+      - application/json
+      description: Changes access to board. Can change access if it was already given,
+        give if it wasn't or remove it
+      parameters:
+      - description: Board ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Board object that needs to be updated
+        in: body
+        name: board
+        required: true
+        schema:
+          items:
+            properties:
+              role:
+                allOf:
+                - $ref: '#/definitions/dbClient.BoardUserRole'
+                enum:
+                - owner
+                - admin
+                - member
+                - commentator
+                - guest
+              user_id:
+                type: string
+            required:
+            - user_id
+            type: object
+          type: array
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "401":
+          description: Unauthorized if session is missing or invalid
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "403":
+          description: No access to board
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+      summary: Change access to board
+      tags:
+      - Boards
   /profile:
     get:
       consumes:

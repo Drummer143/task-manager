@@ -55,6 +55,7 @@ func createTask(db *gorm.DB, validate *validator.Validate) gin.HandlerFunc {
 			Description:         body.Description,
 			DueDate:             body.DueDate,
 			AssignedTo:          body.AssignedTo,
+			BoardID:             body.BoardId,
 			OwnerID:             userId,
 		}
 
