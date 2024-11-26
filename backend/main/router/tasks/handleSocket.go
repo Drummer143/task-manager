@@ -18,6 +18,8 @@ var updrader = websocket.Upgrader{
 	},
 }
 
+var connections = make(map[string][]*websocket.Conn)
+
 // @Summary			Connect to tasks socket
 // @Description 	Connect to tasks socket
 // @Tags			Tasks
@@ -34,6 +36,11 @@ func handleSocket(db *gorm.DB, validate *validator.Validate) gin.HandlerFunc {
 
 		defer conn.Close()
 
+		conn.SetCloseHandler(func(code int, text string) error {
+			connections[conn.RemoteAddr().String()] = nil
+			return nil
+		})
+
 		for {
 			_, message, err := conn.ReadMessage()
 
@@ -48,6 +55,26 @@ func handleSocket(db *gorm.DB, validate *validator.Validate) gin.HandlerFunc {
 			}
 
 			switch req.Type {
+			case "track-changes":
+				var id string
+
+				if err := json.Unmarshal(req.Body, &id); err != nil {
+					continue
+				}
+
+				connections[id] = append(connections[id], conn)
+			case "untrack-changes":
+				var id string
+
+				if err := json.Unmarshal(req.Body, &id); err != nil {
+					continue
+				}
+
+				for i, c := range connections[id] {
+					if c == conn {
+						connections[id] = append(connections[id][:i], connections[id][i+1:]...)
+					}
+				}
 			case "get-task":
 				if task, err := getSingleTaskWS(db, req.Body); err != nil {
 					conn.WriteMessage(websocket.TextMessage, []byte(err.Error()))
@@ -81,7 +108,7 @@ func handleSocket(db *gorm.DB, validate *validator.Validate) gin.HandlerFunc {
 					conn.WriteJSON(SocketMessageResponse{Type: "change-status", Body: task})
 				}
 			case "update-task":
-				if err := updateTaskWS(db, validate, req.Body); err != nil {
+				if err := updateTaskWS(db, validate, req.Body, conn); err != nil {
 					conn.WriteMessage(websocket.TextMessage, []byte(err.Error()))
 				}
 			case "delete-task":

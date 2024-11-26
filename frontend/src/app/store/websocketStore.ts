@@ -5,7 +5,7 @@ type SocketMessageRequest =
 			type: "get-tasks";
 	  }
 	| {
-			type: "get-task" | "delete-task";
+			type: "get-task" | "delete-task" | "untrack-changes";
 			body: string;
 	  }
 	| {
@@ -27,16 +27,21 @@ type SocketMessageRequest =
 			};
 	  }
 	| {
-		type: "update-task";
-		body: {
-			id: string;
-			title?: string;
-			dueDate?: string;
-			assignedTo?: string;
-			description?: string;
-			status?: TaskStatus;
-		}
-	};
+			type: "update-task";
+			body: {
+				id: string;
+				title?: string;
+				dueDate?: string;
+				assignedTo?: string;
+				description?: string;
+				status?: TaskStatus;
+			};
+	  }
+	| {
+			type: "track-changes";
+			body: string;
+			listener: (changes: unknown) => void;
+	  };
 
 type SocketMessageResponse =
 	| {
@@ -57,6 +62,11 @@ type SocketMessageResponse =
 				prevStatus: TaskStatus;
 				task: Task;
 			};
+	  }
+	| {
+			type: "track-changes";
+			body: unknown;
+			id: string;
 	  };
 
 interface SocketStoreState {
@@ -72,6 +82,7 @@ interface SocketStoreState {
 }
 
 const queue: SocketMessageRequest[] = [];
+const trackers: Record<string, (changes: unknown) => void> = {};
 
 export const useWebsocketStore = create<SocketStoreState>((set, get) => ({
 	status: "closed" as const,
@@ -127,6 +138,11 @@ export const useWebsocketStore = create<SocketStoreState>((set, get) => ({
 					}
 					case "get-task":
 						set({ task: message.body });
+						break;
+					case "track-changes":
+						trackers[message.id]?.(message.body);
+
+						break;
 				}
 			} catch {
 				/* empty */
@@ -162,6 +178,12 @@ export const useWebsocketStore = create<SocketStoreState>((set, get) => ({
 
 		try {
 			socket.send(JSON.stringify(data));
+
+			if (data.type === "track-changes") {
+				trackers[data.body] = data.listener;
+			} else if (data.type === "untrack-changes") {
+				delete trackers[data.body];
+			}
 		} catch {
 			/* empty */
 		}

@@ -7,6 +7,7 @@ import (
 
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
+	"github.com/gorilla/websocket"
 	"gorm.io/gorm"
 )
 
@@ -91,7 +92,7 @@ type updateTaskBody struct {
 	AssignedTo          *uuid.UUID `json:"assignedTo,omitempty" validate:"omitempty,uuid4"`
 }
 
-func updateTaskWS(db *gorm.DB, validate *validator.Validate, body json.RawMessage) error {
+func updateTaskWS(db *gorm.DB, validate *validator.Validate, body json.RawMessage, conn *websocket.Conn) error {
 	var task updateTaskBody
 
 	if err := json.Unmarshal(body, &task); err != nil {
@@ -130,5 +131,13 @@ func updateTaskWS(db *gorm.DB, validate *validator.Validate, body json.RawMessag
 
 	updates["updated_at"] = time.Now()
 
-	return db.Model(&dbClient.Task{}).Where("id = ?", task.Id).Updates(updates).Error
+	if err := db.Model(&dbClient.Task{}).Where("id = ?", task.Id).Updates(updates).Error; err != nil {
+		return err
+	}
+
+	if err := emit(task.Id.String(), updates, conn); err != nil {
+		return err
+	}
+
+	return nil
 }

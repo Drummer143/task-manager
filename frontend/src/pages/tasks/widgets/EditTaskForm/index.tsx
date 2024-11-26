@@ -20,17 +20,39 @@ const EditTaskForm: React.FC = () => {
 
 	const [form] = Form.useForm<FormValues>();
 
-	const handleFormChange = useDebouncedCallback((values: FieldData<FormValues>[]) => {
-		const body = values.reduce<Partial<FormValues>>((acc, value) => {
-			if (value.value !== undefined) {
-				acc[value.name as keyof FormValues] = value.value;
+	const handleFormChange = useDebouncedCallback(
+		async (changedFields: FieldData<FormValues>[], allFields: FieldData<FormValues>[]) => {
+			if (form.isFieldsValidating()) {
+				return;
 			}
 
-			return acc;
-		}, {} as Partial<FormValues>);
+			let shouldUpdate = false;
 
-		send({ type: "update-task", body: { ...body, dueDate: body.dueDate?.toISOString(), id: taskId! } });
-	}, 1000);
+			for (const field of changedFields) {
+				if (field.errors || field.value === allFields[0].value) {
+					shouldUpdate = true;
+					break;
+				}
+			}
+
+			if (!shouldUpdate) {
+				return;
+			}
+
+			const body = changedFields.reduce<Partial<FormValues>>((acc, value) => {
+				if (value.value !== undefined) {
+					acc[value.name as keyof FormValues] = value.value;
+				}
+
+				return acc;
+			}, {} as Partial<FormValues>);
+
+			console.debug("Updating task", body);
+
+			send({ type: "update-task", body: { ...body, dueDate: body.dueDate?.toISOString(), id: taskId! } });
+		},
+		1000
+	);
 
 	const handleClose = useCallback(() => {
 		setSearchParams(prev => {
@@ -39,6 +61,16 @@ const EditTaskForm: React.FC = () => {
 			return prev;
 		});
 	}, [setSearchParams]);
+
+	useEffect(() => {
+		if (!taskId) {
+			return;
+		}
+
+		send({ type: "track-changes", body: taskId, listener: changes => form.setFieldsValue(changes as FormValues) });
+
+		return () => send({ type: "untrack-changes", body: taskId });
+	}, [form, send, taskId]);
 
 	useEffect(() => {
 		if (taskId) {
