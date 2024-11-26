@@ -1,64 +1,57 @@
 package tasksRouter
 
 import (
+	"encoding/json"
+	"fmt"
 	"main/dbClient"
-	"main/router/errorHandlers"
 	"main/validation"
-	"net/http"
 
-	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
-// @Summary			Change task status
-// @Description		Change task status
-// @Tags			Tasks
-// @Accept			json
-// @Produce			json
-// @Param			id path int true "Task ID"
-// @Param			status body changeTaskStatusBody true "Task status. Must be one of: not_done, in_progress, done"
-// @Success			200 {object} dbClient.Task
-// @Failure			400 {object} errorHandlers.Error
-// @Failure			401 {object} errorHandlers.Error "Unauthorized if session is missing or invalid"
-// @Failure			404 {object} errorHandlers.Error
-// @Failure			500 {object} errorHandlers.Error
-// @Router			/tasks/{id}/status [patch]
-func changeStatus(db *gorm.DB, validate *validator.Validate) gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		var task dbClient.Task
+type updateStatusResponse struct {
+	Task       dbClient.Task `json:"task"`
+	PrevStatus string        `json:"prevStatus"`
+}
 
-		if err := db.First(&task, "id = ?", ctx.Param("id")).Error; err != nil {
-			if err == gorm.ErrRecordNotFound {
-				errorHandlers.NotFound(ctx, "task not found")
-			} else {
-				errorHandlers.InternalServerError(ctx, "failed to get task")
-			}
-		}
+type changeTaskStatusBody struct {
+	Status string    `json:"status" validate:"required"`
+	Id     uuid.UUID `json:"id" validate:"required,uuid4"`
+}
 
-		var body changeTaskStatusBody
+func changeStatusWS(db *gorm.DB, req []byte, validate *validator.Validate) (*updateStatusResponse, map[string]string, error) {
+	var body changeTaskStatusBody
 
-		if err := ctx.BindJSON(&body); err != nil {
-			errorHandlers.BadRequest(ctx, "invalid request body", nil)
-			return
-		}
-
-		if err := validate.Var(body, "required,oneof=not_done in_progress done"); err != nil {
-			if errors, ok := validation.ParseValidationError(err); ok {
-				errorHandlers.BadRequest(ctx, "invalid status", errors)
-				return
-			}
-
-			errorHandlers.BadRequest(ctx, "invalid request body", nil)
-			return
-		}
-
-		task.Status = body.Status
-
-		if err := db.Save(&task).Error; err != nil {
-			errorHandlers.InternalServerError(ctx, "failed to update task")
-		}
-
-		ctx.JSON(http.StatusOK, task)
+	if err := json.Unmarshal(req, &body); err != nil {
+		return nil, nil, err
 	}
+
+	if err := validate.Var(body, "required,oneof=not_done in_progress done"); err != nil {
+		if errors, ok := validation.ParseValidationError(err); ok {
+			return nil, errors, nil
+		}
+
+		return nil, nil, err
+	}
+
+	var task dbClient.Task
+
+	if err := db.First(&task, "id = ?", body.Id).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, nil, fmt.Errorf("task not found")
+		} else {
+			return nil, nil, fmt.Errorf("failed to get task")
+		}
+	}
+
+	prevStatus := task.Status
+	task.Status = body.Status
+
+	if err := db.Save(&task).Error; err != nil {
+		return nil, nil, err
+	}
+
+	return &updateStatusResponse{Task: task, PrevStatus: prevStatus}, nil, nil
 }

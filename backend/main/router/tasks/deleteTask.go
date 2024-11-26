@@ -1,13 +1,10 @@
 package tasksRouter
 
 import (
+	"encoding/json"
+	"fmt"
 	"main/dbClient"
-	"main/router/errorHandlers"
-	"net/http"
 
-	"github.com/gin-contrib/sessions"
-	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
@@ -21,34 +18,48 @@ import (
 // @Failure			404 {object} errorHandlers.Error
 // @Failure			500 {object} errorHandlers.Error
 // @Router			/tasks/{id} [delete]
-func deleteTask(db *gorm.DB) gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		var task dbClient.Task
+// func deleteTask(db *gorm.DB) gin.HandlerFunc {
+// 	return func(ctx *gin.Context) {
+// 		var task dbClient.Task
 
-		if err := db.First(&task, "id = ?", ctx.Param("id")); err.Error != nil {
-			if err.Error == gorm.ErrRecordNotFound {
-				errorHandlers.NotFound(ctx, "task not found")
-			} else {
-				errorHandlers.InternalServerError(ctx, "failed to get task")
-			}
+// 		if err := db.First(&task, "id = ?", ctx.Param("id")); err.Error != nil {
+// 			if err.Error == gorm.ErrRecordNotFound {
+// 				errorHandlers.NotFound(ctx, "task not found")
+// 			} else {
+// 				errorHandlers.InternalServerError(ctx, "failed to get task")
+// 			}
 
-			return
-		}
+// 			return
+// 		}
 
-		session := sessions.Default(ctx)
+// 		session := sessions.Default(ctx)
 
-		userId, _ := session.Get("id").(uuid.UUID)
+// 		userId, _ := session.Get("id").(uuid.UUID)
 
-		if task.OwnerID != userId {
-			errorHandlers.Forbidden(ctx, "owner of task forbade deletion. Only the owner and admin can delete tasks.")
-			return
-		}
+// 		if task.OwnerID != userId {
+// 			errorHandlers.Forbidden(ctx, "owner of task forbade deletion. Only the owner and admin can delete tasks.")
+// 			return
+// 		}
 
-		if err := db.Delete(&task).Error; err != nil {
-			errorHandlers.InternalServerError(ctx, "failed to delete task")
-			return
-		}
+// 		if err := db.Delete(&task).Error; err != nil {
+// 			errorHandlers.InternalServerError(ctx, "failed to delete task")
+// 			return
+// 		}
 
-		ctx.JSON(http.StatusOK, task)
+// 		ctx.JSON(http.StatusOK, task)
+// 	}
+// }
+
+func deleteTaskWS(db *gorm.DB, body json.RawMessage) error {
+	var taskID string
+
+	if err := json.Unmarshal(body, &taskID); err != nil {
+		return err
 	}
+
+	if taskID == "" {
+		return fmt.Errorf("task id is required")
+	}
+
+	return db.Delete(&dbClient.Task{}, "id = ?", taskID).Error
 }

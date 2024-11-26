@@ -1,35 +1,38 @@
 import React, { useCallback } from "react";
 
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Button, DatePicker, Drawer, Form, Input, Select, Space } from "antd";
-import api from "api";
+import { PlusOutlined } from "@ant-design/icons";
+import { Button, Form } from "antd";
 
-import { today } from "shared/utils";
+import { useDisclosure } from "shared/hooks";
+import { useWebsocketStore } from "store/websocketStore";
 
-import { FormValues, NewTaskFormProps } from "./types";
-import { initialValues, requiredRule, statusSelectOptions } from "./utils";
+import TaskForm from "../TaskForm";
+import { FormValues } from "../TaskForm/types";
 
-const NewTaskForm: React.FC<NewTaskFormProps> = ({ onClose, open }) => {
-	const queryClient = useQueryClient();
+const initialValues: Partial<FormValues> = {
+	status: "not_done"
+};
+
+const NewTaskForm: React.FC = () => {
+	const { onClose, onOpen, open } = useDisclosure();
 
 	const [form] = Form.useForm<FormValues>();
 
-	const { mutateAsync } = useMutation({
-		mutationFn: api.tasks.create,
-		onSuccess: () => queryClient.invalidateQueries({ queryKey: ["tasks"] })
-	});
+	const { send } = useWebsocketStore();
 
 	const handleSubmit = useCallback(
-		async (values: FormValues) => {
-			try {
-				await mutateAsync({ ...values, dueDate: values.dueDate?.toISOString() });
+		(values: FormValues) => {
+			send({
+				type: "create-task",
+				body: {
+					...values,
+					dueDate: values.dueDate?.toISOString()
+				}
+			});
 
-				onClose();
-			} catch {
-				/* empty */
-			}
+			onClose();
 		},
-		[mutateAsync, onClose]
+		[onClose, send]
 	);
 
 	const handleCancel = () => {
@@ -38,48 +41,20 @@ const NewTaskForm: React.FC<NewTaskFormProps> = ({ onClose, open }) => {
 	};
 
 	return (
-		<Drawer
-			open={open}
-			onClose={handleCancel}
-			keyboard
-			drawerRender={node => (
-				<Form
-					className="h-full"
-					initialValues={initialValues}
-					onFinish={handleSubmit}
-					form={form}
-					layout="vertical"
-				>
-					{node}
-				</Form>
-			)}
-			extra={
-				<Space>
-					<Button htmlType="reset" form="create-task" onClick={handleCancel}>
-						Cancel
-					</Button>
-					<Button htmlType="submit" form="create-task" type="primary">
-						Create
-					</Button>
-				</Space>
-			}
-		>
-			<Form.Item label="Title" name="title" rules={requiredRule}>
-				<Input placeholder="Enter task title" />
-			</Form.Item>
+		<>
+			<Button icon={<PlusOutlined />} type="primary" onClick={onOpen}>
+				New Task
+			</Button>
 
-			<Form.Item label="Status" name="status" rules={requiredRule}>
-				<Select placeholder="Select task status" options={statusSelectOptions} />
-			</Form.Item>
-
-			<Form.Item label="Due Date" name="dueDate">
-				<DatePicker minDate={today} showTime className="w-full" />
-			</Form.Item>
-
-			<Form.Item label="Description" name="description">
-				<Input.TextArea placeholder="Enter task description" />
-			</Form.Item>
-		</Drawer>
+			<TaskForm
+				open={open}
+				form={form}
+				initialValues={initialValues}
+				onClose={onClose}
+				onCancel={handleCancel}
+				onFinish={handleSubmit}
+			/>
+		</>
 	);
 };
 
