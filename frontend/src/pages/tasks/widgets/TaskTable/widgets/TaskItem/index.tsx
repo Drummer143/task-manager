@@ -5,16 +5,14 @@ import { statusColors, updateOpacity } from "shared/utils";
 interface TaskItemProps {
 	task: Task;
 
-	onClick: (task: Task, e: React.MouseEvent<HTMLDivElement, MouseEvent>) => void;
-	onDragStart: (task: Task, e: React.DragEvent<HTMLDivElement>) => void;
+	onDragStart: (e: React.DragEvent<HTMLDivElement>, task: Task) => void;
 }
 
-const TaskItem: React.FC<TaskItemProps> = ({ task, onDragStart, onClick }) => {
+const TaskItem: React.FC<TaskItemProps> = ({ task, onDragStart }) => {
 	return (
 		<div
 			draggable
-			onClick={e => onClick(task, e)}
-			onDragStart={e => onDragStart(task, e)}
+			onDragStart={e => onDragStart(e, task)}
 			style={{ backgroundColor: updateOpacity(statusColors[task.status], 0.3) }}
 		>
 			<p>{task.title}</p>
@@ -22,4 +20,4 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, onDragStart, onClick }) => {
 	);
 };
 
-export default memo(TaskItem);
+export default memo(TaskItem, (prev, next) => prev.task.id === next.task.id && prev.onDragStart === next.onDragStart);

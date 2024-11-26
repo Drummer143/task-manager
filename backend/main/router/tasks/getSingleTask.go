@@ -1,10 +1,11 @@
 package tasksRouter
 
 import (
-	"encoding/json"
-	"fmt"
 	"main/dbClient"
+	"main/router/errorHandlers"
+	"net/http"
 
+	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
 
@@ -18,44 +19,20 @@ import (
 // @Failure			404 {object} errorHandlers.Error
 // @Failure			500 {object} errorHandlers.Error
 // @Router			/tasks/{id} [get]
-// func getSingleTask(db *gorm.DB) gin.HandlerFunc {
-// 	return func(ctx *gin.Context) {
-// 		var task dbClient.Task
+func getSingleTask(db *gorm.DB) gin.HandlerFunc {
+	return func(ctx *gin.Context) {
+		var task dbClient.Task
 
-// 		if err := db.First(&task, "id = ?", ctx.Param("id")).Error; err != nil {
-// 			if err == gorm.ErrRecordNotFound {
-// 				errorHandlers.NotFound(ctx, "task not found")
-// 			} else {
-// 				errorHandlers.InternalServerError(ctx, "failed to get task")
-// 			}
+		if err := db.First(&task, "id = ?", ctx.Param("id")).Error; err != nil {
+			if err == gorm.ErrRecordNotFound {
+				errorHandlers.NotFound(ctx, "task not found")
+			} else {
+				errorHandlers.InternalServerError(ctx, "failed to get task")
+			}
 
-// 			return
-// 		}
-
-// 		ctx.JSON(http.StatusOK, task)
-// 	}
-// }
-
-func getSingleTaskWS(db *gorm.DB, body json.RawMessage) (dbClient.Task, error) {
-	var taskID string
-
-	if err := json.Unmarshal(body, &taskID); err != nil {
-		return dbClient.Task{}, err
-	}
-
-	if taskID == "" {
-		return dbClient.Task{}, fmt.Errorf("task id is required")
-	}
-
-	var task dbClient.Task
-
-	if err := db.First(&task, "id = ?", taskID).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return dbClient.Task{}, fmt.Errorf("task not found")
-		} else {
-			return dbClient.Task{}, fmt.Errorf("failed to get task")
+			return
 		}
-	}
 
-	return task, nil
+		ctx.JSON(http.StatusOK, task)
+	}
 }

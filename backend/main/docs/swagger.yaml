@@ -30,8 +30,6 @@ definitions:
         minLength: 5
         type: string
       password:
-        maxLength: 16
-        minLength: 8
         type: string
       username:
         type: string
@@ -39,6 +37,38 @@ definitions:
     - email
     - password
     - username
+    type: object
+  authRouter.verifyResetPasswordTokenRequest:
+    properties:
+      token:
+        type: string
+    required:
+    - token
+    type: object
+  dbClient.Task:
+    properties:
+      assignedTo:
+        type: string
+      createdAt:
+        type: string
+      deletableNotByOwner:
+        type: boolean
+      deletedAt:
+        type: string
+      description:
+        type: string
+      dueDate:
+        type: string
+      id:
+        type: string
+      owner_id:
+        type: string
+      status:
+        type: string
+      title:
+        type: string
+      updatedAt:
+        type: string
     type: object
   dbClient.User:
     properties:
@@ -88,6 +118,64 @@ definitions:
         type: string
     required:
     - username
+    type: object
+  tasksRouter.changeTaskStatusBody:
+    properties:
+      status:
+        enum:
+        - not_done
+        - in_progress
+        - done
+        type: string
+    required:
+    - status
+    type: object
+  tasksRouter.createTaskBody:
+    properties:
+      assignedTo:
+        type: string
+      deletableNotByOwner:
+        type: boolean
+      description:
+        maxLength: 255
+        type: string
+      dueDate:
+        type: string
+      status:
+        type: string
+      title:
+        maxLength: 63
+        type: string
+    required:
+    - status
+    - title
+    type: object
+  tasksRouter.groupedByStatusTasks:
+    additionalProperties:
+      items:
+        $ref: '#/definitions/dbClient.Task'
+      type: array
+    type: object
+  tasksRouter.updateTaskBody:
+    properties:
+      assignedTo:
+        type: string
+      deletableNotByOwner:
+        type: boolean
+      description:
+        maxLength: 255
+        type: string
+      dueDate:
+        type: string
+      status:
+        enum:
+        - not_done
+        - in_progress
+        - done
+        type: string
+      title:
+        maxLength: 63
+        type: string
     type: object
 info:
   contact: {}
@@ -154,19 +242,6 @@ paths:
       summary: Login
       tags:
       - Auth
-  /auth/logout:
-    post:
-      consumes:
-      - application/json
-      description: Log out
-      produces:
-      - application/json
-      responses:
-        "204":
-          description: No Content
-      summary: Log out
-      tags:
-      - auth
   /auth/reset-password:
     post:
       consumes:
@@ -226,16 +301,17 @@ paths:
       tags:
       - Auth
   /auth/verify-reset-password-token:
-    get:
+    post:
       consumes:
       - application/json
       description: Verify reset password token
       parameters:
-      - description: Token
-        in: query
-        name: token
+      - description: Verify reset password token object
+        in: body
+        name: body
         required: true
-        type: string
+        schema:
+          $ref: '#/definitions/authRouter.verifyResetPasswordTokenRequest'
       produces:
       - application/json
       responses:
@@ -431,15 +507,210 @@ paths:
       summary: Change user email
       tags:
       - Profile
-  /tasks/socket:
+  /tasks:
     get:
-      description: Connect to tasks socket
+      description: Get a list of tasks created by user with the given ID. If no ID
+        is provided, the ID of the currently logged in user is used
+      parameters:
+      - description: ID of the user who created the tasks
+        in: query
+        name: owner_id
+        type: string
       produces:
       - application/json
       responses:
-        "101":
-          description: Switching Protocols
-      summary: Connect to tasks socket
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/tasksRouter.groupedByStatusTasks'
+        "401":
+          description: Unauthorized if session is missing or invalid
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+      summary: Get a list of tasks
+      tags:
+      - Tasks
+    post:
+      consumes:
+      - application/json
+      description: Create a new task
+      parameters:
+      - description: Task object that needs to be created
+        in: body
+        name: task
+        required: true
+        schema:
+          $ref: '#/definitions/tasksRouter.createTaskBody'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dbClient.Task'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "401":
+          description: Unauthorized if session is missing or invalid
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+      summary: Create a new task
+      tags:
+      - Tasks
+  /tasks/{id}:
+    delete:
+      description: Delete a task
+      parameters:
+      - description: Task ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dbClient.Task'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+      summary: Delete a task
+      tags:
+      - Tasks
+    get:
+      description: Get a task
+      parameters:
+      - description: Task ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dbClient.Task'
+        "401":
+          description: Unauthorized if session is missing or invalid
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+      summary: Get a task
+      tags:
+      - Tasks
+    put:
+      consumes:
+      - application/json
+      description: Update a task
+      parameters:
+      - description: Task ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Task object that needs to be updated
+        in: body
+        name: task
+        required: true
+        schema:
+          $ref: '#/definitions/tasksRouter.updateTaskBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dbClient.Task'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "401":
+          description: Unauthorized if session is missing or invalid
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+      summary: Update a task
+      tags:
+      - Tasks
+  /tasks/{id}/status:
+    patch:
+      consumes:
+      - application/json
+      description: Change task status
+      parameters:
+      - description: Task ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 'Task status. Must be one of: not_done, in_progress, done'
+        in: body
+        name: status
+        required: true
+        schema:
+          $ref: '#/definitions/tasksRouter.changeTaskStatusBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dbClient.Task'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "401":
+          description: Unauthorized if session is missing or invalid
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+      summary: Change task status
       tags:
       - Tasks
 swagger: "2.0"

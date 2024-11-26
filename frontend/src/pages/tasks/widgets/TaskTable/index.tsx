@@ -1,33 +1,31 @@
-import React, { memo, useEffect } from "react";
+import React from "react";
 
+import { useQuery } from "@tanstack/react-query";
 import { Spin } from "antd";
+import api from "api";
 
 import { statusArray } from "shared/utils";
-import { useWebsocketStore } from "store/websocketStore";
 
 import { StyledFlex } from "./styles";
 import TaskColumn from "./widgets/TaskColumn";
 
 const TaskTable: React.FC = () => {
-	const { send, status, tasks } = useWebsocketStore();
+	const { data } = useQuery({
+		queryKey: ["tasks"],
+		queryFn: api.tasks.getList
+	});
 
-	useEffect(() => {
-		if (status === "opened") {
-			send({ type: "get-tasks" });
-		}
-	}, [send, status]);
-
-	if (!tasks) {
+	if (!data) {
 		return <Spin />;
 	}
 
 	return (
 		<StyledFlex gap="1rem">
 			{statusArray.map(status => (
-				<TaskColumn key={status} status={status} tasks={tasks[status]} />
+				<TaskColumn key={status} status={status} tasks={data[status] || []} />
 			))}
 		</StyledFlex>
 	);
 };
 
-export default memo(TaskTable);
+export default TaskTable;
