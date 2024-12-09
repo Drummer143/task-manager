@@ -6,11 +6,13 @@ import { Outlet } from "react-router-dom";
 import * as s from "./styles";
 import UserMenu from "./UserMenu";
 
+import NavContent from "../NavContent";
+
 const DesktopLayout: React.FC = () => {
 	return (
 		<Layout className="h-full">
 			<Layout.Sider collapsible breakpoint="xl">
-				sider
+				<NavContent />
 			</Layout.Sider>
 
 			<s.Divider type="vertical" className="h-full" />

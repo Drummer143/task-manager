@@ -2,6 +2,7 @@ import React, { memo, useCallback } from "react";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import api from "api";
+import { useNavigate, useParams } from "react-router-dom";
 
 import { drawTaskDragImage, preventDefault, statusColors, taskStatusLocale } from "shared/utils";
 import { useTasksStore } from "store/tasks";
@@ -16,6 +17,10 @@ interface TaskColumnProps {
 }
 
 const TaskColumn: React.FC<TaskColumnProps> = ({ status, tasks }) => {
+	const boardId = useParams<{ id: string }>().id!;
+
+	const navigate = useNavigate();
+
 	const { dropTarget } = useTasksStore();
 
 	const queryClient = useQueryClient();
@@ -53,18 +58,21 @@ const TaskColumn: React.FC<TaskColumnProps> = ({ status, tasks }) => {
 		[changeTaskStatus]
 	);
 
-	const setTransferData = useCallback((e: React.DragEvent<HTMLDivElement>, task: Task) => {
-		let text = task.title;
+	const setTransferData = useCallback(
+		(e: React.DragEvent<HTMLDivElement>, task: Task) => {
+			let text = task.title;
 
-		if (task.description) {
-			text += `\n\n${task.description}`;
-		}
+			if (task.description) {
+				text += `\n\n${task.description}`;
+			}
 
-		text += "\n\n" + taskStatusLocale[task.status];
+			text += "\n\n" + taskStatusLocale[task.status];
 
-		e.dataTransfer.setData("text/plain", text);
-		e.dataTransfer.setData("text/uri-list", window.location.origin + "/tasks/" + task.id);
-	}, []);
+			e.dataTransfer.setData("text/plain", text);
+			e.dataTransfer.setData("text/uri-list", `${window.location.origin}/boards/${boardId}?taskId=${task.id}`);
+		},
+		[boardId]
+	);
 
 	const handleDragStart = useCallback(
 		(e: React.DragEvent<HTMLDivElement>, task: Task) => {
@@ -83,6 +91,11 @@ const TaskColumn: React.FC<TaskColumnProps> = ({ status, tasks }) => {
 		[handleDragEnd, setTransferData]
 	);
 
+	const handleOpenTask = useCallback(
+		(task: Task) => navigate(`/boards/${boardId}?taskId=${task.id}`),
+		[boardId, navigate]
+	);
+
 	return (
 		<StyledTaskColumn
 			status={status}
@@ -95,7 +108,12 @@ const TaskColumn: React.FC<TaskColumnProps> = ({ status, tasks }) => {
 
 			<div>
 				{tasks.map(task => (
-					<TaskItem key={task.id} task={task} onDragStart={handleDragStart} />
+					<TaskItem
+						onClick={() => handleOpenTask(task)}
+						key={task.id}
+						task={task}
+						onDragStart={handleDragStart}
+					/>
 				))}
 			</div>
 		</StyledTaskColumn>

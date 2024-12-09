@@ -29,6 +29,17 @@ interface Task {
 	description?: string;
 }
 
+type UserBoardRole = "owner" | "admin" | "member" | "commentator" | "viewer";
+
+type Board = {
+	id: string;
+	name: string;
+	userRole: UserBoardRole;
+
+	owner: User
+	tasks: Task
+	boardAccesses: BoardAccesses
+}
 interface ApiError {
 	error: string;
 	message: string;

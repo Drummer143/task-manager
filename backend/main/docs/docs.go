@@ -1270,6 +1270,12 @@ const docTemplate = `{
         "dbClient.Board": {
             "type": "object",
             "properties": {
+                "boardAccesses": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dbClient.BoardAccesses"
+                    }
+                },
                 "createdAt": {
                     "type": "string"
                 },
@@ -1285,8 +1291,28 @@ const docTemplate = `{
                 "owner": {
                     "$ref": "#/definitions/dbClient.User"
                 },
+                "tasks": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dbClient.Task"
+                    }
+                },
                 "updatedAt": {
                     "type": "string"
+                },
+                "userRole": {
+                    "$ref": "#/definitions/dbClient.BoardUserRole"
+                }
+            }
+        },
+        "dbClient.BoardAccesses": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "role": {
+                    "$ref": "#/definitions/dbClient.BoardUserRole"
                 }
             }
         },

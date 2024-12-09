@@ -6,6 +6,7 @@ import { Button } from "antd";
 import { withAuthPageCheck } from "shared/HOCs/withAuthPageCheck";
 import { useDisclosure } from "shared/hooks";
 
+import EditTaskForm from "./widgets/EditTaskForm";
 import NewTaskForm from "./widgets/NewTaskForm";
 import TaskTable from "./widgets/TaskTable";
 
@@ -15,10 +16,12 @@ const Tasks: React.FC = () => {
 	return (
 		<>
 			<NewTaskForm open={open} onClose={onClose} />
+			<EditTaskForm />
 
 			<Button icon={<PlusOutlined />} type="primary" onClick={onOpen}>
 				New Task
 			</Button>
+
 			<TaskTable />
 		</>
 	);

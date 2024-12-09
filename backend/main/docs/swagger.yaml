@@ -54,6 +54,10 @@ definitions:
     type: object
   dbClient.Board:
     properties:
+      boardAccesses:
+        items:
+          $ref: '#/definitions/dbClient.BoardAccesses'
+        type: array
       createdAt:
         type: string
       deletedAt:
@@ -64,8 +68,21 @@ definitions:
         type: string
       owner:
         $ref: '#/definitions/dbClient.User'
+      tasks:
+        items:
+          $ref: '#/definitions/dbClient.Task'
+        type: array
       updatedAt:
         type: string
+      userRole:
+        $ref: '#/definitions/dbClient.BoardUserRole'
+    type: object
+  dbClient.BoardAccesses:
+    properties:
+      createdAt:
+        type: string
+      role:
+        $ref: '#/definitions/dbClient.BoardUserRole'
     type: object
   dbClient.BoardUserRole:
     enum:

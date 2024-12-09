@@ -16,7 +16,7 @@ type giveAccessBody = []struct {
 }
 
 // @Summary 		Change access to board
-// @Description 	Changes access to board. Can change access if it was already given, give if it wasn't or remove it
+// @Description 	Changes access to board. Can change access if it was already given, give if it wasn't or remove it, if no role was given in pair
 // @Tags 			Boards
 // @Accept 			json
 // @Produce 		json

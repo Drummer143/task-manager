@@ -51,6 +51,6 @@ func deleteBoard(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		ctx.Status(http.StatusOK)
+		ctx.Status(http.StatusNoContent)
 	}
 }
