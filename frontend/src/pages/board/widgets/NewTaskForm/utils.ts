@@ -3,7 +3,7 @@ import { DefaultOptionType } from "antd/es/select";
 import { statusArray, taskStatusLocale } from "shared/utils";
 import { required } from "shared/validation";
 
-import { FormValues } from "./types";
+import { FormValues } from "../TaskForm/types";
 
 export const requiredRule = required();
 

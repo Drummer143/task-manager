@@ -2,7 +2,7 @@ import React, { memo, useCallback, useState } from "react";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Flex } from "antd";
-import api from "api";
+import { uploadAvatar } from "api";
 import { Area } from "react-easy-crop";
 
 import FileInput from "widgets/FileInput";
@@ -18,7 +18,7 @@ const AvatarUploader: React.FC<AvatarUploaderProps> = ({ avatarUrl }) => {
 	const queryClient = useQueryClient();
 
 	const { mutateAsync } = useMutation({
-		mutationFn: api.profile.uploadAvatar,
+		mutationFn: uploadAvatar,
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["profile"] });
 		}

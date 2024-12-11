@@ -1,6 +1,6 @@
 import React, { memo } from "react";
 
-import { statusColors, updateOpacity } from "shared/utils";
+import { statusColors } from "shared/utils";
 
 interface TaskItemProps {
 	task: Task;
@@ -15,7 +15,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, onDragStart, onClick }) => {
 			onClick={onClick}
 			draggable
 			onDragStart={e => onDragStart(e, task)}
-			style={{ backgroundColor: updateOpacity(statusColors[task.status], 0.3) }}
+			style={{ backgroundColor: statusColors[task.status] }}
 		>
 			<p>{task.title}</p>
 		</div>

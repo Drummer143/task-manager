@@ -1,4 +1,4 @@
-import { Divider as AntDivider, Layout } from "antd";
+import { Layout } from "antd";
 import styled from "styled-components";
 
 export const Header = styled(Layout.Header)`
@@ -7,8 +7,10 @@ export const Header = styled(Layout.Header)`
 	align-items: center;
 
 	padding: 0 var(--ant-padding);
+
+	border-bottom: var(--ant-line-width) solid var(--ant-color-split);
 `;
 
-export const Divider = styled(AntDivider)`
-	margin: 0;
+export const Content = styled(Layout.Content)`
+	border-left: var(--ant-line-width) solid var(--ant-color-split);
 `;

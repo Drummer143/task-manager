@@ -1,12 +1,12 @@
 import React, { useCallback } from "react";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import api from "api";
+import { getTask, updateTask } from "api";
 import dayjs from "dayjs";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
-import { FormValues } from "../NewTaskForm/types";
 import TaskForm from "../TaskForm";
+import { FormValues } from "../TaskForm/types";
 
 const EditTaskForm: React.FC = () => {
 	const boardId = useParams<{ id: string }>().id!;
@@ -21,7 +21,7 @@ const EditTaskForm: React.FC = () => {
 	const { isLoading, data } = useQuery({
 		queryKey: ["task", taskId],
 		queryFn: async (): Promise<FormValues> => {
-			const result = await api.tasks.getSingle(taskId!);
+			const result = await getTask(taskId!);
 
 			return {
 				status: result.status,
@@ -35,7 +35,7 @@ const EditTaskForm: React.FC = () => {
 	});
 
 	const { mutateAsync, isPending } = useMutation({
-		mutationFn: api.tasks.updateTask,
+		mutationFn: updateTask,
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["tasks"] });
 			navigate(`/boards/${boardId}`);

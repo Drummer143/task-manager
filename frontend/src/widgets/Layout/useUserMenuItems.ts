@@ -2,7 +2,7 @@ import { useMemo } from "react";
 
 import { useMutation } from "@tanstack/react-query";
 import { MenuProps } from "antd";
-import api from "api";
+import { logout } from "api";
 import { useNavigate } from "react-router-dom";
 
 import { useAuthStore } from "store/auth";
@@ -13,7 +13,7 @@ export const useUserMenuItems = () => {
 	const navigate = useNavigate();
 
 	const { mutateAsync } = useMutation({
-		mutationFn: () => api.auth.logout().then(clear),
+		mutationFn: () => logout().then(clear),
 		onSuccess: () => navigate("/login", { replace: true })
 	});
 

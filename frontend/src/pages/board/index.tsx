@@ -1,29 +1,32 @@
 import React from "react";
 
-import { PlusOutlined } from "@ant-design/icons";
-import { Button } from "antd";
+import { useQuery } from "@tanstack/react-query";
+import { getTaskList } from "api";
+import { useParams } from "react-router-dom";
 
 import { withAuthPageCheck } from "shared/HOCs/withAuthPageCheck";
-import { useDisclosure } from "shared/hooks";
 
-import EditTaskForm from "./widgets/EditTaskForm";
-import NewTaskForm from "./widgets/NewTaskForm";
+import { BoardContainer } from "./styles";
 import TaskTable from "./widgets/TaskTable";
 
+const EditTaskForm = React.lazy(() => import("./widgets/EditTaskForm"));
+const NewTaskForm = React.lazy(() => import("./widgets/NewTaskForm"));
+
 const Tasks: React.FC = () => {
-	const { onClose, onOpen, open } = useDisclosure();
+	const boardId = useParams<{ id: string }>().id!;
+
+	const { data } = useQuery({
+		queryKey: ["tasks"],
+		queryFn: () => getTaskList(boardId)
+	});
 
 	return (
-		<>
-			<NewTaskForm open={open} onClose={onClose} />
+		<BoardContainer>
+			<NewTaskForm />
 			<EditTaskForm />
 
-			<Button icon={<PlusOutlined />} type="primary" onClick={onOpen}>
-				New Task
-			</Button>
-
-			<TaskTable />
-		</>
+			<TaskTable tasks={data} />
+		</BoardContainer>
 	);
 };
 

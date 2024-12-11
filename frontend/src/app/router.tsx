@@ -1,16 +1,17 @@
 import { createBrowserRouter, Navigate } from "react-router-dom";
 
 import { lazySuspense } from "shared/HOCs/lazySuspense";
+import FullSizeLoader from "shared/ui/FullSizeLoader";
 import AuthLayout from "widgets/AuthLayout";
 import Layout from "widgets/Layout";
 
-const Profile = lazySuspense(() => import("pages/profile"));
-const Login = lazySuspense(() => import("pages/login"));
-const SignUp = lazySuspense(() => import("pages/signUp"));
-const ConfirmEmail = lazySuspense(() => import("pages/confirmEmail"));
-const ResetPassword = lazySuspense(() => import("pages/resetPassword"));
-const NewPassword = lazySuspense(() => import("pages/newPassword"));
-const Board = lazySuspense(() => import("pages/board"));
+const Profile = lazySuspense(() => import("pages/profile"), <FullSizeLoader />);
+const Login = lazySuspense(() => import("pages/login"), <FullSizeLoader />);
+const SignUp = lazySuspense(() => import("pages/signUp"), <FullSizeLoader />);
+const ConfirmEmail = lazySuspense(() => import("pages/confirmEmail"), <FullSizeLoader />);
+const ResetPassword = lazySuspense(() => import("pages/resetPassword"), <FullSizeLoader />);
+const NewPassword = lazySuspense(() => import("pages/newPassword"), <FullSizeLoader />);
+const Board = lazySuspense(() => import("pages/board"), <FullSizeLoader />);
 
 export default createBrowserRouter([
 	{

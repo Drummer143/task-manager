@@ -1,23 +1,27 @@
 import React, { useCallback } from "react";
 
+import { PlusOutlined } from "@ant-design/icons";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Form } from "antd";
-import api from "api";
+import { Button, Form } from "antd";
+import { createTask } from "api";
 import { useParams } from "react-router-dom";
 
-import { FormValues, NewTaskFormProps } from "./types";
+import { useDisclosure } from "shared/hooks";
 
 import TaskForm from "../TaskForm";
+import { FormValues } from "../TaskForm/types";
 
-const NewTaskForm: React.FC<NewTaskFormProps> = ({ onClose, open }) => {
+const NewTaskForm: React.FC = () => {
 	const queryClient = useQueryClient();
 
 	const boardId = useParams<{ id: string }>().id!;
 
+	const { onClose, onOpen, open } = useDisclosure();
+
 	const [form] = Form.useForm<FormValues>();
 
 	const { mutateAsync, isPending } = useMutation({
-		mutationFn: api.tasks.create,
+		mutationFn: createTask,
 		onSuccess: () => queryClient.invalidateQueries({ queryKey: ["tasks"] })
 	});
 
@@ -40,14 +44,20 @@ const NewTaskForm: React.FC<NewTaskFormProps> = ({ onClose, open }) => {
 	};
 
 	return (
-		<TaskForm
-			onCancel={handleCancel}
-			onSubmit={handleSubmit}
-			form={form}
-			isSubmitting={isPending}
-			onClose={onClose}
-			open={open}
-		/>
+		<>
+			<Button icon={<PlusOutlined />} type="primary" onClick={onOpen}>
+				New Task
+			</Button>
+
+			<TaskForm
+				onCancel={handleCancel}
+				onSubmit={handleSubmit}
+				form={form}
+				isSubmitting={isPending}
+				onClose={onClose}
+				open={open}
+			/>
+		</>
 	);
 };
 

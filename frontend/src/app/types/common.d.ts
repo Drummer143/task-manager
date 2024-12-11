@@ -1,7 +1,16 @@
-import { Rule } from "antd/es/form";
+import { ThemeConfig as BaseThemeConfig } from "antd";
 
 declare global {
-	type RuleObject<T extends string = string> = Record<T, Rule[]>;
+	interface ExtraThemeToken {
+		colorDone?: string;
+		colorInProgress?: string;
+		colorNotDone?: string;
+		imageCropMaskColor?: string;
+	}
+
+	interface ThemeConfig extends BaseThemeConfig {
+		token?: import("antd").ThemeConfig["token"] & ExtraThemeToken;
+	}
 }
 
 export {};

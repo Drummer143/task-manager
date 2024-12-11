@@ -36,10 +36,13 @@ type Board = {
 	name: string;
 	userRole: UserBoardRole;
 
-	owner: User
-	tasks: Task
-	boardAccesses: BoardAccesses
-}
+	createdAt: string;
+	updatedAt: string;
+
+	owner: User;
+	tasks: Task[];
+	boardAccesses: BoardAccesses;
+};
 interface ApiError {
 	error: string;
 	message: string;

@@ -8,15 +8,24 @@ type ResponseWithIncludeFilter<T extends GetBoardIncludes | undefined = undefine
 	Exclude<GetBoardIncludes, T>
 >;
 
-export const getSingle = async <T extends GetBoardIncludes | undefined = undefined>(id: string, include?: T[]) =>
+interface GetSingleBoardArgs<T extends GetBoardIncludes | undefined = undefined> {
+	id: string;
+	include?: T[];
+}
+
+export const getBoard = async <T extends GetBoardIncludes | undefined = undefined>({
+	id,
+	include
+}: GetSingleBoardArgs<T>) =>
 	(
 		await axiosInstance.get<ResponseWithIncludeFilter<T>>(`/boards/${id}`, {
-			params: { include }
+			params: { include: include?.join(",") }
 		})
 	).data;
 
-export const getList = async <T extends GetBoardIncludes | undefined = undefined>(include?: T[]) =>
-	(await axiosInstance.get<ResponseWithIncludeFilter<T>[]>("/boards", { params: { include } })).data;
+export const getBoardList = async <T extends GetBoardIncludes | undefined = undefined>(include?: T[]) =>
+	(await axiosInstance.get<ResponseWithIncludeFilter<T>[]>("/boards", { params: { include: include?.join(",") } }))
+		.data;
 
 export const createBoard = async (board: CreateBoardArgs) => (await axiosInstance.post<Board>("/boards", board)).data;
 

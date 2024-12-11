@@ -1,4 +1,4 @@
-import api from "api";
+import { getProfile } from "api";
 import { create } from "zustand";
 
 interface authState {
@@ -25,7 +25,7 @@ export const useAuthStore = create<authState>(set => ({
 
 		try {
 			if (document.cookie) {
-				user = await api.profile.get();
+				user = await getProfile();
 			}
 		} catch {
 			/* empty */

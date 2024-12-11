@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 
 import { useMutation } from "@tanstack/react-query";
 import { Form, Input } from "antd";
-import api from "api";
+import { login } from "api";
 import { Link, useNavigate } from "react-router-dom";
 
 import { withAuthPageCheck } from "shared/HOCs/withAuthPageCheck";
@@ -24,7 +24,7 @@ const Login: React.FC = () => {
 	const navigate = useNavigate();
 
 	const { mutateAsync, error, reset, isPending } = useMutation({
-		mutationFn: api.auth.login,
+		mutationFn: login,
 		onSuccess: user => {
 			setSession(user);
 

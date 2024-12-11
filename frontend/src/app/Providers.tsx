@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { theme as AntTheme, ConfigProvider, ThemeConfig } from "antd";
+import { theme as antTheme, ConfigProvider } from "antd";
 
 import darkThemeConfig from "shared/antConfigs/darkThemeConfig";
 import lightThemeConfig from "shared/antConfigs/lightThemeConfig";
@@ -19,7 +19,7 @@ const Providers: React.FC<ProvidersProps> = ({ children }) => {
 	const themeConfig: ThemeConfig = useMemo(
 		() => ({
 			...(theme === "light" ? lightThemeConfig : darkThemeConfig),
-			algorithm: theme === "light" ? undefined : AntTheme.darkAlgorithm
+			algorithm: theme === "light" ? undefined : antTheme.darkAlgorithm
 		}),
 		[theme]
 	);

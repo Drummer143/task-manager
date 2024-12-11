@@ -2,14 +2,14 @@ import React, { useMemo } from "react";
 
 import { useQuery } from "@tanstack/react-query";
 import { Menu, MenuProps } from "antd";
-import api from "api";
+import { getBoardList } from "api";
 import { Link, useLocation } from "react-router-dom";
 
 import FullSizeLoader from "shared/ui/FullSizeLoader";
 
 const NavContent: React.FC = () => {
 	const { data, isLoading } = useQuery({
-		queryFn: () => api.boards.getList(),
+		queryFn: () => getBoardList(),
 		queryKey: ["nav,board"]
 	});
 

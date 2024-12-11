@@ -1,7 +1,7 @@
 import React, { memo, useCallback } from "react";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import api from "api";
+import { changeStatus } from "api";
 import { useNavigate, useParams } from "react-router-dom";
 
 import { drawTaskDragImage, preventDefault, statusColors, taskStatusLocale } from "shared/utils";
@@ -12,8 +12,9 @@ import { StyledTaskColumn } from "./styles";
 import TaskItem from "../TaskItem";
 
 interface TaskColumnProps {
-	tasks: Task[];
 	status: TaskStatus;
+
+	tasks?: Task[];
 }
 
 const TaskColumn: React.FC<TaskColumnProps> = ({ status, tasks }) => {
@@ -26,7 +27,7 @@ const TaskColumn: React.FC<TaskColumnProps> = ({ status, tasks }) => {
 	const queryClient = useQueryClient();
 
 	const { mutateAsync: changeTaskStatus } = useMutation({
-		mutationFn: api.tasks.changeStatus,
+		mutationFn: changeStatus,
 		onSuccess: () => queryClient.invalidateQueries({ queryKey: ["tasks"] })
 	});
 
@@ -107,7 +108,7 @@ const TaskColumn: React.FC<TaskColumnProps> = ({ status, tasks }) => {
 			<p>{taskStatusLocale[status]}</p>
 
 			<div>
-				{tasks.map(task => (
+				{tasks?.map(task => (
 					<TaskItem
 						onClick={() => handleOpenTask(task)}
 						key={task.id}
