@@ -56,11 +56,12 @@ const NewTaskForm: React.FC = () => {
 
 	return (
 		<TaskForm
+			isSubmitting={isPending}
 			onCancel={handleCancel}
 			onSubmit={handleSubmit}
-			form={form}
-			isSubmitting={isPending}
 			onClose={onClose}
+			type="create"
+			form={form}
 			open={open}
 		/>
 	);

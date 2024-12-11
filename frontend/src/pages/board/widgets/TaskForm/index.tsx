@@ -9,6 +9,7 @@ import { initialValues, requiredRule, statusSelectOptions } from "./utils";
 
 const TaskForm: React.FC<TaskFormProps> = ({
 	onClose,
+	type,
 	open,
 	onCancel,
 	form,
@@ -47,7 +48,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
 						</Button>
 
 						<Button loading={isSubmitting} htmlType="submit" type="primary">
-							Create
+							{type === "create" ? "Create" : "Update"}
 						</Button>
 					</Space>
 				)

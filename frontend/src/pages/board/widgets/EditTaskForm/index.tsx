@@ -56,13 +56,14 @@ const EditTaskForm: React.FC = () => {
 
 	return (
 		<TaskForm
-			open={!!taskId}
-			onClose={handleClose}
-			formLoading={isLoading}
 			initialValues={data}
-			onCancel={handleClose}
-			onSubmit={handleSubmit}
 			isSubmitting={isPending}
+			formLoading={isLoading}
+			onSubmit={handleSubmit}
+			onCancel={handleClose}
+			onClose={handleClose}
+			open={!!taskId}
+			type="update"
 		/>
 	);
 };
