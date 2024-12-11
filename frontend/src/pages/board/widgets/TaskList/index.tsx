@@ -1,48 +1,37 @@
 import React, { memo, useCallback } from "react";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { theme } from "antd";
 import { changeStatus } from "api";
 import { useNavigate, useParams } from "react-router-dom";
 
-import { drawTaskDragImage, preventDefault, statusColors, taskStatusLocale } from "shared/utils";
+import { drawTaskDragImage, taskStatusLocale } from "shared/utils";
 import { useTasksStore } from "store/tasks";
-
-import { StyledTaskColumn } from "./styles";
 
 import TaskItem from "../TaskItem";
 
-interface TaskColumnProps {
-	status: TaskStatus;
-
+interface TaskListProps {
 	tasks?: Task[];
 }
 
-const TaskColumn: React.FC<TaskColumnProps> = ({ status, tasks }) => {
+const TaskList: React.FC<TaskListProps> = ({ tasks }) => {
 	const boardId = useParams<{ id: string }>().id!;
 
 	const navigate = useNavigate();
 
-	const { dropTarget } = useTasksStore();
-
 	const queryClient = useQueryClient();
+
+	const token: ThemeConfig["token"] = theme.useToken().token;
 
 	const { mutateAsync: changeTaskStatus } = useMutation({
 		mutationFn: changeStatus,
 		onSuccess: () => queryClient.invalidateQueries({ queryKey: ["tasks"] })
 	});
 
-	const handleDragEnter: React.DragEventHandler<HTMLDivElement> = useCallback(
-		() => useTasksStore.setState({ dropTarget: status }),
-		[status]
+	const handleOpenTask = useCallback(
+		(task: Task) => navigate(`/boards/${boardId}?taskId=${task.id}`),
+		[boardId, navigate]
 	);
-
-	const handleDragLeave: React.DragEventHandler<HTMLDivElement> = useCallback(e => {
-		if (e.relatedTarget && e.currentTarget.contains(e.relatedTarget as Node)) {
-			return;
-		}
-
-		useTasksStore.setState({ dropTarget: undefined });
-	}, []);
 
 	const handleDragEnd = useCallback(
 		(taskStatus: TaskStatus) => {
@@ -60,7 +49,7 @@ const TaskColumn: React.FC<TaskColumnProps> = ({ status, tasks }) => {
 	);
 
 	const setTransferData = useCallback(
-		(e: React.DragEvent<HTMLDivElement>, task: Task) => {
+		(e: React.DragEvent<HTMLElement>, task: Task) => {
 			let text = task.title;
 
 			if (task.description) {
@@ -76,10 +65,16 @@ const TaskColumn: React.FC<TaskColumnProps> = ({ status, tasks }) => {
 	);
 
 	const handleDragStart = useCallback(
-		(e: React.DragEvent<HTMLDivElement>, task: Task) => {
+		(e: React.DragEvent<HTMLElement>, task: Task) => {
 			useTasksStore.setState({ dragging: task.id });
 
-			const canvas = drawTaskDragImage(task);
+			const colors: Record<TaskStatus, string> = {
+				done: token.colorDone!,
+				in_progress: token.colorInProgress!,
+				not_done: token.colorNotDone!
+			};
+
+			const canvas = drawTaskDragImage(task, colors[task.status]);
 
 			if (canvas) {
 				e.dataTransfer.setDragImage(canvas, canvas.width / 2, canvas.height / 2);
@@ -89,36 +84,25 @@ const TaskColumn: React.FC<TaskColumnProps> = ({ status, tasks }) => {
 
 			document.addEventListener("dragend", () => handleDragEnd(task.status), { once: true });
 		},
-		[handleDragEnd, setTransferData]
+		[handleDragEnd, setTransferData, token.colorDone, token.colorInProgress, token.colorNotDone]
 	);
 
-	const handleOpenTask = useCallback(
-		(task: Task) => navigate(`/boards/${boardId}?taskId=${task.id}`),
-		[boardId, navigate]
-	);
+	if (!tasks?.length) {
+		return null;
+	}
 
 	return (
-		<StyledTaskColumn
-			status={status}
-			outlineColor={dropTarget === status ? statusColors[status] : undefined}
-			onDragOver={preventDefault}
-			onDragEnter={handleDragEnter}
-			onDragLeave={handleDragLeave}
-		>
-			<p>{taskStatusLocale[status]}</p>
-
-			<div>
-				{tasks?.map(task => (
-					<TaskItem
-						onClick={() => handleOpenTask(task)}
-						key={task.id}
-						task={task}
-						onDragStart={handleDragStart}
-					/>
-				))}
-			</div>
-		</StyledTaskColumn>
+		<div>
+			{tasks?.map(task => (
+				<TaskItem
+					onClick={() => handleOpenTask(task)}
+					key={task.id}
+					task={task}
+					onDragStart={handleDragStart}
+				/>
+			))}
+		</div>
 	);
 };
 
-export default memo(TaskColumn);
+export default memo(TaskList);

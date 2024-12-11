@@ -9,9 +9,9 @@ export const taskStatusLocale: Record<TaskStatus, string> = {
 };
 
 export const statusColors: Record<TaskStatus, string> = {
-	done: "var(--ant-color-done)",
-	in_progress: "var(--ant-color-in-progress)",
-	not_done: "var(--ant-color-not-done)"
+	done: "--ant-color-done",
+	in_progress: "--ant-color-in-progress",
+	not_done: "--ant-color-not-done"
 };
 
 export const today = dayjs();

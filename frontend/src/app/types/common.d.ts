@@ -6,6 +6,7 @@ declare global {
 		colorInProgress?: string;
 		colorNotDone?: string;
 		imageCropMaskColor?: string;
+		colorTaskGroupTitle?: string;
 	}
 
 	interface ThemeConfig extends BaseThemeConfig {

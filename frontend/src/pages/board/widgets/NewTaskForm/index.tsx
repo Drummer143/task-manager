@@ -1,8 +1,7 @@
-import React, { useCallback } from "react";
+import React, { useCallback, useEffect } from "react";
 
-import { PlusOutlined } from "@ant-design/icons";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Button, Form } from "antd";
+import { Form } from "antd";
 import { createTask } from "api";
 import { useParams } from "react-router-dom";
 
@@ -43,21 +42,27 @@ const NewTaskForm: React.FC = () => {
 		onClose();
 	};
 
-	return (
-		<>
-			<Button icon={<PlusOutlined />} type="primary" onClick={onOpen}>
-				New Task
-			</Button>
+	useEffect(() => {
+		const handleOpenModal: DocumentEventHandler<"createTask"> = e => {
+			form.setFieldValue("status", e.detail.status);
 
-			<TaskForm
-				onCancel={handleCancel}
-				onSubmit={handleSubmit}
-				form={form}
-				isSubmitting={isPending}
-				onClose={onClose}
-				open={open}
-			/>
-		</>
+			onOpen();
+		};
+
+		document.addEventListener("createTask", handleOpenModal);
+
+		return () => document.removeEventListener("createTask", handleOpenModal);
+	}, [form, onOpen]);
+
+	return (
+		<TaskForm
+			onCancel={handleCancel}
+			onSubmit={handleSubmit}
+			form={form}
+			isSubmitting={isPending}
+			onClose={onClose}
+			open={open}
+		/>
 	);
 };
 
