@@ -3,6 +3,7 @@ package boardsRouter
 import (
 	"main/dbClient"
 	"main/router/errorHandlers"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -10,7 +11,15 @@ import (
 )
 
 func checkBoardAccess(ctx *gin.Context, db *gorm.DB, boardId uuid.UUID, userId uuid.UUID) (board dbClient.Board, boardAccess dbClient.BoardAccesses, ok bool) {
-	if err := db.First(&board, "id = ?", boardId).Error; err != nil {
+	include := ctx.Query("include")
+
+	var scopedDB = db
+
+	if strings.Contains(include, "tasks") {
+		scopedDB = scopedDB.Preload("Tasks")
+	}
+
+	if err := scopedDB.First(&board, "id = ?", boardId).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			errorHandlers.NotFound(ctx, "board not found")
 			return board, boardAccess, false

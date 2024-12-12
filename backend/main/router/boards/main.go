@@ -17,5 +17,8 @@ func AddRoutes(group *gin.RouterGroup, db *gorm.DB, validate *validator.Validate
 
 	group.DELETE("/:id", deleteBoard(db))
 
-	group.POST("/:id/access", updateAccess(db))
+	group.GET("/:id/accesses", getBoardAccesses(db))
+
+	group.PUT("/:id/accesses", updateAccess(db))
+
 }

@@ -1,5 +1,4 @@
 import { axiosInstance } from "./base";
-import { CreateBoardArgs, UpdateBoardAccessArgs } from "./types";
 
 type GetBoardIncludes = "tasks" | "owner" | "boardAccesses";
 
@@ -27,6 +26,10 @@ export const getBoardList = async <T extends GetBoardIncludes | undefined = unde
 	(await axiosInstance.get<ResponseWithIncludeFilter<T>[]>("/boards", { params: { include: include?.join(",") } }))
 		.data;
 
+interface CreateBoardArgs {
+	name: string;
+}
+
 export const createBoard = async (board: CreateBoardArgs) => (await axiosInstance.post<Board>("/boards", board)).data;
 
 export const updateBoard = async (id: string, board: Partial<CreateBoardArgs>) =>
@@ -34,5 +37,18 @@ export const updateBoard = async (id: string, board: Partial<CreateBoardArgs>) =
 
 export const deleteBoard = async (id: string) => (await axiosInstance.delete<void>(`/boards/${id}`)).data;
 
-export const updateBoardAccess = async (id: string, accesses: UpdateBoardAccessArgs) =>
-	(await axiosInstance.post<void>(`/boards/${id}/board-accesses`, accesses)).data;
+interface UpdateBoardAccessArgs {
+	boardId: string;
+
+	body: {
+		role?: string;
+
+		userId: string;
+	};
+}
+
+export const updateBoardAccess = async ({ boardId, body }: UpdateBoardAccessArgs) =>
+	(await axiosInstance.put<"Success">(`/boards/${boardId}/accesses`, body)).data;
+
+export const getBoardAccess = async (id: string) =>
+	(await axiosInstance.get<BoardAccesses[]>(`/boards/${id}/accesses`)).data;

@@ -83,6 +83,8 @@ definitions:
         type: string
       role:
         $ref: '#/definitions/dbClient.BoardUserRole'
+      user:
+        $ref: '#/definitions/dbClient.User'
     type: object
   dbClient.BoardUserRole:
     enum:
@@ -234,6 +236,26 @@ definitions:
       title:
         maxLength: 63
         type: string
+    type: object
+  usersRouter.Meta:
+    properties:
+      hasMore:
+        type: boolean
+      limit:
+        type: integer
+      offset:
+        type: integer
+      total:
+        type: integer
+    type: object
+  usersRouter.ResponseWithPagination-dbClient_User:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/dbClient.User'
+        type: array
+      meta:
+        $ref: '#/definitions/usersRouter.Meta'
     type: object
 info:
   contact: {}
@@ -502,6 +524,11 @@ paths:
         name: id
         required: true
         type: string
+      - description: 'Comma separated list of fields to include. Available fields:
+          tasks'
+        in: query
+        name: include
+        type: string
       produces:
       - application/json
       responses:
@@ -583,7 +610,7 @@ paths:
       consumes:
       - application/json
       description: Changes access to board. Can change access if it was already given,
-        give if it wasn't or remove it
+        give if it wasn't or remove it, if no role was given in pair
       parameters:
       - description: Board ID
         in: path
@@ -606,17 +633,19 @@ paths:
                 - member
                 - commentator
                 - guest
-              user_id:
+              userId:
                 type: string
             required:
-            - user_id
+            - userId
             type: object
           type: array
       produces:
       - application/json
       responses:
-        "204":
-          description: No Content
+        "200":
+          description: Success
+          schema:
+            type: string
         "400":
           description: Bad Request
           schema:
@@ -638,6 +667,47 @@ paths:
           schema:
             $ref: '#/definitions/errorHandlers.Error'
       summary: Change access to board
+      tags:
+      - Boards
+  /boards/{id}/accesses:
+    get:
+      description: Get board accesses
+      parameters:
+      - description: Board ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dbClient.BoardAccesses'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "401":
+          description: Unauthorized if session is missing or invalid
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "403":
+          description: No access to board
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+      summary: Get board accesses
       tags:
       - Boards
   /profile:
@@ -1025,4 +1095,42 @@ paths:
       summary: Change task status
       tags:
       - Tasks
+  /users:
+    get:
+      description: Get user list
+      parameters:
+      - description: filter by username or email
+        in: query
+        name: username_or_email
+        type: string
+      - description: If not provided or less than 1, all users will be returned
+        in: query
+        name: limit
+        type: integer
+      - description: Default is 0
+        in: query
+        name: offset
+        type: integer
+      - description: comma separated list of ids to exclude
+        in: query
+        name: exclude
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User list
+          schema:
+            $ref: '#/definitions/usersRouter.ResponseWithPagination-dbClient_User'
+        "401":
+          description: Unauthorized if session is missing or invalid
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+      summary: Get user list
+      tags:
+      - Users
 swagger: "2.0"

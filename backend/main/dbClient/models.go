@@ -79,4 +79,6 @@ type BoardAccesses struct {
 	BoardID   uuid.UUID     `gorm:"type:uuid;not null" json:"-"`
 	Role      BoardUserRole `gorm:"type:board_roles;not null" json:"role"`
 	CreatedAt time.Time     `gorm:"type:timestamptz,default:CURRENT_TIMESTAMP" json:"createdAt"`
+
+	User *User `gorm:"foreignKey:UserID" json:"user,omitempty"`
 }

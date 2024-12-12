@@ -1,3 +1,4 @@
+import { DefaultOptionType } from "antd/es/select";
 import dayjs from "dayjs";
 
 export const statusArray: TaskStatus[] = ["not_done", "in_progress", "done"];
@@ -15,3 +16,16 @@ export const statusColors: Record<TaskStatus, string> = {
 };
 
 export const today = dayjs();
+
+export const userBoardRoles: UserBoardRole[] = ["owner", "admin", "member", "commentator", "guest"];
+
+export const userBoardRoleOptions: DefaultOptionType[] = userBoardRoles.map(role => {
+	const capitalizedRole = role.charAt(0).toUpperCase() + role.slice(1);
+
+	return {
+		label: capitalizedRole,
+		title: capitalizedRole,
+		value: role,
+		key: role
+	};
+});

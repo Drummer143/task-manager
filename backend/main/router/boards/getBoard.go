@@ -15,6 +15,7 @@ import (
 // @Tags 			Boards
 // @Produce 		json
 // @Param 			id path string true "Board ID"
+// @Param			include query string false "Comma separated list of fields to include. Available fields: tasks"
 // @Success 		200 {object} dbClient.Board
 // @Failure 		400 {object} errorHandlers.Error
 // @Failure 		401 {object} errorHandlers.Error "Unauthorized if session is missing or invalid"
@@ -37,11 +38,11 @@ func getBoard(db *gorm.DB) gin.HandlerFunc {
 
 		board, access, ok := checkBoardAccess(ctx, db, boardId, userId)
 
-		board.UserRole = access.Role
-
 		if !ok {
 			return
 		}
+
+		board.UserRole = access.Role
 
 		ctx.JSON(http.StatusOK, board)
 	}

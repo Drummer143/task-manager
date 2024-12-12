@@ -370,6 +370,12 @@ const docTemplate = `{
                         "name": "id",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Comma separated list of fields to include. Available fields: tasks",
+                        "name": "include",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -534,7 +540,7 @@ const docTemplate = `{
         },
         "/boards/{id}/access": {
             "post": {
-                "description": "Changes access to board. Can change access if it was already given, give if it wasn't or remove it",
+                "description": "Changes access to board. Can change access if it was already given, give if it wasn't or remove it, if no role was given in pair",
                 "consumes": [
                     "application/json"
                 ],
@@ -563,7 +569,7 @@ const docTemplate = `{
                             "items": {
                                 "type": "object",
                                 "required": [
-                                    "user_id"
+                                    "userId"
                                 ],
                                 "properties": {
                                     "role": {
@@ -580,7 +586,7 @@ const docTemplate = `{
                                             }
                                         ]
                                     },
-                                    "user_id": {
+                                    "userId": {
                                         "type": "string"
                                     }
                                 }
@@ -589,8 +595,73 @@ const docTemplate = `{
                     }
                 ],
                 "responses": {
-                    "204": {
-                        "description": "No Content"
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized if session is missing or invalid",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "403": {
+                        "description": "No access to board",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/boards/{id}/accesses": {
+            "get": {
+                "description": "Get board accesses",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Boards"
+                ],
+                "summary": "Get board accesses",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Board ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dbClient.BoardAccesses"
+                            }
+                        }
                     },
                     "400": {
                         "description": "Bad Request",
@@ -1185,6 +1256,64 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/users": {
+            "get": {
+                "description": "Get user list",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Get user list",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "filter by username or email",
+                        "name": "username_or_email",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "If not provided or less than 1, all users will be returned",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Default is 0",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "comma separated list of ids to exclude",
+                        "name": "exclude",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User list",
+                        "schema": {
+                            "$ref": "#/definitions/usersRouter.ResponseWithPagination-dbClient_User"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized if session is missing or invalid",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -1313,6 +1442,9 @@ const docTemplate = `{
                 },
                 "role": {
                     "$ref": "#/definitions/dbClient.BoardUserRole"
+                },
+                "user": {
+                    "$ref": "#/definitions/dbClient.User"
                 }
             }
         },
@@ -1534,6 +1666,37 @@ const docTemplate = `{
                 "title": {
                     "type": "string",
                     "maxLength": 63
+                }
+            }
+        },
+        "usersRouter.Meta": {
+            "type": "object",
+            "properties": {
+                "hasMore": {
+                    "type": "boolean"
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "offset": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "usersRouter.ResponseWithPagination-dbClient_User": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dbClient.User"
+                    }
+                },
+                "meta": {
+                    "$ref": "#/definitions/usersRouter.Meta"
                 }
             }
         }

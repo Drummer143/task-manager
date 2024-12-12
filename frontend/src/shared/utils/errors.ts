@@ -3,8 +3,11 @@ import { AxiosError } from "axios";
 type ErrorMap = Record<string | number, string>;
 
 const defaultErrorMap: ErrorMap = {
-	unknown: "Unknown error. Please reload the page and try again.",
-	500: "Internal server error. Please reload the page and try again."
+	unknown: "Unknown error. Please reload the page and try again",
+	401: "Unauthorized",
+	403: "Access denied",
+	404: "Not found",
+	500: "Internal server error. Please reload the page and try again"
 };
 
 export const parseUseQueryError = (
