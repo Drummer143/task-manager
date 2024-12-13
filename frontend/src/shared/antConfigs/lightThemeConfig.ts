@@ -1,4 +1,4 @@
-import { ThemeConfig } from "antd";
+import { lightExtra } from "./extraTokenColors";
 
 export default {
 	cssVar: true,
@@ -11,6 +11,7 @@ export default {
 		}
 	},
 	token: {
+		...lightExtra,
 		colorBgLayout: "#fff"
 	}
 } as Omit<ThemeConfig, "algorithm">;

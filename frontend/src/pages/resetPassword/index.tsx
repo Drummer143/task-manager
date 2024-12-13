@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 
 import { useMutation } from "@tanstack/react-query";
 import { Form, Input, Typography } from "antd";
-import api from "api";
+import { resetPassword } from "api";
 import { Link } from "react-router-dom";
 
 import { withAuthPageCheck } from "shared/HOCs/withAuthPageCheck";
@@ -15,7 +15,7 @@ const emailRule = composeRules(required(), email());
 
 const ResetPassword: React.FC = () => {
 	const { mutateAsync, isSuccess, isPending, error, reset } = useMutation({
-		mutationFn: api.auth.resetPassword
+		mutationFn: resetPassword
 	});
 
 	const parsedError = useMemo(() => parseUseQueryError(error, undefined, [400, 404]), [error]);

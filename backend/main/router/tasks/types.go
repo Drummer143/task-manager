@@ -15,6 +15,7 @@ var (
 )
 
 type createTaskBody struct {
+	BoardId             uuid.UUID  `json:"boardId" validate:"required,uuid4"`
 	DeletableNotByOwner bool       `json:"deletableNotByOwner"`
 	Status              taskStatus `json:"status" validate:"required"`
 	Title               string     `json:"title" validate:"required,max=63"`

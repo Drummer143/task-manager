@@ -57,12 +57,24 @@ func updateTask(db *gorm.DB, validate *validator.Validate) gin.HandlerFunc {
 			return
 		}
 
-		task.Title = *body.Title
-		task.Description = body.Description
-		task.AssignedTo = body.AssignedTo
-		task.Status = *body.Status
-		task.DeletableNotByOwner = *body.DeletableNotByOwner
-		task.DueDate = body.DueDate
+		if body.Title != nil {
+			task.Title = *body.Title
+		}
+		if body.Description != nil {
+			task.Description = body.Description
+		}
+		if body.AssignedTo != nil {
+			task.AssignedTo = body.AssignedTo
+		}
+		if body.Status != nil {
+			task.Status = *body.Status
+		}
+		if body.DeletableNotByOwner != nil {
+			task.DeletableNotByOwner = *body.DeletableNotByOwner
+		}
+		if body.DueDate != nil {
+			task.DueDate = body.DueDate
+		}
 
 		if err := db.Save(&task).Error; err != nil {
 			errorHandlers.InternalServerError(ctx, "failed to update task")

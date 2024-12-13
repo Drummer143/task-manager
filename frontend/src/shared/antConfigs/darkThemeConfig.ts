@@ -1,4 +1,4 @@
-import { ThemeConfig } from "antd";
+import { darkExtra } from "./extraTokenColors";
 
 export default {
 	cssVar: true,
@@ -8,5 +8,6 @@ export default {
 			headerBg: "#040404",
 			siderBg: "#040404"
 		}
-	}
+	},
+	token: darkExtra
 } as Omit<ThemeConfig, "algorithm">;

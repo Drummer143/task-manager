@@ -2,6 +2,7 @@ import React from "react";
 
 import { useQuery } from "@tanstack/react-query";
 import { Alert, Spin } from "antd";
+import { getProfile } from "api";
 
 import { withAuthPageCheck } from "shared/HOCs/withAuthPageCheck";
 
@@ -10,11 +11,9 @@ import AvatarInput from "./widgets/AvatarUpload";
 import EmailForm from "./widgets/EmailForm";
 import UserInfoForm from "./widgets/UserInfoForm";
 
-import api from "../../app/api";
-
 const Profile: React.FC = () => {
 	const { data, isLoading, error } = useQuery({
-		queryFn: api.profile.get,
+		queryFn: getProfile,
 		queryKey: ["profile"]
 	});
 

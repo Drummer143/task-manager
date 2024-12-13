@@ -10,8 +10,10 @@ import (
 
 	// authRouter "main/router/auth"
 	authRouter "main/router/auth"
+	boardsRouter "main/router/boards"
 	profileRouter "main/router/profile"
 	tasksRouter "main/router/tasks"
+	usersRouter "main/router/users"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/sessions"
@@ -52,6 +54,8 @@ func New(auth *auth.Auth, db *gorm.DB, validate *validator.Validate) *gin.Engine
 	authRouter.AddRoutes(router.Group("auth"), auth, validate, db)
 	profileRouter.AddRoutes(router.Group("profile", IsAuthenticated(auth)), validate, db)
 	tasksRouter.AddRoutes(router.Group("tasks", IsAuthenticated(auth)), db, validate)
+	boardsRouter.AddRoutes(router.Group("boards", IsAuthenticated(auth)), db, validate)
+	usersRouter.AddRoutes(router.Group("users", IsAuthenticated(auth)), db)
 
 	return router
 }

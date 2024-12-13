@@ -29,6 +29,28 @@ interface Task {
 	description?: string;
 }
 
+type UserBoardRole = "owner" | "admin" | "member" | "commentator" | "guest";
+
+interface BoardAccesses {
+	role: UserBoardRole;
+	createdAt: string;
+
+	user: User;
+}
+
+type Board = {
+	id: string;
+	name: string;
+	userRole: UserBoardRole;
+
+	createdAt: string;
+	updatedAt: string;
+
+	owner: User;
+	tasks: Task[];
+	boardAccesses: BoardAccesses[];
+};
+
 interface ApiError {
 	error: string;
 	message: string;
@@ -36,4 +58,21 @@ interface ApiError {
 	statusCode: number;
 
 	details?: Record<string, string>;
+}
+
+interface PaginationMeta {
+	hasMore: boolean;
+	total: number;
+	limit: number;
+	offset: number;
+}
+
+interface ResponseWithPagination<T> {
+	meta: PaginationMeta;
+	data: T[];
+}
+
+interface PaginationQuery<T extends object = never> extends T {
+	offset?: number;
+	limit?: number;
 }

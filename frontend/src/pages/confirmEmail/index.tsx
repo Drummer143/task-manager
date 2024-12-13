@@ -2,7 +2,7 @@ import React, { useEffect, useMemo, useRef } from "react";
 
 import { useMutation } from "@tanstack/react-query";
 import { Flex, Spin, Typography } from "antd";
-import api from "api";
+import { confirmEmail } from "api";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 
 import AuthPageMessageWrapper from "shared/ui/AuthPageMessageWrapper";
@@ -17,7 +17,7 @@ const ConfirmEmail: React.FC = () => {
 	const [searchParams] = useSearchParams();
 
 	const { mutateAsync, isPending, error } = useMutation({
-		mutationFn: api.auth.confirmEmail
+		mutationFn: confirmEmail
 	});
 
 	const redirectTimeoutRef = useRef<NodeJS.Timeout | null>(null);

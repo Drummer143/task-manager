@@ -2,7 +2,7 @@ import { useEffect, useMemo } from "react";
 
 import { MoonOutlined, SunOutlined } from "@ant-design/icons";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { App as AntApp, theme as AntTheme, ConfigProvider, FloatButton, ThemeConfig } from "antd";
+import { App as AntApp, theme as AntTheme, ConfigProvider, FloatButton } from "antd";
 import { RouterProvider } from "react-router-dom";
 
 import darkThemeConfig from "shared/antConfigs/darkThemeConfig";

@@ -2,9 +2,9 @@ import { removeEmptyFields } from "shared/utils";
 
 import { axiosInstance } from "./base";
 
-export const get = async () => (await axiosInstance.get<User>("/profile")).data;
+export const getProfile = async () => (await axiosInstance.get<User>("/profile")).data;
 
-export const update = async (data: { username: string }) =>
+export const updateProfile = async (data: { username: string }) =>
 	(await axiosInstance.patch<User>("/profile", removeEmptyFields(data))).data;
 
 export const changeEmail = async (body: { email: string }) =>

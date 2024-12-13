@@ -1,5 +1,3 @@
-import { statusColors } from "./constants";
-
 export const drawRoundedRect = (
 	context: CanvasRenderingContext2D,
 	x: number,
@@ -21,7 +19,7 @@ export const drawRoundedRect = (
 	context.closePath();
 };
 
-export const drawTaskDragImage = (task: Task) => {
+export const drawTaskDragImage = (task: Task, statusColor: string) => {
 	const canvas = document.createElement("canvas");
 	const context = canvas.getContext("2d");
 
@@ -40,7 +38,7 @@ export const drawTaskDragImage = (task: Task) => {
 	canvas.width = textWidth + paddingX * 2;
 	canvas.height = fontSize + paddingY * 2;
 
-	context.fillStyle = statusColors[task.status];
+	context.fillStyle = statusColor;
 	drawRoundedRect(context, 0, 0, canvas.width, canvas.height, borderRadius);
 	context.fill();
 

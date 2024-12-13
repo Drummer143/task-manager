@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useMemo, useRef } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { Flex, Form, Input, Spin, Typography } from "antd";
 import { Rule } from "antd/es/form";
-import api from "api";
+import { updatePassword as apiUpdatePassword, verifyResetPasswordToken as apiVerifyResetPasswordToken } from "api";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 
 import { withAuthPageCheck } from "shared/HOCs/withAuthPageCheck";
@@ -31,7 +31,7 @@ const NewPassword: React.FC = () => {
 		isSuccess: isTokenValidated,
 		isPending: isTokenValidating
 	} = useMutation({
-		mutationFn: api.auth.verifyResetPasswordToken
+		mutationFn: apiVerifyResetPasswordToken
 	});
 
 	const {
@@ -40,7 +40,7 @@ const NewPassword: React.FC = () => {
 		isPending: isPasswordUpdating,
 		error
 	} = useMutation({
-		mutationFn: api.auth.updatePassword
+		mutationFn: apiUpdatePassword
 	});
 
 	const passwordUpdateError = useMemo(() => parseUseQueryError(error, undefined, [400, 404]), [error]);

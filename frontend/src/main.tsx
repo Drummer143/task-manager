@@ -7,10 +7,17 @@ import App from "./app/App";
 import Providers from "./app/Providers";
 import "./index.css";
 
-createRoot(document.getElementById("root")!).render(
-	<StrictMode>
-		<Providers>
-			<App />
-		</Providers>
-	</StrictMode>
-);
+const mount = () =>
+	createRoot(document.getElementById("root")!).render(
+		<StrictMode>
+			<Providers>
+				<App />
+			</Providers>
+		</StrictMode>
+	);
+
+if (import.meta.env.DEV) {
+	import("./wydr").then(mount);
+} else {
+	mount();
+}
