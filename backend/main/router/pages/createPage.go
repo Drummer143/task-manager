@@ -1,4 +1,4 @@
-package boardsRouter
+package pagesRouter
 
 import (
 	"main/dbClient"
@@ -13,24 +13,25 @@ import (
 	"gorm.io/gorm"
 )
 
-type createBoardBody struct {
-	Name string `json:"name" validate:"required"`
+type createPageBody struct {
+	Name string            `json:"name" validate:"required"`
+	Type dbClient.PageType `json:"type" validate:"required"`
 }
 
-// @Summary			Create a new board
-// @Description		Create a new board
-// @Tags			Boards
+// @Summary			Create a new page
+// @Description		Create a new page
+// @Tags			Pages
 // @Accept			json
 // @Produce			json
-// @Param			board body createBoardBody true "Board object that needs to be created"
-// @Success			201 {object} dbClient.Board
+// @Param			page body createPageBody true "Page object that needs to be created"
+// @Success			201 {object} dbClient.Page
 // @Failure			400 {object} errorHandlers.Error
 // @Failure			401 {object} errorHandlers.Error "Unauthorized if session is missing or invalid"
 // @Failure			500 {object} errorHandlers.Error
-// @Router			/boards [post]
-func createBoard(db *gorm.DB, validate *validator.Validate) gin.HandlerFunc {
+// @Router			/pages [post]
+func createPage(db *gorm.DB, validate *validator.Validate) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		var body createBoardBody
+		var body createPageBody
 
 		if err := ctx.BindJSON(&body); err != nil {
 			errorHandlers.BadRequest(ctx, "invalid request body", nil)
@@ -49,27 +50,28 @@ func createBoard(db *gorm.DB, validate *validator.Validate) gin.HandlerFunc {
 
 		userId := session.Get("id").(uuid.UUID)
 
-		var board = dbClient.Board{
+		var page = dbClient.Page{
 			Name:    body.Name,
+			Type:    body.Type,
 			OwnerID: userId,
 		}
 
-		if err := db.Create(&board).Error; err != nil {
-			errorHandlers.InternalServerError(ctx, "failed to create board")
+		if err := db.Create(&page).Error; err != nil {
+			errorHandlers.InternalServerError(ctx, "failed to create page")
 			return
 		}
 
-		var boardAccess = dbClient.BoardAccesses{
-			BoardID: board.ID,
-			UserID:  userId,
-			Role:    dbClient.BoardRoleOwner,
+		var pageAccess = dbClient.PageAccess{
+			Role:   dbClient.PageRoleOwner,
+			PageID: page.ID,
+			UserID: userId,
 		}
 
-		if err := db.Create(&boardAccess).Error; err != nil {
-			errorHandlers.InternalServerError(ctx, "failed to create board access")
+		if err := db.Create(&pageAccess).Error; err != nil {
+			errorHandlers.InternalServerError(ctx, "failed to create page")
 			return
 		}
 
-		ctx.JSON(http.StatusCreated, board)
+		ctx.JSON(http.StatusCreated, page)
 	}
 }

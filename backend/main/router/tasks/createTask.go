@@ -5,6 +5,7 @@ import (
 	"main/router/errorHandlers"
 	"main/validation"
 	"net/http"
+	"time"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -12,6 +13,16 @@ import (
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
+
+type createTaskBody struct {
+	PageId              uuid.UUID  `json:"pageId" validate:"required,uuid4"`
+	DeletableNotByOwner bool       `json:"deletableNotByOwner"`
+	Status              taskStatus `json:"status" validate:"required"`
+	Title               string     `json:"title" validate:"required,max=63"`
+	Description         *string    `json:"description,omitempty" validate:"omitempty,max=255"`
+	DueDate             *time.Time `json:"dueDate,omitempty" validate:"omitempty,iso8601"`
+	AssignedTo          *uuid.UUID `json:"assignedTo,omitempty" validate:"omitempty,uuid4"`
+}
 
 // CreateTask 		creates a new task
 // @Summary 		Create a new task
@@ -55,7 +66,7 @@ func createTask(db *gorm.DB, validate *validator.Validate) gin.HandlerFunc {
 			Description:         body.Description,
 			DueDate:             body.DueDate,
 			AssignedTo:          body.AssignedTo,
-			BoardID:             body.BoardId,
+			PageID:              body.PageId,
 			OwnerID:             userId,
 		}
 

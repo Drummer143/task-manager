@@ -3,7 +3,7 @@ import React, { useMemo, useState } from "react";
 import { PlusOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Button, List, Modal, Tooltip } from "antd";
-import { getBoardAccess, getUserList, updateBoardAccess } from "api";
+import { getPageAccess, getUserList, updatePageAccess } from "api";
 
 import { useMessageOnErrorCallback } from "shared/hooks";
 import { parseUseQueryError } from "shared/utils/errors";
@@ -16,20 +16,20 @@ import AccessListItem from "../AccessListItem";
 
 interface SettingsProps {
 	open: boolean;
-	board: Omit<Board, "boardAccesses" | "tasks" | "owner">;
+	page: Omit<Page, "pageAccesses" | "tasks" | "owner" | "textLines" | "childrenPages" | "parentPage">;
 
 	onClose: () => void;
 }
 
-const Settings: React.FC<SettingsProps> = ({ onClose, open, board }) => {
+const Settings: React.FC<SettingsProps> = ({ onClose, open, page }) => {
 	const [newAddedUser, setNewAddedUser] = useState<User | undefined>();
 
 	const queryClient = useQueryClient();
 
 	const { data, isLoading, error } = useQuery({
-		queryFn: async () => await getBoardAccess(board.id),
+		queryFn: async () => await getPageAccess(page.id),
 		enabled: open,
-		queryKey: ["boardAccesses"]
+		queryKey: ["pageAccesses"]
 	});
 
 	const {
@@ -37,15 +37,15 @@ const Settings: React.FC<SettingsProps> = ({ onClose, open, board }) => {
 		variables,
 		isPending
 	} = useMutation({
-		mutationFn: updateBoardAccess,
+		mutationFn: updatePageAccess,
 		onSuccess: (_, { body: { role } }) => {
 			setNewAddedUser(undefined);
 
 			if (role !== "owner" && role !== "admin") {
 				onClose();
-				queryClient.invalidateQueries({ queryKey: ["board", board.id] });
+				queryClient.invalidateQueries({ queryKey: ["page", page.id] });
 			} else {
-				queryClient.invalidateQueries({ queryKey: ["boardAccesses"] });
+				queryClient.invalidateQueries({ queryKey: ["pageAccesses"] });
 			}
 		}
 	});
@@ -53,18 +53,18 @@ const Settings: React.FC<SettingsProps> = ({ onClose, open, board }) => {
 	const parsedError = useMemo(() => error && parseUseQueryError(error), [error]);
 
 	const handleRoleChange = useMessageOnErrorCallback({
-		message: "Error while updating board access",
+		message: "Error while updating page access",
 		callback: async (userId: string, role?: string) =>
-			!!(await updateAccess({ boardId: board.id, body: { userId, role } }))
+			!!(await updateAccess({ pageId: page.id, body: { userId, role } }))
 	});
 
 	return (
 		<Modal open={open} loading={isLoading} onCancel={onClose} onClose={onClose} footer={!parsedError}>
 			{parsedError ? (
-				<s.Alert message="Error while getting board settings" description={parsedError} type="error" />
+				<s.Alert message="Error while getting page settings" description={parsedError} type="error" />
 			) : (
 				<>
-					<s.Header level={4}>Settings for board &quot;{board.name}&quot;</s.Header>
+					<s.Header level={4}>Settings for page &quot;{page.name}&quot;</s.Header>
 
 					<s.Body>
 						<List

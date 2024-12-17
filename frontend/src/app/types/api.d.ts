@@ -1,55 +1,94 @@
+type PageRole = "owner" | "admin" | "member" | "commentator" | "guest";
+
+type PageType = "page" | "text" | "group";
+
+type TaskStatus = "not_done" | "in_progress" | "done";
+
 interface User {
 	id: string;
 	email: string;
 	username: string;
+	lastLogin: string;
 	emailVerified: boolean;
 
-	createdAt: string;
-	lastLogin: string;
-	updatedAt: string;
-	lastPasswordReset: string;
-
 	picture?: string;
+	lastPasswordReset?: string;
+
+	createdAt: string;
+	updatedAt: string;
 	deletedAt?: string;
 }
 
-type TaskStatus = "not_done" | "in_progress" | "done";
+interface UserCredentials {
+	id: string;
+	passwordHash: string;
+
+	passwordResetToken?: string;
+	emailVerificationToken?: string;
+
+	user?: User;
+
+	createdAt: string;
+	updatedAt: string;
+	deletedAt?: string;
+}
+
+interface Page {
+	id: string;
+	type: PageType;
+	name: string;
+	userRole: PageRole;
+
+	owner?: User;
+	parentPage?: Page;
+	childrenPages?: Page[];
+	pageAccesses?: PageAccess[];
+	textLines?: TextPageLine[];
+	tasks?: Task[];
+
+	createdAt: string;
+	updatedAt: string;
+	deletedAt?: string;
+}
+
+interface TextPageLine {
+	id: string;
+	text: string;
+
+	createdAt: string;
+	updatedAt: string;
+	deletedAt?: string;
+}
+
+interface PageAccess {
+	id: string;
+	role: PageRole;
+
+	user: User;
+	page: Page;
+
+	createdAt: string;
+	updatedAt: string;
+	deletedAt?: string;
+}
 
 interface Task {
 	id: string;
 	title: string;
-	author: User;
 	status: TaskStatus;
-	createdAt: string;
 	deletableNotByOwner: boolean;
 
 	dueDate?: string;
-	assignee?: User;
-	deletedAt?: string;
 	description?: string;
-}
 
-type UserBoardRole = "owner" | "admin" | "member" | "commentator" | "guest";
-
-interface BoardAccesses {
-	role: UserBoardRole;
-	createdAt: string;
-
-	user: User;
-}
-
-type Board = {
-	id: string;
-	name: string;
-	userRole: UserBoardRole;
+	page?: Page;
+	owner?: User;
+	assignedUser?: User;
 
 	createdAt: string;
 	updatedAt: string;
-
-	owner: User;
-	tasks: Task[];
-	boardAccesses: BoardAccesses[];
-};
+	deletedAt?: string;
+}
 
 interface ApiError {
 	error: string;

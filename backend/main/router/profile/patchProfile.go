@@ -3,9 +3,9 @@ package profileRouter
 import (
 	"main/dbClient"
 	"main/router/errorHandlers"
-	"main/utils"
 	"main/validation"
 	"net/http"
+	"time"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -67,7 +67,7 @@ func patchProfile(validate *validator.Validate, db *gorm.DB) gin.HandlerFunc {
 		}
 
 		user.Username = body.Username
-		user.UpdatedAt = utils.GetTimestampTz()
+		user.UpdatedAt = time.Now()
 
 		if err := db.Save(&user).Error; err != nil {
 			errorHandlers.InternalServerError(ctx, "failed to update user")

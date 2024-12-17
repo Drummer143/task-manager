@@ -17,7 +17,7 @@ export const statusColors: Record<TaskStatus, string> = {
 
 export const today = dayjs();
 
-export const userBoardRoles: UserBoardRole[] = ["owner", "admin", "member", "commentator", "guest"];
+export const userBoardRoles: PageRole[] = ["owner", "admin", "member", "commentator", "guest"];
 
 export const userBoardRoleOptions: DefaultOptionType[] = userBoardRoles.map(role => {
 	const capitalizedRole = role.charAt(0).toUpperCase() + role.slice(1);

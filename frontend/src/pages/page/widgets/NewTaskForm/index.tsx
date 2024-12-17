@@ -13,7 +13,7 @@ import { FormValues } from "../TaskForm/types";
 const NewTaskForm: React.FC = () => {
 	const queryClient = useQueryClient();
 
-	const boardId = useParams<{ id: string }>().id!;
+	const pageId = useParams<{ id: string }>().id!;
 
 	const { onClose, onOpen, open } = useDisclosure();
 
@@ -27,14 +27,14 @@ const NewTaskForm: React.FC = () => {
 	const handleSubmit = useCallback(
 		async (values: FormValues) => {
 			try {
-				await mutateAsync({ ...values, dueDate: values.dueDate?.toISOString(), boardId });
+				await mutateAsync({ ...values, dueDate: values.dueDate?.toISOString(), pageId });
 
 				onClose();
 			} catch {
 				/* empty */
 			}
 		},
-		[boardId, mutateAsync, onClose]
+		[pageId, mutateAsync, onClose]
 	);
 
 	const handleCancel = () => {

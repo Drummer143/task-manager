@@ -120,7 +120,7 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "auth"
+                    "Auth"
                 ],
                 "summary": "Log out",
                 "responses": {
@@ -260,16 +260,16 @@ const docTemplate = `{
                 }
             }
         },
-        "/boards": {
+        "/pages": {
             "get": {
-                "description": "Get list of boards user has access to",
+                "description": "Get list of pages user has access to",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "Boards"
+                    "Pages"
                 ],
-                "summary": "Get board list",
+                "summary": "Get page list",
                 "parameters": [
                     {
                         "type": "string",
@@ -284,7 +284,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/dbClient.Board"
+                                "$ref": "#/definitions/dbClient.Page"
                             }
                         }
                     },
@@ -303,7 +303,7 @@ const docTemplate = `{
                 }
             },
             "post": {
-                "description": "Create a new board",
+                "description": "Create a new page",
                 "consumes": [
                     "application/json"
                 ],
@@ -311,17 +311,17 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Boards"
+                    "Pages"
                 ],
-                "summary": "Create a new board",
+                "summary": "Create a new page",
                 "parameters": [
                     {
-                        "description": "Board object that needs to be created",
-                        "name": "board",
+                        "description": "Page object that needs to be created",
+                        "name": "page",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/boardsRouter.createBoardBody"
+                            "$ref": "#/definitions/pagesRouter.createPageBody"
                         }
                     }
                 ],
@@ -329,7 +329,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/dbClient.Board"
+                            "$ref": "#/definitions/dbClient.Page"
                         }
                     },
                     "400": {
@@ -353,20 +353,20 @@ const docTemplate = `{
                 }
             }
         },
-        "/boards/{id}": {
+        "/pages/{id}": {
             "get": {
-                "description": "Get board by id",
+                "description": "Get page by id",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "Boards"
+                    "Pages"
                 ],
-                "summary": "Get board by id",
+                "summary": "Get page by id",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Board ID",
+                        "description": "Page ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -382,7 +382,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dbClient.Board"
+                            "$ref": "#/definitions/dbClient.Page"
                         }
                     },
                     "400": {
@@ -398,7 +398,7 @@ const docTemplate = `{
                         }
                     },
                     "403": {
-                        "description": "No access to board",
+                        "description": "No access to page",
                         "schema": {
                             "$ref": "#/definitions/errorHandlers.Error"
                         }
@@ -418,7 +418,7 @@ const docTemplate = `{
                 }
             },
             "put": {
-                "description": "Update board by id",
+                "description": "Update page by id",
                 "consumes": [
                     "application/json"
                 ],
@@ -426,24 +426,24 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Boards"
+                    "Pages"
                 ],
-                "summary": "Update board by id",
+                "summary": "Update page by id",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Board ID",
+                        "description": "Page ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "Board object that needs to be updated",
-                        "name": "board",
+                        "description": "Page object that needs to be updated",
+                        "name": "page",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/boardsRouter.updateBoardBody"
+                            "$ref": "#/definitions/pagesRouter.updatePageBody"
                         }
                     }
                 ],
@@ -451,7 +451,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dbClient.Board"
+                            "$ref": "#/definitions/dbClient.Page"
                         }
                     },
                     "400": {
@@ -467,7 +467,7 @@ const docTemplate = `{
                         }
                     },
                     "403": {
-                        "description": "No access to board",
+                        "description": "No access to page",
                         "schema": {
                             "$ref": "#/definitions/errorHandlers.Error"
                         }
@@ -487,18 +487,18 @@ const docTemplate = `{
                 }
             },
             "delete": {
-                "description": "Delete board by id",
+                "description": "Delete page by id",
                 "produces": [
                     "application/json"
                 ],
                 "tags": [
-                    "Boards"
+                    "Pages"
                 ],
-                "summary": "Delete board by id",
+                "summary": "Delete page by id",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Board ID",
+                        "description": "Page ID",
                         "name": "id",
                         "in": "path",
                         "required": true
@@ -508,7 +508,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dbClient.Board"
+                            "$ref": "#/definitions/dbClient.Page"
                         }
                     },
                     "400": {
@@ -538,9 +538,69 @@ const docTemplate = `{
                 }
             }
         },
-        "/boards/{id}/access": {
-            "post": {
-                "description": "Changes access to board. Can change access if it was already given, give if it wasn't or remove it, if no role was given in pair",
+        "/pages/{id}/accesses": {
+            "get": {
+                "description": "Get page accesses",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Page Accesses"
+                ],
+                "summary": "Get page accesses",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Page ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dbClient.PageAccess"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized if session is missing or invalid",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "403": {
+                        "description": "No access to page",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Changes access to page. Can change access if it was already given, give if it wasn't or remove it, if no role was given in pair",
                 "consumes": [
                     "application/json"
                 ],
@@ -548,49 +608,24 @@ const docTemplate = `{
                     "application/json"
                 ],
                 "tags": [
-                    "Boards"
+                    "Page Accesses"
                 ],
-                "summary": "Change access to board",
+                "summary": "Change access to page",
                 "parameters": [
                     {
                         "type": "string",
-                        "description": "Board ID",
+                        "description": "Page ID",
                         "name": "id",
                         "in": "path",
                         "required": true
                     },
                     {
-                        "description": "Board object that needs to be updated",
-                        "name": "board",
+                        "description": "Page object that needs to be updated",
+                        "name": "page",
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "type": "array",
-                            "items": {
-                                "type": "object",
-                                "required": [
-                                    "userId"
-                                ],
-                                "properties": {
-                                    "role": {
-                                        "enum": [
-                                            "owner",
-                                            "admin",
-                                            "member",
-                                            "commentator",
-                                            "guest"
-                                        ],
-                                        "allOf": [
-                                            {
-                                                "$ref": "#/definitions/dbClient.BoardUserRole"
-                                            }
-                                        ]
-                                    },
-                                    "userId": {
-                                        "type": "string"
-                                    }
-                                }
-                            }
+                            "$ref": "#/definitions/accessesRouter.giveAccessBody"
                         }
                     }
                 ],
@@ -614,69 +649,7 @@ const docTemplate = `{
                         }
                     },
                     "403": {
-                        "description": "No access to board",
-                        "schema": {
-                            "$ref": "#/definitions/errorHandlers.Error"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/errorHandlers.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/errorHandlers.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/boards/{id}/accesses": {
-            "get": {
-                "description": "Get board accesses",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Boards"
-                ],
-                "summary": "Get board accesses",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Board ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/dbClient.BoardAccesses"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/errorHandlers.Error"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized if session is missing or invalid",
-                        "schema": {
-                            "$ref": "#/definitions/errorHandlers.Error"
-                        }
-                    },
-                    "403": {
-                        "description": "No access to board",
+                        "description": "No access to page",
                         "schema": {
                             "$ref": "#/definitions/errorHandlers.Error"
                         }
@@ -1317,6 +1290,31 @@ const docTemplate = `{
         }
     },
     "definitions": {
+        "accessesRouter.giveAccessBody": {
+            "type": "object",
+            "required": [
+                "userId"
+            ],
+            "properties": {
+                "role": {
+                    "enum": [
+                        "owner",
+                        "admin",
+                        "member",
+                        "commentator",
+                        "guest"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/dbClient.PageRole"
+                        }
+                    ]
+                },
+                "userId": {
+                    "type": "string"
+                }
+            }
+        },
         "authRouter.confirmEmailBody": {
             "type": "object",
             "required": [
@@ -1377,32 +1375,13 @@ const docTemplate = `{
                 }
             }
         },
-        "boardsRouter.createBoardBody": {
-            "type": "object",
-            "required": [
-                "name"
-            ],
-            "properties": {
-                "name": {
-                    "type": "string"
-                }
-            }
-        },
-        "boardsRouter.updateBoardBody": {
+        "dbClient.Page": {
             "type": "object",
             "properties": {
-                "name": {
-                    "type": "string"
-                }
-            }
-        },
-        "dbClient.Board": {
-            "type": "object",
-            "properties": {
-                "boardAccesses": {
+                "childrenPages": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dbClient.BoardAccesses"
+                        "$ref": "#/definitions/dbClient.Page"
                     }
                 },
                 "createdAt": {
@@ -1420,35 +1399,65 @@ const docTemplate = `{
                 "owner": {
                     "$ref": "#/definitions/dbClient.User"
                 },
+                "pageAccesses": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dbClient.PageAccess"
+                    }
+                },
+                "parentPage": {
+                    "$ref": "#/definitions/dbClient.Page"
+                },
                 "tasks": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/dbClient.Task"
                     }
                 },
+                "textLines": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dbClient.TextPageLine"
+                    }
+                },
+                "type": {
+                    "$ref": "#/definitions/dbClient.PageType"
+                },
                 "updatedAt": {
                     "type": "string"
                 },
                 "userRole": {
-                    "$ref": "#/definitions/dbClient.BoardUserRole"
+                    "$ref": "#/definitions/dbClient.PageRole"
                 }
             }
         },
-        "dbClient.BoardAccesses": {
+        "dbClient.PageAccess": {
             "type": "object",
             "properties": {
                 "createdAt": {
                     "type": "string"
                 },
+                "deletedAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "page": {
+                    "$ref": "#/definitions/dbClient.Page"
+                },
                 "role": {
-                    "$ref": "#/definitions/dbClient.BoardUserRole"
+                    "$ref": "#/definitions/dbClient.PageRole"
+                },
+                "updatedAt": {
+                    "type": "string"
                 },
                 "user": {
                     "$ref": "#/definitions/dbClient.User"
                 }
             }
         },
-        "dbClient.BoardUserRole": {
+        "dbClient.PageRole": {
             "type": "string",
             "enum": [
                 "owner",
@@ -1458,11 +1467,24 @@ const docTemplate = `{
                 "guest"
             ],
             "x-enum-varnames": [
-                "BoardRoleOwner",
-                "BoardRoleAdmin",
-                "BoardRoleMember",
-                "BoardRoleComment",
-                "BoardRoleGuest"
+                "PageRoleOwner",
+                "PageRoleAdmin",
+                "PageRoleMember",
+                "PageRoleCommentator",
+                "PageRoleGuest"
+            ]
+        },
+        "dbClient.PageType": {
+            "type": "string",
+            "enum": [
+                "board",
+                "text",
+                "group"
+            ],
+            "x-enum-varnames": [
+                "PageTypeBoard",
+                "PageTypeText",
+                "PageTypeGroup"
             ]
         },
         "dbClient.Task": {
@@ -1471,8 +1493,8 @@ const docTemplate = `{
                 "assignedTo": {
                     "type": "string"
                 },
-                "board": {
-                    "$ref": "#/definitions/dbClient.Board"
+                "assignedUser": {
+                    "$ref": "#/definitions/dbClient.User"
                 },
                 "createdAt": {
                     "type": "string"
@@ -1495,10 +1517,33 @@ const docTemplate = `{
                 "owner": {
                     "$ref": "#/definitions/dbClient.User"
                 },
+                "page": {
+                    "$ref": "#/definitions/dbClient.Page"
+                },
                 "status": {
                     "type": "string"
                 },
                 "title": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "dbClient.TextPageLine": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "text": {
                     "type": "string"
                 },
                 "updatedAt": {
@@ -1559,6 +1604,29 @@ const docTemplate = `{
                 }
             }
         },
+        "pagesRouter.createPageBody": {
+            "type": "object",
+            "required": [
+                "name",
+                "type"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "type": {
+                    "$ref": "#/definitions/dbClient.PageType"
+                }
+            }
+        },
+        "pagesRouter.updatePageBody": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
         "profileRouter.changeEmailBody": {
             "type": "object",
             "required": [
@@ -1600,15 +1668,12 @@ const docTemplate = `{
         "tasksRouter.createTaskBody": {
             "type": "object",
             "required": [
-                "boardId",
+                "pageId",
                 "status",
                 "title"
             ],
             "properties": {
                 "assignedTo": {
-                    "type": "string"
-                },
-                "boardId": {
                     "type": "string"
                 },
                 "deletableNotByOwner": {
@@ -1619,6 +1684,9 @@ const docTemplate = `{
                     "maxLength": 255
                 },
                 "dueDate": {
+                    "type": "string"
+                },
+                "pageId": {
                     "type": "string"
                 },
                 "status": {

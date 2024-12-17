@@ -15,7 +15,7 @@ interface TaskListProps {
 }
 
 const TaskList: React.FC<TaskListProps> = ({ tasks }) => {
-	const boardId = useParams<{ id: string }>().id!;
+	const pageId = useParams<{ id: string }>().id!;
 
 	const navigate = useNavigate();
 
@@ -29,8 +29,8 @@ const TaskList: React.FC<TaskListProps> = ({ tasks }) => {
 	});
 
 	const handleOpenTask = useCallback(
-		(task: Task) => navigate(`/boards/${boardId}?taskId=${task.id}`),
-		[boardId, navigate]
+		(task: Task) => navigate(`/pages/${pageId}?taskId=${task.id}`),
+		[pageId, navigate]
 	);
 
 	const handleDragEnd = useCallback(
@@ -59,9 +59,9 @@ const TaskList: React.FC<TaskListProps> = ({ tasks }) => {
 			text += "\n\n" + taskStatusLocale[task.status];
 
 			e.dataTransfer.setData("text/plain", text);
-			e.dataTransfer.setData("text/uri-list", `${window.location.origin}/boards/${boardId}?taskId=${task.id}`);
+			e.dataTransfer.setData("text/uri-list", `${window.location.origin}/pages/${pageId}?taskId=${task.id}`);
 		},
-		[boardId]
+		[pageId]
 	);
 
 	const handleDragStart = useCallback(

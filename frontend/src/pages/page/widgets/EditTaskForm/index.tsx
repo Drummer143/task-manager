@@ -9,14 +9,14 @@ import TaskForm from "../TaskForm";
 import { FormValues } from "../TaskForm/types";
 
 const EditTaskForm: React.FC = () => {
-	const boardId = useParams<{ id: string }>().id!;
+	const pageId = useParams<{ id: string }>().id!;
 	const taskId = useSearchParams()[0].get("taskId");
 
 	const queryClient = useQueryClient();
 
 	const navigate = useNavigate();
 
-	const handleClose = useCallback(() => navigate(`/boards/${boardId}`), [boardId, navigate]);
+	const handleClose = useCallback(() => navigate(`/pages/${pageId}`), [pageId, navigate]);
 
 	const { isLoading, data } = useQuery({
 		queryKey: ["task", taskId],
@@ -27,7 +27,7 @@ const EditTaskForm: React.FC = () => {
 				status: result.status,
 				title: result.title,
 				description: result.description,
-				assignedTo: result.assignee?.id,
+				assignedTo: result.assignedUser?.id,
 				dueDate: result.dueDate ? dayjs(result.dueDate) : undefined
 			};
 		},
@@ -38,7 +38,7 @@ const EditTaskForm: React.FC = () => {
 		mutationFn: updateTask,
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: ["tasks"] });
-			navigate(`/boards/${boardId}`);
+			navigate(`/pages/${pageId}`);
 		}
 	});
 

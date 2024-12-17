@@ -2,28 +2,28 @@ import React, { useMemo } from "react";
 
 import { useQuery } from "@tanstack/react-query";
 import { Menu, MenuProps } from "antd";
-import { getBoardList } from "api";
+import { getPageList } from "api";
 import { Link, useLocation } from "react-router-dom";
 
 import FullSizeLoader from "shared/ui/FullSizeLoader";
 
 const NavContent: React.FC = () => {
 	const { data, isLoading } = useQuery({
-		queryFn: () => getBoardList(),
-		queryKey: ["nav,board"]
+		queryFn: () => getPageList(),
+		queryKey: ["nav,page"]
 	});
 
 	const pathname = useLocation().pathname;
 
 	const menuItems = useMemo<MenuProps["items"]>(
 		() =>
-			data?.map(board => {
-				const href = `/boards/${board.id}`;
+			data?.map(page => {
+				const href = `/pages/${page.id}`;
 
 				return {
 					key: href,
-					title: board.name,
-					label: <Link to={href}>{board.name}</Link>
+					title: page.name,
+					label: <Link to={href}>{page.name}</Link>
 				};
 			}),
 		[data]

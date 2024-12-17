@@ -7,30 +7,30 @@ import { useDisclosure } from "shared/hooks";
 
 import Settings from "../Settings";
 
-interface BoardHeaderProps {
-	board?: Omit<Board, "boardAccesses" | "tasks" | "owner">;
+interface PageHeaderProps {
+	page?: Omit<Page, "pageAccesses" | "tasks" | "owner" | "textLines" | "childrenPages" | "parentPage">;
 }
 
-const BoardHeader: React.FC<BoardHeaderProps> = ({ board }) => {
+const PageHeader: React.FC<PageHeaderProps> = ({ page }) => {
 	const { onClose, onOpen, open } = useDisclosure();
 
-	if (!board) return null;
+	if (!page) return null;
 
 	return (
 		<Flex justify="space-between" gap="var(--ant-margin-sm)">
-			<Typography.Title level={3}>{board.name}</Typography.Title>
+			<Typography.Title level={3}>{page.name}</Typography.Title>
 
-			{(board.userRole === "admin" || board.userRole === "owner") && (
+			{(page.userRole === "admin" || page.userRole === "owner") && (
 				<>
 					<Button onClick={onOpen} icon={<SettingOutlined />}>
 						Settings
 					</Button>
 
-					<Settings open={open} onClose={onClose} board={board} />
+					<Settings open={open} onClose={onClose} page={page} />
 				</>
 			)}
 		</Flex>
 	);
 };
 
-export default memo(BoardHeader);
+export default memo(PageHeader);

@@ -10,11 +10,11 @@ import (
 	"image/png"
 	"main/dbClient"
 	"main/router/errorHandlers"
-	"main/utils"
 	"mime/multipart"
 	"net/http"
 	"os"
 	"strconv"
+	"time"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -196,7 +196,7 @@ func uploadAvatar(db *gorm.DB) gin.HandlerFunc {
 		link := body["link"].(string)
 
 		user.Picture = &link
-		user.UpdatedAt = utils.GetTimestampTz()
+		user.UpdatedAt = time.Now()
 
 		if err := db.Save(&user).Error; err != nil {
 			errorHandlers.InternalServerError(ctx, "failed to update user in database")

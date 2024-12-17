@@ -1,9 +1,10 @@
-package boardsRouter
+package pagesRouter
 
 import (
 	"fmt"
 	"main/dbClient"
 	"main/router/errorHandlers"
+	"main/router/utils"
 	"strings"
 
 	"github.com/gin-contrib/sessions"
@@ -12,16 +13,16 @@ import (
 	"gorm.io/gorm"
 )
 
-// @Summary 		Get board list
-// @Description 	Get list of boards user has access to
-// @Tags 			Boards
+// @Summary 		Get page list
+// @Description 	Get list of pages user has access to
+// @Tags 			Pages
 // @Produce 		json
 // @Param 			include query string false "Include tasks in response"
-// @Success 		200 {array} dbClient.Board
+// @Success 		200 {array} dbClient.Page
 // @Failure 		401 {object} errorHandlers.Error "Unauthorized if session is missing or invalid"
 // @Failure 		500 {object} errorHandlers.Error
-// @Router 		/boards [get]
-func getBoardList(db *gorm.DB) gin.HandlerFunc {
+// @Router 			/pages [get]
+func getPageList(db *gorm.DB) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		session := sessions.Default(ctx)
 
@@ -31,7 +32,7 @@ func getBoardList(db *gorm.DB) gin.HandlerFunc {
 
 		fmt.Println(include, strings.Contains(include, "tasks"))
 
-		query := db.Joins("JOIN board_accesses ON board_accesses.board_id = boards.id").Where("board_accesses.user_id = ?", userId)
+		query := db.Joins("JOIN page_accesses ON page_accesses.page_id = pages.id").Where("page_accesses.user_id = ?", userId)
 
 		if strings.Contains(include, "tasks") {
 			query = query.Preload("Tasks")
@@ -42,33 +43,33 @@ func getBoardList(db *gorm.DB) gin.HandlerFunc {
 		}
 
 		if strings.Contains(include, "access") {
-			query = query.Preload("BoardAccesses")
+			query = query.Preload("PageAccesses")
 		}
 
-		var boards []dbClient.Board
+		var pages []dbClient.Page
 
-		if err := query.Find(&boards).Error; err != nil {
-			errorHandlers.InternalServerError(ctx, "failed to get board list")
+		if err := query.Find(&pages).Error; err != nil {
+			errorHandlers.InternalServerError(ctx, "failed to get page list")
 			return
 		}
 
 		if strings.Contains(include, "access") {
-			for i := range boards {
-				for _, access := range *boards[i].BoardAccesses {
+			for i := range pages {
+				for _, access := range *pages[i].PageAccesses {
 					if access.UserID == userId {
-						boards[i].UserRole = access.Role
+						pages[i].UserRole = access.Role
 						break
 					}
 				}
 			}
 		} else {
-			for i := range boards {
-				_, access, _ := checkBoardAccess(ctx, db, boards[i].ID, userId)
+			for i := range pages {
+				_, access, _ := utils.CheckPageAccess(ctx, db, pages[i].ID, userId)
 
-				boards[i].UserRole = access.Role
+				pages[i].UserRole = access.Role
 			}
 		}
 
-		ctx.JSON(200, boards)
+		ctx.JSON(200, pages)
 	}
 }

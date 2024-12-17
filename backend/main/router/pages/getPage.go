@@ -1,7 +1,8 @@
-package boardsRouter
+package pagesRouter
 
 import (
 	"main/router/errorHandlers"
+	"main/router/utils"
 	"net/http"
 
 	"github.com/gin-contrib/sessions"
@@ -10,25 +11,25 @@ import (
 	"gorm.io/gorm"
 )
 
-// @Summary 		Get board by id
-// @Description 	Get board by id
-// @Tags 			Boards
+// @Summary 		Get page by id
+// @Description 	Get page by id
+// @Tags 			Pages
 // @Produce 		json
-// @Param 			id path string true "Board ID"
+// @Param 			id path string true "Page ID"
 // @Param			include query string false "Comma separated list of fields to include. Available fields: tasks"
-// @Success 		200 {object} dbClient.Board
+// @Success 		200 {object} dbClient.Page
 // @Failure 		400 {object} errorHandlers.Error
 // @Failure 		401 {object} errorHandlers.Error "Unauthorized if session is missing or invalid"
-// @Failure 		403 {object} errorHandlers.Error "No access to board"
+// @Failure 		403 {object} errorHandlers.Error "No access to page"
 // @Failure 		404 {object} errorHandlers.Error
 // @Failure 		500 {object} errorHandlers.Error
-// @Router 		/boards/{id} [get]
-func getBoard(db *gorm.DB) gin.HandlerFunc {
+// @Router 			/pages/{id} [get]
+func getPage(db *gorm.DB) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		boardId, err := uuid.Parse(ctx.Param("id"))
+		pageId, err := uuid.Parse(ctx.Param("id"))
 
 		if err != nil {
-			errorHandlers.BadRequest(ctx, "invalid board id", nil)
+			errorHandlers.BadRequest(ctx, "invalid page id", nil)
 			return
 		}
 
@@ -36,14 +37,14 @@ func getBoard(db *gorm.DB) gin.HandlerFunc {
 
 		userId := session.Get("id").(uuid.UUID)
 
-		board, access, ok := checkBoardAccess(ctx, db, boardId, userId)
+		page, access, ok :=utils.CheckPageAccess(ctx, db, pageId, userId)
 
 		if !ok {
 			return
 		}
 
-		board.UserRole = access.Role
+		page.UserRole = access.Role
 
-		ctx.JSON(http.StatusOK, board)
+		ctx.JSON(http.StatusOK, page)
 	}
 }

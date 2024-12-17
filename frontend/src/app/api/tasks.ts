@@ -3,13 +3,13 @@ import { removeEmptyFields } from "shared/utils";
 import { axiosInstance } from "./base";
 
 export const createTask = async (
-	task: Omit<Task, "id" | "deletedAt" | "createdAt" | "assignee" | "deletableNotByOwner" | "author"> & {
-		boardId: string;
+	task: Omit<Task, "id" | "deletedAt" | "createdAt" | "assignedUser" | "deletableNotByOwner" | "owner" | "updatedAt"> & {
+		pageId: string;
 	}
 ) => (await axiosInstance.post<Task>("/tasks", removeEmptyFields(task))).data;
 
-export const getTaskList = async (boardId: string) =>
-	(await axiosInstance.get<Record<TaskStatus, Task[] | undefined>>(`/tasks?board_id=${boardId}`)).data;
+export const getTaskList = async (pageId: string) =>
+	(await axiosInstance.get<Record<TaskStatus, Task[] | undefined>>(`/tasks?page_id=${pageId}`)).data;
 
 export const getTask = async (id: string) => (await axiosInstance.get<Task>(`/tasks/${id}`)).data;
 

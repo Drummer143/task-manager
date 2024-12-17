@@ -1,4 +1,20 @@
 definitions:
+  accessesRouter.giveAccessBody:
+    properties:
+      role:
+        allOf:
+        - $ref: '#/definitions/dbClient.PageRole'
+        enum:
+        - owner
+        - admin
+        - member
+        - commentator
+        - guest
+      userId:
+        type: string
+    required:
+    - userId
+    type: object
   authRouter.confirmEmailBody:
     properties:
       token:
@@ -40,23 +56,11 @@ definitions:
     - password
     - username
     type: object
-  boardsRouter.createBoardBody:
+  dbClient.Page:
     properties:
-      name:
-        type: string
-    required:
-    - name
-    type: object
-  boardsRouter.updateBoardBody:
-    properties:
-      name:
-        type: string
-    type: object
-  dbClient.Board:
-    properties:
-      boardAccesses:
+      childrenPages:
         items:
-          $ref: '#/definitions/dbClient.BoardAccesses'
+          $ref: '#/definitions/dbClient.Page'
         type: array
       createdAt:
         type: string
@@ -68,25 +72,45 @@ definitions:
         type: string
       owner:
         $ref: '#/definitions/dbClient.User'
+      pageAccesses:
+        items:
+          $ref: '#/definitions/dbClient.PageAccess'
+        type: array
+      parentPage:
+        $ref: '#/definitions/dbClient.Page'
       tasks:
         items:
           $ref: '#/definitions/dbClient.Task'
         type: array
+      textLines:
+        items:
+          $ref: '#/definitions/dbClient.TextPageLine'
+        type: array
+      type:
+        $ref: '#/definitions/dbClient.PageType'
       updatedAt:
         type: string
       userRole:
-        $ref: '#/definitions/dbClient.BoardUserRole'
+        $ref: '#/definitions/dbClient.PageRole'
     type: object
-  dbClient.BoardAccesses:
+  dbClient.PageAccess:
     properties:
       createdAt:
         type: string
+      deletedAt:
+        type: string
+      id:
+        type: string
+      page:
+        $ref: '#/definitions/dbClient.Page'
       role:
-        $ref: '#/definitions/dbClient.BoardUserRole'
+        $ref: '#/definitions/dbClient.PageRole'
+      updatedAt:
+        type: string
       user:
         $ref: '#/definitions/dbClient.User'
     type: object
-  dbClient.BoardUserRole:
+  dbClient.PageRole:
     enum:
     - owner
     - admin
@@ -95,17 +119,27 @@ definitions:
     - guest
     type: string
     x-enum-varnames:
-    - BoardRoleOwner
-    - BoardRoleAdmin
-    - BoardRoleMember
-    - BoardRoleComment
-    - BoardRoleGuest
+    - PageRoleOwner
+    - PageRoleAdmin
+    - PageRoleMember
+    - PageRoleCommentator
+    - PageRoleGuest
+  dbClient.PageType:
+    enum:
+    - board
+    - text
+    - group
+    type: string
+    x-enum-varnames:
+    - PageTypeBoard
+    - PageTypeText
+    - PageTypeGroup
   dbClient.Task:
     properties:
       assignedTo:
         type: string
-      board:
-        $ref: '#/definitions/dbClient.Board'
+      assignedUser:
+        $ref: '#/definitions/dbClient.User'
       createdAt:
         type: string
       deletableNotByOwner:
@@ -120,9 +154,24 @@ definitions:
         type: string
       owner:
         $ref: '#/definitions/dbClient.User'
+      page:
+        $ref: '#/definitions/dbClient.Page'
       status:
         type: string
       title:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  dbClient.TextPageLine:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        type: string
+      id:
+        type: string
+      text:
         type: string
       updatedAt:
         type: string
@@ -162,6 +211,21 @@ definitions:
       statusCode:
         type: integer
     type: object
+  pagesRouter.createPageBody:
+    properties:
+      name:
+        type: string
+      type:
+        $ref: '#/definitions/dbClient.PageType'
+    required:
+    - name
+    - type
+    type: object
+  pagesRouter.updatePageBody:
+    properties:
+      name:
+        type: string
+    type: object
   profileRouter.changeEmailBody:
     properties:
       email:
@@ -191,8 +255,6 @@ definitions:
     properties:
       assignedTo:
         type: string
-      boardId:
-        type: string
       deletableNotByOwner:
         type: boolean
       description:
@@ -200,13 +262,15 @@ definitions:
         type: string
       dueDate:
         type: string
+      pageId:
+        type: string
       status:
         type: string
       title:
         maxLength: 63
         type: string
     required:
-    - boardId
+    - pageId
     - status
     - title
     type: object
@@ -334,7 +398,7 @@ paths:
           description: No Content
       summary: Log out
       tags:
-      - auth
+      - Auth
   /auth/reset-password:
     post:
       consumes:
@@ -420,9 +484,9 @@ paths:
       summary: Verify reset password token
       tags:
       - Auth
-  /boards:
+  /pages:
     get:
-      description: Get list of boards user has access to
+      description: Get list of pages user has access to
       parameters:
       - description: Include tasks in response
         in: query
@@ -435,7 +499,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/dbClient.Board'
+              $ref: '#/definitions/dbClient.Page'
             type: array
         "401":
           description: Unauthorized if session is missing or invalid
@@ -445,27 +509,27 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/errorHandlers.Error'
-      summary: Get board list
+      summary: Get page list
       tags:
-      - Boards
+      - Pages
     post:
       consumes:
       - application/json
-      description: Create a new board
+      description: Create a new page
       parameters:
-      - description: Board object that needs to be created
+      - description: Page object that needs to be created
         in: body
-        name: board
+        name: page
         required: true
         schema:
-          $ref: '#/definitions/boardsRouter.createBoardBody'
+          $ref: '#/definitions/pagesRouter.createPageBody'
       produces:
       - application/json
       responses:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/dbClient.Board'
+            $ref: '#/definitions/dbClient.Page'
         "400":
           description: Bad Request
           schema:
@@ -478,14 +542,14 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/errorHandlers.Error'
-      summary: Create a new board
+      summary: Create a new page
       tags:
-      - Boards
-  /boards/{id}:
+      - Pages
+  /pages/{id}:
     delete:
-      description: Delete board by id
+      description: Delete page by id
       parameters:
-      - description: Board ID
+      - description: Page ID
         in: path
         name: id
         required: true
@@ -496,7 +560,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dbClient.Board'
+            $ref: '#/definitions/dbClient.Page'
         "400":
           description: Bad Request
           schema:
@@ -513,13 +577,13 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/errorHandlers.Error'
-      summary: Delete board by id
+      summary: Delete page by id
       tags:
-      - Boards
+      - Pages
     get:
-      description: Get board by id
+      description: Get page by id
       parameters:
-      - description: Board ID
+      - description: Page ID
         in: path
         name: id
         required: true
@@ -535,7 +599,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dbClient.Board'
+            $ref: '#/definitions/dbClient.Page'
         "400":
           description: Bad Request
           schema:
@@ -545,7 +609,7 @@ paths:
           schema:
             $ref: '#/definitions/errorHandlers.Error'
         "403":
-          description: No access to board
+          description: No access to page
           schema:
             $ref: '#/definitions/errorHandlers.Error'
         "404":
@@ -556,32 +620,32 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/errorHandlers.Error'
-      summary: Get board by id
+      summary: Get page by id
       tags:
-      - Boards
+      - Pages
     put:
       consumes:
       - application/json
-      description: Update board by id
+      description: Update page by id
       parameters:
-      - description: Board ID
+      - description: Page ID
         in: path
         name: id
         required: true
         type: string
-      - description: Board object that needs to be updated
+      - description: Page object that needs to be updated
         in: body
-        name: board
+        name: page
         required: true
         schema:
-          $ref: '#/definitions/boardsRouter.updateBoardBody'
+          $ref: '#/definitions/pagesRouter.updatePageBody'
       produces:
       - application/json
       responses:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dbClient.Board'
+            $ref: '#/definitions/dbClient.Page'
         "400":
           description: Bad Request
           schema:
@@ -591,7 +655,7 @@ paths:
           schema:
             $ref: '#/definitions/errorHandlers.Error'
         "403":
-          description: No access to board
+          description: No access to page
           schema:
             $ref: '#/definitions/errorHandlers.Error'
         "404":
@@ -602,43 +666,67 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/errorHandlers.Error'
-      summary: Update board by id
+      summary: Update page by id
       tags:
-      - Boards
-  /boards/{id}/access:
-    post:
-      consumes:
-      - application/json
-      description: Changes access to board. Can change access if it was already given,
-        give if it wasn't or remove it, if no role was given in pair
+      - Pages
+  /pages/{id}/accesses:
+    get:
+      description: Get page accesses
       parameters:
-      - description: Board ID
+      - description: Page ID
         in: path
         name: id
         required: true
         type: string
-      - description: Board object that needs to be updated
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dbClient.PageAccess'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "401":
+          description: Unauthorized if session is missing or invalid
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "403":
+          description: No access to page
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+      summary: Get page accesses
+      tags:
+      - Page Accesses
+    put:
+      consumes:
+      - application/json
+      description: Changes access to page. Can change access if it was already given,
+        give if it wasn't or remove it, if no role was given in pair
+      parameters:
+      - description: Page ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Page object that needs to be updated
         in: body
-        name: board
+        name: page
         required: true
         schema:
-          items:
-            properties:
-              role:
-                allOf:
-                - $ref: '#/definitions/dbClient.BoardUserRole'
-                enum:
-                - owner
-                - admin
-                - member
-                - commentator
-                - guest
-              userId:
-                type: string
-            required:
-            - userId
-            type: object
-          type: array
+          $ref: '#/definitions/accessesRouter.giveAccessBody'
       produces:
       - application/json
       responses:
@@ -655,7 +743,7 @@ paths:
           schema:
             $ref: '#/definitions/errorHandlers.Error'
         "403":
-          description: No access to board
+          description: No access to page
           schema:
             $ref: '#/definitions/errorHandlers.Error'
         "404":
@@ -666,50 +754,9 @@ paths:
           description: Internal Server Error
           schema:
             $ref: '#/definitions/errorHandlers.Error'
-      summary: Change access to board
+      summary: Change access to page
       tags:
-      - Boards
-  /boards/{id}/accesses:
-    get:
-      description: Get board accesses
-      parameters:
-      - description: Board ID
-        in: path
-        name: id
-        required: true
-        type: string
-      produces:
-      - application/json
-      responses:
-        "200":
-          description: OK
-          schema:
-            items:
-              $ref: '#/definitions/dbClient.BoardAccesses'
-            type: array
-        "400":
-          description: Bad Request
-          schema:
-            $ref: '#/definitions/errorHandlers.Error'
-        "401":
-          description: Unauthorized if session is missing or invalid
-          schema:
-            $ref: '#/definitions/errorHandlers.Error'
-        "403":
-          description: No access to board
-          schema:
-            $ref: '#/definitions/errorHandlers.Error'
-        "404":
-          description: Not Found
-          schema:
-            $ref: '#/definitions/errorHandlers.Error'
-        "500":
-          description: Internal Server Error
-          schema:
-            $ref: '#/definitions/errorHandlers.Error'
-      summary: Get board accesses
-      tags:
-      - Boards
+      - Page Accesses
   /profile:
     get:
       consumes:

@@ -63,7 +63,7 @@ services:
   frontend:
     image: frontend:latest
     ports:
-      - 5173:80
+      - 1346:80
     networks:
       - net
 

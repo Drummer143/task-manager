@@ -5,13 +5,13 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-// @Summary Log out
-// @Description Log out
-// @Tags auth
-// @Accept json
-// @Produce json
-// @Success 204 "No Content"
-// @Router /auth/logout [post]
+// @Summary 			Log out
+// @Description 		Log out
+// @Tags 				Auth
+// @Accept 				json
+// @Produce 			json
+// @Success 			204 "No Content"
+// @Router 				/auth/logout [post]
 func logout(ctx *gin.Context) {
 	session := sessions.Default(ctx)
 
