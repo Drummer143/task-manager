@@ -5,11 +5,22 @@ import (
 	"main/router/errorHandlers"
 	"main/validation"
 	"net/http"
+	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
+
+type updateTaskBody struct {
+	DeletableNotByOwner *bool       `json:"deletableNotByOwner,omitempty" validate:"omitempty"`
+	Status              *taskStatus `json:"status,omitempty" validate:"omitempty,oneof=not_done in_progress done"`
+	Title               *string     `json:"title,omitempty" validate:"omitempty,max=63"`
+	Description         *string     `json:"description,omitempty" validate:"omitempty,max=255"`
+	DueDate             *time.Time     `json:"dueDate,omitempty" validate:"omitempty,iso8601"`
+	AssignedTo          *uuid.UUID  `json:"assignedTo,omitempty" validate:"omitempty,uuid4"`
+}
 
 // @Summary			Update a task
 // @Description		Update a task

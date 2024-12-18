@@ -64,7 +64,7 @@ func updatePassword(auth *auth.Auth, validate *validator.Validate, db *gorm.DB) 
 		updatedAt := time.Now()
 
 		userCredentials.PasswordHash = string(passwordHash)
-		userCredentials.UpdatedAt = &updatedAt
+		userCredentials.UpdatedAt = updatedAt
 		userCredentials.PasswordResetToken = nil
 
 		if err := db.Save(&userCredentials).Error; err != nil {

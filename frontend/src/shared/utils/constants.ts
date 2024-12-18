@@ -15,9 +15,11 @@ export const statusColors: Record<TaskStatus, string> = {
 	not_done: "--ant-color-not-done"
 };
 
+export const pageTypes: PageType[] = ["board", "text", "group"];
+
 export const today = dayjs();
 
-export const userBoardRoles: UserBoardRole[] = ["owner", "admin", "member", "commentator", "guest"];
+export const userBoardRoles: PageRole[] = ["owner", "admin", "member", "commentator", "guest"];
 
 export const userBoardRoleOptions: DefaultOptionType[] = userBoardRoles.map(role => {
 	const capitalizedRole = role.charAt(0).toUpperCase() + role.slice(1);

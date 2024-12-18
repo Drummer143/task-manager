@@ -21,10 +21,10 @@ import (
 // @Router			/tasks [get]
 func getTaskList(db *gorm.DB) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		boardId := ctx.Query("board_id")
+		pageId := ctx.Query("page_id")
 
-		if boardId == "" {
-			errorHandlers.BadRequest(ctx, "board_id is required", nil)
+		if pageId == "" {
+			errorHandlers.BadRequest(ctx, "page_id is required", nil)
 			return
 		}
 
@@ -40,7 +40,7 @@ func getTaskList(db *gorm.DB) gin.HandlerFunc {
 			db.Preload("Author")
 		}
 
-		if err := db.Find(&tasks, "board_id = ?", boardId).Error; err != nil {
+		if err := db.Find(&tasks, "page_id = ?", pageId).Error; err != nil {
 			errorHandlers.InternalServerError(ctx, "failed to get tasks")
 			return
 		}

@@ -4,6 +4,7 @@ type ErrorMap = Record<string | number, string>;
 
 const defaultErrorMap: ErrorMap = {
 	unknown: "Unknown error. Please reload the page and try again",
+	400: "Bad request",
 	401: "Unauthorized",
 	403: "Access denied",
 	404: "Not found",
