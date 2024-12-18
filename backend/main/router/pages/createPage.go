@@ -3,6 +3,7 @@ package pagesRouter
 import (
 	"main/dbClient"
 	"main/router/errorHandlers"
+	"main/router/utils"
 	"main/validation"
 	"net/http"
 
@@ -14,8 +15,9 @@ import (
 )
 
 type createPageBody struct {
-	Name string            `json:"name" validate:"required"`
-	Type dbClient.PageType `json:"type" validate:"required"`
+	Name     string            `json:"name" validate:"required"`
+	Type     dbClient.PageType `json:"type" validate:"required,oneof=text board group"`
+	ParentId *uuid.UUID        `json:"parentId" validate:"omitempty,uuid4"`
 }
 
 // @Summary			Create a new page
@@ -50,10 +52,30 @@ func createPage(db *gorm.DB, validate *validator.Validate) gin.HandlerFunc {
 
 		userId := session.Get("id").(uuid.UUID)
 
+		if body.ParentId != nil {
+			parentPage, access, ok := utils.CheckPageAccess(ctx, db, *body.ParentId, userId)
+
+			if !ok {
+				return
+			}
+
+			if access.Role == dbClient.PageRoleOwner || access.Role == dbClient.PageRoleAdmin {
+				errorHandlers.Forbidden(ctx, "access to parent parentPage is forbidden")
+				return
+			}
+
+			if parentPage.Type == dbClient.PageTypeGroup {
+				errorHandlers.BadRequest(ctx, "unable to create group page inside group page", nil)
+				return
+			}
+		}
+
 		var page = dbClient.Page{
-			Name:    body.Name,
-			Type:    body.Type,
-			OwnerID: userId,
+			Name:     body.Name,
+			Type:     body.Type,
+			OwnerID:  userId,
+			ParentID: body.ParentId,
+			UserRole: dbClient.PageRoleOwner,
 		}
 
 		if err := db.Create(&page).Error; err != nil {

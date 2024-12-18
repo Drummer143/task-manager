@@ -1,6 +1,6 @@
 type PageRole = "owner" | "admin" | "member" | "commentator" | "guest";
 
-type PageType = "page" | "text" | "group";
+type PageType = "board" | "text" | "group";
 
 type TaskStatus = "not_done" | "in_progress" | "done";
 
@@ -39,12 +39,12 @@ interface Page {
 	name: string;
 	userRole: PageRole;
 
-	owner?: User;
-	parentPage?: Page;
-	childrenPages?: Page[];
-	pageAccesses?: PageAccess[];
-	textLines?: TextPageLine[];
-	tasks?: Task[];
+	owner: User;
+	parentPage: Page;
+	childrenPages: Page[];
+	pageAccesses: PageAccess[];
+	textLines: TextPageLine[];
+	tasks: Task[];
 
 	createdAt: string;
 	updatedAt: string;

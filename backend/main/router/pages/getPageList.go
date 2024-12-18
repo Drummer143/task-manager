@@ -46,6 +46,11 @@ func getPageList(db *gorm.DB) gin.HandlerFunc {
 			query = query.Preload("PageAccesses")
 		}
 
+		if strings.Contains(include, "childrenPages") {
+			query = query.Preload("ChildrenPages")
+			query.Where("parent_id IS NULL")
+		}
+
 		var pages []dbClient.Page
 
 		if err := query.Find(&pages).Error; err != nil {

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 
 import { Layout } from "antd";
 import { Outlet } from "react-router-dom";
@@ -9,6 +9,8 @@ import UserMenu from "./UserMenu";
 import NavContent from "../NavContent";
 
 const DesktopLayout: React.FC = () => {
+	const [collapsed, setCollapsed] = useState(false);
+
 	return (
 		<Layout className="h-full">
 			<s.Header>
@@ -17,7 +19,11 @@ const DesktopLayout: React.FC = () => {
 			</s.Header>
 
 			<Layout className="h-full">
-				<Layout.Sider collapsible breakpoint="xl">
+				<Layout.Sider
+					style={collapsed ? { position: "absolute" } : undefined}
+					onCollapse={setCollapsed}
+					width={256}
+				>
 					<NavContent />
 				</Layout.Sider>
 

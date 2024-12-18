@@ -1,43 +1,15 @@
-import React, { useMemo } from "react";
+import React from "react";
 
-import { useQuery } from "@tanstack/react-query";
-import { Menu, MenuProps } from "antd";
-import { getPageList } from "api";
-import { Link, useLocation } from "react-router-dom";
+import { Menu } from "antd";
 
-import FullSizeLoader from "shared/ui/FullSizeLoader";
+import NavPagesMenu from "../NavPagesMenu";
 
-const NavContent: React.FC = () => {
-	const { data, isLoading } = useQuery({
-		queryFn: () => getPageList(),
-		queryKey: ["nav,page"]
-	});
+const NavContent: React.FC = () => (
+	<div>
+		<Menu />
 
-	const pathname = useLocation().pathname;
-
-	const menuItems = useMemo<MenuProps["items"]>(
-		() =>
-			data?.map(page => {
-				const href = `/pages/${page.id}`;
-
-				return {
-					key: href,
-					title: page.name,
-					label: <Link to={href}>{page.name}</Link>
-				};
-			}),
-		[data]
-	);
-
-	if (isLoading) {
-		return <FullSizeLoader />;
-	}
-
-	return (
-		<div>
-			<Menu mode="inline" selectedKeys={[pathname]} items={menuItems} />
-		</div>
-	);
-};
+		<NavPagesMenu />
+	</div>
+);
 
 export default NavContent;

@@ -27,7 +27,10 @@ export const getPageList = async <T extends GetPageIncludes | undefined = undefi
 		.data;
 
 interface CreatePageArgs {
+	type: PageType;
 	name: string;
+
+	parentId?: string;
 }
 
 export const createPage = async (page: CreatePageArgs) => (await axiosInstance.post<Page>("/pages", page)).data;
