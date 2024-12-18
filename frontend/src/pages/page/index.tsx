@@ -4,34 +4,34 @@ import { useQuery } from "@tanstack/react-query";
 import { getPage } from "api";
 import { useParams } from "react-router-dom";
 
+import { lazySuspense } from "shared/HOCs/lazySuspense";
 import { withAuthPageCheck } from "shared/HOCs/withAuthPageCheck";
+import FullSizeLoader from "shared/ui/FullSizeLoader";
 
-import { BoardContainer } from "./styles";
-import BoardHeader from "./widgets/BoardHeader";
-import TaskTable from "./widgets/TaskTable";
+import { PageContainer } from "./styles";
+import PageHeader from "./widgets/PageHeader";
 
-const EditTaskForm = React.lazy(() => import("./widgets/EditTaskForm"));
-const NewTaskForm = React.lazy(() => import("./widgets/NewTaskForm"));
+const BoardPage = lazySuspense(() => import("./BoardPage"), <FullSizeLoader />);
 
-const Board: React.FC = () => {
+const Page: React.FC = () => {
 	const pageId = useParams<{ id: string }>().id!;
 
-	const { data } = useQuery({
+	const { data: page, isLoading } = useQuery({
 		queryKey: ["page", pageId],
-		queryFn: () => getPage({ id: pageId, include: ["tasks"] })
+		queryFn: () => getPage({ id: pageId, include: ["tasks", "childrenPages", "textLines"] })
 	});
 
+	if (isLoading) {
+		return <FullSizeLoader />;
+	}
+
 	return (
-		<BoardContainer>
-			<NewTaskForm />
+		<PageContainer>
+			<PageHeader page={page} />
 
-			<EditTaskForm />
-
-			<BoardHeader page={data} />
-
-			<TaskTable tasks={data?.tasks} />
-		</BoardContainer>
+			{page?.type === "board" ? <BoardPage page={page} /> : <div>Not implemented</div>}
+		</PageContainer>
 	);
 };
 
-export default withAuthPageCheck(Board);
+export default withAuthPageCheck(Page);

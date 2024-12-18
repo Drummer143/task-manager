@@ -11,7 +11,7 @@ const SignUp = lazySuspense(() => import("pages/signUp"), <FullSizeLoader />);
 const ConfirmEmail = lazySuspense(() => import("pages/confirmEmail"), <FullSizeLoader />);
 const ResetPassword = lazySuspense(() => import("pages/resetPassword"), <FullSizeLoader />);
 const NewPassword = lazySuspense(() => import("pages/newPassword"), <FullSizeLoader />);
-const Board = lazySuspense(() => import("pages/page"), <FullSizeLoader />);
+const Page = lazySuspense(() => import("pages/page"), <FullSizeLoader />);
 
 export default createBrowserRouter([
 	{
@@ -50,7 +50,7 @@ export default createBrowserRouter([
 			},
 			{
 				path: "/pages/:id",
-				Component: Board
+				Component: Page
 			},
 
 			{
