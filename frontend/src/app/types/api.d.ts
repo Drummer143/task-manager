@@ -43,7 +43,7 @@ interface Page {
 	parentPage: Page;
 	childrenPages: Page[];
 	pageAccesses: PageAccess[];
-	textLines: TextPageLine[];
+	textLines: TextPageContent;
 	tasks: Task[];
 
 	createdAt: string;
@@ -51,7 +51,7 @@ interface Page {
 	deletedAt?: string;
 }
 
-interface TextPageLine {
+interface TextPageContent {
 	id: string;
 	text: string;
 

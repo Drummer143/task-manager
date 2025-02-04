@@ -19,6 +19,10 @@ func CheckPageAccess(ctx *gin.Context, db *gorm.DB, pageId uuid.UUID, userId uui
 		scopedDB = scopedDB.Preload("Tasks")
 	}
 
+	if strings.Contains(include, "textLines") {
+		scopedDB = scopedDB.Preload("TextPageLine")
+	}
+
 	if err := scopedDB.First(&page, "id = ?", pageId).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			errorHandlers.NotFound(ctx, "page not found")

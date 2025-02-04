@@ -3,6 +3,7 @@ import React from "react";
 import { Alert, Button, DatePicker, Drawer, Form, Input, Select, Space } from "antd";
 
 import { today } from "shared/utils";
+import MDEditor from "widgets/MDEditor";
 
 import { TaskFormProps } from "./types";
 import { initialValues, requiredRule, statusSelectOptions } from "./utils";
@@ -17,10 +18,12 @@ const TaskForm: React.FC<TaskFormProps> = ({
 	onSubmit,
 	formLoading,
 	pageError,
-	initialValues: propsInitialValues
+	initialValues: propsInitialValues,
+	submitError
 }) => {
 	return (
 		<Drawer
+			width="40%"
 			open={open}
 			loading={formLoading}
 			onClose={onClose}
@@ -58,6 +61,15 @@ const TaskForm: React.FC<TaskFormProps> = ({
 				<Alert message={pageError} type="error" />
 			) : (
 				<>
+					{submitError && (
+						<Form.Item>
+							<Alert
+								message={submitError === true ? "Failed to submit task" : submitError}
+								type="error"
+							/>
+						</Form.Item>
+					)}
+
 					<Form.Item label="Title" name="title" rules={requiredRule}>
 						<Input placeholder="Enter task title" />
 					</Form.Item>
@@ -71,7 +83,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
 					</Form.Item>
 
 					<Form.Item label="Description" name="description">
-						<Input.TextArea placeholder="Enter task description" />
+						<MDEditor editing minHeight="200px" />
 					</Form.Item>
 				</>
 			)}

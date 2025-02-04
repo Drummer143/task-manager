@@ -5,15 +5,13 @@ export const lazySuspense = <T extends React.ComponentType<any>>(
 	load: () => Promise<{ default: T }>,
 	fallback?: React.ReactNode
 ) => {
-	const LazySuspended = (props: React.ComponentProps<T>) => {
-		const Lazy = React.lazy(load);
+	const Lazy = React.lazy(load);
 
-		return (
-			<React.Suspense fallback={fallback}>
-				<Lazy {...props} />
-			</React.Suspense>
-		);
-	};
+	const LazySuspended = (props: React.ComponentProps<T>) => (
+		<React.Suspense fallback={fallback}>
+			<Lazy {...props} />
+		</React.Suspense>
+	);
 
 	return LazySuspended;
 };

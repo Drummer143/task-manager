@@ -12,12 +12,13 @@ import { PageContainer } from "./styles";
 import PageHeader from "./widgets/PageHeader";
 
 const BoardPage = lazySuspense(() => import("./BoardPage"), <FullSizeLoader />);
+const TextPage = lazySuspense(() => import("./TextPage"), <FullSizeLoader />);
 
 const Page: React.FC = () => {
 	const pageId = useParams<{ id: string }>().id!;
 
 	const { data: page, isLoading } = useQuery({
-		queryKey: ["page", pageId],
+		queryKey: [pageId],
 		queryFn: () => getPage({ id: pageId, include: ["tasks", "childrenPages", "textLines"] })
 	});
 
@@ -29,7 +30,13 @@ const Page: React.FC = () => {
 		<PageContainer>
 			<PageHeader page={page} />
 
-			{page?.type === "board" ? <BoardPage page={page} /> : <div>Not implemented</div>}
+			{page?.type === "board" ? (
+				<BoardPage page={page} />
+			) : page?.type === "text" ? (
+				<TextPage page={page} />
+			) : (
+				<div>Not implemented</div>
+			)}
 		</PageContainer>
 	);
 };

@@ -1,9 +1,10 @@
 import React, { memo, useCallback } from "react";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { theme } from "antd";
+import { App, theme } from "antd";
 import { changeStatus } from "api";
 import { useNavigate, useParams } from "react-router-dom";
+import styled from "styled-components";
 
 import { drawTaskDragImage, taskStatusLocale } from "shared/utils";
 import { useTasksStore } from "store/tasks";
@@ -14,8 +15,18 @@ interface TaskListProps {
 	tasks?: Task[];
 }
 
+const TaskListWrapper = styled.div`
+	padding: 0 var(--ant-padding-xxs);
+
+	& > *:not(:last-child) {
+		margin-bottom: var(--ant-margin-xs);
+	}
+`;
+
 const TaskList: React.FC<TaskListProps> = ({ tasks }) => {
 	const pageId = useParams<{ id: string }>().id!;
+
+	const message = App.useApp().message;
 
 	const navigate = useNavigate();
 
@@ -25,7 +36,8 @@ const TaskList: React.FC<TaskListProps> = ({ tasks }) => {
 
 	const { mutateAsync: changeTaskStatus } = useMutation({
 		mutationFn: changeStatus,
-		onSuccess: () => queryClient.invalidateQueries({ queryKey: ["tasks"] })
+		onSuccess: () => queryClient.invalidateQueries({ queryKey: [pageId] }),
+		onError: error => message.error(error.message ?? "Failed to change task status")
 	});
 
 	const handleOpenTask = useCallback(
@@ -92,7 +104,7 @@ const TaskList: React.FC<TaskListProps> = ({ tasks }) => {
 	}
 
 	return (
-		<div>
+		<TaskListWrapper>
 			{tasks?.map(task => (
 				<TaskItem
 					onClick={() => handleOpenTask(task)}
@@ -101,7 +113,7 @@ const TaskList: React.FC<TaskListProps> = ({ tasks }) => {
 					onDragStart={handleDragStart}
 				/>
 			))}
-		</div>
+		</TaskListWrapper>
 	);
 };
 

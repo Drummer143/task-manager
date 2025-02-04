@@ -1,6 +1,6 @@
 import { axiosInstance } from "./base";
 
-type GetPageIncludes = "tasks" | "owner" | "pageAccesses" |  "textLines" | "childrenPages" | "parentPage";
+type GetPageIncludes = "tasks" | "owner" | "pageAccesses" | "textLines" | "childrenPages" | "parentPage";
 
 type ResponseWithIncludeFilter<T extends GetPageIncludes | undefined = undefined> = Omit<
 	Page,
@@ -55,3 +55,11 @@ export const updatePageAccess = async ({ pageId, body }: UpdatePageAccessArgs) =
 
 export const getPageAccess = async (id: string) =>
 	(await axiosInstance.get<PageAccess[]>(`/pages/${id}/accesses`)).data;
+
+interface UpdateTextPageContentArgs {
+	id: string;
+	text: string;
+}
+
+export const updateTextPageContent = ({ id, text }: UpdateTextPageContentArgs) =>
+	axiosInstance.put<TextPageContent>(`/pages/${id}/text`, { text }).then(res => res.data);

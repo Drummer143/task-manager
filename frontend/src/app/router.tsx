@@ -15,6 +15,11 @@ const Page = lazySuspense(() => import("pages/page"), <FullSizeLoader />);
 
 export default createBrowserRouter([
 	{
+		path: "",
+		element: <Navigate to="/profile" replace />
+	},
+
+	{
 		path: "/",
 		Component: AuthLayout,
 		children: [
@@ -37,6 +42,11 @@ export default createBrowserRouter([
 			{
 				path: "/new-password",
 				Component: NewPassword
+			},
+
+			{
+				path: "*",
+				element: <Navigate to="/login" replace />
 			}
 		]
 	},
@@ -55,7 +65,7 @@ export default createBrowserRouter([
 
 			{
 				path: "*",
-				element: <Navigate to="/profile" />
+				element: <Navigate to="/profile" replace />
 			}
 		]
 	}

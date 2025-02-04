@@ -12,5 +12,9 @@ export const Header = styled(Layout.Header)`
 `;
 
 export const Content = styled(Layout.Content)`
+	max-height: 100%;
+
 	border-left: var(--ant-line-width) solid var(--ant-color-split);
+
+	overflow: hidden;
 `;

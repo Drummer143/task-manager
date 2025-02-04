@@ -19,9 +19,9 @@ const NewTaskForm: React.FC = () => {
 
 	const [form] = Form.useForm<FormValues>();
 
-	const { mutateAsync, isPending } = useMutation({
+	const { mutateAsync, isPending, error } = useMutation({
 		mutationFn: createTask,
-		onSuccess: () => queryClient.invalidateQueries({ queryKey: ["tasks"] })
+		onSuccess: () => queryClient.invalidateQueries({ queryKey: [pageId] })
 	});
 
 	const handleSubmit = useCallback(
@@ -57,6 +57,7 @@ const NewTaskForm: React.FC = () => {
 	return (
 		<TaskForm
 			isSubmitting={isPending}
+			submitError={error?.message}
 			onCancel={handleCancel}
 			onSubmit={handleSubmit}
 			onClose={onClose}
