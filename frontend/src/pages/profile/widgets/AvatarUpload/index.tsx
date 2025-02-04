@@ -1,7 +1,7 @@
 import React, { memo, useCallback, useState } from "react";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Flex } from "antd";
+import { App, Flex } from "antd";
 import { uploadAvatar } from "api";
 import { Area } from "react-easy-crop";
 
@@ -15,13 +15,14 @@ interface AvatarUploaderProps {
 const AvatarUploader: React.FC<AvatarUploaderProps> = ({ avatarUrl }) => {
 	const [image, setImage] = useState<File | undefined>(undefined);
 
+	const message = App.useApp().message;
+
 	const queryClient = useQueryClient();
 
 	const { mutateAsync } = useMutation({
 		mutationFn: uploadAvatar,
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["profile"] });
-		}
+		onSuccess: () => queryClient.invalidateQueries({ queryKey: ["profile"] }),
+		onError: error => message.error(error.message ?? "Failed to upload avatar")
 	});
 
 	const handleUploadAvatar = useCallback<React.ChangeEventHandler<HTMLInputElement>>(

@@ -83,9 +83,7 @@ definitions:
           $ref: '#/definitions/dbClient.Task'
         type: array
       textLines:
-        items:
-          $ref: '#/definitions/dbClient.TextPageLine'
-        type: array
+        $ref: '#/definitions/dbClient.TextPageLine'
       type:
         $ref: '#/definitions/dbClient.PageType'
       updatedAt:
@@ -215,8 +213,15 @@ definitions:
     properties:
       name:
         type: string
+      parentId:
+        type: string
       type:
-        $ref: '#/definitions/dbClient.PageType'
+        allOf:
+        - $ref: '#/definitions/dbClient.PageType'
+        enum:
+        - text
+        - board
+        - group
     required:
     - name
     - type
@@ -299,6 +304,11 @@ definitions:
         type: string
       title:
         maxLength: 63
+        type: string
+    type: object
+  textPages.updateTextBody:
+    properties:
+      text:
         type: string
     type: object
   usersRouter.Meta:
@@ -757,6 +767,53 @@ paths:
       summary: Change access to page
       tags:
       - Page Accesses
+  /pages/{id}/text:
+    put:
+      consumes:
+      - application/json
+      description: Update text page by id
+      parameters:
+      - description: Page ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Page object that needs to be updated
+        in: body
+        name: page
+        required: true
+        schema:
+          $ref: '#/definitions/textPages.updateTextBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dbClient.TextPageLine'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "401":
+          description: Unauthorized if session is missing or invalid
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "403":
+          description: No access to page
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+      summary: Update text page by id
+      tags:
+      - Text Pages
   /profile:
     get:
       consumes:

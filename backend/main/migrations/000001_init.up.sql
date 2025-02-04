@@ -38,10 +38,10 @@ CREATE TABLE "pages" (
   "deleted_at" timestamptz
 );
 
-CREATE TABLE "text_page_lines" (
+CREATE TABLE "text_pages" (
   "id" uuid PRIMARY KEY NOT NULL DEFAULT (uuid_generate_v4()),
   "text" text NOT NULL,
-  "page_id" uuid NOT NULL,
+  "page_id" uuid UNIQUE NOT NULL,
   "created_at" timestamptz NOT NULL DEFAULT (CURRENT_TIMESTAMP),
   "updated_at" timestamptz NOT NULL DEFAULT (CURRENT_TIMESTAMP),
   "deleted_at" timestamptz
@@ -59,7 +59,6 @@ CREATE TABLE "page_accesses" (
 
 CREATE TABLE "tasks" (
   "id" uuid PRIMARY KEY NOT NULL DEFAULT (uuid_generate_v4()),
-  "deletable_not_by_owner" boolean NOT NULL DEFAULT true,
   "status" varchar(63) NOT NULL,
   "title" varchar(255) NOT NULL,
   "description" text,
@@ -97,6 +96,6 @@ ALTER TABLE "page_accesses" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id"
 
 ALTER TABLE "page_accesses" ADD FOREIGN KEY ("page_id") REFERENCES "pages" ("id") ON DELETE CASCADE;
 
-ALTER TABLE "text_page_lines" ADD FOREIGN KEY ("page_id") REFERENCES "pages" ("id") ON DELETE CASCADE;
+ALTER TABLE "text_pages" ADD FOREIGN KEY ("page_id") REFERENCES "pages" ("id") ON DELETE CASCADE;
 
 ALTER TABLE "pages" ADD FOREIGN KEY ("parent_id") REFERENCES "pages" ("id") ON DELETE SET NULL;

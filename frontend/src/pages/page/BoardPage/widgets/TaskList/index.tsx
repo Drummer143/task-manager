@@ -1,7 +1,7 @@
 import React, { memo, useCallback } from "react";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { theme } from "antd";
+import { App, theme } from "antd";
 import { changeStatus } from "api";
 import { useNavigate, useParams } from "react-router-dom";
 
@@ -17,6 +17,8 @@ interface TaskListProps {
 const TaskList: React.FC<TaskListProps> = ({ tasks }) => {
 	const pageId = useParams<{ id: string }>().id!;
 
+	const message = App.useApp().message;
+
 	const navigate = useNavigate();
 
 	const queryClient = useQueryClient();
@@ -25,7 +27,8 @@ const TaskList: React.FC<TaskListProps> = ({ tasks }) => {
 
 	const { mutateAsync: changeTaskStatus } = useMutation({
 		mutationFn: changeStatus,
-		onSuccess: () => queryClient.invalidateQueries({ queryKey: ["tasks"] })
+		onSuccess: () => queryClient.invalidateQueries({ queryKey: [pageId] }),
+		onError: error => message.error(error.message ?? "Failed to change task status")
 	});
 
 	const handleOpenTask = useCallback(

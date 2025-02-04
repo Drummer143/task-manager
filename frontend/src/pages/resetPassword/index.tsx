@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 
 import { useMutation } from "@tanstack/react-query";
-import { Form, Input, Typography } from "antd";
+import { App, Form, Input, Typography } from "antd";
 import { resetPassword } from "api";
 import { Link } from "react-router-dom";
 
@@ -14,8 +14,11 @@ import AuthForm from "widgets/AuthForm";
 const emailRule = composeRules(required(), email());
 
 const ResetPassword: React.FC = () => {
+	const message = App.useApp().message;
+
 	const { mutateAsync, isSuccess, isPending, error, reset } = useMutation({
-		mutationFn: resetPassword
+		mutationFn: resetPassword,
+		onError: error => message.error(error.message ?? "Failed to reset password")
 	});
 
 	const parsedError = useMemo(() => parseUseQueryError(error, undefined, [400, 404]), [error]);

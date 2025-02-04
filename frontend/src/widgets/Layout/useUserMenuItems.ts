@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 
 import { useMutation } from "@tanstack/react-query";
-import { MenuProps } from "antd";
+import { App, MenuProps } from "antd";
 import { logout } from "api";
 import { useNavigate } from "react-router-dom";
 
@@ -12,9 +12,12 @@ export const useUserMenuItems = () => {
 
 	const navigate = useNavigate();
 
+	const message = App.useApp().message;
+
 	const { mutateAsync } = useMutation({
 		mutationFn: () => logout().then(clear),
-		onSuccess: () => navigate("/login", { replace: true })
+		onSuccess: () => navigate("/login", { replace: true }),
+		onError: error => message.error(error.message ?? "Failed to log out")
 	});
 
 	const menu = useMemo<MenuProps>(

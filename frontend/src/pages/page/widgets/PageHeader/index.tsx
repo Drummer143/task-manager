@@ -18,7 +18,9 @@ const PageHeader: React.FC<PageHeaderProps> = ({ page }) => {
 
 	return (
 		<Flex justify="space-between" gap="var(--ant-margin-sm)">
-			<Typography.Title level={3}>{page.name}</Typography.Title>
+			<Typography.Title editable={{ triggerType: ["text"] }} level={3}>
+				{page.name}
+			</Typography.Title>
 
 			{(page.userRole === "admin" || page.userRole === "owner") && (
 				<>

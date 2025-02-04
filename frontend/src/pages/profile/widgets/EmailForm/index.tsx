@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Button, Form, Input } from "antd";
+import { App, Button, Form, Input } from "antd";
 import { changeEmail } from "api";
 
 import { composeRules, email, required } from "shared/validation";
@@ -17,11 +17,12 @@ const EmailForm: React.FC<EmailFormProps> = ({ email }) => {
 
 	const initialValues = useMemo(() => ({ email }), [email]);
 
+	const message = App.useApp().message;
+
 	const { mutateAsync } = useMutation({
 		mutationFn: changeEmail,
-		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["profile"] });
-		}
+		onSuccess: () => queryClient.invalidateQueries({ queryKey: ["profile"] }),
+		onError: error => message.error(error.message ?? "Failed to change email")
 	});
 
 	return (

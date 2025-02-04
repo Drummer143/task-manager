@@ -21,6 +21,7 @@ export interface TaskFormProps {
 	form?: FormInstance<FormValues>;
 	pageError?: string;
 	formLoading?: boolean;
+	submitError?: boolean | string;
 	isSubmitting?: boolean;
 	initialValues?: Partial<FormValues>;
 }

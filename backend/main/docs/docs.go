@@ -669,6 +669,77 @@ const docTemplate = `{
                 }
             }
         },
+        "/pages/{id}/text": {
+            "put": {
+                "description": "Update text page by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Text Pages"
+                ],
+                "summary": "Update text page by id",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Page ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Page object that needs to be updated",
+                        "name": "page",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/textPages.updateTextBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dbClient.TextPageLine"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized if session is missing or invalid",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "403": {
+                        "description": "No access to page",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/profile": {
             "get": {
                 "description": "This endpoint retrieves the user profile information from the Auth0 Management API using the user's ID from the session. The ID is obtained from the session and used to query the user data from the external identity provider (Auth0). The user must be authenticated, and a valid session must exist.",
@@ -1415,10 +1486,7 @@ const docTemplate = `{
                     }
                 },
                 "textLines": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dbClient.TextPageLine"
-                    }
+                    "$ref": "#/definitions/dbClient.TextPageLine"
                 },
                 "type": {
                     "$ref": "#/definitions/dbClient.PageType"
@@ -1614,8 +1682,20 @@ const docTemplate = `{
                 "name": {
                     "type": "string"
                 },
+                "parentId": {
+                    "type": "string"
+                },
                 "type": {
-                    "$ref": "#/definitions/dbClient.PageType"
+                    "enum": [
+                        "text",
+                        "board",
+                        "group"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/dbClient.PageType"
+                        }
+                    ]
                 }
             }
         },
@@ -1734,6 +1814,14 @@ const docTemplate = `{
                 "title": {
                     "type": "string",
                     "maxLength": 63
+                }
+            }
+        },
+        "textPages.updateTextBody": {
+            "type": "object",
+            "properties": {
+                "text": {
+                    "type": "string"
                 }
             }
         },

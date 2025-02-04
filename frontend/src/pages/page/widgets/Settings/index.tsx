@@ -2,7 +2,7 @@ import React, { useMemo, useState } from "react";
 
 import { PlusOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { Button, List, Modal, Tooltip } from "antd";
+import { App, Button, List, Modal, Tooltip } from "antd";
 import { getPageAccess, getUserList, updatePageAccess } from "api";
 
 import { useMessageOnErrorCallback } from "shared/hooks";
@@ -26,6 +26,8 @@ const Settings: React.FC<SettingsProps> = ({ onClose, open, page }) => {
 
 	const queryClient = useQueryClient();
 
+	const message = App.useApp().message;
+
 	const { data, isLoading, error } = useQuery({
 		queryFn: async () => await getPageAccess(page.id),
 		enabled: open,
@@ -43,11 +45,12 @@ const Settings: React.FC<SettingsProps> = ({ onClose, open, page }) => {
 
 			if (role !== "owner" && role !== "admin") {
 				onClose();
-				queryClient.invalidateQueries({ queryKey: ["page", page.id] });
+				queryClient.invalidateQueries({ queryKey: [page.id] });
 			} else {
 				queryClient.invalidateQueries({ queryKey: ["pageAccesses"] });
 			}
-		}
+		},
+		onError: error => message.error(error.message ?? "Failed to update page settings")
 	});
 
 	const parsedError = useMemo(() => error && parseUseQueryError(error), [error]);

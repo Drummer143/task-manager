@@ -1,6 +1,7 @@
 import React, { useCallback } from "react";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { App } from "antd";
 import { getTask, updateTask } from "api";
 import dayjs from "dayjs";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
@@ -12,6 +13,8 @@ const EditTaskForm: React.FC = () => {
 	const pageId = useParams<{ id: string }>().id!;
 	const taskId = useSearchParams()[0].get("taskId");
 
+	const message = App.useApp().message;
+
 	const queryClient = useQueryClient();
 
 	const navigate = useNavigate();
@@ -19,7 +22,7 @@ const EditTaskForm: React.FC = () => {
 	const handleClose = useCallback(() => navigate(`/pages/${pageId}`), [pageId, navigate]);
 
 	const { isLoading, data } = useQuery({
-		queryKey: ["task", taskId],
+		queryKey: [taskId],
 		queryFn: async (): Promise<FormValues> => {
 			const result = await getTask(taskId!);
 
@@ -37,9 +40,10 @@ const EditTaskForm: React.FC = () => {
 	const { mutateAsync, isPending } = useMutation({
 		mutationFn: updateTask,
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: ["tasks"] });
+			queryClient.invalidateQueries({ queryKey: [pageId] });
 			navigate(`/pages/${pageId}`);
-		}
+		},
+		onError: error => message.error(error.message ?? "Failed to update task")
 	});
 
 	const handleSubmit = useCallback(

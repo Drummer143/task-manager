@@ -83,6 +83,17 @@ func createPage(db *gorm.DB, validate *validator.Validate) gin.HandlerFunc {
 			return
 		}
 
+		if page.Type == dbClient.PageTypeText {
+			var pageLine = dbClient.TextPageLine{
+				PageID: page.ID,
+			}
+
+			if err := db.Create(&pageLine).Error; err != nil {
+				errorHandlers.InternalServerError(ctx, "failed to create page")
+				return
+			}
+		}
+
 		var pageAccess = dbClient.PageAccess{
 			Role:   dbClient.PageRoleOwner,
 			PageID: page.ID,

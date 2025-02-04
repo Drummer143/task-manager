@@ -1,9 +1,11 @@
 import React from "react";
 
+import { lazySuspense } from "shared/HOCs/lazySuspense";
+
 import TaskTable from "./widgets/TaskTable";
 
-const EditTaskForm = React.lazy(() => import("./widgets/EditTaskForm"));
-const NewTaskForm = React.lazy(() => import("./widgets/NewTaskForm"));
+const EditTaskForm = lazySuspense(() => import("./widgets/EditTaskForm"));
+const NewTaskForm = lazySuspense(() => import("./widgets/NewTaskForm"));
 
 interface BoardPageProps {
 	page: Omit<Page, "pageAccesses" | "owner" | "textLines" | "childrenPages" | "parentPage">;

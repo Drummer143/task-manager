@@ -66,12 +66,12 @@ type Page struct {
 	OwnerID  uuid.UUID  `gorm:"type:uuid;not null" json:"-"`
 	ParentID *uuid.UUID `gorm:"type:uuid" json:"-"`
 
-	Owner         *User           `gorm:"foreignKey:OwnerID" json:"owner,omitempty"`
-	ParentPage    *Page           `gorm:"foreignKey:ParentID" json:"parentPage,omitempty"`
-	ChildrenPages *[]Page         `gorm:"foreignKey:ParentID" json:"childrenPages,omitempty"`
-	PageAccesses  *[]PageAccess   `gorm:"foreignKey:PageID" json:"pageAccesses,omitempty"`
-	TextLines     *[]TextPageLine `gorm:"foreignKey:PageID" json:"textLines,omitempty"`
-	Tasks         *[]Task         `gorm:"foreignKey:PageID" json:"tasks,omitempty"`
+	Owner         *User         `gorm:"foreignKey:OwnerID" json:"owner,omitempty"`
+	ParentPage    *Page         `gorm:"foreignKey:ParentID" json:"parentPage,omitempty"`
+	ChildrenPages *[]Page       `gorm:"foreignKey:ParentID" json:"childrenPages,omitempty"`
+	PageAccesses  *[]PageAccess `gorm:"foreignKey:PageID" json:"pageAccesses,omitempty"`
+	TextPageLine  *TextPageLine `gorm:"foreignKey:PageID" json:"textLines,omitempty"`
+	Tasks         *[]Task       `gorm:"foreignKey:PageID" json:"tasks,omitempty"`
 }
 
 type TextPageLine struct {
@@ -83,6 +83,10 @@ type TextPageLine struct {
 	CreatedAt time.Time  `gorm:"type:timestamptz;not null;default:CURRENT_TIMESTAMP" json:"createdAt"`
 	UpdatedAt time.Time  `gorm:"type:timestamptz;not null;default:CURRENT_TIMESTAMP" json:"updatedAt"`
 	DeletedAt *time.Time `gorm:"type:timestamptz" json:"deletedAt,omitempty"`
+}
+
+func (TextPageLine) TableName() string {
+	return "text_page_lines"
 }
 
 type PageAccess struct {
