@@ -2,7 +2,7 @@ import React, { memo, useCallback } from "react";
 
 import { PlusOutlined } from "@ant-design/icons";
 
-import { preventDefault, statusColors, taskStatusLocale } from "shared/utils";
+import { preventDefault, taskStatusLocale } from "shared/utils";
 import { useTasksStore } from "store/tasks";
 
 import * as s from "./styles";
@@ -38,7 +38,7 @@ const TaskColumn: React.FC<TaskColumnProps> = ({ status, tasks }) => {
 	return (
 		<s.TaskGroup
 			status={status}
-			outlineColor={dropTarget === status ? `var(${statusColors[status]})` : undefined}
+			isDragTarget={dropTarget === status}
 			onDragOver={preventDefault}
 			onDragEnter={handleDragEnter}
 			onDragLeave={handleDragLeave}

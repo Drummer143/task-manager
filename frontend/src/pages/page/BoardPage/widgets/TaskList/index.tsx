@@ -4,6 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { App, theme } from "antd";
 import { changeStatus } from "api";
 import { useNavigate, useParams } from "react-router-dom";
+import styled from "styled-components";
 
 import { drawTaskDragImage, taskStatusLocale } from "shared/utils";
 import { useTasksStore } from "store/tasks";
@@ -13,6 +14,14 @@ import TaskItem from "../TaskItem";
 interface TaskListProps {
 	tasks?: Task[];
 }
+
+const TaskListWrapper = styled.div`
+	padding: 0 var(--ant-padding-xxs);
+
+	& > *:not(:last-child) {
+		margin-bottom: var(--ant-margin-xs);
+	}
+`;
 
 const TaskList: React.FC<TaskListProps> = ({ tasks }) => {
 	const pageId = useParams<{ id: string }>().id!;
@@ -95,7 +104,7 @@ const TaskList: React.FC<TaskListProps> = ({ tasks }) => {
 	}
 
 	return (
-		<div>
+		<TaskListWrapper>
 			{tasks?.map(task => (
 				<TaskItem
 					onClick={() => handleOpenTask(task)}
@@ -104,7 +113,7 @@ const TaskList: React.FC<TaskListProps> = ({ tasks }) => {
 					onDragStart={handleDragStart}
 				/>
 			))}
-		</div>
+		</TaskListWrapper>
 	);
 };
 

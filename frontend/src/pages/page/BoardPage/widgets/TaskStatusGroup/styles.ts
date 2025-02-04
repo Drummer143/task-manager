@@ -3,7 +3,7 @@ import styled from "styled-components";
 
 import { statusColors } from "shared/utils";
 
-export const TaskGroup = styled.div<{ status: TaskStatus; outlineColor?: string }>`
+export const TaskGroup = styled.div<{ status: TaskStatus; isDragTarget: boolean }>`
 	--inner-border-radius: calc(var(--ant-border-radius) - var(--ant-padding-xxs) / 2);
 
 	min-width: 280px;
@@ -11,7 +11,7 @@ export const TaskGroup = styled.div<{ status: TaskStatus; outlineColor?: string 
 	padding: var(--ant-padding-xxs) var(--ant-padding-xxs) var(--ant-padding-xs);
 
 	background-color: ${({ status }) => `var(${statusColors[status]})`};
-	outline: ${({ outlineColor }) => (outlineColor ? "2px solid " + outlineColor : "none")};
+	${({ isDragTarget }) => isDragTarget && "outline: 2px solid var(--ant-color-text-tertiary);"}
 	border-radius: var(--ant-border-radius);
 `;
 
