@@ -260,486 +260,6 @@ const docTemplate = `{
                 }
             }
         },
-        "/pages": {
-            "get": {
-                "description": "Get list of pages user has access to",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Pages"
-                ],
-                "summary": "Get page list",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Include tasks in response",
-                        "name": "include",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/dbClient.Page"
-                            }
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized if session is missing or invalid",
-                        "schema": {
-                            "$ref": "#/definitions/errorHandlers.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/errorHandlers.Error"
-                        }
-                    }
-                }
-            },
-            "post": {
-                "description": "Create a new page",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Pages"
-                ],
-                "summary": "Create a new page",
-                "parameters": [
-                    {
-                        "description": "Page object that needs to be created",
-                        "name": "page",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/pagesRouter.createPageBody"
-                        }
-                    }
-                ],
-                "responses": {
-                    "201": {
-                        "description": "Created",
-                        "schema": {
-                            "$ref": "#/definitions/dbClient.Page"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/errorHandlers.Error"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized if session is missing or invalid",
-                        "schema": {
-                            "$ref": "#/definitions/errorHandlers.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/errorHandlers.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/pages/{id}": {
-            "get": {
-                "description": "Get page by id",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Pages"
-                ],
-                "summary": "Get page by id",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Page ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "type": "string",
-                        "description": "Comma separated list of fields to include. Available fields: tasks",
-                        "name": "include",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/dbClient.Page"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/errorHandlers.Error"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized if session is missing or invalid",
-                        "schema": {
-                            "$ref": "#/definitions/errorHandlers.Error"
-                        }
-                    },
-                    "403": {
-                        "description": "No access to page",
-                        "schema": {
-                            "$ref": "#/definitions/errorHandlers.Error"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/errorHandlers.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/errorHandlers.Error"
-                        }
-                    }
-                }
-            },
-            "put": {
-                "description": "Update page by id",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Pages"
-                ],
-                "summary": "Update page by id",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Page ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Page object that needs to be updated",
-                        "name": "page",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/pagesRouter.updatePageBody"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/dbClient.Page"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/errorHandlers.Error"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized if session is missing or invalid",
-                        "schema": {
-                            "$ref": "#/definitions/errorHandlers.Error"
-                        }
-                    },
-                    "403": {
-                        "description": "No access to page",
-                        "schema": {
-                            "$ref": "#/definitions/errorHandlers.Error"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/errorHandlers.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/errorHandlers.Error"
-                        }
-                    }
-                }
-            },
-            "delete": {
-                "description": "Delete page by id",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Pages"
-                ],
-                "summary": "Delete page by id",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Page ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/dbClient.Page"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/errorHandlers.Error"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized if session is missing or invalid",
-                        "schema": {
-                            "$ref": "#/definitions/errorHandlers.Error"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/errorHandlers.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/errorHandlers.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/pages/{id}/accesses": {
-            "get": {
-                "description": "Get page accesses",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Page Accesses"
-                ],
-                "summary": "Get page accesses",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Page ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "type": "array",
-                            "items": {
-                                "$ref": "#/definitions/dbClient.PageAccess"
-                            }
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/errorHandlers.Error"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized if session is missing or invalid",
-                        "schema": {
-                            "$ref": "#/definitions/errorHandlers.Error"
-                        }
-                    },
-                    "403": {
-                        "description": "No access to page",
-                        "schema": {
-                            "$ref": "#/definitions/errorHandlers.Error"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/errorHandlers.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/errorHandlers.Error"
-                        }
-                    }
-                }
-            },
-            "put": {
-                "description": "Changes access to page. Can change access if it was already given, give if it wasn't or remove it, if no role was given in pair",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Page Accesses"
-                ],
-                "summary": "Change access to page",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Page ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Page object that needs to be updated",
-                        "name": "page",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/accessesRouter.giveAccessBody"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "Success",
-                        "schema": {
-                            "type": "string"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/errorHandlers.Error"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized if session is missing or invalid",
-                        "schema": {
-                            "$ref": "#/definitions/errorHandlers.Error"
-                        }
-                    },
-                    "403": {
-                        "description": "No access to page",
-                        "schema": {
-                            "$ref": "#/definitions/errorHandlers.Error"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/errorHandlers.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/errorHandlers.Error"
-                        }
-                    }
-                }
-            }
-        },
-        "/pages/{id}/text": {
-            "put": {
-                "description": "Update text page by id",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Text Pages"
-                ],
-                "summary": "Update text page by id",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "Page ID",
-                        "name": "id",
-                        "in": "path",
-                        "required": true
-                    },
-                    {
-                        "description": "Page object that needs to be updated",
-                        "name": "page",
-                        "in": "body",
-                        "required": true,
-                        "schema": {
-                            "$ref": "#/definitions/textPages.updateTextBody"
-                        }
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "$ref": "#/definitions/dbClient.TextPageLine"
-                        }
-                    },
-                    "400": {
-                        "description": "Bad Request",
-                        "schema": {
-                            "$ref": "#/definitions/errorHandlers.Error"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized if session is missing or invalid",
-                        "schema": {
-                            "$ref": "#/definitions/errorHandlers.Error"
-                        }
-                    },
-                    "403": {
-                        "description": "No access to page",
-                        "schema": {
-                            "$ref": "#/definitions/errorHandlers.Error"
-                        }
-                    },
-                    "404": {
-                        "description": "Not Found",
-                        "schema": {
-                            "$ref": "#/definitions/errorHandlers.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/errorHandlers.Error"
-                        }
-                    }
-                }
-            }
-        },
         "/profile": {
             "get": {
                 "description": "This endpoint retrieves the user profile information from the Auth0 Management API using the user's ID from the session. The ID is obtained from the session and used to query the user data from the external identity provider (Auth0). The user must be authenticated, and a valid session must exist.",
@@ -991,7 +511,705 @@ const docTemplate = `{
                 }
             }
         },
-        "/tasks": {
+        "/users": {
+            "get": {
+                "description": "Get user list",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Users"
+                ],
+                "summary": "Get user list",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "filter by username or email",
+                        "name": "username_or_email",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "If not provided or less than 1, all users will be returned",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Default is 0",
+                        "name": "offset",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "comma separated list of ids to exclude",
+                        "name": "exclude",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "User list",
+                        "schema": {
+                            "$ref": "#/definitions/usersRouter.ResponseWithPagination-dbClient_User"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized if session is missing or invalid",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/workspaces": {
+            "get": {
+                "description": "Get workspace list",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Workspaces"
+                ],
+                "summary": "Get workspace list",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Comma separated list of fields to include. Available fields: pages, owner",
+                        "name": "include",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dbClient.Workspace"
+                            }
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized if session is missing or invalid",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new workspace",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Workspaces"
+                ],
+                "summary": "Create a new workspace",
+                "parameters": [
+                    {
+                        "description": "Workspace object that needs to be created",
+                        "name": "workspace",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/workspacesRouter.createWorkspaceBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/dbClient.Workspace"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized if session is missing or invalid",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/workspaces/{workspace_id}": {
+            "get": {
+                "description": "Get workspace",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Workspaces"
+                ],
+                "summary": "Get workspace",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Workspace ID",
+                        "name": "workspace_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Comma separated list of fields to include. Available fields: pages, owner",
+                        "name": "include",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dbClient.Workspace"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized if session is missing or invalid",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "403": {
+                        "description": "No access to workspace",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/workspaces/{workspace_id}/pages": {
+            "get": {
+                "description": "Get page list",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Pages"
+                ],
+                "summary": "Get page list",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Workspace ID",
+                        "name": "workspace_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dbClient.Page"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized if session is missing or invalid",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "403": {
+                        "description": "No access to workspace",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Create a new page",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Pages"
+                ],
+                "summary": "Create a new page",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Workspace ID",
+                        "name": "workspace_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Page object that needs to be created",
+                        "name": "page",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/pagesRouter.createPageBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "201": {
+                        "description": "Created",
+                        "schema": {
+                            "$ref": "#/definitions/dbClient.Page"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized if session is missing or invalid",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "403": {
+                        "description": "No access to workspace or no access to create page",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/workspaces/{workspace_id}/pages/{page_id}": {
+            "get": {
+                "description": "Get page by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Pages"
+                ],
+                "summary": "Get page by id",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Workspace ID",
+                        "name": "workspace_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Page ID",
+                        "name": "page_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Comma separated list of fields to include. Available fields: parentPage, childPages, owner, tasks",
+                        "name": "include",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dbClient.Page"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized if session is missing or invalid",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "403": {
+                        "description": "No access to page or workspace",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Update page by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Pages"
+                ],
+                "summary": "Update page by id",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Workspace ID",
+                        "name": "workspace_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Page ID",
+                        "name": "page_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Page object that needs to be updated",
+                        "name": "page",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/pagesRouter.updatePageBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dbClient.Page"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized if session is missing or invalid",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "403": {
+                        "description": "No access to page or workspace or no access to update page",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "Delete page by id",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Pages"
+                ],
+                "summary": "Delete page by id",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Workspace ID",
+                        "name": "workspace_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Page ID",
+                        "name": "page_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dbClient.Page"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized if session is missing or invalid",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "403": {
+                        "description": "No access to page or workspace or no access to delete page",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/workspaces/{workspace_id}/pages/{page_id}/accesses": {
+            "get": {
+                "description": "Get page accesses",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Page Accesses"
+                ],
+                "summary": "Get page accesses",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Workspace ID",
+                        "name": "workspace_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Page ID",
+                        "name": "page_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dbClient.PageAccess"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized if session is missing or invalid",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "403": {
+                        "description": "No access to page or workspace or no access to get page accesses",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Give access to a page",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Page Accesses"
+                ],
+                "summary": "Give access to a page",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Workspace ID",
+                        "name": "workspace_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Page ID",
+                        "name": "page_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Give access to a page",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/accessesRouter.giveAccessBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized if session is missing or invalid",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "403": {
+                        "description": "No access to page or workspace or no access to give access to page",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/workspaces/{workspace_id}/pages/{page_id}/tasks": {
             "get": {
                 "description": "Get a list of tasks created by user with the given ID. If no ID is provided, the ID of the currently logged in user is used",
                 "produces": [
@@ -1081,7 +1299,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/tasks/{id}": {
+        "/workspaces/{workspace_id}/pages/{page_id}/tasks/{task_id}": {
             "get": {
                 "description": "Get a task",
                 "produces": [
@@ -1236,7 +1454,7 @@ const docTemplate = `{
                 }
             }
         },
-        "/tasks/{id}/status": {
+        "/workspaces/{workspace_id}/pages/{page_id}/tasks/{task_id}/status": {
             "patch": {
                 "description": "Change task status",
                 "consumes": [
@@ -1300,64 +1518,6 @@ const docTemplate = `{
                     }
                 }
             }
-        },
-        "/users": {
-            "get": {
-                "description": "Get user list",
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "Users"
-                ],
-                "summary": "Get user list",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "description": "filter by username or email",
-                        "name": "username_or_email",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "If not provided or less than 1, all users will be returned",
-                        "name": "limit",
-                        "in": "query"
-                    },
-                    {
-                        "type": "integer",
-                        "description": "Default is 0",
-                        "name": "offset",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "description": "comma separated list of ids to exclude",
-                        "name": "exclude",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "User list",
-                        "schema": {
-                            "$ref": "#/definitions/usersRouter.ResponseWithPagination-dbClient_User"
-                        }
-                    },
-                    "401": {
-                        "description": "Unauthorized if session is missing or invalid",
-                        "schema": {
-                            "$ref": "#/definitions/errorHandlers.Error"
-                        }
-                    },
-                    "500": {
-                        "description": "Internal Server Error",
-                        "schema": {
-                            "$ref": "#/definitions/errorHandlers.Error"
-                        }
-                    }
-                }
-            }
         }
     },
     "definitions": {
@@ -1377,7 +1537,7 @@ const docTemplate = `{
                     ],
                     "allOf": [
                         {
-                            "$ref": "#/definitions/dbClient.PageRole"
+                            "$ref": "#/definitions/dbClient.UserRole"
                         }
                     ]
                 },
@@ -1449,7 +1609,7 @@ const docTemplate = `{
         "dbClient.Page": {
             "type": "object",
             "properties": {
-                "childrenPages": {
+                "childPages": {
                     "type": "array",
                     "items": {
                         "$ref": "#/definitions/dbClient.Page"
@@ -1464,20 +1624,14 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
-                "name": {
-                    "type": "string"
-                },
                 "owner": {
                     "$ref": "#/definitions/dbClient.User"
                 },
-                "pageAccesses": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dbClient.PageAccess"
-                    }
-                },
                 "parentPage": {
                     "$ref": "#/definitions/dbClient.Page"
+                },
+                "role": {
+                    "$ref": "#/definitions/dbClient.UserRole"
                 },
                 "tasks": {
                     "type": "array",
@@ -1485,17 +1639,17 @@ const docTemplate = `{
                         "$ref": "#/definitions/dbClient.Task"
                     }
                 },
-                "textLines": {
-                    "$ref": "#/definitions/dbClient.TextPageLine"
+                "text": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
                 },
                 "type": {
                     "$ref": "#/definitions/dbClient.PageType"
                 },
                 "updatedAt": {
                     "type": "string"
-                },
-                "userRole": {
-                    "$ref": "#/definitions/dbClient.PageRole"
                 }
             }
         },
@@ -1508,14 +1662,8 @@ const docTemplate = `{
                 "deletedAt": {
                     "type": "string"
                 },
-                "id": {
-                    "type": "string"
-                },
-                "page": {
-                    "$ref": "#/definitions/dbClient.Page"
-                },
                 "role": {
-                    "$ref": "#/definitions/dbClient.PageRole"
+                    "$ref": "#/definitions/dbClient.UserRole"
                 },
                 "updatedAt": {
                     "type": "string"
@@ -1524,23 +1672,6 @@ const docTemplate = `{
                     "$ref": "#/definitions/dbClient.User"
                 }
             }
-        },
-        "dbClient.PageRole": {
-            "type": "string",
-            "enum": [
-                "owner",
-                "admin",
-                "member",
-                "commentator",
-                "guest"
-            ],
-            "x-enum-varnames": [
-                "PageRoleOwner",
-                "PageRoleAdmin",
-                "PageRoleMember",
-                "PageRoleCommentator",
-                "PageRoleGuest"
-            ]
         },
         "dbClient.PageType": {
             "type": "string",
@@ -1558,17 +1689,11 @@ const docTemplate = `{
         "dbClient.Task": {
             "type": "object",
             "properties": {
-                "assignedTo": {
-                    "type": "string"
-                },
-                "assignedUser": {
+                "assignee": {
                     "$ref": "#/definitions/dbClient.User"
                 },
                 "createdAt": {
                     "type": "string"
-                },
-                "deletableNotByOwner": {
-                    "type": "boolean"
                 },
                 "deletedAt": {
                     "type": "string"
@@ -1582,36 +1707,16 @@ const docTemplate = `{
                 "id": {
                     "type": "string"
                 },
-                "owner": {
-                    "$ref": "#/definitions/dbClient.User"
-                },
                 "page": {
                     "$ref": "#/definitions/dbClient.Page"
+                },
+                "reporter": {
+                    "$ref": "#/definitions/dbClient.User"
                 },
                 "status": {
                     "type": "string"
                 },
                 "title": {
-                    "type": "string"
-                },
-                "updatedAt": {
-                    "type": "string"
-                }
-            }
-        },
-        "dbClient.TextPageLine": {
-            "type": "object",
-            "properties": {
-                "createdAt": {
-                    "type": "string"
-                },
-                "deletedAt": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "text": {
                     "type": "string"
                 },
                 "updatedAt": {
@@ -1654,6 +1759,58 @@ const docTemplate = `{
                 }
             }
         },
+        "dbClient.UserRole": {
+            "type": "string",
+            "enum": [
+                "owner",
+                "admin",
+                "member",
+                "commentator",
+                "guest"
+            ],
+            "x-enum-varnames": [
+                "UserRoleOwner",
+                "UserRoleAdmin",
+                "UserRoleMember",
+                "UserRoleCommentator",
+                "UserRoleGuest"
+            ]
+        },
+        "dbClient.Workspace": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "name": {
+                    "type": "string"
+                },
+                "owner": {
+                    "$ref": "#/definitions/dbClient.User"
+                },
+                "pages": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dbClient.Page"
+                    }
+                },
+                "role": {
+                    "$ref": "#/definitions/dbClient.UserRole"
+                },
+                "type": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
         "errorHandlers.Error": {
             "type": "object",
             "properties": {
@@ -1675,14 +1832,17 @@ const docTemplate = `{
         "pagesRouter.createPageBody": {
             "type": "object",
             "required": [
-                "name",
+                "title",
                 "type"
             ],
             "properties": {
-                "name": {
+                "parentId": {
                     "type": "string"
                 },
-                "parentId": {
+                "text": {
+                    "type": "string"
+                },
+                "title": {
                     "type": "string"
                 },
                 "type": {
@@ -1703,6 +1863,9 @@ const docTemplate = `{
             "type": "object",
             "properties": {
                 "name": {
+                    "type": "string"
+                },
+                "text": {
                     "type": "string"
                 }
             }
@@ -1748,25 +1911,18 @@ const docTemplate = `{
         "tasksRouter.createTaskBody": {
             "type": "object",
             "required": [
-                "pageId",
                 "status",
                 "title"
             ],
             "properties": {
-                "assignedTo": {
+                "assigneeID": {
                     "type": "string"
-                },
-                "deletableNotByOwner": {
-                    "type": "boolean"
                 },
                 "description": {
                     "type": "string",
                     "maxLength": 255
                 },
                 "dueDate": {
-                    "type": "string"
-                },
-                "pageId": {
                     "type": "string"
                 },
                 "status": {
@@ -1790,11 +1946,8 @@ const docTemplate = `{
         "tasksRouter.updateTaskBody": {
             "type": "object",
             "properties": {
-                "assignedTo": {
+                "assigneeId": {
                     "type": "string"
-                },
-                "deletableNotByOwner": {
-                    "type": "boolean"
                 },
                 "description": {
                     "type": "string",
@@ -1814,14 +1967,6 @@ const docTemplate = `{
                 "title": {
                     "type": "string",
                     "maxLength": 63
-                }
-            }
-        },
-        "textPages.updateTextBody": {
-            "type": "object",
-            "properties": {
-                "text": {
-                    "type": "string"
                 }
             }
         },
@@ -1853,6 +1998,17 @@ const docTemplate = `{
                 },
                 "meta": {
                     "$ref": "#/definitions/usersRouter.Meta"
+                }
+            }
+        },
+        "workspacesRouter.createWorkspaceBody": {
+            "type": "object",
+            "required": [
+                "name"
+            ],
+            "properties": {
+                "name": {
+                    "type": "string"
                 }
             }
         }

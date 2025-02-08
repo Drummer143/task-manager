@@ -6,7 +6,7 @@ import { Button, Flex, theme } from "antd";
 import { ExpandIcon, MenuListItem, SubmenuWrapper } from "./styles";
 
 interface ItemWithSubmenuProps {
-	rootPage: Pick<Page, "childrenPages" | "name" | "type" | "id">;
+	rootPage: Pick<Page, "childPages" | "title" | "type" | "id">;
 	onSubPageCreate: (id: string) => void;
 }
 
@@ -16,22 +16,22 @@ const ItemWithSubmenu: React.FC<ItemWithSubmenuProps> = ({ onSubPageCreate, root
 	const token = theme.useToken().token;
 
 	const totalSubmenuHeight = useMemo(() => {
-		if (!rootPage.childrenPages) {
+		if (!rootPage.childPages) {
 			return;
 		}
 
 		return (
-			rootPage.childrenPages.length *
+			rootPage.childPages.length *
 				(typeof token.Menu?.itemHeight === "string"
 					? parseInt(token.Menu.itemHeight)
 					: token.Menu?.itemHeight || 40) +
-			rootPage.childrenPages.length *
+			rootPage.childPages.length *
 				((typeof token.Menu?.itemMarginBlock === "string"
 					? parseInt(token.Menu.itemMarginBlock)
 					: token.Menu?.itemMarginBlock || 4) *
 					2)
 		);
-	}, [rootPage.childrenPages, token.Menu?.itemHeight, token.Menu?.itemMarginBlock]);
+	}, [rootPage.childPages, token.Menu?.itemHeight, token.Menu?.itemMarginBlock]);
 
 	const handleExpandButtonClick: React.MouseEventHandler = useCallback(e => {
 		e.stopPropagation();
@@ -61,10 +61,10 @@ const ItemWithSubmenu: React.FC<ItemWithSubmenuProps> = ({ onSubPageCreate, root
 	return (
 		<>
 			<MenuListItem to={`/pages/${rootPage.id}`}>
-				{rootPage.name}
+				{rootPage.title}
 
 				<Flex gap="var(--ant-padding-xxs)">
-					{!!rootPage.childrenPages?.length && (
+					{!!rootPage.childPages?.length && (
 						<Button
 							type="text"
 							size="small"
@@ -86,9 +86,9 @@ const ItemWithSubmenu: React.FC<ItemWithSubmenuProps> = ({ onSubPageCreate, root
 					display: openStatus === "closed" ? "none" : undefined
 				}}
 			>
-				{rootPage.childrenPages?.map(item => (
+				{rootPage.childPages?.map(item => (
 					<MenuListItem key={item.id} to={`/pages/${item.id}`}>
-						{item.name}
+						{item.title}
 					</MenuListItem>
 				))}
 			</SubmenuWrapper>

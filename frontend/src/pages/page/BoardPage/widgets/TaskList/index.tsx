@@ -7,6 +7,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
 
 import { drawTaskDragImage, taskStatusLocale } from "shared/utils";
+import { useAppStore } from "store/app";
 import { useTasksStore } from "store/tasks";
 
 import TaskItem from "../TaskItem";
@@ -47,17 +48,17 @@ const TaskList: React.FC<TaskListProps> = ({ tasks }) => {
 
 	const handleDragEnd = useCallback(
 		(taskStatus: TaskStatus) => {
-			const { dragging: id, dropTarget: status } = useTasksStore.getState();
+			const { dragging: taskId, dropTarget: status } = useTasksStore.getState();
 
 			useTasksStore.setState({ dragging: undefined, dropTarget: undefined });
 
-			if (!id || !status || taskStatus === status) {
+			if (!taskId || !status || taskStatus === status) {
 				return;
 			}
 
-			changeTaskStatus({ id, status });
+			changeTaskStatus({ taskId, pageId, workspaceId: useAppStore.getState().workspaceId!, status });
 		},
-		[changeTaskStatus]
+		[changeTaskStatus, pageId]
 	);
 
 	const setTransferData = useCallback(

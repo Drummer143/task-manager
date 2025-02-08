@@ -73,7 +73,7 @@ func signUp(auth *auth.Auth, validate *validator.Validate, db *gorm.DB) gin.Hand
 
 		emailVerificationToken, _ := auth.GenerateJWT(user.Email, EMAIL_VERIFICATION_TOKEN_LIFETIME)
 
-		if err := db.Create(&dbClient.UserCredentials{
+		if err := db.Create(&dbClient.UserCredential{
 			UserID:       user.ID,
 			PasswordHash: string(passwordHash),
 			EmailVerificationToken: &emailVerificationToken,

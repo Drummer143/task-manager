@@ -55,7 +55,7 @@ func resetPassword(auth *auth.Auth, validate *validator.Validate, db *gorm.DB) g
 			errorHandlers.InternalServerError(ctx, "failed to find user")
 		}
 
-		var userCredentials dbClient.UserCredentials
+		var userCredentials dbClient.UserCredential
 
 		db.Where("user_id = ?", user.ID.String()).First(&userCredentials)
 

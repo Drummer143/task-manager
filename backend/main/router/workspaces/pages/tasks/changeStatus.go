@@ -11,6 +11,10 @@ import (
 	"gorm.io/gorm"
 )
 
+type changeTaskStatusBody struct {
+	Status taskStatus `json:"status" validate:"required,oneof=not_done in_progress done"`
+}
+
 // @Summary			Change task status
 // @Description		Change task status
 // @Tags			Tasks
@@ -23,12 +27,12 @@ import (
 // @Failure			401 {object} errorHandlers.Error "Unauthorized if session is missing or invalid"
 // @Failure			404 {object} errorHandlers.Error
 // @Failure			500 {object} errorHandlers.Error
-// @Router			/tasks/{id}/status [patch]
+// @Router			/workspaces/{workspace_id}/pages/{page_id}/tasks/{task_id}/status [patch]
 func changeStatus(db *gorm.DB, validate *validator.Validate) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var task dbClient.Task
 
-		if err := db.First(&task, "id = ?", ctx.Param("id")).Error; err != nil {
+		if err := db.First(&task, "id = ?", ctx.Param("task_id")).Error; err != nil {
 			if err == gorm.ErrRecordNotFound {
 				errorHandlers.NotFound(ctx, "task not found")
 			} else {

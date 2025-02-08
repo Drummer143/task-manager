@@ -14,12 +14,11 @@ import (
 )
 
 type updateTaskBody struct {
-	DeletableNotByOwner *bool       `json:"deletableNotByOwner,omitempty" validate:"omitempty"`
-	Status              *taskStatus `json:"status,omitempty" validate:"omitempty,oneof=not_done in_progress done"`
-	Title               *string     `json:"title,omitempty" validate:"omitempty,max=63"`
-	Description         *string     `json:"description,omitempty" validate:"omitempty,max=255"`
-	DueDate             *time.Time     `json:"dueDate,omitempty" validate:"omitempty,iso8601"`
-	AssignedTo          *uuid.UUID  `json:"assignedTo,omitempty" validate:"omitempty,uuid4"`
+	Status      *taskStatus `json:"status,omitempty" validate:"omitempty,oneof=not_done in_progress done"`
+	Title       *string     `json:"title,omitempty" validate:"omitempty,max=63"`
+	Description *string     `json:"description,omitempty" validate:"omitempty,max=255"`
+	DueDate     *time.Time  `json:"dueDate,omitempty" validate:"omitempty,iso8601"`
+	AssigneeID  *uuid.UUID  `json:"assigneeId,omitempty" validate:"omitempty,uuid4"`
 }
 
 // @Summary			Update a task
@@ -34,14 +33,12 @@ type updateTaskBody struct {
 // @Failure			401 {object} errorHandlers.Error "Unauthorized if session is missing or invalid"
 // @Failure			404 {object} errorHandlers.Error
 // @Failure			500 {object} errorHandlers.Error
-// @Router			/tasks/{id} [put]
+// @Router			/workspaces/{workspace_id}/pages/{page_id}/tasks/{task_id} [put]
 func updateTask(db *gorm.DB, validate *validator.Validate) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var task dbClient.Task
 
-		taskID := ctx.Param("id")
-
-		if err := db.First(&task, "id = ?", taskID).Error; err != nil {
+		if err := db.First(&task, "id = ?", ctx.Param("task_id")).Error; err != nil {
 			if err == gorm.ErrRecordNotFound {
 				errorHandlers.NotFound(ctx, "task not found")
 			} else {
@@ -74,14 +71,11 @@ func updateTask(db *gorm.DB, validate *validator.Validate) gin.HandlerFunc {
 		if body.Description != nil {
 			task.Description = body.Description
 		}
-		if body.AssignedTo != nil {
-			task.AssignedTo = body.AssignedTo
+		if body.AssigneeID != nil {
+			task.AssigneeID = body.AssigneeID
 		}
 		if body.Status != nil {
 			task.Status = *body.Status
-		}
-		if body.DeletableNotByOwner != nil {
-			task.DeletableNotByOwner = *body.DeletableNotByOwner
 		}
 		if body.DueDate != nil {
 			task.DueDate = body.DueDate

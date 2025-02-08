@@ -6,6 +6,8 @@ import { getTask, updateTask } from "api";
 import dayjs from "dayjs";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
+import { useAppStore } from "store/app";
+
 import TaskForm from "../TaskForm";
 import { FormValues } from "../TaskForm/types";
 
@@ -24,13 +26,18 @@ const EditTaskForm: React.FC = () => {
 	const { isLoading, data } = useQuery({
 		queryKey: [taskId],
 		queryFn: async (): Promise<FormValues> => {
-			const result = await getTask(taskId!);
+			const result = await getTask({
+				pageId,
+				taskId: taskId!,
+				workspaceId: useAppStore.getState().workspaceId!,
+				include: ["assignee"]
+			});
 
 			return {
 				status: result.status,
 				title: result.title,
 				description: result.description,
-				assignedTo: result.assignedUser?.id,
+				assignedTo: result.assignee?.id,
 				dueDate: result.dueDate ? dayjs(result.dueDate) : undefined
 			};
 		},
@@ -49,13 +56,15 @@ const EditTaskForm: React.FC = () => {
 	const handleSubmit = useCallback(
 		async (values: FormValues) =>
 			mutateAsync({
-				id: taskId!,
+				taskId: taskId!,
+				pageId,
+				workspaceId: useAppStore.getState().workspaceId!,
 				body: {
 					...values,
 					dueDate: values.dueDate?.toISOString()
 				}
 			}),
-		[taskId, mutateAsync]
+		[mutateAsync, taskId, pageId]
 	);
 
 	return (

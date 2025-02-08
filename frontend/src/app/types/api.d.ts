@@ -1,10 +1,16 @@
-type PageRole = "owner" | "admin" | "member" | "commentator" | "guest";
+type UserRole = "owner" | "admin" | "member" | "commentator" | "guest";
 
 type PageType = "board" | "text" | "group";
 
 type TaskStatus = "not_done" | "in_progress" | "done";
 
-interface User {
+interface Timestamps {
+	createdAt: string;
+	updatedAt: string;
+	deletedAt?: string;
+}
+
+interface User extends Timestamps {
 	id: string;
 	email: string;
 	username: string;
@@ -13,81 +19,66 @@ interface User {
 
 	picture?: string;
 	lastPasswordReset?: string;
-
-	createdAt: string;
-	updatedAt: string;
-	deletedAt?: string;
 }
 
-interface UserCredentials {
+interface UserCredential extends Timestamps {
 	id: string;
 	passwordHash: string;
 
 	passwordResetToken?: string;
 	emailVerificationToken?: string;
-
-	user?: User;
-
-	createdAt: string;
-	updatedAt: string;
-	deletedAt?: string;
 }
 
-interface Page {
+interface Workspace extends Timestamps {
+	id: string;
+	name: string;
+	type: string;
+	role: UserRole;
+
+	owner: User;
+	pages: Page[];
+}
+
+interface WorkspaceAccess extends Timestamps {
+	id: string;
+	role: UserRole;
+	userID: string;
+	workspaceID: string;
+	user?: User;
+}
+
+interface Page extends Timestamps {
 	id: string;
 	type: PageType;
-	name: string;
-	userRole: PageRole;
+	title: string;
+	role: UserRole;
+
+	text?: string;
 
 	owner: User;
 	parentPage: Page;
-	childrenPages: Page[];
-	pageAccesses: PageAccess[];
-	textLines: TextPageContent;
+	childPages: Page[];
 	tasks: Task[];
-
-	createdAt: string;
-	updatedAt: string;
-	deletedAt?: string;
+	workspace: Workspace;
 }
 
-interface TextPageContent {
-	id: string;
-	text: string;
-
-	createdAt: string;
-	updatedAt: string;
-	deletedAt?: string;
-}
-
-interface PageAccess {
-	id: string;
-	role: PageRole;
+interface PageAccess extends Timestamps {
+	role: UserRole;
 
 	user: User;
-	page: Page;
-
-	createdAt: string;
-	updatedAt: string;
-	deletedAt?: string;
 }
 
-interface Task {
+interface Task extends Timestamps {
 	id: string;
 	title: string;
 	status: TaskStatus;
-	deletableNotByOwner: boolean;
 
 	dueDate?: string;
 	description?: string;
 
-	page?: Page;
-	owner?: User;
-	assignedUser?: User;
-
-	createdAt: string;
-	updatedAt: string;
-	deletedAt?: string;
+	page: Page;
+	assignee: User;
+	reporter: User;
 }
 
 interface ApiError {

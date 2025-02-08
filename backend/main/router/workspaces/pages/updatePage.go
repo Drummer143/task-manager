@@ -3,10 +3,9 @@ package pagesRouter
 import (
 	"main/dbClient"
 	"main/router/errorHandlers"
-	"main/router/utils"
+	routerUtils "main/router/utils"
 	"main/validation"
 
-	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
@@ -15,6 +14,7 @@ import (
 
 type updatePageBody struct {
 	Name *string `json:"name"`
+	Text *string `json:"text"`
 }
 
 // @Summary 		Update page by id
@@ -22,15 +22,16 @@ type updatePageBody struct {
 // @Tags 			Pages
 // @Accept 			json
 // @Produce 		json
-// @Param 			id path string true "Page ID"
+// @Param 			workspace_id path string true "Workspace ID"
+// @Param 			page_id path string true "Page ID"
 // @Param 			page body updatePageBody true "Page object that needs to be updated"
 // @Success 		200 {object} dbClient.Page
 // @Failure 		400 {object} errorHandlers.Error
 // @Failure 		401 {object} errorHandlers.Error "Unauthorized if session is missing or invalid"
-// @Failure 		403 {object} errorHandlers.Error "No access to page"
+// @Failure 		403 {object} errorHandlers.Error "No access to page or workspace or no access to update page"
 // @Failure 		404 {object} errorHandlers.Error
 // @Failure 		500 {object} errorHandlers.Error
-// @Router 			/pages/{id} [put]
+// @Router 			/workspaces/{workspace_id}/pages/{page_id} [put]
 func updatePage(db *gorm.DB, validate *validator.Validate) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		pageId, err := uuid.Parse(ctx.Param("id"))
@@ -40,15 +41,15 @@ func updatePage(db *gorm.DB, validate *validator.Validate) gin.HandlerFunc {
 			return
 		}
 
-		session := sessions.Default(ctx)
+		userId, _ := routerUtils.GetUserIdFromSession(ctx)
 
-		page, pageAccess, ok :=utils.CheckPageAccess(ctx, db, pageId, session.Get("id").(uuid.UUID))
+		page, pageAccess, ok := routerUtils.CheckPageAccess(ctx, db, db, pageId, userId)
 
 		if !ok {
 			return
 		}
 
-		if pageAccess.Role == dbClient.PageRoleGuest || pageAccess.Role == dbClient.PageRoleCommentator {
+		if pageAccess.Role == dbClient.UserRoleGuest || pageAccess.Role == dbClient.UserRoleCommentator {
 			errorHandlers.Forbidden(ctx, "no access to page")
 			return
 		}
@@ -64,6 +65,11 @@ func updatePage(db *gorm.DB, validate *validator.Validate) gin.HandlerFunc {
 			errors, _ := validation.ParseValidationError(err)
 
 			errorHandlers.BadRequest(ctx, "invalid request body", errors)
+			return
+		}
+
+		if page.Type != dbClient.PageTypeText && body.Text != nil {
+			errorHandlers.BadRequest(ctx, "only text pages can have text", nil)
 			return
 		}
 

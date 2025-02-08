@@ -6,14 +6,14 @@ import (
 	"github.com/google/uuid"
 )
 
-type PageRole string
+type UserRole string
 
 const (
-	PageRoleOwner       PageRole = "owner"
-	PageRoleAdmin       PageRole = "admin"
-	PageRoleMember      PageRole = "member"
-	PageRoleCommentator PageRole = "commentator"
-	PageRoleGuest       PageRole = "guest"
+	UserRoleOwner       UserRole = "owner"
+	UserRoleAdmin       UserRole = "admin"
+	UserRoleMember      UserRole = "member"
+	UserRoleCommentator UserRole = "commentator"
+	UserRoleGuest       UserRole = "guest"
 )
 
 type PageType string
@@ -25,102 +25,115 @@ const (
 )
 
 type User struct {
-	ID                uuid.UUID  `gorm:"type:uuid;primaryKey;default:uuid_generate_v4()" json:"id"`
-	Email             string     `gorm:"unique;not null" json:"email"`
-	EmailVerified     bool       `gorm:"not null;default:false" json:"emailVerified"`
-	Picture           *string    `gorm:"type:varchar(255)" json:"picture,omitempty"`
-	Username          string     `gorm:"not null" json:"username"`
-	LastPasswordReset *time.Time `gorm:"type:timestamptz" json:"lastPasswordReset,omitempty"`
-	LastLogin         time.Time  `gorm:"type:timestamptz" json:"lastLogin,omitempty"`
+	ID                uuid.UUID `gorm:"primaryKey;default:uuid_generate_v4()" json:"id"`
+	Email             string    `gorm:"unique;not null" json:"email"`
+	Username          string    `gorm:"not null" json:"username"`
+	EmailVerified     bool      `gorm:"not null;default:false" json:"emailVerified"`
+	Picture           *string   `json:"picture"`
+	LastPasswordReset *time.Time `json:"lastPasswordReset"`
+	LastLogin         time.Time `json:"lastLogin"`
 
-	CreatedAt time.Time  `gorm:"type:timestamptz;not null;default:CURRENT_TIMESTAMP" json:"createdAt"`
-	UpdatedAt time.Time  `gorm:"type:timestamptz;not null;default:CURRENT_TIMESTAMP" json:"updatedAt"`
-	DeletedAt *time.Time `gorm:"type:timestamptz" json:"deletedAt,omitempty"`
+	CreatedAt time.Time  `gorm:"default:current_timestamp" json:"createdAt"`
+	UpdatedAt time.Time  `gorm:"default:current_timestamp" json:"updatedAt"`
+	DeletedAt *time.Time `json:"deletedAt,omitempty"`
 }
 
-type UserCredentials struct {
-	ID                     uuid.UUID `gorm:"type:uuid;primaryKey;default:uuid_generate_v4()" json:"id"`
-	PasswordHash           string    `gorm:"not null" json:"passwordHash"`
-	PasswordResetToken     *string   `gorm:"type:varchar(255)" json:"passwordResetToken,omitempty"`
-	EmailVerificationToken *string   `gorm:"type:varchar(255)" json:"emailVerificationToken,omitempty"`
+type UserCredential struct {
+	ID                     uuid.UUID `gorm:"primaryKey;default:uuid_generate_v4()" json:"-"`
+	PasswordHash           string    `gorm:"not null" json:"-"`
+	PasswordResetToken     *string   `json:"-"`
+	EmailVerificationToken *string   `json:"-"`
 
-	CreatedAt time.Time  `gorm:"type:timestamptz;not null;default:CURRENT_TIMESTAMP" json:"createdAt"`
-	UpdatedAt time.Time  `gorm:"type:timestamptz;not null;default:CURRENT_TIMESTAMP" json:"updatedAt"`
-	DeletedAt *time.Time `gorm:"type:timestamptz" json:"deletedAt,omitempty"`
+	UserID uuid.UUID `gorm:"unique;not null" json:"-"`
 
-	UserID uuid.UUID `gorm:"type:uuid;not null" json:"-"`
+	CreatedAt time.Time  `gorm:"default:current_timestamp" json:"-"`
+	UpdatedAt time.Time  `gorm:"default:current_timestamp" json:"-"`
+	DeletedAt *time.Time `json:"-"`
+}
+
+type Workspace struct {
+	ID   uuid.UUID `gorm:"primaryKey;default:uuid_generate_v4()" json:"id"`
+	Name string    `gorm:"not null" json:"name"`
+	Type string    `gorm:"not null" json:"type"`
+
+	Role *UserRole `gorm:"-" json:"role,omitempty"`
+
+	OwnerID uuid.UUID `gorm:"not null" json:"-"`
+
+	Owner *User   `gorm:"foreignKey:OwnerID" json:"owner,omitempty"`
+	Pages []*Page `gorm:"foreignKey:WorkspaceID" json:"pages,omitempty"`
+
+	CreatedAt time.Time  `gorm:"default:current_timestamp" json:"createdAt"`
+	UpdatedAt time.Time  `gorm:"default:current_timestamp" json:"updatedAt"`
+	DeletedAt *time.Time `json:"deletedAt,omitempty"`
+}
+
+type WorkspaceAccess struct {
+	ID   uuid.UUID `gorm:"primaryKey;default:uuid_generate_v4()" json:"id"`
+	Role UserRole  `gorm:"not null" json:"role"`
+
+	UserID      uuid.UUID `gorm:"not null" json:"-"`
+	WorkspaceID uuid.UUID `gorm:"not null" json:"-"`
 
 	User *User `gorm:"foreignKey:UserID" json:"user,omitempty"`
+
+	CreatedAt time.Time  `gorm:"default:current_timestamp" json:"createdAt"`
+	UpdatedAt time.Time  `gorm:"default:current_timestamp" json:"updatedAt"`
+	DeletedAt *time.Time `json:"deletedAt,omitempty"`
 }
 
 type Page struct {
-	ID       uuid.UUID `gorm:"type:uuid;primaryKey;default:uuid_generate_v4()" json:"id"`
-	Type     PageType  `gorm:"type:page_types;not null;default:'text'" json:"type"`
-	Name     string    `gorm:"not null" json:"name"`
-	UserRole PageRole  `gorm:"-" json:"userRole"`
+	ID    uuid.UUID `gorm:"primaryKey;default:uuid_generate_v4()" json:"id"`
+	Type  PageType  `gorm:"not null" json:"type"`
+	Title string    `gorm:"not null" json:"title"`
+	Text  *string   `json:"text"`
 
-	CreatedAt time.Time  `gorm:"type:timestamptz;not null;default:CURRENT_TIMESTAMP" json:"createdAt"`
-	UpdatedAt time.Time  `gorm:"type:timestamptz;not null;default:CURRENT_TIMESTAMP" json:"updatedAt"`
-	DeletedAt *time.Time `gorm:"type:timestamptz" json:"deletedAt,omitempty"`
+	Role *UserRole `gorm:"-" json:"role,omitempty"`
 
-	OwnerID  uuid.UUID  `gorm:"type:uuid;not null" json:"-"`
-	ParentID *uuid.UUID `gorm:"type:uuid" json:"-"`
+	OwnerID      uuid.UUID  `gorm:"not null" json:"-"`
+	WorkspaceID  uuid.UUID  `gorm:"not null" json:"-"`
+	ParentPageID *uuid.UUID `gorm:"index" json:"-"`
 
-	Owner         *User         `gorm:"foreignKey:OwnerID" json:"owner,omitempty"`
-	ParentPage    *Page         `gorm:"foreignKey:ParentID" json:"parentPage,omitempty"`
-	ChildrenPages *[]Page       `gorm:"foreignKey:ParentID" json:"childrenPages,omitempty"`
-	PageAccesses  *[]PageAccess `gorm:"foreignKey:PageID" json:"pageAccesses,omitempty"`
-	TextPageLine  *TextPageLine `gorm:"foreignKey:PageID" json:"textLines,omitempty"`
-	Tasks         *[]Task       `gorm:"foreignKey:PageID" json:"tasks,omitempty"`
-}
+	Owner      *User   `gorm:"foreignKey:OwnerID" json:"owner,omitempty"`
+	ParentPage *Page   `gorm:"foreignKey:ParentPageID" json:"parentPage,omitempty"`
+	ChildPages []*Page `gorm:"foreignKey:ParentPageID" json:"childPages,omitempty"`
+	Tasks      []*Task `gorm:"foreignKey:PageID" json:"tasks,omitempty"`
 
-type TextPageLine struct {
-	ID   uuid.UUID `gorm:"type:uuid;primaryKey;default:uuid_generate_v4()" json:"id"`
-	Text string    `gorm:"type:text;not null" json:"text"`
-
-	PageID uuid.UUID `gorm:"type:uuid;not null" json:"-"`
-
-	CreatedAt time.Time  `gorm:"type:timestamptz;not null;default:CURRENT_TIMESTAMP" json:"createdAt"`
-	UpdatedAt time.Time  `gorm:"type:timestamptz;not null;default:CURRENT_TIMESTAMP" json:"updatedAt"`
-	DeletedAt *time.Time `gorm:"type:timestamptz" json:"deletedAt,omitempty"`
-}
-
-func (TextPageLine) TableName() string {
-	return "text_page_lines"
+	CreatedAt time.Time  `gorm:"default:current_timestamp" json:"createdAt"`
+	UpdatedAt time.Time  `gorm:"default:current_timestamp" json:"updatedAt"`
+	DeletedAt *time.Time `json:"deletedAt,omitempty"`
 }
 
 type PageAccess struct {
-	ID   uuid.UUID `gorm:"type:uuid;primaryKey;default:uuid_generate_v4()" json:"id"`
-	Role PageRole  `gorm:"type:board_roles;not null;default:'member'" json:"role"`
+	ID   uuid.UUID `gorm:"primaryKey;default:uuid_generate_v4()" json:"id"`
+	Role UserRole  `gorm:"not null" json:"role"`
 
-	CreatedAt time.Time  `gorm:"type:timestamptz;not null;default:CURRENT_TIMESTAMP" json:"createdAt"`
-	UpdatedAt time.Time  `gorm:"type:timestamptz;not null;default:CURRENT_TIMESTAMP" json:"updatedAt"`
-	DeletedAt *time.Time `gorm:"type:timestamptz" json:"deletedAt,omitempty"`
-
-	UserID uuid.UUID `gorm:"type:uuid;not null" json:"-"`
-	PageID uuid.UUID `gorm:"type:uuid;not null" json:"-"`
+	UserID uuid.UUID `gorm:"not null" json:"-"`
+	PageID uuid.UUID `gorm:"not null" json:"-"`
 
 	User *User `gorm:"foreignKey:UserID" json:"user,omitempty"`
-	Page *Page `gorm:"foreignKey:PageID" json:"page,omitempty"`
+
+	CreatedAt time.Time  `gorm:"default:current_timestamp" json:"createdAt"`
+	UpdatedAt time.Time  `gorm:"default:current_timestamp" json:"updatedAt"`
+	DeletedAt *time.Time `json:"deletedAt,omitempty"`
 }
 
 type Task struct {
-	ID                  uuid.UUID  `gorm:"type:uuid;primaryKey;default:uuid_generate_v4()" json:"id"`
-	DeletableNotByOwner bool       `gorm:"not null;default:true" json:"deletableNotByOwner"`
-	Status              string     `gorm:"not null" json:"status"`
-	Title               string     `gorm:"not null" json:"title"`
-	Description         *string    `gorm:"type:text" json:"description,omitempty"`
-	DueDate             *time.Time `gorm:"type:timestamptz" json:"dueDate,omitempty"`
-	AssignedTo          *uuid.UUID `gorm:"type:uuid" json:"assignedTo,omitempty"`
+	ID          uuid.UUID  `gorm:"primaryKey;default:uuid_generate_v4()" json:"id"`
+	Title       string     `gorm:"not null" json:"title"`
+	Status      string     `gorm:"not null" json:"status"`
+	Description *string    `json:"description,omitempty"`
+	DueDate     *time.Time `json:"dueDate,omitempty"`
 
-	CreatedAt time.Time  `gorm:"type:timestamptz;not null;default:CURRENT_TIMESTAMP" json:"createdAt"`
-	UpdatedAt time.Time  `gorm:"type:timestamptz;not null;default:CURRENT_TIMESTAMP" json:"updatedAt"`
-	DeletedAt *time.Time `gorm:"type:timestamptz" json:"deletedAt,omitempty"`
+	PageID     uuid.UUID  `gorm:"not null" json:"-"`
+	AssigneeID *uuid.UUID `json:"-"`
+	ReporterID uuid.UUID  `json:"-"`
 
-	PageID  uuid.UUID `gorm:"type:uuid;not null" json:"-"`
-	OwnerID uuid.UUID `gorm:"type:uuid;not null" json:"-"`
+	Page     *Page `gorm:"foreignKey:PageID" json:"page,omitempty"`
+	Assignee *User `gorm:"foreignKey:AssigneeID" json:"assignee,omitempty"`
+	Reporter *User `gorm:"foreignKey:ReporterID" json:"reporter,omitempty"`
 
-	Owner        *User `gorm:"foreignKey:OwnerID" json:"owner,omitempty"`
-	AssignedUser *User `gorm:"foreignKey:AssignedTo" json:"assignedUser,omitempty"`
-	Page         *Page `gorm:"foreignKey:PageID" json:"page,omitempty"`
+	CreatedAt time.Time  `gorm:"default:current_timestamp" json:"createdAt"`
+	UpdatedAt time.Time  `gorm:"default:current_timestamp" json:"updatedAt"`
+	DeletedAt *time.Time `json:"deletedAt,omitempty"`
 }

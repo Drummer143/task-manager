@@ -3,7 +3,7 @@ package accessesRouter
 import (
 	"main/dbClient"
 	"main/router/errorHandlers"
-	"main/router/utils"
+	routerUtils "main/router/utils"
 	"net/http"
 
 	"github.com/gin-contrib/sessions"
@@ -16,14 +16,15 @@ import (
 // @Description 		Get page accesses
 // @Tags				Page Accesses
 // @Produce				json
-// @Param				id path string true "Page ID"
+// @Param				workspace_id path string true "Workspace ID"
+// @Param				page_id path string true "Page ID"
 // @Success				200 {object} []dbClient.PageAccess
 // @Failure				400 {object} errorHandlers.Error
 // @Failure				401 {object} errorHandlers.Error "Unauthorized if session is missing or invalid"
-// @Failure				403 {object} errorHandlers.Error "No access to page"
+// @Failure				403 {object} errorHandlers.Error "No access to page or workspace or no access to get page accesses"
 // @Failure				404 {object} errorHandlers.Error
 // @Failure				500 {object} errorHandlers.Error
-// @Router				/pages/{id}/accesses [get]
+// @Router				/workspaces/{workspace_id}/pages/{page_id}/accesses [get]
 func getPageAccesses(db *gorm.DB) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		pageId, err := uuid.Parse(ctx.Param("id"))
@@ -37,13 +38,13 @@ func getPageAccesses(db *gorm.DB) gin.HandlerFunc {
 
 		userId := session.Get("id").(uuid.UUID)
 
-		_, access, ok := utils.CheckPageAccess(ctx, db, pageId, userId)
+		_, access, ok := routerUtils.CheckPageAccess(ctx, db, db, pageId, userId)
 
 		if !ok {
 			return
 		}
 
-		if access.Role != dbClient.PageRoleOwner && access.Role != dbClient.PageRoleAdmin {
+		if access.Role != dbClient.UserRoleOwner && access.Role != dbClient.UserRoleAdmin {
 			errorHandlers.Forbidden(ctx, "no access to page")
 			return
 		}

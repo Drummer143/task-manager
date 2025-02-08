@@ -3,29 +3,30 @@ import React, { useCallback, useRef, useState } from "react";
 import { MDXEditorMethods } from "@mdxeditor/editor";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { App, Button } from "antd";
-import { updateTextPageContent } from "api";
+import { updatePage } from "api";
 
+import { useAppStore } from "store/app";
 import MDEditor from "widgets/MDEditor";
 
 import * as s from "./styled";
 
 interface TextPageProps {
-	page: Omit<Page, "pageAccesses" | "tasks" | "owner" | "childrenPages" | "parentPage">;
+	page: Omit<Page, "tasks" | "owner" | "childrenPages" | "parentPage">;
 }
 
 const TextPage: React.FC<TextPageProps> = ({ page }) => {
-	const [text, setText] = useState(page.textLines.text);
+	const [text, setText] = useState(page.text || "");
 	const [editing, setEditing] = useState(false);
 
 	const message = App.useApp().message;
 
 	const editorRef = useRef<MDXEditorMethods | null>(null);
-	const initialValue = useRef(page.textLines.text);
+	const initialValue = useRef(page.text || "");
 
 	const queryClient = useQueryClient();
 
 	const { mutateAsync, isPending } = useMutation({
-		mutationFn: updateTextPageContent,
+		mutationFn: updatePage,
 		onSuccess: data => {
 			setEditing(false);
 
@@ -49,7 +50,7 @@ const TextPage: React.FC<TextPageProps> = ({ page }) => {
 	const handleSave = async () => {
 		initialValue.current = text;
 
-		mutateAsync({ id: page.id, text });
+		mutateAsync({ pageId: page.id, page: { text }, workspaceId: useAppStore.getState().workspaceId! });
 	};
 
 	return (

@@ -1,101 +1,107 @@
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
-CREATE TYPE "page_roles" AS ENUM (
-  'owner',
-  'admin',
-  'member',
-  'commentator',
-  'guest'
-);
+CREATE TABLE
+  "users" (
+    "id" UUID PRIMARY KEY DEFAULT uuid_generate_v4 (),
+    "email" VARCHAR(255) UNIQUE NOT NULL,
+    "username" VARCHAR(50) NOT NULL,
+    "email_verified" BOOL NOT NULL DEFAULT false,
+    "picture" VARCHAR(255),
+    "last_password_reset" TIMESTAMPTZ NOT NULL,
+    "last_login" TIMESTAMPTZ NOT NULL,
+    "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "deleted_at" TIMESTAMPTZ
+  );
 
-CREATE TYPE "page_types" AS ENUM (
-  'board',
-  'text',
-  'group'
-);
+CREATE TABLE
+  "user_credentials" (
+    "id" UUID PRIMARY KEY DEFAULT uuid_generate_v4 (),
+    "password_hash" VARCHAR(255) NOT NULL,
+    "password_reset_token" VARCHAR(255),
+    "email_verification_token" VARCHAR(255),
+    "user_id" UUID UNIQUE NOT NULL,
+    "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "deleted_at" TIMESTAMPTZ,
+    CONSTRAINT fk_user_credentials_user FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE CASCADE
+  );
 
-CREATE TABLE "users" (
-  "id" uuid PRIMARY KEY NOT NULL DEFAULT (uuid_generate_v4()),
-  "email" varchar(63) UNIQUE NOT NULL,
-  "email_verified" bool NOT NULL DEFAULT false,
-  "picture" varchar(255),
-  "username" varchar(63) NOT NULL,
-  "last_password_reset" timestamptz,
-  "last_login" timestamptz,
-  "created_at" timestamptz NOT NULL DEFAULT (CURRENT_TIMESTAMP),
-  "updated_at" timestamptz NOT NULL DEFAULT (CURRENT_TIMESTAMP),
-  "deleted_at" timestamptz
-);
+CREATE TABLE
+  "workspaces" (
+    "id" UUID PRIMARY KEY DEFAULT uuid_generate_v4 (),
+    "name" VARCHAR(255) NOT NULL,
+    "type" VARCHAR(50) NOT NULL,
+    "role" VARCHAR(50),
+    "owner_id" UUID NOT NULL,
+    "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "deleted_at" TIMESTAMPTZ,
+    CONSTRAINT fk_workspace_owner FOREIGN KEY ("owner_id") REFERENCES "users" ("id") ON DELETE CASCADE
+  );
 
-CREATE TABLE "pages" (
-  "id" uuid PRIMARY KEY NOT NULL DEFAULT (uuid_generate_v4()),
-  "type" page_types NOT NULL DEFAULT 'text',
-  "name" varchar(255) NOT NULL,
-  "owner_id" uuid NOT NULL,
-  "parent_id" uuid,
-  "created_at" timestamptz NOT NULL DEFAULT (CURRENT_TIMESTAMP),
-  "updated_at" timestamptz NOT NULL DEFAULT (CURRENT_TIMESTAMP),
-  "deleted_at" timestamptz
-);
+CREATE TABLE
+  "workspace_accesses" (
+    "id" UUID PRIMARY KEY DEFAULT uuid_generate_v4 (),
+    "user_id" UUID NOT NULL,
+    "workspace_id" UUID NOT NULL,
+    "role" VARCHAR(50) NOT NULL,
+    "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "deleted_at" TIMESTAMPTZ,
+    CONSTRAINT fk_workspace_access_user FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE CASCADE,
+    CONSTRAINT fk_workspace_access_workspace FOREIGN KEY ("workspace_id") REFERENCES "workspaces" ("id") ON DELETE CASCADE
+  );
 
-CREATE TABLE "text_pages" (
-  "id" uuid PRIMARY KEY NOT NULL DEFAULT (uuid_generate_v4()),
-  "text" text NOT NULL,
-  "page_id" uuid UNIQUE NOT NULL,
-  "created_at" timestamptz NOT NULL DEFAULT (CURRENT_TIMESTAMP),
-  "updated_at" timestamptz NOT NULL DEFAULT (CURRENT_TIMESTAMP),
-  "deleted_at" timestamptz
-);
+CREATE UNIQUE INDEX "workspace_accesses_user_workspace_idx" ON "workspace_accesses" ("user_id", "workspace_id");
 
-CREATE TABLE "page_accesses" (
-  "id" uuid PRIMARY KEY NOT NULL DEFAULT (uuid_generate_v4()),
-  "role" page_roles NOT NULL DEFAULT 'member',
-  "user_id" uuid NOT NULL,
-  "page_id" uuid NOT NULL,
-  "created_at" timestamptz NOT NULL DEFAULT (CURRENT_TIMESTAMP),
-  "updated_at" timestamptz NOT NULL DEFAULT (CURRENT_TIMESTAMP),
-  "deleted_at" timestamptz
-);
+CREATE TABLE
+  "pages" (
+    "id" UUID PRIMARY KEY DEFAULT uuid_generate_v4 (),
+    "parent_page_id" UUID,
+    "workspace_id" UUID NOT NULL,
+    "title" VARCHAR(255) NOT NULL,
+    "type" VARCHAR(50) NOT NULL,
+    "text" TEXT,
+    "role" VARCHAR(50),
+    "owner_id" UUID NOT NULL,
+    "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "deleted_at" TIMESTAMPTZ,
+    CONSTRAINT fk_page_workspace FOREIGN KEY ("workspace_id") REFERENCES "workspaces" ("id") ON DELETE CASCADE,
+    CONSTRAINT fk_page_owner FOREIGN KEY ("owner_id") REFERENCES "users" ("id") ON DELETE CASCADE,
+    CONSTRAINT fk_page_parent FOREIGN KEY ("parent_page_id") REFERENCES "pages" ("id") ON DELETE SET NULL
+  );
 
-CREATE TABLE "tasks" (
-  "id" uuid PRIMARY KEY NOT NULL DEFAULT (uuid_generate_v4()),
-  "status" varchar(63) NOT NULL,
-  "title" varchar(255) NOT NULL,
-  "description" text,
-  "due_date" timestamptz,
-  "assigned_to" uuid,
-  "page_id" uuid NOT NULL,
-  "owner_id" uuid NOT NULL,
-  "created_at" timestamptz NOT NULL DEFAULT (CURRENT_TIMESTAMP),
-  "updated_at" timestamptz NOT NULL DEFAULT (CURRENT_TIMESTAMP),
-  "deleted_at" timestamptz
-);
+CREATE TABLE
+  "page_accesses" (
+    "id" UUID PRIMARY KEY DEFAULT uuid_generate_v4 (),
+    "user_id" UUID NOT NULL,
+    "page_id" UUID NOT NULL,
+    "role" VARCHAR(50) NOT NULL,
+    "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "deleted_at" TIMESTAMPTZ,
+    CONSTRAINT fk_page_access_user FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE CASCADE,
+    CONSTRAINT fk_page_access_page FOREIGN KEY ("page_id") REFERENCES "pages" ("id") ON DELETE CASCADE
+  );
 
-CREATE TABLE "user_credentials" (
-  "id" uuid UNIQUE PRIMARY KEY NOT NULL DEFAULT (uuid_generate_v4()),
-  "password_hash" varchar(255) NOT NULL,
-  "password_reset_token" varchar(255),
-  "email_verification_token" varchar(255),
-  "user_id" uuid NOT NULL,
-  "created_at" timestamptz NOT NULL DEFAULT (CURRENT_TIMESTAMP),
-  "updated_at" timestamptz NOT NULL DEFAULT (CURRENT_TIMESTAMP),
-  "deleted_at" timestamptz
-);
+CREATE UNIQUE INDEX "page_accesses_user_page_idx" ON "page_accesses" ("user_id", "page_id");
 
-CREATE UNIQUE INDEX "unique_user_board_accesses" ON "page_accesses" ("user_id", "page_id");
-
-ALTER TABLE "tasks" ADD FOREIGN KEY ("owner_id") REFERENCES "users" ("id");
-
-ALTER TABLE "tasks" ADD FOREIGN KEY ("assigned_to") REFERENCES "users" ("id") ON DELETE SET NULL;
-
-ALTER TABLE "user_credentials" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE CASCADE;
-
-ALTER TABLE "tasks" ADD FOREIGN KEY ("page_id") REFERENCES "pages" ("id") ON DELETE CASCADE;
-
-ALTER TABLE "page_accesses" ADD FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE CASCADE;
-
-ALTER TABLE "page_accesses" ADD FOREIGN KEY ("page_id") REFERENCES "pages" ("id") ON DELETE CASCADE;
-
-ALTER TABLE "text_pages" ADD FOREIGN KEY ("page_id") REFERENCES "pages" ("id") ON DELETE CASCADE;
-
-ALTER TABLE "pages" ADD FOREIGN KEY ("parent_id") REFERENCES "pages" ("id") ON DELETE SET NULL;
+CREATE TABLE
+  "tasks" (
+    "id" UUID PRIMARY KEY DEFAULT uuid_generate_v4 (),
+    "page_id" UUID NOT NULL,
+    "title" VARCHAR(255) NOT NULL,
+    "description" TEXT,
+    "status" VARCHAR(50) NOT NULL,
+    "assignee_id" UUID,
+    "reporter_id" UUID NOT NULL,
+    "due_date" TIMESTAMP,
+    "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "updated_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    "deleted_at" TIMESTAMPTZ,
+    CONSTRAINT fk_task_page FOREIGN KEY ("page_id") REFERENCES "pages" ("id") ON DELETE CASCADE,
+    CONSTRAINT fk_task_assignee FOREIGN KEY ("assignee_id") REFERENCES "users" ("id") ON DELETE SET NULL,
+    CONSTRAINT fk_task_reporter FOREIGN KEY ("reporter_id") REFERENCES "users" ("id") ON DELETE CASCADE
+  );

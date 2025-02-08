@@ -1,35 +1,85 @@
-import { removeEmptyFields } from "shared/utils";
-
 import { axiosInstance } from "./base";
 
-export const createTask = async (
-	task: Omit<Task, "id" | "deletedAt" | "createdAt" | "assignedUser" | "deletableNotByOwner" | "owner" | "updatedAt"> & {
-		pageId: string;
-	}
-) => (await axiosInstance.post<Task>("/tasks", removeEmptyFields(task))).data;
+interface Ids {
+	workspaceId: string;
+	pageId: string;
+}
 
-export const getTaskList = async (pageId: string) =>
-	(await axiosInstance.get<Record<TaskStatus, Task[] | undefined>>(`/tasks?page_id=${pageId}`)).data;
+type GetTaskIncludes = "assignee" | "page" | "reporter";
 
-export const getTask = async (id: string) => (await axiosInstance.get<Task>(`/tasks/${id}`)).data;
+type ResponseWithIncludeFilter<T extends GetTaskIncludes | undefined = undefined> = Omit<
+	Task,
+	Exclude<GetTaskIncludes, T>
+>;
 
-interface UpdateTaskArgs {
-	id: string;
+interface GetPageArgs<T extends GetTaskIncludes | undefined = undefined> extends Ids {
+	include?: T[];
+}
 
-	body: {
-		title?: string;
-		status?: string;
+export const getTaskList = async <T extends GetTaskIncludes | undefined = undefined>({
+	pageId,
+	workspaceId,
+	include
+}: GetPageArgs<T>) =>
+	(
+		await axiosInstance.get<Record<TaskStatus, ResponseWithIncludeFilter<T>[] | undefined>>(
+			`/workspaces/${workspaceId}/pages/${pageId}/tasks`,
+			{
+				params: { include: include?.join(",") }
+			}
+		)
+	).data;
+
+export const getTask = async <T extends GetTaskIncludes | undefined = undefined>({
+	pageId,
+	taskId,
+	workspaceId,
+	include
+}: GetPageArgs<T> & { taskId: string }) =>
+	(
+		await axiosInstance.get<ResponseWithIncludeFilter<T>>(
+			`/workspaces/${workspaceId}/pages/${pageId}/tasks/${taskId}`,
+			{
+				params: { include: include?.join(",") }
+			}
+		)
+	).data;
+
+interface CreateTaskArgs extends Ids {
+	task: {
+		title: string;
+		status: TaskStatus;
+
 		dueDate?: string;
-		assignedTo?: string;
+		assigneeId?: string;
 		description?: string;
-		deletableNotByOwner?: boolean;
 	};
 }
 
-export const updateTask = async ({ id, body }: UpdateTaskArgs) =>
-	(await axiosInstance.put<Task>(`/tasks/${id}`, removeEmptyFields(body))).data;
+export const createTask = async ({ workspaceId, pageId, task }: CreateTaskArgs) =>
+	(await axiosInstance.post<Task>(`/workspaces/${workspaceId}/pages/${pageId}/tasks`, task)).data;
 
-export const deleteTask = async (id: string) => (await axiosInstance.delete<Task>(`/tasks/${id}`)).data;
+interface UpdateTaskArgs extends Ids {
+	taskId: string;
 
-export const changeStatus = async ({ id, status }: { id: string; status: TaskStatus }) =>
-	(await axiosInstance.patch<Task>(`/tasks/${id}/status`, { status })).data;
+	body: Partial<CreateTaskArgs["task"]>;
+}
+
+export const updateTask = async ({ taskId, pageId, workspaceId, body }: UpdateTaskArgs) =>
+	(await axiosInstance.put<Task>(`/workspaces/${workspaceId}/pages/${pageId}/tasks/${taskId}`, body)).data;
+
+interface DeleteTaskArgs extends Ids {
+	taskId: string;
+}
+
+export const deleteTask = async ({ pageId, taskId, workspaceId }: DeleteTaskArgs) =>
+	(await axiosInstance.delete<Task>(`/workspaces/${workspaceId}/pages/${pageId}/tasks/${taskId}`)).data;
+
+interface ChangeStatusArgs extends Ids {
+	taskId: string;
+	status: TaskStatus;
+}
+
+export const changeStatus = async ({ taskId, pageId, workspaceId, status }: ChangeStatusArgs) =>
+	(await axiosInstance.patch<Task>(`/workspaces/${workspaceId}/pages/${pageId}/tasks/${taskId}/status`, { status }))
+		.data;

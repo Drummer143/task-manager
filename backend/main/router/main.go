@@ -7,13 +7,12 @@ import (
 
 	"main/auth"
 	_ "main/docs"
+	authRouter "main/router/auth"
+	profileRouter "main/router/profile"
+	usersRouter "main/router/users"
+	workspacesRouter "main/router/workspaces"
 
 	// authRouter "main/router/auth"
-	authRouter "main/router/auth"
-	pagesRouter "main/router/pages"
-	profileRouter "main/router/profile"
-	tasksRouter "main/router/tasks"
-	usersRouter "main/router/users"
 
 	"github.com/gin-contrib/cors"
 	"github.com/gin-contrib/sessions"
@@ -51,10 +50,9 @@ func New(auth *auth.Auth, db *gorm.DB, validate *validator.Validate) *gin.Engine
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	router.GET("/api", func(ctx *gin.Context) { ctx.Redirect(http.StatusFound, "/swagger/index.html") })
 
+	workspacesRouter.AddRoutes(router.Group("workspaces", IsAuthenticated(auth)), db, validate)
 	authRouter.AddRoutes(router.Group("auth"), auth, validate, db)
 	profileRouter.AddRoutes(router.Group("profile", IsAuthenticated(auth)), validate, db)
-	tasksRouter.AddRoutes(router.Group("tasks", IsAuthenticated(auth)), db, validate)
-	pagesRouter.AddRoutes(router.Group("pages", IsAuthenticated(auth)), db, validate)
 	usersRouter.AddRoutes(router.Group("users", IsAuthenticated(auth)), db)
 
 	return router

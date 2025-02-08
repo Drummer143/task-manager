@@ -58,7 +58,7 @@ func login(auth *auth.Auth, validate *validator.Validate, db *gorm.DB) gin.Handl
 			}
 		}
 
-		var credentials dbClient.UserCredentials
+		var credentials dbClient.UserCredential
 
 		if err := db.Where("user_id = ?", user.ID).First(&credentials).Error; err != nil {
 			if err == gorm.ErrRecordNotFound {

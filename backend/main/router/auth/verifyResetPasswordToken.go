@@ -29,7 +29,7 @@ func verifyResetPasswordToken(auth *auth.Auth, db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		var userCredentials dbClient.UserCredentials
+		var userCredentials dbClient.UserCredential
 
 		if err := db.Where("password_reset_token = ?", token).First(&userCredentials).Error; err != nil {
 			if err == gorm.ErrRecordNotFound {

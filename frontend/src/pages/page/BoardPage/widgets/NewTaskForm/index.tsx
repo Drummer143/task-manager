@@ -6,6 +6,7 @@ import { createTask } from "api";
 import { useParams } from "react-router-dom";
 
 import { useDisclosure } from "shared/hooks";
+import { useAppStore } from "store/app";
 
 import TaskForm from "../TaskForm";
 import { FormValues } from "../TaskForm/types";
@@ -27,7 +28,11 @@ const NewTaskForm: React.FC = () => {
 	const handleSubmit = useCallback(
 		async (values: FormValues) => {
 			try {
-				await mutateAsync({ ...values, dueDate: values.dueDate?.toISOString(), pageId });
+				await mutateAsync({
+					task: { ...values, dueDate: values.dueDate?.toISOString() },
+					workspaceId: useAppStore.getState().workspaceId!,
+					pageId
+				});
 
 				onClose();
 			} catch {

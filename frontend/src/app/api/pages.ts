@@ -1,65 +1,71 @@
 import { axiosInstance } from "./base";
 
-type GetPageIncludes = "tasks" | "owner" | "pageAccesses" | "textLines" | "childrenPages" | "parentPage";
+type GetPageIncludes = "tasks" | "owner" | "childrenPages" | "parentPage";
+
+interface Ids {
+	workspaceId: string;
+}
 
 type ResponseWithIncludeFilter<T extends GetPageIncludes | undefined = undefined> = Omit<
 	Page,
 	Exclude<GetPageIncludes, T>
 >;
 
-interface GetSinglePageArgs<T extends GetPageIncludes | undefined = undefined> {
-	id: string;
+interface CreatePageArgs extends Ids {
+	page: {
+		type: PageType;
+		title: string;
+	
+		text?: string;
+		parentId?: string;
+	};
+}
+
+export const createPage = async ({ workspaceId, page }: CreatePageArgs) =>
+	(await axiosInstance.post<Page>(`/workspaces/${workspaceId}/pages`, page)).data;
+
+interface GetSinglePageArgs<T extends GetPageIncludes | undefined = undefined> extends Ids {
+	pageId: string;
 	include?: T[];
 }
 
 export const getPage = async <T extends GetPageIncludes | undefined = undefined>({
-	id,
+	workspaceId,
+	pageId,
 	include
 }: GetSinglePageArgs<T>) =>
 	(
-		await axiosInstance.get<ResponseWithIncludeFilter<T>>(`/pages/${id}`, {
+		await axiosInstance.get<ResponseWithIncludeFilter<T>>(`workspaces/${workspaceId}/pages/${pageId}`, {
 			params: { include: include?.join(",") }
 		})
 	).data;
 
-export const getPageList = async <T extends GetPageIncludes | undefined = undefined>(include?: T[]) =>
-	(await axiosInstance.get<ResponseWithIncludeFilter<T>[]>("/pages", { params: { include: include?.join(",") } }))
-		.data;
-
-interface CreatePageArgs {
-	type: PageType;
-	name: string;
-
-	parentId?: string;
+interface GetPageListArgs<T extends GetPageIncludes | undefined = undefined> extends Ids {
+	include?: T[];
 }
 
-export const createPage = async (page: CreatePageArgs) => (await axiosInstance.post<Page>("/pages", page)).data;
+export const getPageList = async <T extends GetPageIncludes | undefined = undefined>({
+	workspaceId,
+	include
+}: GetPageListArgs<T>) =>
+	(
+		await axiosInstance.get<ResponseWithIncludeFilter<T>[]>(`workspaces/${workspaceId}/pages`, {
+			params: { include: include?.join(",") }
+		})
+	).data;
 
-export const updatePage = async (id: string, page: Partial<CreatePageArgs>) =>
-	(await axiosInstance.put<Page>(`/pages/${id}`, page)).data;
-
-export const deletePage = async (id: string) => (await axiosInstance.delete<void>(`/pages/${id}`)).data;
-
-interface UpdatePageAccessArgs {
+interface UpdatePageArgs extends Ids {
 	pageId: string;
 
-	body: {
-		role?: string;
-
-		userId: string;
-	};
+	page: Omit<Partial<CreatePageArgs["page"]>, "parentId" | "type">;
 }
 
-export const updatePageAccess = async ({ pageId, body }: UpdatePageAccessArgs) =>
-	(await axiosInstance.put<"Success">(`/pages/${pageId}/accesses`, body)).data;
+export const updatePage = async ({ pageId, workspaceId, page }: UpdatePageArgs) =>
+	(await axiosInstance.put<Page>(`/workspaces/${workspaceId}/pages/${pageId}`, page)).data;
 
-export const getPageAccess = async (id: string) =>
-	(await axiosInstance.get<PageAccess[]>(`/pages/${id}/accesses`)).data;
-
-interface UpdateTextPageContentArgs {
-	id: string;
-	text: string;
+interface DeletePageArgs extends Ids {
+	pageId: string;
 }
 
-export const updateTextPageContent = ({ id, text }: UpdateTextPageContentArgs) =>
-	axiosInstance.put<TextPageContent>(`/pages/${id}/text`, { text }).then(res => res.data);
+export const deletePage = async ({ pageId, workspaceId }: DeletePageArgs) =>
+	(await axiosInstance.delete<void>(`/workspaces/${workspaceId}/pages/${pageId}`)).data;

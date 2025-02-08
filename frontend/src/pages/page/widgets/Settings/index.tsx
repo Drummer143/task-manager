@@ -7,6 +7,7 @@ import { getPageAccess, getUserList, updatePageAccess } from "api";
 
 import { useMessageOnErrorCallback } from "shared/hooks";
 import { parseUseQueryError } from "shared/utils/errors";
+import { useAppStore } from "store/app";
 import PopoverInfiniteSelect from "widgets/PopoverInfiniteSelect";
 import UserCard from "widgets/UserCard";
 
@@ -16,7 +17,7 @@ import AccessListItem from "../AccessListItem";
 
 interface SettingsProps {
 	open: boolean;
-	page: Omit<Page, "pageAccesses" | "tasks" | "owner" | "textLines" | "childrenPages" | "parentPage">;
+	page: Omit<Page, "tasks" | "owner" | "childPages" | "parentPage">;
 
 	onClose: () => void;
 }
@@ -28,9 +29,11 @@ const Settings: React.FC<SettingsProps> = ({ onClose, open, page }) => {
 
 	const message = App.useApp().message;
 
+	const workspaceId = useAppStore(state => state.workspaceId);
+
 	const { data, isLoading, error } = useQuery({
-		queryFn: async () => await getPageAccess(page.id),
-		enabled: open,
+		queryFn: async () => await getPageAccess({ workspaceId: workspaceId!, pageId: page.id, include: ["user"] }),
+		enabled: open && !!workspaceId,
 		queryKey: ["pageAccesses"]
 	});
 
@@ -58,7 +61,7 @@ const Settings: React.FC<SettingsProps> = ({ onClose, open, page }) => {
 	const handleRoleChange = useMessageOnErrorCallback({
 		message: "Error while updating page access",
 		callback: async (userId: string, role?: string) =>
-			!!(await updateAccess({ pageId: page.id, body: { userId, role } }))
+			!!(await updateAccess({ workspaceId: workspaceId!, pageId: page.id, body: { userId, role } }))
 	});
 
 	return (
@@ -67,7 +70,7 @@ const Settings: React.FC<SettingsProps> = ({ onClose, open, page }) => {
 				<s.Alert message="Error while getting page settings" description={parsedError} type="error" />
 			) : (
 				<>
-					<s.Header level={4}>Settings for page &quot;{page.name}&quot;</s.Header>
+					<s.Header level={4}>Settings for page &quot;{page.title}&quot;</s.Header>
 
 					<s.Body>
 						<List

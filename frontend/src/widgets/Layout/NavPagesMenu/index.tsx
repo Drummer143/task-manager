@@ -9,13 +9,14 @@ import { createPage, getPageList } from "api";
 
 import FullSizeLoader from "shared/ui/FullSizeLoader";
 import { pageTypes, parseUseQueryError } from "shared/utils";
+import { useAppStore } from "store/app";
 import Drawer from "widgets/Drawer";
 
 import Menu from "./Menu";
 import { PageListTitleWrapper } from "./Menu/styles";
 
 interface FormValues {
-	name: string;
+	title: string;
 	type: PageType;
 }
 
@@ -31,7 +32,17 @@ const NavPagesMenu: React.FC = () => {
 
 	const queryClient = useQueryClient();
 
-	const { data, isLoading } = useQuery({ queryKey: ["nav-pages"], queryFn: () => getPageList(["childrenPages"]) });
+	const workspaceId = useAppStore(state => state.workspaceId);
+
+	const { data, isLoading } = useQuery({
+		queryKey: ["nav-pages"],
+		enabled: !!workspaceId,
+		queryFn: () =>
+			getPageList({
+				workspaceId: workspaceId!,
+				include: ["childrenPages"]
+			})
+	});
 
 	const { mutateAsync, isPending, error } = useMutation({
 		mutationFn: createPage,
@@ -48,11 +59,14 @@ const NavPagesMenu: React.FC = () => {
 	const handleFormSubmit = useCallback(
 		async (values: FormValues) => {
 			await mutateAsync({
-				...values,
-				parentId: typeof creatingPageType === "string" ? creatingPageType : undefined
+				workspaceId: workspaceId!,
+				page: {
+					...values,
+					parentId: typeof creatingPageType === "string" ? creatingPageType : undefined
+				}
 			});
 		},
-		[creatingPageType, mutateAsync]
+		[creatingPageType, mutateAsync, workspaceId]
 	);
 
 	if (isLoading) {
@@ -78,8 +92,8 @@ const NavPagesMenu: React.FC = () => {
 				open={!!creatingPageType}
 				onClose={() => setCreatingPageType(false)}
 			>
-				<Form.Item label="Page name" name="name">
-					<Input placeholder="Page name" />
+				<Form.Item label="Page title" name="title">
+					<Input placeholder="Page title" />
 				</Form.Item>
 
 				<Form.Item label="Page type" name="type">

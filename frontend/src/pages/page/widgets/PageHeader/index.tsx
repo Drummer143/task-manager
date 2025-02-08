@@ -8,7 +8,7 @@ import { useDisclosure } from "shared/hooks";
 import Settings from "../Settings";
 
 interface PageHeaderProps {
-	page?: Omit<Page, "pageAccesses" | "tasks" | "owner" | "textLines" | "childrenPages" | "parentPage">;
+	page?: Omit<Page, "tasks" | "owner" | "childPages" | "parentPage">;
 }
 
 const PageHeader: React.FC<PageHeaderProps> = ({ page }) => {
@@ -19,10 +19,10 @@ const PageHeader: React.FC<PageHeaderProps> = ({ page }) => {
 	return (
 		<Flex justify="space-between" gap="var(--ant-margin-sm)">
 			<Typography.Title editable={{ triggerType: ["text"] }} level={3}>
-				{page.name}
+				{page.title}
 			</Typography.Title>
 
-			{(page.userRole === "admin" || page.userRole === "owner") && (
+			{(page.role === "admin" || page.role === "owner") && (
 				<>
 					<Button onClick={onOpen} icon={<SettingOutlined />}>
 						Settings

@@ -10,6 +10,8 @@ import (
 	"gorm.io/gorm"
 )
 
+type groupedByStatusTasks = map[taskStatus][]dbClient.Task
+
 // @Summary			Get a list of tasks
 // @Description		Get a list of tasks created by user with the given ID. If no ID is provided, the ID of the currently logged in user is used
 // @Tags			Tasks
@@ -18,16 +20,9 @@ import (
 // @Success			200 {object} groupedByStatusTasks
 // @Failure			401 {object} errorHandlers.Error "Unauthorized if session is missing or invalid"
 // @Failure			500 {object} errorHandlers.Error
-// @Router			/tasks [get]
+// @Router			/workspaces/{workspace_id}/pages/{page_id}/tasks [get]
 func getTaskList(db *gorm.DB) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		pageId := ctx.Query("page_id")
-
-		if pageId == "" {
-			errorHandlers.BadRequest(ctx, "page_id is required", nil)
-			return
-		}
-
 		var tasks []dbClient.Task
 
 		include := ctx.Query("include")
@@ -40,7 +35,7 @@ func getTaskList(db *gorm.DB) gin.HandlerFunc {
 			db.Preload("Author")
 		}
 
-		if err := db.Find(&tasks, "page_id = ?", pageId).Error; err != nil {
+		if err := db.Find(&tasks, "page_id = ?", ctx.Query("page_id")).Error; err != nil {
 			errorHandlers.InternalServerError(ctx, "failed to get tasks")
 			return
 		}

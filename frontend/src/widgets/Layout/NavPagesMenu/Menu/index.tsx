@@ -4,7 +4,7 @@ import ItemWithSubmenu from "./ItemWithSubmenu";
 import { MenuListItem, MenuWrapper } from "./styles";
 
 interface MenuProps {
-	pages?: Pick<Page, "childrenPages" | "name" | "type" | "id">[] | undefined;
+	pages?: Pick<Page, "childPages" | "title" | "type" | "id">[] | undefined;
 	onSubPageCreate: (parentId: string) => void;
 }
 
@@ -15,7 +15,7 @@ const Menu: React.FC<MenuProps> = ({ pages, onSubPageCreate }) => (
 				<ItemWithSubmenu key={page.id} rootPage={page} onSubPageCreate={onSubPageCreate} />
 			) : (
 				<MenuListItem key={page.id} to={`/pages/${page.id}`}>
-					{page.name}
+					{page.title}
 				</MenuListItem>
 			)
 		)}

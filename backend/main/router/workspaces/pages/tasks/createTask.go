@@ -15,13 +15,11 @@ import (
 )
 
 type createTaskBody struct {
-	PageId              uuid.UUID  `json:"pageId" validate:"required,uuid4"`
-	DeletableNotByOwner bool       `json:"deletableNotByOwner"`
-	Status              taskStatus `json:"status" validate:"required"`
-	Title               string     `json:"title" validate:"required,max=63"`
-	Description         *string    `json:"description,omitempty" validate:"omitempty,max=255"`
-	DueDate             *time.Time `json:"dueDate,omitempty" validate:"omitempty,iso8601"`
-	AssignedTo          *uuid.UUID `json:"assignedTo,omitempty" validate:"omitempty,uuid4"`
+	Status      taskStatus `json:"status" validate:"required"`
+	Title       string     `json:"title" validate:"required,max=63"`
+	Description *string    `json:"description,omitempty" validate:"omitempty,max=255"`
+	DueDate     *string    `json:"dueDate,omitempty" validate:"omitempty,iso8601"`
+	AssigneeID  *uuid.UUID `json:"assigneeID,omitempty" validate:"omitempty,uuid4"`
 }
 
 // CreateTask 		creates a new task
@@ -35,7 +33,7 @@ type createTaskBody struct {
 // @Failure 		400 {object} errorHandlers.Error
 // @Failure			401 {object} errorHandlers.Error "Unauthorized if session is missing or invalid"
 // @Failure 		500 {object} errorHandlers.Error
-// @Router 			/tasks [post]
+// @Router 			/workspaces/{workspace_id}/pages/{page_id}/tasks [post]
 func createTask(db *gorm.DB, validate *validator.Validate) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var body createTaskBody
@@ -60,14 +58,18 @@ func createTask(db *gorm.DB, validate *validator.Validate) gin.HandlerFunc {
 		userId, _ := session.Get("id").(uuid.UUID)
 
 		var task dbClient.Task = dbClient.Task{
-			DeletableNotByOwner: body.DeletableNotByOwner,
-			Status:              body.Status,
-			Title:               body.Title,
-			Description:         body.Description,
-			DueDate:             body.DueDate,
-			AssignedTo:          body.AssignedTo,
-			PageID:              body.PageId,
-			OwnerID:             userId,
+			Status:      body.Status,
+			Title:       body.Title,
+			Description: body.Description,
+			AssigneeID:  body.AssigneeID,
+			PageID:      uuid.MustParse(ctx.Param("page_id")),
+			ReporterID:  userId,
+		}
+
+		time, err := time.Parse(time.RFC3339, *body.DueDate)
+
+		if err == nil {
+			task.DueDate = &time
 		}
 
 		if err := db.Create(&task).Error; err != nil {

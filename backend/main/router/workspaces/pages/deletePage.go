@@ -3,7 +3,7 @@ package pagesRouter
 import (
 	"main/dbClient"
 	"main/router/errorHandlers"
-	"main/router/utils"
+	routerUtils "main/router/utils"
 	"net/http"
 
 	"github.com/gin-contrib/sessions"
@@ -16,13 +16,15 @@ import (
 // @Description 	Delete page by id
 // @Tags 			Pages
 // @Produce 		json
-// @Param 			id path string true "Page ID"
+// @Param 			workspace_id path string true "Workspace ID"
+// @Param 			page_id path string true "Page ID"
 // @Success 		200 {object} dbClient.Page
 // @Failure 		400 {object} errorHandlers.Error
 // @Failure 		401 {object} errorHandlers.Error "Unauthorized if session is missing or invalid"
+// @Failure 		403 {object} errorHandlers.Error "No access to page or workspace or no access to delete page"
 // @Failure 		404 {object} errorHandlers.Error
 // @Failure 		500 {object} errorHandlers.Error
-// @Router 			/pages/{id} [delete]
+// @Router 			/workspaces/{workspace_id}/pages/{page_id} [delete]
 func deletePage(db *gorm.DB) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		pageId, err := uuid.Parse(ctx.Param("id"))
@@ -36,13 +38,13 @@ func deletePage(db *gorm.DB) gin.HandlerFunc {
 
 		userId := session.Get("id").(uuid.UUID)
 
-		page, pageAccess, ok :=utils.CheckPageAccess(ctx, db, pageId, userId)
+		page, pageAccess, ok := routerUtils.CheckPageAccess(ctx, db, db, pageId, userId)
 
 		if !ok {
 			return
 		}
 
-		if pageAccess.Role != dbClient.PageRoleOwner {
+		if pageAccess.Role != dbClient.UserRoleOwner {
 			errorHandlers.Forbidden(ctx, "no access to delete page")
 			return
 		}

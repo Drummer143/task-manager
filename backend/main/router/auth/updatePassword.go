@@ -35,7 +35,7 @@ func updatePassword(auth *auth.Auth, validate *validator.Validate, db *gorm.DB) 
 			return
 		}
 
-		var userCredentials dbClient.UserCredentials
+		var userCredentials dbClient.UserCredential
 
 		if err := db.Where("password_reset_token = ?", body.Token).First(&userCredentials).Error; err != nil {
 			if err == gorm.ErrRecordNotFound {
