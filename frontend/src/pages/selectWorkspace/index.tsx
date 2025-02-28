@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 
 import { useQuery } from "@tanstack/react-query";
 import { List as AntList, Flex } from "antd";
@@ -7,11 +7,13 @@ import { getWorkspaceList } from "api";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
 
+import { withAuthPageCheck } from "shared/HOCs/withAuthPageCheck";
 import { useDisclosure } from "shared/hooks";
 import Empty from "shared/ui/Empty";
 import { useAppStore } from "store/app";
 
 import CreateWorkspaceButton from "./widgets/CreateWorkspaceButton";
+import Settings from "./widgets/Settings";
 import WorkspaceButton from "./widgets/WorkspaceButton";
 import WorkspaceForm from "./widgets/WorkspaceForm";
 
@@ -34,6 +36,8 @@ const SelectWorkspace: React.FC = () => {
 	});
 
 	const { open: showFrom, onOpen: showFromOpen, onClose: showFromClose } = useDisclosure();
+
+	const [settingWorkspace, setSettingWorkspace] = useState<string | undefined>(undefined);
 
 	const setWorkspace = useAppStore(state => state.setWorkspaceId);
 
@@ -58,6 +62,7 @@ const SelectWorkspace: React.FC = () => {
 				dataSource={workspaces || []}
 				renderItem={workspace => (
 					<WorkspaceButton
+						onSettingsClick={() => setSettingWorkspace(workspace.id)}
 						name={workspace.name}
 						onClick={() => handleWorkspaceClick(workspace.id)}
 						key={workspace.id}
@@ -66,8 +71,14 @@ const SelectWorkspace: React.FC = () => {
 			/>
 
 			<CreateWorkspaceButton onClick={showFromOpen} />
+
+			<Settings
+				open={!!settingWorkspace}
+				onClose={() => setSettingWorkspace(undefined)}
+				workspaceId={settingWorkspace!}
+			/>
 		</Flex>
 	);
 };
 
-export default SelectWorkspace;
+export default withAuthPageCheck(SelectWorkspace);

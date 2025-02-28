@@ -33,6 +33,15 @@ export const useUserMenuItems = () => {
 					type: "divider"
 				},
 				{
+					key: "workspace",
+					label: "Change workspace",
+					onClick: () => navigate("/select-workspace")
+				},
+				{
+					key: "div2",
+					type: "divider"
+				},
+				{
 					key: "logout",
 					label: "Log out",
 					onClick: () => mutateAsync()

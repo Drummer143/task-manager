@@ -6,6 +6,8 @@ export const Button = styled(AntButton).attrs({
 })`
 	width: 30vw;
 	min-width: 200px;
+	height: fit-content;
 
 	padding: var(--ant-padding);
+	padding-left: var(--ant-padding-xl);
 `;

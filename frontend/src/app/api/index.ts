@@ -3,6 +3,7 @@ export * from "./auth";
 export * from "./profile";
 
 export * from "./workspaces";
+export * from "./workspaceAccesses";
 
 export * from "./pages";
 export * from "./pageAccess";

@@ -22,21 +22,16 @@ export const ItemWrapper = styled.div`
 	margin-bottom: var(--ant-margin-sm);
 `;
 
-export const RoleSelect = styled(Select)`
-	min-width: 7.5rem;
-` as typeof Select;
-
 const AccessListItem: React.FC<AccessListItemProps> = ({ user, role, isPending, onRoleChange }) => (
 	<ItemWrapper>
 		<UserCard user={user} />
 
 		<Flex align="center" gap="var(--ant-margin-xxs)">
-			<RoleSelect
+			<Select
 				onChange={value => onRoleChange(user.id, value)}
 				value={role}
 				loading={isPending}
 				options={userBoardRoleOptions}
-				placeholder="Select role"	
 			/>
 
 			<Button type="text" danger size="small" icon={<CloseOutlined />} onClick={() => onRoleChange(user.id)} />

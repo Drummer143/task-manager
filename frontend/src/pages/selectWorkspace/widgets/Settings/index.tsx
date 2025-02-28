@@ -1,14 +1,12 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 
 import { PlusOutlined } from "@ant-design/icons";
-import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMutation, useQueries, useQueryClient } from "@tanstack/react-query";
 import { App, Button, List, Modal, Tooltip } from "antd";
-import { getPageAccess, getUserList, updatePageAccess } from "api";
-import { AxiosError } from "axios";
+import { getUserList, getWorkspace, getWorkspaceAccess, updateWorkspaceAccess } from "api";
 
+import { useMessageOnErrorCallback } from "shared/hooks";
 import { parseUseQueryError } from "shared/utils/errors";
-import { useAppStore } from "store/app";
-import { useAuthStore } from "store/auth";
 import PopoverInfiniteSelect from "widgets/PopoverInfiniteSelect";
 import UserCard from "widgets/UserCard";
 
@@ -18,26 +16,32 @@ import AccessListItem from "../AccessListItem";
 
 interface SettingsProps {
 	open: boolean;
-	page: Omit<Page, "tasks" | "owner" | "childPages" | "parentPage">;
+	workspaceId: string;
 
 	onClose: () => void;
 }
 
-const Settings: React.FC<SettingsProps> = ({ onClose, open, page }) => {
+const Settings: React.FC<SettingsProps> = ({ onClose, open, workspaceId }) => {
 	const [newAddedUser, setNewAddedUser] = useState<User | undefined>();
 
 	const queryClient = useQueryClient();
 
-	const currentUserId = useAuthStore(state => state.user?.id)!;
-
 	const message = App.useApp().message;
 
-	const workspaceId = useAppStore(state => state.workspaceId);
-
-	const { data, isLoading, error } = useQuery({
-		queryFn: async () => await getPageAccess({ workspaceId: workspaceId!, pageId: page.id }),
-		enabled: open && !!workspaceId,
-		queryKey: ["pageAccesses"]
+	const [
+		{ data: workspace, error: workspaceError, isLoading: workspaceLoading },
+		{ data: workspaceAccess, error: workspaceAccessError, isLoading: workspaceAccessLoading }
+	] = useQueries({
+		queries: [
+			{
+				queryKey: ["workspace"],
+				queryFn: () => getWorkspace({ workspaceId: workspaceId! })
+			},
+			{
+				queryKey: ["workspaceAccess"],
+				queryFn: () => getWorkspaceAccess({ workspaceId: workspaceId! })
+			}
+		]
 	});
 
 	const {
@@ -45,53 +49,48 @@ const Settings: React.FC<SettingsProps> = ({ onClose, open, page }) => {
 		variables,
 		isPending
 	} = useMutation({
-		mutationFn: updatePageAccess,
-		onSuccess: (_, { body: { role, userId } }) => {
+		mutationFn: updateWorkspaceAccess,
+		onSuccess: (_, { body: { role } }) => {
 			setNewAddedUser(undefined);
 
-			if (userId === currentUserId && role !== "admin" && role !== "owner") {
-				queryClient.invalidateQueries({ queryKey: [page.id] });
+			if (role !== "owner" && role !== "admin") {
+				onClose();
+				queryClient.invalidateQueries({ queryKey: [workspace?.id] });
 			} else {
 				queryClient.invalidateQueries({ queryKey: ["pageAccesses"] });
 			}
 		},
-		onError: (error: AxiosError<ApiError>) =>
-			message.error(error.response?.data?.message ?? "Failed to update page settings")
+		onError: error => message.error(error.message ?? "Failed to update page settings")
 	});
 
-	const parsedError = useMemo(() => error && parseUseQueryError(error), [error]);
-
-	const handleRoleChange = useCallback(
-		(userId: string, role?: string) => {
-			updateAccess({
-				pageId: page.id,
-				workspaceId: workspaceId!,
-				body: {
-					userId,
-					role
-				}
-			});
-		},
-		[page.id, updateAccess, workspaceId]
+	const parsedError = useMemo(
+		() => (workspaceError || workspaceAccessError) && parseUseQueryError(workspaceError || workspaceAccessError),
+		[workspaceAccessError, workspaceError]
 	);
 
-	const handleClose = useCallback(() => {
-		setNewAddedUser(undefined);
-
-		onClose();
-	}, [onClose]);
+	const handleRoleChange = useMessageOnErrorCallback({
+		message: "Error while updating page access",
+		callback: async (userId: string, role?: string) =>
+			!!(await updateAccess({ workspaceId, body: { userId, role } }))
+	});
 
 	return (
-		<Modal open={open} loading={isLoading} onCancel={handleClose} onClose={handleClose} footer={!parsedError}>
+		<Modal
+			open={open}
+			loading={workspaceLoading || workspaceAccessLoading}
+			onCancel={onClose}
+			onClose={onClose}
+			footer={!parsedError}
+		>
 			{parsedError ? (
 				<s.Alert message="Error while getting page settings" description={parsedError} type="error" />
 			) : (
 				<>
-					<s.Header level={4}>Settings for page &quot;{page.title}&quot;</s.Header>
+					<s.Header level={4}>Settings for page &quot;{workspace?.name}&quot;</s.Header>
 
 					<s.Body>
 						<List
-							dataSource={data}
+							dataSource={workspaceAccess}
 							renderItem={item => (
 								<AccessListItem
 									user={item.user}
@@ -118,7 +117,7 @@ const Settings: React.FC<SettingsProps> = ({ onClose, open, page }) => {
 								queryKey={["users"]}
 								onChange={setNewAddedUser}
 								value={newAddedUser}
-								extraParams={{ exclude: data?.map(access => access.user.id).join(",") }}
+								extraParams={{ exclude: workspaceAccess?.map(access => access.user.id).join(",") }}
 								placement="bottomRight"
 								trigger="click"
 							>

@@ -5,7 +5,6 @@ import (
 	"main/router/errorHandlers"
 	routerUtils "main/router/utils"
 
-	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -16,7 +15,7 @@ type giveAccessBody struct {
 	Role   *dbClient.UserRole `json:"role" validate:"oneof=owner admin member commentator guest"`
 }
 
-// @Summary				Give access to a page	
+// @Summary				Give access to a page
 // @Description 		Give access to a page
 // @Tags				Page Accesses
 // @Accept				json
@@ -33,11 +32,7 @@ type giveAccessBody struct {
 // @Router				/workspaces/{workspace_id}/pages/{page_id}/accesses [put]
 func updateAccess(db *gorm.DB) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		pageId, err := uuid.Parse(ctx.Param("id"))
-		if err != nil {
-			errorHandlers.BadRequest(ctx, "invalid page id", nil)
-			return
-		}
+		pageId := uuid.MustParse(ctx.Param("page_id"))
 
 		var body giveAccessBody
 		if err := ctx.BindJSON(&body); err != nil {
@@ -45,8 +40,7 @@ func updateAccess(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		session := sessions.Default(ctx)
-		currentUserId := session.Get("id").(uuid.UUID)
+		currentUserId, _ := routerUtils.GetUserIdFromSession(ctx)
 
 		tx := db.Begin()
 		defer func() {
@@ -184,23 +178,34 @@ func handleAccessUpdate(ctx *gin.Context, pageAccess dbClient.PageAccess, tx *go
 			errorHandlers.InternalServerError(ctx, "Failed to delete page access")
 			return err
 		}
+
+		return nil
+	}
+
+	var bodyUserAccess dbClient.PageAccess
+	if body.UserId == currentUserId {
+		bodyUserAccess = pageAccess
 	} else {
-		var bodyUserAccess dbClient.PageAccess
-		if body.UserId == currentUserId {
-			bodyUserAccess = pageAccess
-		} else {
-			if err := tx.First(&bodyUserAccess, "page_id = ? AND user_id = ?", pageId, body.UserId).Error; err != nil {
-				if err != gorm.ErrRecordNotFound {
-					errorHandlers.InternalServerError(ctx, "Failed to get page access")
+		if err := tx.First(&bodyUserAccess, "page_id = ? AND user_id = ?", pageId, body.UserId).Error; err != nil {
+			if err != gorm.ErrRecordNotFound {
+				errorHandlers.InternalServerError(ctx, "Failed to get page access")
+				return err
+			} else {
+				bodyUserAccess = dbClient.PageAccess{PageID: pageId, UserID: body.UserId, Role: *body.Role}
+
+				if err := tx.Create(&bodyUserAccess).Error; err != nil {
+					errorHandlers.InternalServerError(ctx, "Failed to create page access")
 					return err
 				}
+
+				return nil
 			}
 		}
+	}
 
-		if err := tx.Model(&bodyUserAccess).Update("role", *body.Role).Error; err != nil {
-			errorHandlers.InternalServerError(ctx, "Failed to update page access")
-			return err
-		}
+	if err := tx.Model(&bodyUserAccess).Update("role", *body.Role).Error; err != nil {
+		errorHandlers.InternalServerError(ctx, "Failed to update page access")
+		return err
 	}
 
 	return nil

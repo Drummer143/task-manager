@@ -42,9 +42,8 @@ interface Workspace extends Timestamps {
 interface WorkspaceAccess extends Timestamps {
 	id: string;
 	role: UserRole;
-	userID: string;
-	workspaceID: string;
-	user?: User;
+
+	user: User;
 }
 
 interface Page extends Timestamps {

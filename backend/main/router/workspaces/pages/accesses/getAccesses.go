@@ -6,7 +6,6 @@ import (
 	routerUtils "main/router/utils"
 	"net/http"
 
-	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
@@ -27,16 +26,9 @@ import (
 // @Router				/workspaces/{workspace_id}/pages/{page_id}/accesses [get]
 func getPageAccesses(db *gorm.DB) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		pageId, err := uuid.Parse(ctx.Param("id"))
+		pageId := uuid.MustParse(ctx.Param("page_id"))
 
-		if err != nil {
-			errorHandlers.BadRequest(ctx, "invalid page id", nil)
-			return
-		}
-
-		session := sessions.Default(ctx)
-
-		userId := session.Get("id").(uuid.UUID)
+		userId, _ := routerUtils.GetUserIdFromSession(ctx)
 
 		_, access, ok := routerUtils.CheckPageAccess(ctx, db, db, pageId, userId)
 

@@ -93,6 +93,8 @@ definitions:
         type: string
       deletedAt:
         type: string
+      id:
+        type: string
       role:
         $ref: '#/definitions/dbClient.UserRole'
       updatedAt:
@@ -194,6 +196,21 @@ definitions:
         type: string
       updatedAt:
         type: string
+    type: object
+  dbClient.WorkspaceAccess:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        type: string
+      id:
+        type: string
+      role:
+        $ref: '#/definitions/dbClient.UserRole'
+      updatedAt:
+        type: string
+      user:
+        $ref: '#/definitions/dbClient.User'
     type: object
   errorHandlers.Error:
     properties:
@@ -320,6 +337,22 @@ definitions:
         type: array
       meta:
         $ref: '#/definitions/usersRouter.Meta'
+    type: object
+  workspacesAccessesRouter.giveAccessBody:
+    properties:
+      role:
+        allOf:
+        - $ref: '#/definitions/dbClient.UserRole'
+        enum:
+        - owner
+        - admin
+        - member
+        - commentator
+        - guest
+      userId:
+        type: string
+    required:
+    - userId
     type: object
   workspacesRouter.createWorkspaceBody:
     properties:
@@ -814,6 +847,100 @@ paths:
       summary: Get workspace
       tags:
       - Workspaces
+  /workspaces/{workspace_id}/accesses:
+    get:
+      description: Get workspace accesses
+      parameters:
+      - description: Workspace ID
+        in: path
+        name: workspace_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dbClient.WorkspaceAccess'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "401":
+          description: Unauthorized if session is missing or invalid
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "403":
+          description: No access to workspace or workspace or no access to get workspace
+            accesses
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+      summary: Get workspace accesses
+      tags:
+      - Workspace Accesses
+    put:
+      consumes:
+      - application/json
+      description: Give access to a workspace
+      parameters:
+      - description: Workspace ID
+        in: path
+        name: workspace_id
+        required: true
+        type: string
+      - description: Workspace ID
+        in: path
+        name: workspace_id
+        required: true
+        type: string
+      - description: Give access to a workspace
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/workspacesAccessesRouter.giveAccessBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "401":
+          description: Unauthorized if session is missing or invalid
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "403":
+          description: No access to workspace or workspace or no access to give access
+            to workspace
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+      summary: Give access to a workspace
+      tags:
+      - Workspace Accesses
   /workspaces/{workspace_id}/pages:
     get:
       description: Get page list

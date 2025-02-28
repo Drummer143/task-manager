@@ -5,8 +5,11 @@ import { JointContent } from "antd/es/message/interface";
 
 interface UseMessageOnErrorCallbackProps<T extends unknown[]> {
 	callback: (...args: T) => boolean | Promise<boolean>;
-	message: JointContent;
+	message: JointContent | ((error?: unknown) => JointContent);
 }
+
+const getMessage = (message: UseMessageOnErrorCallbackProps<unknown[]>["message"], error?: unknown) =>
+	typeof message === "function" ? message(error) : message;
 
 export const useMessageOnErrorCallback = <T extends unknown[]>({
 	callback,
@@ -20,10 +23,10 @@ export const useMessageOnErrorCallback = <T extends unknown[]>({
 				const result = await callback(...args);
 
 				if (!result) {
-					sendMessage.error(message);
+					sendMessage.error(getMessage(message));
 				}
-			} catch {
-				sendMessage.error(message);
+			} catch (error) {
+				sendMessage.error(getMessage(message, error));
 			}
 		},
 		[callback, message, sendMessage]

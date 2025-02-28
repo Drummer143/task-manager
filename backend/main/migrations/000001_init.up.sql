@@ -7,7 +7,7 @@ CREATE TABLE
     "username" VARCHAR(50) NOT NULL,
     "email_verified" BOOL NOT NULL DEFAULT false,
     "picture" VARCHAR(255),
-    "last_password_reset" TIMESTAMPTZ NOT NULL,
+    "last_password_reset" TIMESTAMPTZ,
     "last_login" TIMESTAMPTZ NOT NULL,
     "created_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
     "updated_at" TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,

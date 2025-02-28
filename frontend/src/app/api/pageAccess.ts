@@ -1,32 +1,14 @@
 import { axiosInstance } from "./base";
 
-interface Ids {
+interface GetPageAccessArgs {
 	workspaceId: string;
-}
-
-type GetAccessIncludes = "user";
-
-type ResponseWithIncludeFilter<T extends GetAccessIncludes | undefined = undefined> = Omit<
-	PageAccess,
-	Exclude<GetAccessIncludes, T>
->;
-
-interface GetPageAccessArgs<T extends GetAccessIncludes | undefined = undefined> extends Ids {
-	include?: T[];
-
 	pageId: string;
 }
 
-export const getPageAccess = async <T extends GetAccessIncludes | undefined = undefined>({
-	pageId,
-	workspaceId
-}: GetPageAccessArgs<T>) =>
-	(await axiosInstance.get<ResponseWithIncludeFilter<T>[]>(`/workspaces/${workspaceId}/pages/${pageId}/accesses`))
-		.data;
+export const getPageAccess = async ({ pageId, workspaceId }: GetPageAccessArgs) =>
+	(await axiosInstance.get<PageAccess[]>(`/workspaces/${workspaceId}/pages/${pageId}/accesses`)).data;
 
-interface UpdatePageAccessArgs extends Ids {
-	pageId: string;
-
+interface UpdatePageAccessArgs extends GetPageAccessArgs {
 	body: {
 		role?: string;
 
@@ -34,5 +16,5 @@ interface UpdatePageAccessArgs extends Ids {
 	};
 }
 
-export const updatePageAccess = async ({ pageId, body }: UpdatePageAccessArgs) =>
-	(await axiosInstance.put<"Success">(`/pages/${pageId}/accesses`, body)).data;
+export const updatePageAccess = async ({ pageId, body, workspaceId }: UpdatePageAccessArgs) =>
+	(await axiosInstance.put<"Success">(`/workspaces/${workspaceId}/pages/${pageId}/accesses`, body)).data;

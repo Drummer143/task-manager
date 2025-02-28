@@ -727,6 +727,144 @@ const docTemplate = `{
                 }
             }
         },
+        "/workspaces/{workspace_id}/accesses": {
+            "get": {
+                "description": "Get workspace accesses",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Workspace Accesses"
+                ],
+                "summary": "Get workspace accesses",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Workspace ID",
+                        "name": "workspace_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "type": "array",
+                            "items": {
+                                "$ref": "#/definitions/dbClient.WorkspaceAccess"
+                            }
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized if session is missing or invalid",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "403": {
+                        "description": "No access to workspace or workspace or no access to get workspace accesses",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "Give access to a workspace",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Workspace Accesses"
+                ],
+                "summary": "Give access to a workspace",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Workspace ID",
+                        "name": "workspace_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Workspace ID",
+                        "name": "workspace_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Give access to a workspace",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/workspacesAccessesRouter.giveAccessBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "Success",
+                        "schema": {
+                            "type": "string"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized if session is missing or invalid",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "403": {
+                        "description": "No access to workspace or workspace or no access to give access to workspace",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/workspaces/{workspace_id}/pages": {
             "get": {
                 "description": "Get page list",
@@ -1662,6 +1800,9 @@ const docTemplate = `{
                 "deletedAt": {
                     "type": "string"
                 },
+                "id": {
+                    "type": "string"
+                },
                 "role": {
                     "$ref": "#/definitions/dbClient.UserRole"
                 },
@@ -1808,6 +1949,29 @@ const docTemplate = `{
                 },
                 "updatedAt": {
                     "type": "string"
+                }
+            }
+        },
+        "dbClient.WorkspaceAccess": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "role": {
+                    "$ref": "#/definitions/dbClient.UserRole"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/dbClient.User"
                 }
             }
         },
@@ -1998,6 +2162,31 @@ const docTemplate = `{
                 },
                 "meta": {
                     "$ref": "#/definitions/usersRouter.Meta"
+                }
+            }
+        },
+        "workspacesAccessesRouter.giveAccessBody": {
+            "type": "object",
+            "required": [
+                "userId"
+            ],
+            "properties": {
+                "role": {
+                    "enum": [
+                        "owner",
+                        "admin",
+                        "member",
+                        "commentator",
+                        "guest"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/dbClient.UserRole"
+                        }
+                    ]
+                },
+                "userId": {
+                    "type": "string"
                 }
             }
         },
