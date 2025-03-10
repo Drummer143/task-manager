@@ -24,13 +24,13 @@ import (
 // @Failure				404 {object} errorHandlers.Error
 // @Failure				500 {object} errorHandlers.Error
 // @Router				/workspaces/{workspace_id}/pages/{page_id}/accesses [get]
-func getPageAccesses(db *gorm.DB) gin.HandlerFunc {
+func getPageAccesses(postgres *gorm.DB) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		pageId := uuid.MustParse(ctx.Param("page_id"))
 
 		userId, _ := routerUtils.GetUserIdFromSession(ctx)
 
-		_, access, ok := routerUtils.CheckPageAccess(ctx, db, db, pageId, userId)
+		_, access, ok := routerUtils.CheckPageAccess(ctx, postgres, postgres, pageId, userId)
 
 		if !ok {
 			return
@@ -43,7 +43,7 @@ func getPageAccesses(db *gorm.DB) gin.HandlerFunc {
 
 		var pageAccess []dbClient.PageAccess
 
-		if err := db.Preload("User").Where("page_id = ?", pageId).Find(&pageAccess).Error; err != nil {
+		if err := postgres.Preload("User").Where("page_id = ?", pageId).Find(&pageAccess).Error; err != nil {
 			errorHandlers.InternalServerError(ctx, "failed to get page accesses")
 			return
 		}

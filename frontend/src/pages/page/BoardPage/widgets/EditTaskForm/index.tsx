@@ -10,6 +10,7 @@ import { useAppStore } from "store/app";
 
 import TaskForm from "../TaskForm";
 import { FormValues } from "../TaskForm/types";
+import TaskHistory from "../TaskHistory";
 
 const EditTaskForm: React.FC = () => {
 	const pageId = useParams<{ id: string }>().id!;
@@ -77,6 +78,7 @@ const EditTaskForm: React.FC = () => {
 			onClose={handleClose}
 			open={!!taskId}
 			type="update"
+			extraHeader={<TaskHistory taskId={taskId!} pageId={pageId} />}
 		/>
 	);
 };

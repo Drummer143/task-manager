@@ -30,7 +30,7 @@ type changeEmailBody struct {
 // @Failure			404 {object} errorHandlers.Error "User not found in database"
 // @Failure			500 {object} errorHandlers.Error "Internal server error if server fails"
 // @Router			/profile/email [patch]
-func changeEmail(validate *validator.Validate, db *gorm.DB) gin.HandlerFunc {
+func changeEmail(validate *validator.Validate, postgres *gorm.DB) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		session := sessions.Default(ctx)
 
@@ -38,7 +38,7 @@ func changeEmail(validate *validator.Validate, db *gorm.DB) gin.HandlerFunc {
 
 		var user dbClient.User
 
-		if err := db.First(&user, "id = ?", userId).Error; err != nil {
+		if err := postgres.First(&user, "id = ?", userId).Error; err != nil {
 			if err == gorm.ErrRecordNotFound {
 				errorHandlers.NotFound(ctx, "user not found")
 				return
@@ -68,7 +68,7 @@ func changeEmail(validate *validator.Validate, db *gorm.DB) gin.HandlerFunc {
 		user.Email = body.Email
 		user.UpdatedAt = time.Now()
 
-		if err := db.Save(&user).Error; err != nil {
+		if err := postgres.Save(&user).Error; err != nil {
 			errorHandlers.InternalServerError(ctx, "failed to update user")
 			return
 		}

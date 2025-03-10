@@ -20,6 +20,7 @@ export interface TaskFormProps {
 
 	form?: FormInstance<FormValues>;
 	pageError?: string;
+	extraHeader?: React.ReactNode;
 	formLoading?: boolean;
 	submitError?: boolean | string;
 	isSubmitting?: boolean;

@@ -19,11 +19,11 @@ import (
 // @Failure			404 {object} errorHandlers.Error
 // @Failure			500 {object} errorHandlers.Error
 // @Router			/workspaces/{workspace_id}/pages/{page_id}/tasks/{task_id} [delete]
-func deleteTask(db *gorm.DB) gin.HandlerFunc {
+func deleteTask(postgres *gorm.DB) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var task dbClient.Task
 
-		if err := db.First(&task, "id = ?", ctx.Param("task_id")); err.Error != nil {
+		if err := postgres.First(&task, "id = ?", ctx.Param("task_id")); err.Error != nil {
 			if err.Error == gorm.ErrRecordNotFound {
 				errorHandlers.NotFound(ctx, "task not found")
 			} else {
@@ -33,7 +33,7 @@ func deleteTask(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		if err := db.Delete(&task).Error; err != nil {
+		if err := postgres.Delete(&task).Error; err != nil {
 			errorHandlers.InternalServerError(ctx, "failed to delete task")
 			return
 		}

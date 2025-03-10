@@ -21,21 +21,21 @@ type groupedByStatusTasks = map[taskStatus][]dbClient.Task
 // @Failure			401 {object} errorHandlers.Error "Unauthorized if session is missing or invalid"
 // @Failure			500 {object} errorHandlers.Error
 // @Router			/workspaces/{workspace_id}/pages/{page_id}/tasks [get]
-func getTaskList(db *gorm.DB) gin.HandlerFunc {
+func getTaskList(postgres *gorm.DB) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var tasks []dbClient.Task
 
 		include := ctx.Query("include")
 
 		if strings.Contains(include, "assignee") {
-			db.Preload("Assignee")
+			postgres.Preload("Assignee")
 		}
 
 		if strings.Contains(include, "author") {
-			db.Preload("Author")
+			postgres.Preload("Author")
 		}
 
-		if err := db.Find(&tasks, "page_id = ?", ctx.Query("page_id")).Error; err != nil {
+		if err := postgres.Find(&tasks, "page_id = ?", ctx.Query("page_id")).Error; err != nil {
 			errorHandlers.InternalServerError(ctx, "failed to get tasks")
 			return
 		}

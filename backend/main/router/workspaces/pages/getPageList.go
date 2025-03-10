@@ -22,7 +22,7 @@ import (
 // @Failure				404 {object} errorHandlers.Error
 // @Failure				500 {object} errorHandlers.Error
 // @Router				/workspaces/{workspace_id}/pages [get]
-func getPageList(db *gorm.DB) gin.HandlerFunc {
+func getPageList(postgres *gorm.DB) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		workspaceId := uuid.MustParse(ctx.Param("workspace_id"))
 
@@ -30,7 +30,7 @@ func getPageList(db *gorm.DB) gin.HandlerFunc {
 
 		var pages []dbClient.Page
 
-		err := db.
+		err := postgres.
 			Table("pages").
 			Select("pages.*, page_accesses.role AS role").
 			Joins("INNER JOIN page_accesses ON page_accesses.page_id = pages.id").

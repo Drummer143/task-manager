@@ -8,7 +8,7 @@ const EditTaskForm = lazySuspense(() => import("./widgets/EditTaskForm"));
 const NewTaskForm = lazySuspense(() => import("./widgets/NewTaskForm"));
 
 interface BoardPageProps {
-	page: Omit<Page, "pageAccesses" | "owner" | "textLines" | "childrenPages" | "parentPage">;
+	page: Omit<Page, "owner" | "childPages" | "parentPage">;
 }
 
 const BoardPage: React.FC<BoardPageProps> = ({ page }) => {

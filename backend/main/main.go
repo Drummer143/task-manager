@@ -16,13 +16,13 @@ func main() {
 		panic(err)
 	}
 
-	DB, err := dbClient.New()
+	postgresDB, mongoDB, err := dbClient.New()
 
 	if err != nil {
 		panic(err)
 	}
 
-	err = dbClient.Migrate()
+	err = dbClient.MigratePostgres()
 
 	if err != nil {
 		panic(err)
@@ -36,7 +36,7 @@ func main() {
 
 	validate := validation.New()
 
-	r := router.New(auth, DB, validate)
+	r := router.New(auth, postgresDB, mongoDB, validate)
 
 	r.Run(":8080")
 }

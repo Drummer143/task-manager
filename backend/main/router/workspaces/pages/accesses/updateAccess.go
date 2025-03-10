@@ -30,7 +30,7 @@ type giveAccessBody struct {
 // @Failure				404 {object} errorHandlers.Error
 // @Failure				500 {object} errorHandlers.Error
 // @Router				/workspaces/{workspace_id}/pages/{page_id}/accesses [put]
-func updateAccess(db *gorm.DB) gin.HandlerFunc {
+func updateAccess(postgres *gorm.DB) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		pageId := uuid.MustParse(ctx.Param("page_id"))
 
@@ -42,7 +42,7 @@ func updateAccess(db *gorm.DB) gin.HandlerFunc {
 
 		currentUserId, _ := routerUtils.GetUserIdFromSession(ctx)
 
-		tx := db.Begin()
+		tx := postgres.Begin()
 		defer func() {
 			if r := recover(); r != nil {
 				tx.Rollback()
@@ -50,7 +50,7 @@ func updateAccess(db *gorm.DB) gin.HandlerFunc {
 			}
 		}()
 
-		page, pageAccess, ok := routerUtils.CheckPageAccess(ctx, db, db, pageId, currentUserId)
+		page, pageAccess, ok := routerUtils.CheckPageAccess(ctx, postgres, postgres, pageId, currentUserId)
 
 		if !ok {
 			tx.Rollback()
@@ -58,7 +58,7 @@ func updateAccess(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		if !canModifyAccess(page, pageAccess.Role, db, ctx, pageId, currentUserId, body.UserId, body.Role) {
+		if !canModifyAccess(page, pageAccess.Role, postgres, ctx, pageId, currentUserId, body.UserId, body.Role) {
 			tx.Rollback()
 			return
 		}
@@ -78,14 +78,14 @@ func updateAccess(db *gorm.DB) gin.HandlerFunc {
 	}
 }
 
-func canModifyAccess(page dbClient.Page, currentUserRole dbClient.UserRole, db *gorm.DB, ctx *gin.Context, pageId uuid.UUID, currentUserId uuid.UUID, targetUserId uuid.UUID, targetRole *dbClient.UserRole) bool {
+func canModifyAccess(page dbClient.Page, currentUserRole dbClient.UserRole, postgres *gorm.DB, ctx *gin.Context, pageId uuid.UUID, currentUserId uuid.UUID, targetUserId uuid.UUID, targetRole *dbClient.UserRole) bool {
 	if currentUserRole != dbClient.UserRoleOwner && currentUserRole != dbClient.UserRoleAdmin {
 		errorHandlers.Forbidden(ctx, "Not allowed to change access to page")
 		return false
 	}
 
 	if currentUserRole == dbClient.UserRoleOwner && currentUserId == targetUserId && (targetRole == nil || *targetRole != dbClient.UserRoleOwner) {
-		if !checkOtherOwnerExists(pageId, ctx, db, currentUserId) {
+		if !checkOtherOwnerExists(pageId, ctx, postgres, currentUserId) {
 			errorHandlers.Forbidden(ctx, "Not allowed to remove the only owner of the page. Set another owner first")
 			return false
 		}
@@ -98,7 +98,7 @@ func canModifyAccess(page dbClient.Page, currentUserRole dbClient.UserRole, db *
 
 	workspaceId := uuid.MustParse(ctx.Param("workspace_id"))
 
-	if ok, err := checkWorkspaceAdminOrOwner(db, workspaceId, currentUserId); err != nil {
+	if ok, err := checkWorkspaceAdminOrOwner(postgres, workspaceId, currentUserId); err != nil {
 		errorHandlers.InternalServerError(ctx, "Failed to check workspace access")
 		return false
 	} else if !ok {
@@ -107,7 +107,7 @@ func canModifyAccess(page dbClient.Page, currentUserRole dbClient.UserRole, db *
 	}
 
 	if page.ParentPageID != nil {
-		if ok, err := checkParentPageAdminOrOwner(db, *page.ParentPageID, currentUserId); err != nil {
+		if ok, err := checkParentPageAdminOrOwner(postgres, *page.ParentPageID, currentUserId); err != nil {
 			errorHandlers.InternalServerError(ctx, "Failed to check parent page access")
 			return false
 		} else if !ok {
@@ -119,10 +119,10 @@ func canModifyAccess(page dbClient.Page, currentUserRole dbClient.UserRole, db *
 	return true
 }
 
-func checkWorkspaceAdminOrOwner(db *gorm.DB, workspaceId uuid.UUID, userId uuid.UUID) (bool, error) {
+func checkWorkspaceAdminOrOwner(postgres *gorm.DB, workspaceId uuid.UUID, userId uuid.UUID) (bool, error) {
 	var workspaceAccess dbClient.WorkspaceAccess
 
-	if err := db.First(&workspaceAccess, "workspace_id = ? AND user_id = ?", workspaceId, userId).Error; err != nil {
+	if err := postgres.First(&workspaceAccess, "workspace_id = ? AND user_id = ?", workspaceId, userId).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return false, nil
 		}
@@ -136,16 +136,16 @@ func checkWorkspaceAdminOrOwner(db *gorm.DB, workspaceId uuid.UUID, userId uuid.
 	return false, nil
 }
 
-func checkParentPageAdminOrOwner(db *gorm.DB, pageId uuid.UUID, userId uuid.UUID) (bool, error) {
+func checkParentPageAdminOrOwner(postgres *gorm.DB, pageId uuid.UUID, userId uuid.UUID) (bool, error) {
 	var parentPage dbClient.Page
 
-	if err := db.First(&parentPage, "id = ?", pageId).Error; err != nil {
+	if err := postgres.First(&parentPage, "id = ?", pageId).Error; err != nil {
 		return false, err
 	}
 
 	var pageAccess dbClient.PageAccess
 
-	if err := db.First(&pageAccess, "page_id = ? AND user_id = ?", parentPage.ID, userId).Error; err != nil {
+	if err := postgres.First(&pageAccess, "page_id = ? AND user_id = ?", parentPage.ID, userId).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return false, nil
 		}
@@ -160,9 +160,9 @@ func checkParentPageAdminOrOwner(db *gorm.DB, pageId uuid.UUID, userId uuid.UUID
 	return false, nil
 }
 
-func checkOtherOwnerExists(pageId uuid.UUID, ctx *gin.Context, db *gorm.DB, currentUserId uuid.UUID) bool {
+func checkOtherOwnerExists(pageId uuid.UUID, ctx *gin.Context, postgres *gorm.DB, currentUserId uuid.UUID) bool {
 	var nonCurrentUserOwner dbClient.PageAccess
-	if err := db.First(&nonCurrentUserOwner, "page_id = ? AND role = ? AND user_id <> ?", pageId, dbClient.UserRoleOwner, currentUserId).Error; err != nil {
+	if err := postgres.First(&nonCurrentUserOwner, "page_id = ? AND role = ? AND user_id <> ?", pageId, dbClient.UserRoleOwner, currentUserId).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return false
 		}

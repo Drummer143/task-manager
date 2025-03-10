@@ -102,7 +102,7 @@ func validateImageSizes(ctx *gin.Context, imageWidth int, imageHeight int) (int,
 // @Failure			429 {object} errorHandlers.Error "Rate limit exceeded"
 // @Failure			500 {object} errorHandlers.Error "Internal server error if request to Auth0 fails"
 // @Router			/profile/avatar [patch]
-func uploadAvatar(db *gorm.DB) gin.HandlerFunc {
+func uploadAvatar(postgres *gorm.DB) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		session := sessions.Default(ctx)
 
@@ -110,7 +110,7 @@ func uploadAvatar(db *gorm.DB) gin.HandlerFunc {
 
 		var user dbClient.User
 
-		if err := db.First(&user, "id = ?", userId).Error; err != nil {
+		if err := postgres.First(&user, "id = ?", userId).Error; err != nil {
 			if err == gorm.ErrRecordNotFound {
 				errorHandlers.NotFound(ctx, "user not found in database")
 				return
@@ -198,7 +198,7 @@ func uploadAvatar(db *gorm.DB) gin.HandlerFunc {
 		user.Picture = &link
 		user.UpdatedAt = time.Now()
 
-		if err := db.Save(&user).Error; err != nil {
+		if err := postgres.Save(&user).Error; err != nil {
 			errorHandlers.InternalServerError(ctx, "failed to update user in database")
 			return
 		}

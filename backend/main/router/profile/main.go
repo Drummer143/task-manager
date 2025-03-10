@@ -6,10 +6,10 @@ import (
 	"gorm.io/gorm"
 )
 
-func AddRoutes(group *gin.RouterGroup, validate *validator.Validate, db *gorm.DB) {
-	group.GET("", getProfile(db))
+func AddRoutes(group *gin.RouterGroup, validate *validator.Validate, postgres *gorm.DB) {
+	group.GET("", getProfile(postgres))
 
-	group.PATCH("", patchProfile(validate, db))
-	group.PATCH("/email", changeEmail(validate, db))
-	group.PATCH("/avatar", uploadAvatar(db))
+	group.PATCH("", patchProfile(validate, postgres))
+	group.PATCH("/email", changeEmail(validate, postgres))
+	group.PATCH("/avatar", uploadAvatar(postgres))
 }

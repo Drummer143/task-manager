@@ -31,7 +31,7 @@ type patchProfileBody struct {
 // @Failure			429 {object} errorHandlers.Error "Rate limit exceeded"
 // @Failure			500 {object} errorHandlers.Error "Internal server error if request to Auth0 fails"
 // @Router			/profile [patch]
-func patchProfile(validate *validator.Validate, db *gorm.DB) gin.HandlerFunc {
+func patchProfile(validate *validator.Validate, postgres *gorm.DB) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		session := sessions.Default(ctx)
 
@@ -39,7 +39,7 @@ func patchProfile(validate *validator.Validate, db *gorm.DB) gin.HandlerFunc {
 
 		var user dbClient.User
 
-		if err := db.First(&user, "id = ?", userId).Error; err != nil {
+		if err := postgres.First(&user, "id = ?", userId).Error; err != nil {
 			if err == gorm.ErrRecordNotFound {
 				errorHandlers.NotFound(ctx, "user not found")
 				return
@@ -69,7 +69,7 @@ func patchProfile(validate *validator.Validate, db *gorm.DB) gin.HandlerFunc {
 		user.Username = body.Username
 		user.UpdatedAt = time.Now()
 
-		if err := db.Save(&user).Error; err != nil {
+		if err := postgres.Save(&user).Error; err != nil {
 			errorHandlers.InternalServerError(ctx, "failed to update user")
 			return
 		}

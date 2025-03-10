@@ -20,7 +20,7 @@ import (
 // @Failure			401 {object} errorHandlers.Error "Unauthorized if session is missing or invalid"
 // @Failure			500 {object} errorHandlers.Error
 // @Router			/workspaces [get]
-func getWorkspaceList(db *gorm.DB) gin.HandlerFunc {
+func getWorkspaceList(postgres *gorm.DB) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		userId, _ := routerUtils.GetUserIdFromSession(ctx)
 
@@ -29,13 +29,13 @@ func getWorkspaceList(db *gorm.DB) gin.HandlerFunc {
 		include := ctx.Query("include")
 
 		if strings.Contains(include, "pages") {
-			db.Preload("Pages")
+			postgres.Preload("Pages")
 		}
 		if strings.Contains(include, "owner") {
-			db.Preload("Owner")
+			postgres.Preload("Owner")
 		}
 
-		err := db.
+		err := postgres.
 			Table("workspaces").
 			Select("workspaces.*, workspace_accesses.role AS role").
 			Joins("INNER JOIN workspace_accesses ON workspace_accesses.workspace_id = workspaces.id").

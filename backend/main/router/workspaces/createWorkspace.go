@@ -27,7 +27,7 @@ type createWorkspaceBody struct {
 // @Failure			401 {object} errorHandlers.Error "Unauthorized if session is missing or invalid"
 // @Failure			500 {object} errorHandlers.Error
 // @Router			/workspaces [post]
-func createWorkspace(db *gorm.DB, validate *validator.Validate) gin.HandlerFunc {
+func createWorkspace(postgres *gorm.DB, validate *validator.Validate) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var body createWorkspaceBody
 
@@ -55,7 +55,7 @@ func createWorkspace(db *gorm.DB, validate *validator.Validate) gin.HandlerFunc 
 			OwnerID: userId,
 		}
 
-		if err := db.Create(&workspace).Error; err != nil {
+		if err := postgres.Create(&workspace).Error; err != nil {
 			errorHandlers.InternalServerError(ctx, "failed to create workspace")
 			return
 		}
@@ -66,7 +66,7 @@ func createWorkspace(db *gorm.DB, validate *validator.Validate) gin.HandlerFunc 
 			Role:        dbClient.UserRoleOwner,
 		}
 
-		if err := db.Create(&workspaceAccess).Error; err != nil {
+		if err := postgres.Create(&workspaceAccess).Error; err != nil {
 			errorHandlers.InternalServerError(ctx, "failed to create workspace access")
 			return
 		}

@@ -34,7 +34,7 @@ type ResponseWithPagination[T any] struct {
 // @Failure				401 {object} errorHandlers.Error "Unauthorized if session is missing or invalid"
 // @Failure				500 {object} errorHandlers.Error
 // @Router				/users [get]
-func getUserList(db *gorm.DB) gin.HandlerFunc {
+func getUserList(postgres *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		usernameOrEmail := c.Query("username_or_email")
 		limitStr := c.Query("limit")
@@ -43,7 +43,7 @@ func getUserList(db *gorm.DB) gin.HandlerFunc {
 
 		var limit, offset int
 
-		dbWithPagination := db
+		dbWithPagination := postgres
 
 		if limitStr != "" {
 			lim, err := strconv.ParseInt(limitStr, 10, 64)

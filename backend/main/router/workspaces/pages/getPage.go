@@ -25,7 +25,7 @@ import (
 // @Failure 		404 {object} errorHandlers.Error
 // @Failure 		500 {object} errorHandlers.Error
 // @Router 			/workspaces/{workspace_id}/pages/{page_id} [get]
-func getPage(db *gorm.DB) gin.HandlerFunc {
+func getPage(postgres *gorm.DB) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		pageId, err := uuid.Parse(ctx.Param("page_id"))
 
@@ -43,7 +43,7 @@ func getPage(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		dbWithIncludes := db
+		dbWithIncludes := postgres
 
 		if strings.Contains(include, "parentPage") {
 			dbWithIncludes = dbWithIncludes.Preload("ParentPage")
@@ -61,7 +61,7 @@ func getPage(db *gorm.DB) gin.HandlerFunc {
 			dbWithIncludes = dbWithIncludes.Preload("Tasks")
 		}
 
-		page, access, ok :=routerUtils.CheckPageAccess(ctx, dbWithIncludes, db, pageId, userId)
+		page, access, ok :=routerUtils.CheckPageAccess(ctx, dbWithIncludes, postgres, pageId, userId)
 
 		if !ok {
 			return

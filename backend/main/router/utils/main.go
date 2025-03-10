@@ -11,7 +11,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func CheckPageAccess(ctx *gin.Context, dbWithIncludes *gorm.DB, db *gorm.DB, pageId uuid.UUID, userId uuid.UUID) (page dbClient.Page, pageAccess dbClient.PageAccess, ok bool) {
+func CheckPageAccess(ctx *gin.Context, dbWithIncludes *gorm.DB, postgres *gorm.DB, pageId uuid.UUID, userId uuid.UUID) (page dbClient.Page, pageAccess dbClient.PageAccess, ok bool) {
 	if err := dbWithIncludes.First(&page, "id = ?", pageId).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			errorHandlers.NotFound(ctx, "page not found")
@@ -22,7 +22,7 @@ func CheckPageAccess(ctx *gin.Context, dbWithIncludes *gorm.DB, db *gorm.DB, pag
 		}
 	}
 
-	if err := db.First(&pageAccess, "page_id = ? AND user_id = ?", pageId, userId).Error; err != nil {
+	if err := postgres.First(&pageAccess, "page_id = ? AND user_id = ?", pageId, userId).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			errorHandlers.Forbidden(ctx, "page access not found")
 			return page, pageAccess, false
@@ -35,7 +35,7 @@ func CheckPageAccess(ctx *gin.Context, dbWithIncludes *gorm.DB, db *gorm.DB, pag
 	return page, pageAccess, true
 }
 
-func CheckWorkspaceAccess(ctx *gin.Context, dbWithIncludes *gorm.DB, db *gorm.DB, workspaceId uuid.UUID, userId uuid.UUID) (workspace dbClient.Workspace, workspaceAccess dbClient.WorkspaceAccess, ok bool) {
+func CheckWorkspaceAccess(ctx *gin.Context, dbWithIncludes *gorm.DB, postgres *gorm.DB, workspaceId uuid.UUID, userId uuid.UUID) (workspace dbClient.Workspace, workspaceAccess dbClient.WorkspaceAccess, ok bool) {
 	if err := dbWithIncludes.First(&workspace, "id = ?", workspaceId).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			errorHandlers.NotFound(ctx, "workspace not found")
@@ -46,7 +46,7 @@ func CheckWorkspaceAccess(ctx *gin.Context, dbWithIncludes *gorm.DB, db *gorm.DB
 		}
 	}
 
-	if err := db.First(&workspaceAccess, "workspace_id = ? AND user_id = ?", workspaceId, userId).Error; err != nil {
+	if err := postgres.First(&workspaceAccess, "workspace_id = ? AND user_id = ?", workspaceId, userId).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			errorHandlers.Forbidden(ctx, "no access to workspace")
 			return workspace, workspaceAccess, false
@@ -69,10 +69,10 @@ func GetUserIdFromSession(ctx *gin.Context) (uuid.UUID, bool) {
 	return userId, ok
 }
 
-func GiveAccessToWorkspaceAdmins(db *gorm.DB, pageID uuid.UUID, workspaceID uuid.UUID) error {
+func GiveAccessToWorkspaceAdmins(postgres *gorm.DB, pageID uuid.UUID, workspaceID uuid.UUID) error {
 	var workspaceAdmins []dbClient.WorkspaceAccess
 
-	err := db.
+	err := postgres.
 		Where("workspace_id = ? AND role IN (?)", workspaceID, []dbClient.UserRole{dbClient.UserRoleOwner, dbClient.UserRoleAdmin}).
 		Find(&workspaceAdmins).Error
 
@@ -90,7 +90,7 @@ func GiveAccessToWorkspaceAdmins(db *gorm.DB, pageID uuid.UUID, workspaceID uuid
 			UpdatedAt: time.Now(),
 		}
 
-		if err := db.First(&dbClient.PageAccess{}, "page_id = ? AND user_id = ?", pageID, access.UserID).Error; err != nil {
+		if err := postgres.First(&dbClient.PageAccess{}, "page_id = ? AND user_id = ?", pageID, access.UserID).Error; err != nil {
 			if err != gorm.ErrRecordNotFound {
 				return err
 			}
@@ -98,7 +98,7 @@ func GiveAccessToWorkspaceAdmins(db *gorm.DB, pageID uuid.UUID, workspaceID uuid
 			continue
 		}
 
-		if err := db.Create(&pageAccess).Error; err != nil {
+		if err := postgres.Create(&pageAccess).Error; err != nil {
 			return err
 		}
 	}
@@ -106,10 +106,10 @@ func GiveAccessToWorkspaceAdmins(db *gorm.DB, pageID uuid.UUID, workspaceID uuid
 	return nil
 }
 
-func GiveAccessToParentPageAdmins(db *gorm.DB, pageID uuid.UUID, parentPageID uuid.UUID) error {
+func GiveAccessToParentPageAdmins(postgres *gorm.DB, pageID uuid.UUID, parentPageID uuid.UUID) error {
 	var pageAdmins []dbClient.PageAccess
 
-	err := db.
+	err := postgres.
 		Where("page_id = ? AND role IN (?)", parentPageID, []dbClient.UserRole{dbClient.UserRoleOwner, dbClient.UserRoleAdmin}).
 		Find(&pageAdmins).Error
 
@@ -127,7 +127,7 @@ func GiveAccessToParentPageAdmins(db *gorm.DB, pageID uuid.UUID, parentPageID uu
 			UpdatedAt: time.Now(),
 		}
 
-		if err := db.First(&dbClient.PageAccess{}, "page_id = ? AND user_id = ?", pageID, access.UserID).Error; err != nil {
+		if err := postgres.First(&dbClient.PageAccess{}, "page_id = ? AND user_id = ?", pageID, access.UserID).Error; err != nil {
 			if err != gorm.ErrRecordNotFound {
 				return err
 			}
@@ -135,7 +135,7 @@ func GiveAccessToParentPageAdmins(db *gorm.DB, pageID uuid.UUID, parentPageID uu
 			continue
 		}
 
-		if err := db.Create(&pageAccess).Error; err != nil {
+		if err := postgres.Create(&pageAccess).Error; err != nil {
 			return err
 		}
 	}

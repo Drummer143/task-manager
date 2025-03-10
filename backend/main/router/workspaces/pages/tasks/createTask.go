@@ -34,7 +34,7 @@ type createTaskBody struct {
 // @Failure			401 {object} errorHandlers.Error "Unauthorized if session is missing or invalid"
 // @Failure 		500 {object} errorHandlers.Error
 // @Router 			/workspaces/{workspace_id}/pages/{page_id}/tasks [post]
-func createTask(db *gorm.DB, validate *validator.Validate) gin.HandlerFunc {
+func createTask(postgres *gorm.DB, validate *validator.Validate) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var body createTaskBody
 
@@ -72,7 +72,7 @@ func createTask(db *gorm.DB, validate *validator.Validate) gin.HandlerFunc {
 			task.DueDate = &time
 		}
 
-		if err := db.Create(&task).Error; err != nil {
+		if err := postgres.Create(&task).Error; err != nil {
 			errorHandlers.InternalServerError(ctx, "failed to create task")
 			return
 		}

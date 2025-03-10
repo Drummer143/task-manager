@@ -23,7 +23,7 @@ import (
 // @Failure				404 {object} errorHandlers.Error
 // @Failure				500 {object} errorHandlers.Error
 // @Router				/workspaces/{workspace_id} [get]
-func getWorkspace(db *gorm.DB) gin.HandlerFunc {
+func getWorkspace(postgres *gorm.DB) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		workspaceId, err := uuid.Parse(ctx.Param("workspace_id"))
 
@@ -36,7 +36,7 @@ func getWorkspace(db *gorm.DB) gin.HandlerFunc {
 
 		include := ctx.Query("include")
 
-		dbWithIncludes := db
+		dbWithIncludes := postgres
 
 		if strings.Contains(include, "pages") {
 			dbWithIncludes.Preload("Pages")
@@ -46,7 +46,7 @@ func getWorkspace(db *gorm.DB) gin.HandlerFunc {
 			dbWithIncludes.Preload("Owner")
 		}
 
-		workspace, _, ok := routerUtils.CheckWorkspaceAccess(ctx, dbWithIncludes, db, workspaceId, userId)
+		workspace, _, ok := routerUtils.CheckWorkspaceAccess(ctx, dbWithIncludes, postgres, workspaceId, userId)
 
 		if !ok {
 			return

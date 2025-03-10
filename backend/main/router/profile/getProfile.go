@@ -21,7 +21,7 @@ import (
 // @Failure			404 {object} errorHandlers.Error "User not found in database"
 // @Failure			500 {object} errorHandlers.Error "Internal server error if server fails"
 // @Router			/profile [get]
-func getProfile(db *gorm.DB) gin.HandlerFunc {
+func getProfile(postgres *gorm.DB) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		session := sessions.Default(ctx)
 
@@ -29,7 +29,7 @@ func getProfile(db *gorm.DB) gin.HandlerFunc {
 
 		userId := session.Get("id").(uuid.UUID)
 
-		if err := db.First(&dbUser, "id = ?", userId).Error; err != nil {
+		if err := postgres.First(&dbUser, "id = ?", userId).Error; err != nil {
 			if err == gorm.ErrRecordNotFound {
 				errorHandlers.NotFound(ctx, "user not found")
 				return

@@ -25,7 +25,7 @@ import (
 // @Failure 		404 {object} errorHandlers.Error
 // @Failure 		500 {object} errorHandlers.Error
 // @Router 			/workspaces/{workspace_id}/pages/{page_id} [delete]
-func deletePage(db *gorm.DB) gin.HandlerFunc {
+func deletePage(postgres *gorm.DB) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		pageId, err := uuid.Parse(ctx.Param("id"))
 
@@ -38,7 +38,7 @@ func deletePage(db *gorm.DB) gin.HandlerFunc {
 
 		userId := session.Get("id").(uuid.UUID)
 
-		page, pageAccess, ok := routerUtils.CheckPageAccess(ctx, db, db, pageId, userId)
+		page, pageAccess, ok := routerUtils.CheckPageAccess(ctx, postgres, postgres, pageId, userId)
 
 		if !ok {
 			return
@@ -49,7 +49,7 @@ func deletePage(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		if err := db.Delete(&page).Error; err != nil {
+		if err := postgres.Delete(&page).Error; err != nil {
 			errorHandlers.InternalServerError(ctx, "failed to delete page")
 			return
 		}

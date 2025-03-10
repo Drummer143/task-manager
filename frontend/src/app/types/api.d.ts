@@ -105,3 +105,15 @@ interface PaginationQuery<T extends object = never> extends T {
 	offset?: number;
 	limit?: number;
 }
+
+interface Change {
+	from: unknown;
+	to: unknown;
+}
+
+interface VersionHistoryLog<Keys extends string = string> {
+	version: number;
+	id: string;
+	changes: Partial<Record<Keys, Change>>;
+	createdAt: string;
+}

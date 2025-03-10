@@ -30,7 +30,7 @@ type giveAccessBody struct {
 // @Failure				404 {object} errorHandlers.Error
 // @Failure				500 {object} errorHandlers.Error
 // @Router				/workspaces/{workspace_id}/accesses [put]
-func updateAccess(db *gorm.DB) gin.HandlerFunc {
+func updateAccess(postgres *gorm.DB) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		workspaceId := uuid.MustParse(ctx.Param("id"))
 
@@ -42,7 +42,7 @@ func updateAccess(db *gorm.DB) gin.HandlerFunc {
 
 		currentUserId, _ := routerUtils.GetUserIdFromSession(ctx)
 
-		tx := db.Begin()
+		tx := postgres.Begin()
 		defer func() {
 			if r := recover(); r != nil {
 				tx.Rollback()
@@ -50,7 +50,7 @@ func updateAccess(db *gorm.DB) gin.HandlerFunc {
 			}
 		}()
 
-		_, workspaceAccess, ok := routerUtils.CheckWorkspaceAccess(ctx, db, db, workspaceId, currentUserId)
+		_, workspaceAccess, ok := routerUtils.CheckWorkspaceAccess(ctx, postgres, postgres, workspaceId, currentUserId)
 
 		if !ok {
 			tx.Rollback()
@@ -58,7 +58,7 @@ func updateAccess(db *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		if !canModifyAccess(workspaceAccess.Role, db, ctx, workspaceId, currentUserId, body.UserId, body.Role) {
+		if !canModifyAccess(workspaceAccess.Role, postgres, ctx, workspaceId, currentUserId, body.UserId, body.Role) {
 			tx.Rollback()
 			return
 		}
@@ -78,14 +78,14 @@ func updateAccess(db *gorm.DB) gin.HandlerFunc {
 	}
 }
 
-func canModifyAccess(currentUserRole dbClient.UserRole, db *gorm.DB, ctx *gin.Context, workspaceId uuid.UUID, currentUserId uuid.UUID, targetUserId uuid.UUID, targetRole *dbClient.UserRole) bool {
+func canModifyAccess(currentUserRole dbClient.UserRole, postgres *gorm.DB, ctx *gin.Context, workspaceId uuid.UUID, currentUserId uuid.UUID, targetUserId uuid.UUID, targetRole *dbClient.UserRole) bool {
 	if currentUserRole != dbClient.UserRoleOwner && currentUserRole != dbClient.UserRoleAdmin {
 		errorHandlers.Forbidden(ctx, "Not allowed to change access to workspace")
 		return false
 	}
 
 	if currentUserRole == dbClient.UserRoleOwner && currentUserId == targetUserId && (targetRole == nil || *targetRole != dbClient.UserRoleOwner) {
-		if !checkOtherOwnerExists(workspaceId, ctx, db, currentUserId) {
+		if !checkOtherOwnerExists(workspaceId, ctx, postgres, currentUserId) {
 			errorHandlers.Forbidden(ctx, "Not allowed to remove the only owner of the workspace. Set another owner first")
 			return false
 		}
@@ -99,9 +99,9 @@ func canModifyAccess(currentUserRole dbClient.UserRole, db *gorm.DB, ctx *gin.Co
 	return true
 }
 
-func checkOtherOwnerExists(workspaceId uuid.UUID, ctx *gin.Context, db *gorm.DB, currentUserId uuid.UUID) bool {
+func checkOtherOwnerExists(workspaceId uuid.UUID, ctx *gin.Context, postgres *gorm.DB, currentUserId uuid.UUID) bool {
 	var nonCurrentUserOwner dbClient.WorkspaceAccess
-	if err := db.First(&nonCurrentUserOwner, "workspace_id = ? AND role = ? AND user_id <> ?", workspaceId, dbClient.UserRoleOwner, currentUserId).Error; err != nil {
+	if err := postgres.First(&nonCurrentUserOwner, "workspace_id = ? AND role = ? AND user_id <> ?", workspaceId, dbClient.UserRoleOwner, currentUserId).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
 			return false
 		}

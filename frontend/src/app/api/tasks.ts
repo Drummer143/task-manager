@@ -83,3 +83,11 @@ interface ChangeStatusArgs extends Ids {
 export const changeStatus = async ({ taskId, pageId, workspaceId, status }: ChangeStatusArgs) =>
 	(await axiosInstance.patch<Task>(`/workspaces/${workspaceId}/pages/${pageId}/tasks/${taskId}/status`, { status }))
 		.data;
+
+interface TaskHistory {
+	current: Task;
+	history: VersionHistoryLog<"title" | "description" | "status" | "dueDate" | "assigneeId">[];
+}
+
+export const getTaskHistory = async ({ pageId, workspaceId, taskId }: Ids & { taskId: string }) =>
+	(await axiosInstance.get<TaskHistory>(`/workspaces/${workspaceId}/pages/${pageId}/tasks/${taskId}/history`)).data;

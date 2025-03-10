@@ -19,7 +19,8 @@ const TaskForm: React.FC<TaskFormProps> = ({
 	formLoading,
 	pageError,
 	initialValues: propsInitialValues,
-	submitError
+	submitError,
+	extraHeader
 }) => {
 	return (
 		<Drawer
@@ -28,6 +29,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
 			loading={formLoading}
 			onClose={onClose}
 			keyboard
+			destroyOnClose={type === "update"}
 			drawerRender={node =>
 				!formLoading && !pageError ? (
 					<Form
@@ -46,6 +48,8 @@ const TaskForm: React.FC<TaskFormProps> = ({
 			extra={
 				!pageError && (
 					<Space>
+						{extraHeader}
+
 						<Button disabled={isSubmitting} htmlType="reset" onClick={onCancel}>
 							Cancel
 						</Button>

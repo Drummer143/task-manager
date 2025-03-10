@@ -30,7 +30,7 @@ type loginBody struct {
 // @Failure			400 {object} errorHandlers.Error "Invalid request"
 // @Failure			500 {object} errorHandlers.Error "Internal server error if server fails"
 // @Router			/auth/login [post]
-func login(auth *auth.Auth, validate *validator.Validate, db *gorm.DB) gin.HandlerFunc {
+func login(auth *auth.Auth, validate *validator.Validate, postgres *gorm.DB) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var body loginBody
 
@@ -48,7 +48,7 @@ func login(auth *auth.Auth, validate *validator.Validate, db *gorm.DB) gin.Handl
 
 		var user dbClient.User
 
-		if err := db.Where("email = ?", body.Email).First(&user).Error; err != nil {
+		if err := postgres.Where("email = ?", body.Email).First(&user).Error; err != nil {
 			if err == gorm.ErrRecordNotFound {
 				errorHandlers.BadRequest(ctx, "user with that email not found", nil)
 				return
@@ -60,7 +60,7 @@ func login(auth *auth.Auth, validate *validator.Validate, db *gorm.DB) gin.Handl
 
 		var credentials dbClient.UserCredential
 
-		if err := db.Where("user_id = ?", user.ID).First(&credentials).Error; err != nil {
+		if err := postgres.Where("user_id = ?", user.ID).First(&credentials).Error; err != nil {
 			if err == gorm.ErrRecordNotFound {
 				errorHandlers.BadRequest(ctx, "user with that email not found", nil)
 				return
@@ -82,7 +82,7 @@ func login(auth *auth.Auth, validate *validator.Validate, db *gorm.DB) gin.Handl
 			return
 		}
 
-		db.Model(&user).Update("last_login", time.Now())
+		postgres.Model(&user).Update("last_login", time.Now())
 
 		session := sessions.Default(ctx)
 

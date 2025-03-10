@@ -19,7 +19,7 @@ type updatePasswordBody struct {
 	Token string `json:"token" validate:"required"`
 }
 
-func updatePassword(auth *auth.Auth, validate *validator.Validate, db *gorm.DB) gin.HandlerFunc {
+func updatePassword(auth *auth.Auth, validate *validator.Validate, postgres *gorm.DB) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var body updatePasswordBody
 
@@ -37,7 +37,7 @@ func updatePassword(auth *auth.Auth, validate *validator.Validate, db *gorm.DB) 
 
 		var userCredentials dbClient.UserCredential
 
-		if err := db.Where("password_reset_token = ?", body.Token).First(&userCredentials).Error; err != nil {
+		if err := postgres.Where("password_reset_token = ?", body.Token).First(&userCredentials).Error; err != nil {
 			if err == gorm.ErrRecordNotFound {
 				errorHandlers.BadRequest(ctx, "invalid token", nil)
 				return
@@ -54,7 +54,7 @@ func updatePassword(auth *auth.Auth, validate *validator.Validate, db *gorm.DB) 
 
 		var user dbClient.User
 
-		if err := db.Where("id = ?", userCredentials.UserID).First(&user).Error; err != nil {
+		if err := postgres.Where("id = ?", userCredentials.UserID).First(&user).Error; err != nil {
 			errorHandlers.InternalServerError(ctx, "error while updating password")
 			return
 		}
@@ -67,12 +67,12 @@ func updatePassword(auth *auth.Auth, validate *validator.Validate, db *gorm.DB) 
 		userCredentials.UpdatedAt = updatedAt
 		userCredentials.PasswordResetToken = nil
 
-		if err := db.Save(&userCredentials).Error; err != nil {
+		if err := postgres.Save(&userCredentials).Error; err != nil {
 			errorHandlers.InternalServerError(ctx, "error while updating password")
 			return
 		}
 
-		db.Model(&user).Update("last_password_reset", updatedAt)
+		postgres.Model(&user).Update("last_password_reset", updatedAt)
 
 		ctx.Status(http.StatusNoContent)
 	}

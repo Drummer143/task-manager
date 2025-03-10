@@ -3,6 +3,7 @@ package tasksRouter
 import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
+	"go.mongodb.org/mongo-driver/mongo"
 	"gorm.io/gorm"
 )
 
@@ -14,15 +15,19 @@ var (
 	Done       taskStatus = "done"
 )
 
-func AddRoutes(group *gin.RouterGroup, db *gorm.DB, validate *validator.Validate) {
-	group.GET("", getTaskList(db))
-	group.GET("/:task_id", getSingleTask(db))
+func AddRoutes(group *gin.RouterGroup, postgres *gorm.DB, mongo *mongo.Client, validate *validator.Validate) {
+	taskVersionsCollection := mongo.Database("versions").Collection("tasks")
 
-	group.POST("", createTask(db, validate))
+	group.GET("", getTaskList(postgres))
+	group.GET("/:task_id", getSingleTask(postgres))
+	group.GET("/:task_id/history", getHistory(postgres, taskVersionsCollection))
 
-	group.PATCH("/:task_id/status", changeStatus(db, validate))
+	group.POST("", createTask(postgres, validate))
 
-	group.PUT("/:task_id", updateTask(db, validate))
+	group.PATCH("/:task_id/status", changeStatus(postgres, taskVersionsCollection, validate))
 
-	group.DELETE("/:task_id", deleteTask(db))
+	group.PUT("/:task_id", updateTask(postgres, taskVersionsCollection, validate))
+
+	group.DELETE("/:task_id", deleteTask(postgres))
+
 }

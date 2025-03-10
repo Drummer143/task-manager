@@ -32,7 +32,7 @@ type updatePageBody struct {
 // @Failure 		404 {object} errorHandlers.Error
 // @Failure 		500 {object} errorHandlers.Error
 // @Router 			/workspaces/{workspace_id}/pages/{page_id} [put]
-func updatePage(db *gorm.DB, validate *validator.Validate) gin.HandlerFunc {
+func updatePage(postgres *gorm.DB, validate *validator.Validate) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		pageId, err := uuid.Parse(ctx.Param("id"))
 
@@ -43,7 +43,7 @@ func updatePage(db *gorm.DB, validate *validator.Validate) gin.HandlerFunc {
 
 		userId, _ := routerUtils.GetUserIdFromSession(ctx)
 
-		page, pageAccess, ok := routerUtils.CheckPageAccess(ctx, db, db, pageId, userId)
+		page, pageAccess, ok := routerUtils.CheckPageAccess(ctx, postgres, postgres, pageId, userId)
 
 		if !ok {
 			return
@@ -73,7 +73,7 @@ func updatePage(db *gorm.DB, validate *validator.Validate) gin.HandlerFunc {
 			return
 		}
 
-		if err := db.Model(&page).Updates(map[string]interface{}{"name": body.Name}).Error; err != nil {
+		if err := postgres.Model(&page).Updates(map[string]interface{}{"name": body.Name}).Error; err != nil {
 			errorHandlers.InternalServerError(ctx, "failed to update page")
 		}
 

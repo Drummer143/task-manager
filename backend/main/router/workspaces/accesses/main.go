@@ -5,8 +5,8 @@ import (
 	"gorm.io/gorm"
 )
 
-func AddRoutes(group *gin.RouterGroup, db *gorm.DB) {
-	group.GET("", getWorkspaceAccesses(db))
+func AddRoutes(group *gin.RouterGroup, postgres *gorm.DB) {
+	group.GET("", getWorkspaceAccesses(postgres))
 
-	group.PUT("", updateAccess(db))
+	group.PUT("", updateAccess(postgres))
 }

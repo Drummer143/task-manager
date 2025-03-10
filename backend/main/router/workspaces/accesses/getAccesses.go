@@ -23,13 +23,13 @@ import (
 // @Failure				404 {object} errorHandlers.Error
 // @Failure				500 {object} errorHandlers.Error
 // @Router				/workspaces/{workspace_id}/accesses [get]
-func getWorkspaceAccesses(db *gorm.DB) gin.HandlerFunc {
+func getWorkspaceAccesses(postgres *gorm.DB) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		workspaceId := uuid.MustParse(ctx.Param("workspace_id"))
 
 		userId, _ := routerUtils.GetUserIdFromSession(ctx)
 
-		_, access, ok := routerUtils.CheckWorkspaceAccess(ctx, db, db, workspaceId, userId)
+		_, access, ok := routerUtils.CheckWorkspaceAccess(ctx, postgres, postgres, workspaceId, userId)
 
 		if !ok {
 			return
@@ -42,7 +42,7 @@ func getWorkspaceAccesses(db *gorm.DB) gin.HandlerFunc {
 
 		var workspaceAccess []dbClient.WorkspaceAccess
 
-		if err := db.Preload("User").Where("workspace_id = ?", workspaceId).Find(&workspaceAccess).Error; err != nil {
+		if err := postgres.Preload("User").Where("workspace_id = ?", workspaceId).Find(&workspaceAccess).Error; err != nil {
 			errorHandlers.InternalServerError(ctx, "failed to get workspace accesses")
 			return
 		}

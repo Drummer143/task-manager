@@ -33,7 +33,7 @@ type createPageBody struct {
 // @Failure			403 {object} errorHandlers.Error "No access to workspace or no access to create page"
 // @Failure			500 {object} errorHandlers.Error
 // @Router			/workspaces/{workspace_id}/pages [post]
-func createPage(db *gorm.DB, validate *validator.Validate) gin.HandlerFunc {
+func createPage(postgres *gorm.DB, validate *validator.Validate) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var body createPageBody
 
@@ -63,7 +63,7 @@ func createPage(db *gorm.DB, validate *validator.Validate) gin.HandlerFunc {
 		userId, _ := routerUtils.GetUserIdFromSession(ctx)
 
 		if body.ParentId != nil {
-			parentPage, access, ok := routerUtils.CheckPageAccess(ctx, db, db, *body.ParentId, userId)
+			parentPage, access, ok := routerUtils.CheckPageAccess(ctx, postgres, postgres, *body.ParentId, userId)
 
 			if !ok {
 				return
@@ -89,7 +89,7 @@ func createPage(db *gorm.DB, validate *validator.Validate) gin.HandlerFunc {
 			Text:         body.Text,
 		}
 
-		tx := db.Begin()
+		tx := postgres.Begin()
 		defer func() {
 			if r := recover(); r != nil {
 				tx.Rollback()

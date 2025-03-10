@@ -28,7 +28,7 @@ type resetPasswordBody struct {
 // @Failure			400 {object} errorHandlers.Error "Invalid request"
 // @Failure			500 {object} errorHandlers.Error "Internal server error if server fails"
 // @Router			/auth/reset-password [post]
-func resetPassword(auth *auth.Auth, validate *validator.Validate, db *gorm.DB) gin.HandlerFunc {
+func resetPassword(auth *auth.Auth, validate *validator.Validate, postgres *gorm.DB) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var body resetPasswordBody
 
@@ -46,7 +46,7 @@ func resetPassword(auth *auth.Auth, validate *validator.Validate, db *gorm.DB) g
 
 		var user dbClient.User
 
-		if err := db.Where("email = ?", body.Email).First(&user).Error; err != nil {
+		if err := postgres.Where("email = ?", body.Email).First(&user).Error; err != nil {
 			if err == gorm.ErrRecordNotFound {
 				errorHandlers.NotFound(ctx, "user with this email does not exists")
 				return
@@ -57,11 +57,11 @@ func resetPassword(auth *auth.Auth, validate *validator.Validate, db *gorm.DB) g
 
 		var userCredentials dbClient.UserCredential
 
-		db.Where("user_id = ?", user.ID.String()).First(&userCredentials)
+		postgres.Where("user_id = ?", user.ID.String()).First(&userCredentials)
 
 		resetPasswordToken, _ := auth.GenerateJWT(user.Email, EMAIL_VERIFICATION_TOKEN_LIFETIME)
 
-		if err := db.Model(&userCredentials).Update("password_reset_token", resetPasswordToken).Error; err != nil {
+		if err := postgres.Model(&userCredentials).Update("password_reset_token", resetPasswordToken).Error; err != nil {
 			errorHandlers.InternalServerError(ctx, "error while creating reset password token")
 			return
 		}

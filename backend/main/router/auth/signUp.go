@@ -33,7 +33,7 @@ type signUpBody struct {
 // @Failure			400 {object} errorHandlers.Error "Invalid request"
 // @Failure			500 {object} errorHandlers.Error "Internal server error if server fails"
 // @Router			/auth/sign-up [post]
-func signUp(auth *auth.Auth, validate *validator.Validate, db *gorm.DB) gin.HandlerFunc {
+func signUp(auth *auth.Auth, validate *validator.Validate, postgres *gorm.DB) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var body signUpBody
 
@@ -49,7 +49,7 @@ func signUp(auth *auth.Auth, validate *validator.Validate, db *gorm.DB) gin.Hand
 			return
 		}
 
-		if err := db.Create(&dbClient.User{
+		if err := postgres.Create(&dbClient.User{
 			Email:    body.Email,
 			Username: body.Username,
 			LastLogin: time.Now(),
@@ -65,22 +65,22 @@ func signUp(auth *auth.Auth, validate *validator.Validate, db *gorm.DB) gin.Hand
 
 		var user dbClient.User
 
-		db.First(&dbClient.User{}, "email = ?", body.Email)
+		postgres.First(&dbClient.User{}, "email = ?", body.Email)
 
 		passwordHash, _ := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.DefaultCost)
 
-		db.First(&user, "email = ?", body.Email)
+		postgres.First(&user, "email = ?", body.Email)
 
 		emailVerificationToken, _ := auth.GenerateJWT(user.Email, EMAIL_VERIFICATION_TOKEN_LIFETIME)
 
-		if err := db.Create(&dbClient.UserCredential{
+		if err := postgres.Create(&dbClient.UserCredential{
 			UserID:       user.ID,
 			PasswordHash: string(passwordHash),
 			EmailVerificationToken: &emailVerificationToken,
 		}).Error; err != nil {
 			errorHandlers.InternalServerError(ctx, "failed to create user credentials")
 
-			db.Delete(&user)
+			postgres.Delete(&user)
 
 			return
 		}
