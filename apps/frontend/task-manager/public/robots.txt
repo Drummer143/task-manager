@@ -1,0 +1,9 @@
+User-agent: *
+Disallow: /
+Disallow: /tasks
+Disallow: /profile
+Disallow: /new-password
+Allow: /login
+Allow: /sign-up
+Allow: /confirm-email
+Allow: /reset-password

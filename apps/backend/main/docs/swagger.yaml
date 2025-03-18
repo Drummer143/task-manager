@@ -1,0 +1,1474 @@
+definitions:
+  accessesRouter.giveAccessBody:
+    properties:
+      role:
+        allOf:
+        - $ref: '#/definitions/dbClient.UserRole'
+        enum:
+        - owner
+        - admin
+        - member
+        - commentator
+        - guest
+      userId:
+        type: string
+    required:
+    - userId
+    type: object
+  authRouter.confirmEmailBody:
+    properties:
+      token:
+        type: string
+    required:
+    - token
+    type: object
+  authRouter.loginBody:
+    properties:
+      email:
+        type: string
+      password:
+        type: string
+    required:
+    - email
+    - password
+    type: object
+  authRouter.resetPasswordBody:
+    properties:
+      email:
+        type: string
+    required:
+    - email
+    type: object
+  authRouter.signUpBody:
+    properties:
+      email:
+        maxLength: 30
+        minLength: 5
+        type: string
+      password:
+        maxLength: 16
+        minLength: 8
+        type: string
+      username:
+        type: string
+    required:
+    - email
+    - password
+    - username
+    type: object
+  dbClient.Page:
+    properties:
+      childPages:
+        items:
+          $ref: '#/definitions/dbClient.Page'
+        type: array
+      createdAt:
+        type: string
+      deletedAt:
+        type: string
+      id:
+        type: string
+      owner:
+        $ref: '#/definitions/dbClient.User'
+      parentPage:
+        $ref: '#/definitions/dbClient.Page'
+      role:
+        $ref: '#/definitions/dbClient.UserRole'
+      tasks:
+        items:
+          $ref: '#/definitions/dbClient.Task'
+        type: array
+      text:
+        type: string
+      title:
+        type: string
+      type:
+        $ref: '#/definitions/dbClient.PageType'
+      updatedAt:
+        type: string
+    type: object
+  dbClient.PageAccess:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        type: string
+      id:
+        type: string
+      role:
+        $ref: '#/definitions/dbClient.UserRole'
+      updatedAt:
+        type: string
+      user:
+        $ref: '#/definitions/dbClient.User'
+    type: object
+  dbClient.PageType:
+    enum:
+    - board
+    - text
+    - group
+    type: string
+    x-enum-varnames:
+    - PageTypeBoard
+    - PageTypeText
+    - PageTypeGroup
+  dbClient.Task:
+    properties:
+      assignee:
+        $ref: '#/definitions/dbClient.User'
+      createdAt:
+        type: string
+      deletedAt:
+        type: string
+      description:
+        type: string
+      dueDate:
+        type: string
+      id:
+        type: string
+      page:
+        $ref: '#/definitions/dbClient.Page'
+      reporter:
+        $ref: '#/definitions/dbClient.User'
+      status:
+        type: string
+      title:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  dbClient.User:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        type: string
+      email:
+        type: string
+      emailVerified:
+        type: boolean
+      id:
+        type: string
+      lastLogin:
+        type: string
+      lastPasswordReset:
+        type: string
+      picture:
+        type: string
+      updatedAt:
+        type: string
+      username:
+        type: string
+    type: object
+  dbClient.UserRole:
+    enum:
+    - owner
+    - admin
+    - member
+    - commentator
+    - guest
+    type: string
+    x-enum-varnames:
+    - UserRoleOwner
+    - UserRoleAdmin
+    - UserRoleMember
+    - UserRoleCommentator
+    - UserRoleGuest
+  dbClient.Workspace:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        type: string
+      id:
+        type: string
+      name:
+        type: string
+      owner:
+        $ref: '#/definitions/dbClient.User'
+      pages:
+        items:
+          $ref: '#/definitions/dbClient.Page'
+        type: array
+      role:
+        $ref: '#/definitions/dbClient.UserRole'
+      type:
+        type: string
+      updatedAt:
+        type: string
+    type: object
+  dbClient.WorkspaceAccess:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        type: string
+      id:
+        type: string
+      role:
+        $ref: '#/definitions/dbClient.UserRole'
+      updatedAt:
+        type: string
+      user:
+        $ref: '#/definitions/dbClient.User'
+    type: object
+  errorHandlers.Error:
+    properties:
+      details: {}
+      error:
+        type: string
+      errorCode:
+        type: string
+      message:
+        type: string
+      statusCode:
+        type: integer
+    type: object
+  pagesRouter.createPageBody:
+    properties:
+      parentId:
+        type: string
+      text:
+        type: string
+      title:
+        type: string
+      type:
+        allOf:
+        - $ref: '#/definitions/dbClient.PageType'
+        enum:
+        - text
+        - board
+        - group
+    required:
+    - title
+    - type
+    type: object
+  pagesRouter.updatePageBody:
+    properties:
+      name:
+        type: string
+      text:
+        type: string
+    type: object
+  profileRouter.changeEmailBody:
+    properties:
+      email:
+        type: string
+    required:
+    - email
+    type: object
+  profileRouter.patchProfileBody:
+    properties:
+      username:
+        type: string
+    required:
+    - username
+    type: object
+  tasksRouter.changeTaskStatusBody:
+    properties:
+      status:
+        enum:
+        - not_done
+        - in_progress
+        - done
+        type: string
+    required:
+    - status
+    type: object
+  tasksRouter.createTaskBody:
+    properties:
+      assigneeID:
+        type: string
+      description:
+        maxLength: 255
+        type: string
+      dueDate:
+        type: string
+      status:
+        type: string
+      title:
+        maxLength: 63
+        type: string
+    required:
+    - status
+    - title
+    type: object
+  tasksRouter.groupedByStatusTasks:
+    additionalProperties:
+      items:
+        $ref: '#/definitions/dbClient.Task'
+      type: array
+    type: object
+  tasksRouter.updateTaskBody:
+    properties:
+      assigneeId:
+        type: string
+      description:
+        maxLength: 255
+        type: string
+      dueDate:
+        type: string
+      status:
+        enum:
+        - not_done
+        - in_progress
+        - done
+        type: string
+      title:
+        maxLength: 63
+        type: string
+    type: object
+  usersRouter.Meta:
+    properties:
+      hasMore:
+        type: boolean
+      limit:
+        type: integer
+      offset:
+        type: integer
+      total:
+        type: integer
+    type: object
+  usersRouter.ResponseWithPagination-dbClient_User:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/dbClient.User'
+        type: array
+      meta:
+        $ref: '#/definitions/usersRouter.Meta'
+    type: object
+  workspacesAccessesRouter.giveAccessBody:
+    properties:
+      role:
+        allOf:
+        - $ref: '#/definitions/dbClient.UserRole'
+        enum:
+        - owner
+        - admin
+        - member
+        - commentator
+        - guest
+      userId:
+        type: string
+    required:
+    - userId
+    type: object
+  workspacesRouter.createWorkspaceBody:
+    properties:
+      name:
+        type: string
+    required:
+    - name
+    type: object
+info:
+  contact: {}
+paths:
+  /auth/confirm-email:
+    post:
+      consumes:
+      - application/json
+      description: Confirm email
+      parameters:
+      - description: Confirm email object
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/authRouter.confirmEmailBody'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "401":
+          description: Unauthorized if token is invalid
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "500":
+          description: Internal server error if server fails
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+      summary: Confirm email
+      tags:
+      - Auth
+  /auth/login:
+    post:
+      consumes:
+      - application/json
+      description: Login
+      parameters:
+      - description: Login object
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/authRouter.loginBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User profile data
+          schema:
+            $ref: '#/definitions/dbClient.User'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "500":
+          description: Internal server error if server fails
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+      summary: Login
+      tags:
+      - Auth
+  /auth/logout:
+    post:
+      consumes:
+      - application/json
+      description: Log out
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+      summary: Log out
+      tags:
+      - Auth
+  /auth/reset-password:
+    post:
+      consumes:
+      - application/json
+      description: Reset password
+      parameters:
+      - description: Reset password object
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/authRouter.resetPasswordBody'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "500":
+          description: Internal server error if server fails
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+      summary: Reset password
+      tags:
+      - Auth
+  /auth/sign-up:
+    post:
+      consumes:
+      - application/json
+      description: Sign up
+      parameters:
+      - description: Sign up object
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/authRouter.signUpBody'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: User profile data
+          schema:
+            $ref: '#/definitions/dbClient.User'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "500":
+          description: Internal server error if server fails
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+      summary: Sign up
+      tags:
+      - Auth
+  /auth/verify-reset-password-token:
+    get:
+      consumes:
+      - application/json
+      description: Verify reset password token
+      parameters:
+      - description: Token
+        in: query
+        name: token
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "500":
+          description: Internal server error if server fails
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+      summary: Verify reset password token
+      tags:
+      - Auth
+  /profile:
+    get:
+      consumes:
+      - application/json
+      description: This endpoint retrieves the user profile information from the Auth0
+        Management API using the user's ID from the session. The ID is obtained from
+        the session and used to query the user data from the external identity provider
+        (Auth0). The user must be authenticated, and a valid session must exist.
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User profile data
+          schema:
+            $ref: '#/definitions/dbClient.User'
+        "401":
+          description: Unauthorized if session is missing or invalid
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "404":
+          description: User not found in database
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "500":
+          description: Internal server error if server fails
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+      summary: Get current user profile
+      tags:
+      - Profile
+    patch:
+      consumes:
+      - application/json
+      description: This endpoint updates the user profile information in the Auth0
+        Management API using the user's ID from the session. The ID is obtained from
+        the session and used to query the user data from the external identity provider
+        (Auth0). The user must be authenticated, and a valid session must exist. The
+        request body must contain valid JSON data representing the user profile information.
+      parameters:
+      - description: User profile data
+        in: body
+        name: user
+        required: true
+        schema:
+          $ref: '#/definitions/profileRouter.patchProfileBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User profile data
+          schema:
+            $ref: '#/definitions/dbClient.User'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "401":
+          description: Unauthorized if session is missing or invalid
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "404":
+          description: User not found in Auth0 database
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "429":
+          description: Rate limit exceeded
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "500":
+          description: Internal server error if request to Auth0 fails
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+      summary: Update current user profile
+      tags:
+      - Profile
+  /profile/avatar:
+    patch:
+      consumes:
+      - multipart/form-data
+      description: This endpoint uploads the user avatar image to the image storage
+        service and updates the user profile information in the Auth0 Management API
+        using the user's ID from the session. The ID is obtained from the session
+        and used to query the user data from the external identity provider (Auth0).
+        The user must be authenticated, and a valid session must exist. The request
+        body must contain a valid image file.
+      parameters:
+      - description: User avatar image file
+        in: formData
+        name: file
+        required: true
+        type: file
+      - description: X coordinate of the crop area
+        in: formData
+        name: x
+        required: true
+        type: string
+      - description: Y coordinate of the crop area
+        in: formData
+        name: "y"
+        required: true
+        type: string
+      - description: Width of the crop area
+        in: formData
+        name: width
+        required: true
+        type: string
+      - description: Height of the crop area
+        in: formData
+        name: height
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User profile data
+          schema:
+            $ref: '#/definitions/dbClient.User'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "401":
+          description: Unauthorized if session is missing or invalid
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "404":
+          description: User not found in Auth0 database
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "429":
+          description: Rate limit exceeded
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "500":
+          description: Internal server error if request to Auth0 fails
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+      summary: Upload user avatar
+      tags:
+      - Profile
+  /profile/email:
+    patch:
+      consumes:
+      - application/json
+      description: Update email of the current user
+      parameters:
+      - description: User email
+        in: body
+        name: email
+        required: true
+        schema:
+          $ref: '#/definitions/profileRouter.changeEmailBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User profile data
+          schema:
+            $ref: '#/definitions/dbClient.User'
+        "400":
+          description: Email is invalid or missing
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "401":
+          description: Unauthorized if session is missing or invalid
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "404":
+          description: User not found in database
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "500":
+          description: Internal server error if server fails
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+      summary: Change user email
+      tags:
+      - Profile
+  /users:
+    get:
+      description: Get user list
+      parameters:
+      - description: filter by username or email
+        in: query
+        name: username_or_email
+        type: string
+      - description: If not provided or less than 1, all users will be returned
+        in: query
+        name: limit
+        type: integer
+      - description: Default is 0
+        in: query
+        name: offset
+        type: integer
+      - description: comma separated list of ids to exclude
+        in: query
+        name: exclude
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: User list
+          schema:
+            $ref: '#/definitions/usersRouter.ResponseWithPagination-dbClient_User'
+        "401":
+          description: Unauthorized if session is missing or invalid
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+      summary: Get user list
+      tags:
+      - Users
+  /workspaces:
+    get:
+      description: Get workspace list
+      parameters:
+      - description: 'Comma separated list of fields to include. Available fields:
+          pages, owner'
+        in: query
+        name: include
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dbClient.Workspace'
+            type: array
+        "401":
+          description: Unauthorized if session is missing or invalid
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+      summary: Get workspace list
+      tags:
+      - Workspaces
+    post:
+      consumes:
+      - application/json
+      description: Create a new workspace
+      parameters:
+      - description: Workspace object that needs to be created
+        in: body
+        name: workspace
+        required: true
+        schema:
+          $ref: '#/definitions/workspacesRouter.createWorkspaceBody'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dbClient.Workspace'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "401":
+          description: Unauthorized if session is missing or invalid
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+      summary: Create a new workspace
+      tags:
+      - Workspaces
+  /workspaces/{workspace_id}:
+    get:
+      description: Get workspace
+      parameters:
+      - description: Workspace ID
+        in: path
+        name: workspace_id
+        required: true
+        type: string
+      - description: 'Comma separated list of fields to include. Available fields:
+          pages, owner'
+        in: query
+        name: include
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dbClient.Workspace'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "401":
+          description: Unauthorized if session is missing or invalid
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "403":
+          description: No access to workspace
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+      summary: Get workspace
+      tags:
+      - Workspaces
+  /workspaces/{workspace_id}/accesses:
+    get:
+      description: Get workspace accesses
+      parameters:
+      - description: Workspace ID
+        in: path
+        name: workspace_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dbClient.WorkspaceAccess'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "401":
+          description: Unauthorized if session is missing or invalid
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "403":
+          description: No access to workspace or workspace or no access to get workspace
+            accesses
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+      summary: Get workspace accesses
+      tags:
+      - Workspace Accesses
+    put:
+      consumes:
+      - application/json
+      description: Give access to a workspace
+      parameters:
+      - description: Workspace ID
+        in: path
+        name: workspace_id
+        required: true
+        type: string
+      - description: Workspace ID
+        in: path
+        name: workspace_id
+        required: true
+        type: string
+      - description: Give access to a workspace
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/workspacesAccessesRouter.giveAccessBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "401":
+          description: Unauthorized if session is missing or invalid
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "403":
+          description: No access to workspace or workspace or no access to give access
+            to workspace
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+      summary: Give access to a workspace
+      tags:
+      - Workspace Accesses
+  /workspaces/{workspace_id}/pages:
+    get:
+      description: Get page list
+      parameters:
+      - description: Workspace ID
+        in: path
+        name: workspace_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dbClient.Page'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "401":
+          description: Unauthorized if session is missing or invalid
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "403":
+          description: No access to workspace
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+      summary: Get page list
+      tags:
+      - Pages
+    post:
+      consumes:
+      - application/json
+      description: Create a new page
+      parameters:
+      - description: Workspace ID
+        in: path
+        name: workspace_id
+        required: true
+        type: string
+      - description: Page object that needs to be created
+        in: body
+        name: page
+        required: true
+        schema:
+          $ref: '#/definitions/pagesRouter.createPageBody'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dbClient.Page'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "401":
+          description: Unauthorized if session is missing or invalid
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "403":
+          description: No access to workspace or no access to create page
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+      summary: Create a new page
+      tags:
+      - Pages
+  /workspaces/{workspace_id}/pages/{page_id}:
+    delete:
+      description: Delete page by id
+      parameters:
+      - description: Workspace ID
+        in: path
+        name: workspace_id
+        required: true
+        type: string
+      - description: Page ID
+        in: path
+        name: page_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dbClient.Page'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "401":
+          description: Unauthorized if session is missing or invalid
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "403":
+          description: No access to page or workspace or no access to delete page
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+      summary: Delete page by id
+      tags:
+      - Pages
+    get:
+      description: Get page by id
+      parameters:
+      - description: Workspace ID
+        in: path
+        name: workspace_id
+        required: true
+        type: string
+      - description: Page ID
+        in: path
+        name: page_id
+        required: true
+        type: string
+      - description: 'Comma separated list of fields to include. Available fields:
+          parentPage, childPages, owner, tasks'
+        in: query
+        name: include
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dbClient.Page'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "401":
+          description: Unauthorized if session is missing or invalid
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "403":
+          description: No access to page or workspace
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+      summary: Get page by id
+      tags:
+      - Pages
+    put:
+      consumes:
+      - application/json
+      description: Update page by id
+      parameters:
+      - description: Workspace ID
+        in: path
+        name: workspace_id
+        required: true
+        type: string
+      - description: Page ID
+        in: path
+        name: page_id
+        required: true
+        type: string
+      - description: Page object that needs to be updated
+        in: body
+        name: page
+        required: true
+        schema:
+          $ref: '#/definitions/pagesRouter.updatePageBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dbClient.Page'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "401":
+          description: Unauthorized if session is missing or invalid
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "403":
+          description: No access to page or workspace or no access to update page
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+      summary: Update page by id
+      tags:
+      - Pages
+  /workspaces/{workspace_id}/pages/{page_id}/accesses:
+    get:
+      description: Get page accesses
+      parameters:
+      - description: Workspace ID
+        in: path
+        name: workspace_id
+        required: true
+        type: string
+      - description: Page ID
+        in: path
+        name: page_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            items:
+              $ref: '#/definitions/dbClient.PageAccess'
+            type: array
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "401":
+          description: Unauthorized if session is missing or invalid
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "403":
+          description: No access to page or workspace or no access to get page accesses
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+      summary: Get page accesses
+      tags:
+      - Page Accesses
+    put:
+      consumes:
+      - application/json
+      description: Give access to a page
+      parameters:
+      - description: Workspace ID
+        in: path
+        name: workspace_id
+        required: true
+        type: string
+      - description: Page ID
+        in: path
+        name: page_id
+        required: true
+        type: string
+      - description: Give access to a page
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/accessesRouter.giveAccessBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Success
+          schema:
+            type: string
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "401":
+          description: Unauthorized if session is missing or invalid
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "403":
+          description: No access to page or workspace or no access to give access
+            to page
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+      summary: Give access to a page
+      tags:
+      - Page Accesses
+  /workspaces/{workspace_id}/pages/{page_id}/tasks:
+    get:
+      description: Get a list of tasks created by user with the given ID. If no ID
+        is provided, the ID of the currently logged in user is used
+      parameters:
+      - description: ID of the user who created the tasks
+        in: query
+        name: owner_id
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/tasksRouter.groupedByStatusTasks'
+        "401":
+          description: Unauthorized if session is missing or invalid
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+      summary: Get a list of tasks
+      tags:
+      - Tasks
+    post:
+      consumes:
+      - application/json
+      description: Create a new task
+      parameters:
+      - description: Task object that needs to be created
+        in: body
+        name: task
+        required: true
+        schema:
+          $ref: '#/definitions/tasksRouter.createTaskBody'
+      produces:
+      - application/json
+      responses:
+        "201":
+          description: Created
+          schema:
+            $ref: '#/definitions/dbClient.Task'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "401":
+          description: Unauthorized if session is missing or invalid
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+      summary: Create a new task
+      tags:
+      - Tasks
+  /workspaces/{workspace_id}/pages/{page_id}/tasks/{task_id}:
+    delete:
+      description: Delete a task
+      parameters:
+      - description: Task ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dbClient.Task'
+        "401":
+          description: Unauthorized
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+      summary: Delete a task
+      tags:
+      - Tasks
+    get:
+      description: Get a task
+      parameters:
+      - description: Task ID
+        in: path
+        name: id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dbClient.Task'
+        "401":
+          description: Unauthorized if session is missing or invalid
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+      summary: Get a task
+      tags:
+      - Tasks
+    put:
+      consumes:
+      - application/json
+      description: Update a task
+      parameters:
+      - description: Task ID
+        in: path
+        name: id
+        required: true
+        type: string
+      - description: Task object that needs to be updated
+        in: body
+        name: task
+        required: true
+        schema:
+          $ref: '#/definitions/tasksRouter.updateTaskBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dbClient.Task'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "401":
+          description: Unauthorized if session is missing or invalid
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+      summary: Update a task
+      tags:
+      - Tasks
+  /workspaces/{workspace_id}/pages/{page_id}/tasks/{task_id}/status:
+    patch:
+      consumes:
+      - application/json
+      description: Change task status
+      parameters:
+      - description: Task ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 'Task status. Must be one of: not_done, in_progress, done'
+        in: body
+        name: status
+        required: true
+        schema:
+          $ref: '#/definitions/tasksRouter.changeTaskStatusBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dbClient.Task'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "401":
+          description: Unauthorized if session is missing or invalid
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+      summary: Change task status
+      tags:
+      - Tasks
+swagger: "2.0"

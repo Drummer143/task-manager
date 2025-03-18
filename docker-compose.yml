@@ -1,0 +1,87 @@
+services:
+  postgres:
+    image: postgres:latest
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB_NAME}
+    ports:
+      - 5432:5432
+    volumes:
+      - pgdata:/var/lib/postgresql/data
+    networks:
+      - net
+
+  mongo:
+    image: mongo:latest
+    ports:
+      - 27017:27017
+    volumes:
+      - mongo_data:/data/db
+    networks:
+      - net
+
+  main-service:
+    image: main-service:latest
+    ports:
+      - 8080:8080
+    networks:
+      - net
+    depends_on:
+      - postgres
+      - mongo
+    environment:
+      GIN_MODE: release
+      SELF_PORT: 8080
+      MAILER_URL: http://mailer-service:8081
+      STORAGE_URL: http://storage-service:8082
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PORT: 5432
+      POSTGRES_HOST: postgres
+      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+      POSTGRES_DB_NAME: ${POSTGRES_DB_NAME}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_SSL_MODE: disable
+      MONGO_URL: ${MONGO_URL}
+
+  mailer-service:
+    image: mailer-service:latest
+    ports:
+      - 8081:8081
+    environment:
+      GIN_MODE: release
+      SELF_PORT: 8081
+      EMAIL_ADDRESS: ${EMAIL_ADDRESS}
+      EMAIL_PASSWORD: ${EMAIL_PASSWORD}
+      CONFIRM_EMAIL_URL: ${CONFIRM_EMAIL_URL}
+      RESET_PASSWORD_EMAIL_URL: ${RESET_PASSWORD_EMAIL_URL}
+    networks:
+      - net
+
+  storage-service:
+    image: storage-service:latest
+    ports:
+      - 8082:8082
+    environment:
+      GIN_MODE: release
+      SELF_PORT: 8082
+      SELF_HOST: localhost
+    networks:
+      - net
+    volumes:
+      - storage:/static
+
+  frontend:
+    image: frontend:latest
+    ports:
+      - 1346:80
+    networks:
+      - net
+
+networks:
+  net:
+
+volumes:
+  pgdata:
+  mongo_data:
+  storage:

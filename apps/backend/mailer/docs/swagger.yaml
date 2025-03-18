@@ -1,0 +1,57 @@
+definitions:
+  errorHandlers.Error:
+    properties:
+      details: {}
+      error:
+        type: string
+      errorCode:
+        type: string
+      message:
+        type: string
+      statusCode:
+        type: integer
+    type: object
+  router.SendEmailConfirmationRequest:
+    properties:
+      email:
+        type: string
+      token:
+        type: string
+    type: object
+  router.SendEmailConfirmationResponse:
+    properties:
+      message:
+        type: string
+    type: object
+info:
+  contact: {}
+paths:
+  /send-email-confirmation:
+    post:
+      consumes:
+      - application/json
+      description: Send email confirmation mail
+      parameters:
+      - description: Send email confirmation object
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/router.SendEmailConfirmationRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Email confirmation sent
+          schema:
+            $ref: '#/definitions/router.SendEmailConfirmationResponse'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "500":
+          description: Internal server error if server fails
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+      summary: Send email confirmation mail
+swagger: "2.0"

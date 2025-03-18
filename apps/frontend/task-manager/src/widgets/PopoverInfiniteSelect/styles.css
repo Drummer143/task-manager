@@ -1,0 +1,5 @@
+.popover-overlay .ant-popover-inner {
+	min-width: 15rem;
+
+	padding: var(--ant-padding-xxs) !important;
+}

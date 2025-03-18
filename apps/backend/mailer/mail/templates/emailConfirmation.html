@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Password Confirmation</title>
+    <style>
+      body {
+        font-family: "Segoe UI", Tahoma, Geneva, Verdana, sans-serif;
+        background-color: #f0f2f5;
+        margin: 0;
+        padding: 0;
+        text-align: center;
+      }
+      .container {
+        max-width: 600px;
+        margin: 50px auto;
+        background: white;
+        padding: 24px;
+        border-radius: 8px;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+      }
+      h1 {
+        color: #333;
+        font-size: 24px;
+        margin-bottom: 16px;
+      }
+      p {
+        color: #595959;
+        line-height: 1.5;
+        margin-bottom: 16px;
+      }
+      .button {
+        display: inline-block;
+        background-color: #1890ff;
+        color: white;
+        padding: 12px 20px;
+        text-decoration: none;
+        border-radius: 4px;
+        margin: 20px auto;
+        font-size: 16px;
+        transition: background-color 0.3s;
+      }
+      .button:hover {
+        background-color: #40a9ff;
+      }
+      .footer {
+        color: #888;
+        font-size: 12px;
+        margin-top: 20px;
+      }
+    </style>
+  </head>
+  <body>
+    <div class="container">
+      <h1>Password Confirmation</h1>
+      <p>Hello!</p>
+      <p>
+        You received this email because we received a request to change the
+        password for your account. Please click the button below to confirm the
+        password change.
+      </p>
+      <a href="{{.ConfirmationLink}}" class="button" role="button"
+        >Confirm Password</a
+      >
+      <p>If you did not request a password change, please ignore this email.</p>
+      <p>Thank you for being with us!</p>
+      <div class="footer">
+        <p>Best regards</p>
+      </div>
+    </div>
+  </body>
+</html>
