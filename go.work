@@ -1,0 +1,5 @@
+go 1.23.1
+
+use ./apps/backend/mailer
+use ./apps/backend/main
+use ./apps/backend/storage

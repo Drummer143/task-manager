@@ -5,20 +5,5 @@
   "projectType": "application",
   "tags": [],
   "// targets": "to see all targets run: nx show project task-manager --web",
-  "targets": {
-    "dev": {
-      "executor": "@nx/vite:dev-server",
-      "options": {
-        "buildTarget": "task-manager:build"
-      },
-      "configurations": {
-        "production": {
-          "buildTarget": "task-manager:build:production"
-        }
-      }
-    },
-    "build": {
-      "executor": "@nx/vite:build"
-    }
-  }
+  "targets": {}
 }
