@@ -61,7 +61,7 @@ func getPage(postgres *gorm.DB) gin.HandlerFunc {
 			dbWithIncludes = dbWithIncludes.Preload("Tasks")
 		}
 
-		page, access, ok :=routerUtils.CheckPageAccess(ctx, dbWithIncludes, postgres, pageId, userId)
+		page, access, ok := routerUtils.CheckPageAccess(ctx, dbWithIncludes, postgres, pageId, userId)
 
 		if !ok {
 			return

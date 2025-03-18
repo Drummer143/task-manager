@@ -1,5 +1,6 @@
-import { PageAccess } from "../types";
 import { axiosInstance } from "./base";
+
+import { PageAccess } from "../types";
 
 interface GetPageAccessArgs {
 	workspaceId: string;

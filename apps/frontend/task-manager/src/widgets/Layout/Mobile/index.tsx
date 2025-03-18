@@ -1,14 +1,14 @@
 import React from "react";
 
 import { MenuOutlined } from "@ant-design/icons";
+import { useDisclosure } from "@task-manager/utils";
 import { Button, Divider, Layout } from "antd";
 import { Outlet } from "react-router-dom";
 import styled from "styled-components";
 
-import { useDisclosure } from "shared/hooks";
-import MobileDrawer from "widgets/MobileDrawer";
-
 import UserMenu from "./UserMenu";
+
+import MobileDrawer from "../../../widgets/MobileDrawer";
 
 const MainDrawer = styled(MobileDrawer)`
 	.ant-drawer-body {

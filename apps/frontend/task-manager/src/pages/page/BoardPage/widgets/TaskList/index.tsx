@@ -1,15 +1,16 @@
 import React, { memo, useCallback } from "react";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { changeStatus } from "@task-manager/api";
 import { App, theme } from "antd";
-import { changeStatus } from "api";
 import { useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
 
-import { drawTaskDragImage, taskStatusLocale } from "shared/utils";
-import { useAppStore } from "store/app";
-import { useTasksStore } from "store/tasks";
+import { drawTaskDragImage } from "./utils";
 
+import { useAppStore } from "../../../../../app/store/app";
+import { useTasksStore } from "../../../../../app/store/tasks";
+import { taskStatusLocale } from "../../../../../shared/constants";
 import TaskItem from "../TaskItem";
 
 interface TaskListProps {

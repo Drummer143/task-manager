@@ -1,21 +1,21 @@
 import React, { useState } from "react";
 
 import { useQuery } from "@tanstack/react-query";
+import { getWorkspaceList } from "@task-manager/api";
+import { useDisclosure } from "@task-manager/utils";
 import { List as AntList, Flex } from "antd";
 import { ListLocale } from "antd/es/list";
-import { getWorkspaceList } from "api";
 import { useNavigate } from "react-router-dom";
 import styled from "styled-components";
-
-import { withAuthPageCheck } from "shared/HOCs/withAuthPageCheck";
-import { useDisclosure } from "shared/hooks";
-import Empty from "shared/ui/Empty";
-import { useAppStore } from "store/app";
 
 import CreateWorkspaceButton from "./widgets/CreateWorkspaceButton";
 import Settings from "./widgets/Settings";
 import WorkspaceButton from "./widgets/WorkspaceButton";
 import WorkspaceForm from "./widgets/WorkspaceForm";
+
+import { useAppStore } from "../../app/store/app";
+import { withAuthPageCheck } from "../../shared/HOCs/withAuthPageCheck";
+import Empty from "../../shared/ui/Empty";
 
 const listLocale: ListLocale = {
 	emptyText: <Empty description="You have no workspaces" />

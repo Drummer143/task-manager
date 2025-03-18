@@ -1,5 +1,6 @@
-import { PaginationQuery, ResponseWithPagination, User } from "../types";
 import { axiosInstance } from "./base";
+
+import { PaginationQuery, ResponseWithPagination, User } from "../types";
 
 interface GetUsersFilters {
 	name_or_email?: string;

@@ -1,13 +1,13 @@
 import React, { memo } from "react";
 
+import { useDisclosure } from "@task-manager/utils";
 import { Menu as AntMenu, Flex, Spin } from "antd";
 import styled from "styled-components";
 
-import { useDisclosure } from "shared/hooks";
-import { useAuthStore } from "store/auth";
-import UserMenuInfo from "widgets/Layout/UserMenuInfo";
-import { useUserMenuItems } from "widgets/Layout/useUserMenuItems";
-import MobileDrawer from "widgets/MobileDrawer";
+import { useAuthStore } from "../../../../app/store/auth";
+import MobileDrawer from "../../../../widgets/MobileDrawer";
+import UserMenuInfo from "../../UserMenuInfo";
+import { useUserMenuItems } from "../../useUserMenuItems";
 
 export const Menu = styled(AntMenu)`
 	height: 100%;

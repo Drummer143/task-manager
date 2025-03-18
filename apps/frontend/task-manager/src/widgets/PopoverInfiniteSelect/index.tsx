@@ -1,9 +1,8 @@
 import React, { memo, useCallback, useEffect, useRef, useState } from "react";
 
 import { InfiniteData, QueryKey, useInfiniteQuery } from "@tanstack/react-query";
+import { useDisclosure } from "@task-manager/utils";
 import { List, Popover, PopoverProps, Spin } from "antd";
-
-import { useDisclosure } from "shared/hooks";
 
 import * as s from "./styles";
 import "./styles.css";

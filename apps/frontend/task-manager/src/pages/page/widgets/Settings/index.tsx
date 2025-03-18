@@ -2,18 +2,16 @@ import React, { useCallback, useMemo, useState } from "react";
 
 import { PlusOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { getPageAccess, getUserList, parseApiError, updatePageAccess } from "@task-manager/api";
 import { App, Button, List, Modal, Tooltip } from "antd";
-import { getPageAccess, getUserList, updatePageAccess } from "api";
 import { AxiosError } from "axios";
-
-import { parseUseQueryError } from "shared/utils/errors";
-import { useAppStore } from "store/app";
-import { useAuthStore } from "store/auth";
-import PopoverInfiniteSelect from "widgets/PopoverInfiniteSelect";
-import UserCard from "widgets/UserCard";
 
 import * as s from "./styles";
 
+import { useAppStore } from "../../../../app/store/app";
+import { useAuthStore } from "../../../../app/store/auth";
+import PopoverInfiniteSelect from "../../../../widgets/PopoverInfiniteSelect";
+import UserCard from "../../../../widgets/UserCard";
 import AccessListItem from "../AccessListItem";
 
 interface SettingsProps {
@@ -59,7 +57,7 @@ const Settings: React.FC<SettingsProps> = ({ onClose, open, page }) => {
 			message.error(error.response?.data?.message ?? "Failed to update page settings")
 	});
 
-	const parsedError = useMemo(() => error && parseUseQueryError(error), [error]);
+	const parsedError = useMemo(() => error && parseApiError(error), [error]);
 
 	const handleRoleChange = useCallback(
 		(userId: string, role?: string) => {

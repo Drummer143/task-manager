@@ -1,10 +1,9 @@
 import React from "react";
 
 import { ExportOutlined } from "@ant-design/icons";
+import { stopPropagation } from "@task-manager/utils";
 import { Avatar, Button, Flex, Typography } from "antd";
 import styled from "styled-components";
-
-import { stopPropagation } from "shared/utils";
 
 interface UserCardProps {
 	user: User;

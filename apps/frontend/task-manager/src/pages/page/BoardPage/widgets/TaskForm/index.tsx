@@ -2,11 +2,11 @@ import React from "react";
 
 import { Alert, Button, DatePicker, Drawer, Form, Input, Select, Space } from "antd";
 
-import { today } from "shared/utils";
-import MDEditor from "widgets/MDEditor";
-
 import { TaskFormProps } from "./types";
 import { initialValues, requiredRule, statusSelectOptions } from "./utils";
+
+import { today } from "../../../../../shared/constants";
+import MDEditor from "../../../../../widgets/MDEditor";
 
 const TaskForm: React.FC<TaskFormProps> = ({
 	onClose,

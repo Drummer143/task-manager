@@ -2,15 +2,14 @@ import { useEffect, useMemo } from "react";
 
 import { MoonOutlined, SunOutlined } from "@ant-design/icons";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { darkThemeConfig, lightThemeConfig } from "@task-manager/ant-config";
 import { App as AntApp, theme as AntTheme, ConfigProvider, FloatButton } from "antd";
 import { RouterProvider } from "react-router-dom";
 
-import darkThemeConfig from "shared/antConfigs/darkThemeConfig";
-import lightThemeConfig from "shared/antConfigs/lightThemeConfig";
-import { useAppStore } from "store/app";
-import { useAuthStore } from "store/auth";
-
 import router from "./router";
+
+import { useAppStore } from "../app/store/app";
+import { useAuthStore } from "../app/store/auth";
 
 const queryClient = new QueryClient();
 
@@ -29,7 +28,7 @@ function App() {
 		if (!theme) {
 			setTheme(window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
 		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
+		 
 	}, []);
 
 	useEffect(() => {

@@ -2,14 +2,14 @@ import React, { useMemo } from "react";
 
 import { HistoryOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
+import { getTaskHistory } from "@task-manager/api";
+import { useDisclosure } from "@task-manager/utils";
 import { Button, Drawer, Tag, Typography } from "antd";
-import { getTaskHistory } from "api";
 
-import { useDisclosure } from "shared/hooks";
-import { statusColors, taskStatusLocale } from "shared/utils";
-import { useAppStore } from "store/app";
-import MDEditor from "widgets/MDEditor";
-import VersionHistoryList, { VersionHistoryEntryRenders } from "widgets/VersionHistoryList";
+import { useAppStore } from "../../../../../app/store/app";
+import { statusColors, taskStatusLocale } from "../../../../../shared/constants";
+import MDEditor from "../../../../../widgets/MDEditor";
+import VersionHistoryList, { VersionHistoryEntryRenders } from "../../../../../widgets/VersionHistoryList";
 
 interface TaskHistoryProps {
 	taskId: string;

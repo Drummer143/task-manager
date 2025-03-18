@@ -3,6 +3,8 @@
   "compilerOptions": {
     "outDir": "../../../dist/out-tsc",
     "declaration": true,
+    "jsx": "react",
+    "esModuleInterop": true,
     "types": ["node", "vite/client"]
   },
   "include": ["src/**/*.ts"]

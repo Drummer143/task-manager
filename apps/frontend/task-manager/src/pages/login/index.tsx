@@ -1,17 +1,16 @@
 import React, { useMemo } from "react";
 
 import { useMutation } from "@tanstack/react-query";
+import { login, parseApiError } from "@task-manager/api";
 import { Form, Input } from "antd";
-import { login } from "api";
 import { Link, useNavigate } from "react-router-dom";
 
-import { withAuthPageCheck } from "shared/HOCs/withAuthPageCheck";
-import { parseUseQueryError } from "shared/utils/errors";
-import { composeRules, email, required } from "shared/validation";
-import { useAuthStore } from "store/auth";
-import AuthForm from "widgets/AuthForm";
-
 import { ResetPasswordLink } from "./styles";
+
+import { useAuthStore } from "../../app/store/auth";
+import { withAuthPageCheck } from "../../shared/HOCs/withAuthPageCheck";
+import { composeRules, email, required } from "../../shared/validation";
+import AuthForm from "../../widgets/AuthForm";
 
 const rules = {
 	email: composeRules(required(), email()),
@@ -32,7 +31,7 @@ const Login: React.FC = () => {
 		}
 	});
 
-	const parsedError = useMemo(() => parseUseQueryError(error, undefined, [400]), [error]);
+	const parsedError = useMemo(() => parseApiError(error, undefined, [400]), [error]);
 
 	return (
 		<AuthForm

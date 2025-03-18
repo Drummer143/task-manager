@@ -51,7 +51,7 @@ func createWorkspace(postgres *gorm.DB, validate *validator.Validate) gin.Handle
 		userId := session.Get("id").(uuid.UUID)
 
 		workspace := dbClient.Workspace{
-			Name: body.Name,
+			Name:    body.Name,
 			OwnerID: userId,
 		}
 

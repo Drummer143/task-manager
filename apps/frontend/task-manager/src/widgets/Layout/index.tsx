@@ -1,11 +1,10 @@
 import React, { useEffect, useState } from "react";
 
+import { lazySuspense, useWindowResize } from "@task-manager/utils";
 import { useNavigate } from "react-router-dom";
 
-import { lazySuspense } from "shared/HOCs/lazySuspense";
-import { useWindowResize } from "shared/hooks/useWindowResize";
-import FullSizeLoader from "shared/ui/FullSizeLoader";
-import { useAppStore } from "store/app";
+import { useAppStore } from "../../app/store/app";
+import FullSizeLoader from "../../shared/ui/FullSizeLoader";
 
 const DesktopLayout = lazySuspense(() => import("./Desktop"), <FullSizeLoader />);
 const MobileLayout = lazySuspense(() => import("./Mobile"), <FullSizeLoader />);

@@ -1,5 +1,6 @@
-import { Workspace } from "../types";
 import { axiosInstance } from "./base";
+
+import { Workspace } from "../types";
 
 type GetWorkspaceIncludes = "owner" | "pages";
 

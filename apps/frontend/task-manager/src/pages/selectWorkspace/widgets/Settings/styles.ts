@@ -1,7 +1,7 @@
 import { Alert as AntAlert, Typography } from "antd";
 import styled from "styled-components";
 
-import SelectWithInfiniteScroll from "widgets/SelectWithInfiniteScroll";
+import SelectWithInfiniteScroll from "../../../../widgets/SelectWithInfiniteScroll";
 
 export const Alert = styled(AntAlert)`
 	margin-top: var(--ant-margin-xl);

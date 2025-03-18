@@ -1,15 +1,14 @@
 import React, { useMemo } from "react";
 
 import { useMutation } from "@tanstack/react-query";
+import { parseApiError, signUp } from "@task-manager/api";
 import { Form, Input } from "antd";
-import { signUp } from "api";
 import { Link, useNavigate } from "react-router-dom";
 
-import { withAuthPageCheck } from "shared/HOCs/withAuthPageCheck";
-import { parseUseQueryError } from "shared/utils/errors";
-import { composeRules, email, password, range, required } from "shared/validation";
-import { useAuthStore } from "store/auth";
-import AuthForm from "widgets/AuthForm";
+import { useAuthStore } from "../../app/store/auth";
+import { withAuthPageCheck } from "../../shared/HOCs/withAuthPageCheck";
+import { composeRules, email, password, range, required } from "../../shared/validation";
+import AuthForm from "../../widgets/AuthForm";
 
 const rules = {
 	username: composeRules(required(), range({ min: 5, max: 20, type: "string" })),
@@ -31,7 +30,7 @@ const SignUp: React.FC = () => {
 		}
 	});
 
-	const parsedError = useMemo(() => parseUseQueryError(error, undefined, [400]), [error]);
+	const parsedError = useMemo(() => parseApiError(error, undefined, [400]), [error]);
 
 	return (
 		<AuthForm

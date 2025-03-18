@@ -2,9 +2,9 @@ import { memo } from "react";
 
 import { Button, Form, FormProps, Typography } from "antd";
 
-import ErrorMessage from "shared/ui/ErrorMessage";
-
 import * as s from "./styles";
+
+import ErrorMessage from "../../shared/ui/ErrorMessage";
 
 type AuthFormProps<Values> = Omit<FormProps<Values>, "children" | "layout"> & {
 	children: React.ReactNode;

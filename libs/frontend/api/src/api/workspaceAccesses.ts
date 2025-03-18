@@ -1,5 +1,6 @@
-import { WorkspaceAccess } from "../types";
 import { axiosInstance } from "./base";
+
+import { WorkspaceAccess } from "../types";
 
 interface GetWorkspaceAccessArgs {
 	workspaceId: string;

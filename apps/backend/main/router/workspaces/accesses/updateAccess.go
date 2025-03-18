@@ -15,7 +15,7 @@ type giveAccessBody struct {
 	Role   *dbClient.UserRole `json:"role" validate:"oneof=owner admin member commentator guest"`
 }
 
-// @Summary				Give access to a workspace	
+// @Summary				Give access to a workspace
 // @Description 		Give access to a workspace
 // @Tags				Workspace Accesses
 // @Accept				json

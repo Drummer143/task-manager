@@ -3,11 +3,10 @@ import React, { useState } from "react";
 import { Layout } from "antd";
 import { Outlet } from "react-router-dom";
 
-import { useAppStore } from "store/app";
-
 import * as s from "./styles";
 import UserMenu from "./UserMenu";
 
+import { useAppStore } from "../../../app/store/app";
 import NavContent from "../NavContent";
 
 const DesktopLayout: React.FC = () => {

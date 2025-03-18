@@ -1,6 +1,6 @@
 import React from "react";
 
-import { lazySuspense } from "shared/HOCs/lazySuspense";
+import { lazySuspense } from "@task-manager/utils";
 
 import TaskTable from "./widgets/TaskTable";
 

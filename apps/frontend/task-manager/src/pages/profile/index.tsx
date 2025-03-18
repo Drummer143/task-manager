@@ -1,15 +1,15 @@
 import React from "react";
 
 import { useQuery } from "@tanstack/react-query";
+import { getProfile } from "@task-manager/api";
 import { Alert, Spin } from "antd";
-import { getProfile } from "api";
-
-import { withAuthPageCheck } from "shared/HOCs/withAuthPageCheck";
 
 import { FormsContainer, StyledFlex } from "./styles";
 import AvatarInput from "./widgets/AvatarUpload";
 import EmailForm from "./widgets/EmailForm";
 import UserInfoForm from "./widgets/UserInfoForm";
+
+import { withAuthPageCheck } from "../../shared/HOCs";
 
 const Profile: React.FC = () => {
 	const { data, isLoading, error } = useQuery({

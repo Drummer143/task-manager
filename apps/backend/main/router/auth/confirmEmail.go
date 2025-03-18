@@ -19,7 +19,7 @@ type confirmEmailBody struct {
 // @Summary			Confirm email
 // @Description		Confirm email
 // @Tags			Auth
-// @Accept			json 
+// @Accept			json
 // @Produce		    json
 // @Param			body body confirmEmailBody true "Confirm email object"
 // @Success			204 "No Content"

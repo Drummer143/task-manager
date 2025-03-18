@@ -1,7 +1,7 @@
 import { Button, Typography } from "antd";
 import styled from "styled-components";
 
-import { statusColors } from "shared/utils";
+import { statusColors } from "../../../../../shared/constants";
 
 export const TaskGroup = styled.div<{ status: TaskStatus; isDragTarget: boolean }>`
 	--inner-border-radius: calc(var(--ant-border-radius) - var(--ant-padding-xxs) / 2);

@@ -2,16 +2,14 @@ import React, { useMemo, useState } from "react";
 
 import { PlusOutlined } from "@ant-design/icons";
 import { useMutation, useQueries, useQueryClient } from "@tanstack/react-query";
+import { getUserList, getWorkspace, getWorkspaceAccess, parseApiError, updateWorkspaceAccess, User } from "@task-manager/api";
+import { useMessageOnErrorCallback } from "@task-manager/utils";
 import { App, Button, List, Modal, Tooltip } from "antd";
-import { getUserList, getWorkspace, getWorkspaceAccess, updateWorkspaceAccess } from "api";
-
-import { useMessageOnErrorCallback } from "shared/hooks";
-import { parseUseQueryError } from "shared/utils/errors";
-import PopoverInfiniteSelect from "widgets/PopoverInfiniteSelect";
-import UserCard from "widgets/UserCard";
 
 import * as s from "./styles";
 
+import PopoverInfiniteSelect from "../../../../widgets/PopoverInfiniteSelect";
+import UserCard from "../../../../widgets/UserCard";
 import AccessListItem from "../AccessListItem";
 
 interface SettingsProps {
@@ -64,7 +62,7 @@ const Settings: React.FC<SettingsProps> = ({ onClose, open, workspaceId }) => {
 	});
 
 	const parsedError = useMemo(
-		() => (workspaceError || workspaceAccessError) && parseUseQueryError(workspaceError || workspaceAccessError),
+		() => (workspaceError || workspaceAccessError) && parseApiError(workspaceError || workspaceAccessError),
 		[workspaceAccessError, workspaceError]
 	);
 

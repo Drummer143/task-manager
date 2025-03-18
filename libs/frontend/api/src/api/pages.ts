@@ -1,5 +1,6 @@
-import { Page, PageType } from "../types";
 import { axiosInstance } from "./base";
+
+import { Page, PageType } from "../types";
 
 type GetPageIncludes = "tasks" | "owner" | "childrenPages" | "parentPage";
 

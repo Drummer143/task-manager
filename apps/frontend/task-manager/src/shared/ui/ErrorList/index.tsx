@@ -1,10 +1,9 @@
 import React, { useMemo } from "react";
 
+import { parseApiError } from "@task-manager/api";
 import { Form } from "antd";
 import { AxiosError } from "axios";
 import styled from "styled-components";
-
-import { parseUseQueryError } from "shared/utils";
 
 interface ErrorListProps {
 	error?: Error | AxiosError | null;
@@ -22,7 +21,7 @@ const Errors = styled(Form.ErrorList)<{ center?: boolean }>`
 `;
 
 const ErrorList: React.FC<ErrorListProps> = ({ error, center }) => {
-	const errors = useMemo(() => (error ? [parseUseQueryError(error, undefined, true)] : undefined), [error]);
+	const errors = useMemo(() => (error ? [parseApiError(error, undefined, true)] : undefined), [error]);
 
 	return <Errors errors={errors} center={center} />;
 };

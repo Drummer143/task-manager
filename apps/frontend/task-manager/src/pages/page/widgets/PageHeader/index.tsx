@@ -1,9 +1,8 @@
 import React, { memo } from "react";
 
 import { SettingOutlined } from "@ant-design/icons";
+import { useDisclosure } from "@task-manager/utils";
 import { Button, Flex, Typography } from "antd";
-
-import { useDisclosure } from "shared/hooks";
 
 import Settings from "../Settings";
 

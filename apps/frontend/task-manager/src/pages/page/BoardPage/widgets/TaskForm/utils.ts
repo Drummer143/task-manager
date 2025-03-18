@@ -1,9 +1,9 @@
 import { DefaultOptionType } from "antd/es/select";
 
-import { statusArray, taskStatusLocale } from "shared/utils";
-import { required } from "shared/validation";
-
 import { FormValues } from "./types";
+
+import { statusArray, taskStatusLocale } from "../../../../../shared/constants";
+import { required } from "../../../../../shared/validation";
 
 export const requiredRule = required();
 

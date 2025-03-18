@@ -1,15 +1,14 @@
 import React, { useMemo } from "react";
 
 import { useMutation } from "@tanstack/react-query";
+import { parseApiError, resetPassword } from "@task-manager/api";
 import { App, Form, Input, Typography } from "antd";
-import { resetPassword } from "api";
 import { Link } from "react-router-dom";
 
-import { withAuthPageCheck } from "shared/HOCs/withAuthPageCheck";
-import AuthPageMessageWrapper from "shared/ui/AuthPageMessageWrapper";
-import { parseUseQueryError } from "shared/utils/errors";
-import { composeRules, email, required } from "shared/validation";
-import AuthForm from "widgets/AuthForm";
+import { withAuthPageCheck } from "../../shared/HOCs/withAuthPageCheck";
+import AuthPageMessageWrapper from "../../shared/ui/AuthPageMessageWrapper";
+import { composeRules, email, required } from "../../shared/validation";
+import AuthForm from "../../widgets/AuthForm";
 
 const emailRule = composeRules(required(), email());
 
@@ -21,7 +20,7 @@ const ResetPassword: React.FC = () => {
 		onError: error => message.error(error.message ?? "Failed to reset password")
 	});
 
-	const parsedError = useMemo(() => parseUseQueryError(error, undefined, [400, 404]), [error]);
+	const parsedError = useMemo(() => parseApiError(error, undefined, [400, 404]), [error]);
 
 	if (isSuccess) {
 		return (

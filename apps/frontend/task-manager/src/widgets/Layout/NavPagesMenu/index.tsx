@@ -2,18 +2,18 @@ import React, { memo, useCallback, useMemo, useState } from "react";
 
 import { PlusOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { createPage, getPageList, parseApiError } from "@task-manager/api";
 import { Button, Form, Input, Select, Typography } from "antd";
 import ErrorList from "antd/es/form/ErrorList";
 import { DefaultOptionType } from "antd/es/select";
-import { createPage, getPageList } from "api";
-
-import FullSizeLoader from "shared/ui/FullSizeLoader";
-import { pageTypes, parseUseQueryError } from "shared/utils";
-import { useAppStore } from "store/app";
-import Drawer from "widgets/Drawer";
 
 import Menu from "./Menu";
 import { PageListTitleWrapper } from "./Menu/styles";
+
+import { useAppStore } from "../../../app/store/app";
+import { pageTypes } from "../../../shared/constants";
+import FullSizeLoader from "../../../shared/ui/FullSizeLoader";
+import Drawer from "../../../widgets/Drawer";
 
 interface FormValues {
 	title: string;
@@ -54,7 +54,7 @@ const NavPagesMenu: React.FC = () => {
 		}
 	});
 
-	const parsedError = useMemo(() => (error ? [parseUseQueryError(error)] : undefined), [error]);
+	const parsedError = useMemo(() => (error ? [parseApiError(error)] : undefined), [error]);
 
 	const handleFormSubmit = useCallback(
 		async (values: FormValues) => {

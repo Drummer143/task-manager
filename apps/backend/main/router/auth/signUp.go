@@ -50,8 +50,8 @@ func signUp(auth *auth.Auth, validate *validator.Validate, postgres *gorm.DB) gi
 		}
 
 		if err := postgres.Create(&dbClient.User{
-			Email:    body.Email,
-			Username: body.Username,
+			Email:     body.Email,
+			Username:  body.Username,
 			LastLogin: time.Now(),
 		}).Error; err != nil {
 			if err.Error() == "ERROR: duplicate key value violates unique constraint \"users_email_key\" (SQLSTATE 23505)" {
@@ -74,8 +74,8 @@ func signUp(auth *auth.Auth, validate *validator.Validate, postgres *gorm.DB) gi
 		emailVerificationToken, _ := auth.GenerateJWT(user.Email, EMAIL_VERIFICATION_TOKEN_LIFETIME)
 
 		if err := postgres.Create(&dbClient.UserCredential{
-			UserID:       user.ID,
-			PasswordHash: string(passwordHash),
+			UserID:                 user.ID,
+			PasswordHash:           string(passwordHash),
 			EmailVerificationToken: &emailVerificationToken,
 		}).Error; err != nil {
 			errorHandlers.InternalServerError(ctx, "failed to create user credentials")

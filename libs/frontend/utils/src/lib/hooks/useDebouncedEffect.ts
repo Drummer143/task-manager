@@ -7,6 +7,6 @@ export const useDebouncedEffect = <T>(value: T, callback?: (value: T) => void, d
 
 	useEffect(() => {
 		callback?.(debouncedValue);
-		// eslint-disable-next-line react-hooks/exhaustive-deps
+		 
 	}, [debouncedValue]);
 };

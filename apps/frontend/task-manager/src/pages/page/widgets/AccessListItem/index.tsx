@@ -4,8 +4,8 @@ import { CloseOutlined } from "@ant-design/icons";
 import { Button, Flex, Select } from "antd";
 import styled from "styled-components";
 
-import { userBoardRoleOptions } from "shared/utils";
-import UserCard from "widgets/UserCard";
+import { userBoardRoleOptions } from "../../../../shared/constants";
+import UserCard from "../../../../widgets/UserCard";
 
 interface AccessListItemProps {
 	user: User;

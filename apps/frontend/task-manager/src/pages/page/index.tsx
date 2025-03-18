@@ -1,16 +1,16 @@
 import React from "react";
 
 import { useQuery } from "@tanstack/react-query";
-import { getPage } from "api";
+import { getPage } from "@task-manager/api";
+import { lazySuspense } from "@task-manager/utils";
 import { useNavigate, useParams } from "react-router-dom";
-
-import { lazySuspense } from "shared/HOCs/lazySuspense";
-import { withAuthPageCheck } from "shared/HOCs/withAuthPageCheck";
-import FullSizeLoader from "shared/ui/FullSizeLoader";
-import { useAppStore } from "store/app";
 
 import { PageContainer } from "./styles";
 import PageHeader from "./widgets/PageHeader";
+
+import { useAppStore } from "../../app/store/app";
+import { withAuthPageCheck } from "../../shared/HOCs/withAuthPageCheck";
+import FullSizeLoader from "../../shared/ui/FullSizeLoader";
 
 const BoardPage = lazySuspense(() => import("./BoardPage"), <FullSizeLoader />);
 const TextPage = lazySuspense(() => import("./TextPage"), <FullSizeLoader />);

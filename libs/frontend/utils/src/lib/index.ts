@@ -1,4 +1,5 @@
 export * from "./object";
-export * from "./canvas";
 export * from "./DOM";
 export * from "./string";
+export * from "./hooks";
+export * from "./HOCs";

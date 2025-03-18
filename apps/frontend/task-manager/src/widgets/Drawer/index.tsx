@@ -66,7 +66,7 @@ const Drawer = <Values extends object = never>({
 		}
 
 		if (formProps) {
-			// eslint-disable-next-line react/display-name
+			 
 			return node => <Form {...formProps}>{node}</Form>;
 		}
 	}, [form, onOk, propsDrawerRender]);

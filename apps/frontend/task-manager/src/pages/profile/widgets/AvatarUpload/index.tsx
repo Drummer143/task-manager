@@ -1,12 +1,12 @@
 import React, { memo, useCallback, useState } from "react";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { uploadAvatar } from "@task-manager/api";
 import { App, Flex } from "antd";
-import { uploadAvatar } from "api";
 import { Area } from "react-easy-crop";
 
-import FileInput from "widgets/FileInput";
-import ImageCrop from "widgets/ImageCrop";
+import FileInput from "../../../../widgets/FileInput";
+import ImageCrop from "../../../../widgets/ImageCrop";
 
 interface AvatarUploaderProps {
 	avatarUrl?: string;

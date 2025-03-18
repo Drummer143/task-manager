@@ -1,13 +1,12 @@
 import React, { useEffect, useMemo, useRef } from "react";
 
 import { useMutation } from "@tanstack/react-query";
+import { confirmEmail, parseApiError } from "@task-manager/api";
 import { Flex, Spin, Typography } from "antd";
-import { confirmEmail } from "api";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 
-import AuthPageMessageWrapper from "shared/ui/AuthPageMessageWrapper";
-import { parseUseQueryError } from "shared/utils/errors";
-import { useAuthStore } from "store/auth";
+import { useAuthStore } from "../../app/store/auth";
+import AuthPageMessageWrapper from "../../shared/ui/AuthPageMessageWrapper";
 
 const ConfirmEmail: React.FC = () => {
 	const user = useAuthStore(state => state.user);
@@ -23,7 +22,7 @@ const ConfirmEmail: React.FC = () => {
 	const redirectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
 	const token = useMemo(() => searchParams.get("token"), [searchParams]);
-	const parsedError = useMemo(() => parseUseQueryError(error, undefined, [400, 401]), [error]);
+	const parsedError = useMemo(() => parseApiError(error, undefined, [400, 401]), [error]);
 
 	useEffect(() => {
 		if (!token) {
@@ -42,9 +41,8 @@ const ConfirmEmail: React.FC = () => {
 				clearTimeout(redirectTimeoutRef.current);
 			}
 		};
-
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []);
+		 
+	}, [mutateAsync, navigate, token]);
 
 	if (!token) {
 		return (

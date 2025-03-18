@@ -1,4 +1,4 @@
-import { getProfile } from "api";
+import { getProfile, User } from "@task-manager/api";
 import { create } from "zustand";
 import { devtools } from "zustand/middleware";
 

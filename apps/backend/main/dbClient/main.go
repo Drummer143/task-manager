@@ -24,7 +24,7 @@ type Change struct {
 type ShortUserInfo struct {
 	Id      uuid.UUID `json:"id"`
 	Name    string    `json:"name"`
-	Picture *string    `json:"picture,omitempty"`
+	Picture *string   `json:"picture,omitempty"`
 }
 
 type EntityVersionDocument struct {

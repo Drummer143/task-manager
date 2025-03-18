@@ -1,12 +1,12 @@
 import React, { memo, useCallback } from "react";
 
 import { PlusOutlined } from "@ant-design/icons";
-
-import { preventDefault, taskStatusLocale } from "shared/utils";
-import { useTasksStore } from "store/tasks";
+import { preventDefault } from "@task-manager/utils";
 
 import * as s from "./styles";
 
+import { useTasksStore } from "../../../../../app/store/tasks";
+import { taskStatusLocale } from "../../../../../shared/constants";
 import TaskList from "../TaskList";
 
 interface TaskColumnProps {

@@ -1,10 +1,10 @@
 import React, { useMemo } from "react";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { changeEmail } from "@task-manager/api";
 import { App, Button, Form, Input } from "antd";
-import { changeEmail } from "api";
 
-import { composeRules, email, required } from "shared/validation";
+import { composeRules, email, required } from "../../../../shared/validation";
 
 interface EmailFormProps {
 	email: string;

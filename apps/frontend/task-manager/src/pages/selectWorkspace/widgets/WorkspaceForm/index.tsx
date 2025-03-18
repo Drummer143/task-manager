@@ -1,16 +1,18 @@
 import React from "react";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { createWorkspace } from "@task-manager/api";
 import { Button, Checkbox, Flex, Form, Input } from "antd";
-import { createWorkspace } from "api";
 
-import { requiredRule } from "pages/page/BoardPage/widgets/TaskForm/utils";
-import ErrorList from "shared/ui/ErrorList";
+import ErrorList from "../../../../shared/ui/ErrorList";
+import { required } from "../../../../shared/validation";
 
 interface WorkspaceFormProps {
 	onClose: () => void;
 	onSubmit: (id: string) => void;
 }
+
+const requiredRule = required();
 
 interface FormValues {
 	name: string;

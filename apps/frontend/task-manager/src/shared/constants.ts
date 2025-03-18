@@ -1,31 +1,31 @@
-import { DefaultOptionType } from 'antd/es/select';
-import { PageType, TaskStatus, UserRole } from '@task-manager/api';
-import dayjs from 'dayjs';
+import { PageType, TaskStatus, UserRole } from "@task-manager/api";
+import { DefaultOptionType } from "antd/es/select";
+import dayjs from "dayjs";
 
-export const statusArray: TaskStatus[] = ['not_done', 'in_progress', 'done'];
+export const statusArray: TaskStatus[] = ["not_done", "in_progress", "done"];
 
 export const taskStatusLocale: Record<TaskStatus, string> = {
-  done: 'Done',
-  in_progress: 'In progress',
-  not_done: 'Not done',
+  done: "Done",
+  in_progress: "In progress",
+  not_done: "Not done"
 };
 
 export const statusColors: Record<TaskStatus, string> = {
-  done: '--ant-color-done',
-  in_progress: '--ant-color-in-progress',
-  not_done: '--ant-color-not-done',
+  done: "--ant-color-done",
+  in_progress: "--ant-color-in-progress",
+  not_done: "--ant-color-not-done"
 };
 
-export const pageTypes: PageType[] = ['board', 'text', 'group'];
+export const pageTypes: PageType[] = ["board", "text", "group"];
 
 export const today = dayjs();
 
 export const userBoardRoles: UserRole[] = [
-  'owner',
-  'admin',
-  'member',
-  'commentator',
-  'guest',
+  "owner",
+  "admin",
+  "member",
+  "commentator",
+  "guest"
 ];
 
 export const userBoardRoleOptions: DefaultOptionType[] = userBoardRoles.map(
@@ -36,7 +36,7 @@ export const userBoardRoleOptions: DefaultOptionType[] = userBoardRoles.map(
       label: capitalizedRole,
       title: capitalizedRole,
       value: role,
-      key: role,
+      key: role
     };
-  },
+  }
 );

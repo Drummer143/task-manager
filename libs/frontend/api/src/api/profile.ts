@@ -1,6 +1,7 @@
 import { removeEmptyFields } from "@task-manager/utils";
 
 import { axiosInstance } from "./base";
+
 import { User } from "../types";
 
 export const getProfile = async () => (await axiosInstance.get<User>("/profile")).data;

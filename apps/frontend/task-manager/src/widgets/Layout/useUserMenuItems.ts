@@ -1,11 +1,11 @@
 import { useMemo } from "react";
 
 import { useMutation } from "@tanstack/react-query";
+import { logout } from "@task-manager/api";
 import { App, MenuProps } from "antd";
-import { logout } from "api";
 import { useNavigate } from "react-router-dom";
 
-import { useAuthStore } from "store/auth";
+import { useAuthStore } from "../../app/store/auth";
 
 export const useUserMenuItems = () => {
 	const clear = useAuthStore(state => state.clear);

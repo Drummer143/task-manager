@@ -1,12 +1,11 @@
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { InfiniteData, QueryKey, useInfiniteQuery } from "@tanstack/react-query";
+import { useDebouncedEffect } from "@task-manager/utils";
 import { Select, Spin, Tooltip } from "antd";
 import { DefaultOptionType, SelectProps } from "antd/es/select";
 import { BaseSelectRef } from "rc-select";
 import { DisplayValueType } from "rc-select/lib/interface";
-
-import { useDebouncedEffect } from "shared/hooks";
 
 interface SelectWithInfiniteScrollProps<L, T extends ResponseWithPagination<L>, Q extends object = never>
 	extends Omit<
@@ -70,7 +69,7 @@ const SelectWithInfiniteScroll = <L, T extends ResponseWithPagination<L>, Q exte
 			return propsMaxTagPlaceholder;
 		}
 
-		// eslint-disable-next-line react/display-name
+		 
 		return omittedValues => (
 			<span onClick={e => e.stopPropagation()}>
 				<Tooltip style={{ userSelect: "all" }} title={omittedValues.map(item => item.label).join(", ")}>
@@ -106,7 +105,7 @@ const SelectWithInfiniteScroll = <L, T extends ResponseWithPagination<L>, Q exte
 		}
 
 		setItems(prevItems => prevItems.concat(data.pages.at(-1)?.data.map(transformItem) || []));
-		// eslint-disable-next-line react-hooks/exhaustive-deps
+		 
 	}, [data]);
 
 	useEffect(() => {

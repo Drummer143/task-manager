@@ -1,9 +1,8 @@
 import React, { memo, useMemo } from "react";
 
-import { statusArray } from "shared/utils";
-
 import { StyledFlex } from "./styles";
 
+import { statusArray } from "../../../../../shared/constants";
 import TaskColumn from "../TaskStatusGroup";
 
 interface TaskTableProps {

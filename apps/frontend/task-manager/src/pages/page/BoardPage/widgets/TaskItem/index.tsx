@@ -3,7 +3,7 @@ import React, { memo } from "react";
 import { Typography } from "antd";
 import styled from "styled-components";
 
-import { statusColors } from "shared/utils";
+import { statusColors } from "../../../../../shared/constants";
 
 interface TaskItemProps {
 	task: Task;

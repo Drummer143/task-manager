@@ -1,3 +1,5 @@
+import { Task } from "@task-manager/api";
+
 export const drawRoundedRect = (
 	context: CanvasRenderingContext2D,
 	x: number,

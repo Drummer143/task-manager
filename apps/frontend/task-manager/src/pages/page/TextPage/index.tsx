@@ -2,13 +2,13 @@ import React, { useCallback, useRef, useState } from "react";
 
 import { MDXEditorMethods } from "@mdxeditor/editor";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { updatePage } from "@task-manager/api";
 import { App, Button } from "antd";
-import { updatePage } from "api";
-
-import { useAppStore } from "store/app";
-import MDEditor from "widgets/MDEditor";
 
 import * as s from "./styled";
+
+import { useAppStore } from "../../../app/store/app";
+import MDEditor from "../../../widgets/MDEditor";
 
 interface TextPageProps {
 	page: Omit<Page, "tasks" | "owner" | "childrenPages" | "parentPage">;

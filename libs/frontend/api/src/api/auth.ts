@@ -1,5 +1,6 @@
-import { User } from "../types";
 import { axiosInstance } from "./base";
+
+import { User } from "../types";
 
 export const login = async (body: { username: string; password: string }) =>
 	(await axiosInstance.post<User>("/auth/login", body)).data;

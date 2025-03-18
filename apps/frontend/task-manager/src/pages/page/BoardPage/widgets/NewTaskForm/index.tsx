@@ -1,13 +1,12 @@
 import React, { useCallback, useEffect } from "react";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { createTask } from "@task-manager/api";
+import { useDisclosure } from "@task-manager/utils";
 import { Form } from "antd";
-import { createTask } from "api";
 import { useParams } from "react-router-dom";
 
-import { useDisclosure } from "shared/hooks";
-import { useAppStore } from "store/app";
-
+import { useAppStore } from "../../../../../app/store/app";
 import TaskForm from "../TaskForm";
 import { FormValues } from "../TaskForm/types";
 

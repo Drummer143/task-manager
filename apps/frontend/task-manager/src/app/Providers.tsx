@@ -1,11 +1,10 @@
 import React, { useMemo } from "react";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { darkThemeConfig, lightThemeConfig } from "@task-manager/ant-config";
 import { theme as antTheme, ConfigProvider } from "antd";
 
-import darkThemeConfig from "shared/antConfigs/darkThemeConfig";
-import lightThemeConfig from "shared/antConfigs/lightThemeConfig";
-import { useAppStore } from "store/app";
+import { useAppStore } from "./store/app";
 
 interface ProvidersProps {
 	children: React.ReactNode;

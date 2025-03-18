@@ -1,16 +1,19 @@
 import React, { useCallback, useEffect, useMemo, useRef } from "react";
 
 import { useMutation } from "@tanstack/react-query";
+import {
+	updatePassword as apiUpdatePassword,
+	verifyResetPasswordToken as apiVerifyResetPasswordToken,
+	parseApiError
+} from "@task-manager/api";
 import { Flex, Form, Input, Spin, Typography } from "antd";
 import { Rule } from "antd/es/form";
-import { updatePassword as apiUpdatePassword, verifyResetPasswordToken as apiVerifyResetPasswordToken } from "api";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
 
-import { withAuthPageCheck } from "shared/HOCs/withAuthPageCheck";
-import AuthPageMessageWrapper from "shared/ui/AuthPageMessageWrapper";
-import { parseUseQueryError } from "shared/utils/errors";
-import { confirmPassword, password } from "shared/validation";
-import AuthForm from "widgets/AuthForm";
+import { withAuthPageCheck } from "../../shared/HOCs/withAuthPageCheck";
+import AuthPageMessageWrapper from "../../shared/ui/AuthPageMessageWrapper";
+import { confirmPassword, password } from "../../shared/validation";
+import AuthForm from "../../widgets/AuthForm";
 
 const rules: Record<string, Rule[]> = {
 	password: password(),
@@ -43,7 +46,7 @@ const NewPassword: React.FC = () => {
 		mutationFn: apiUpdatePassword
 	});
 
-	const passwordUpdateError = useMemo(() => parseUseQueryError(error, undefined, [400, 404]), [error]);
+	const passwordUpdateError = useMemo(() => parseApiError(error, undefined, [400, 404]), [error]);
 
 	const visibilityToggle = useMemo(
 		() => ({ onVisibleChange: setPasswordsVisible, visible: passwordsVisible }),
@@ -73,7 +76,6 @@ const NewPassword: React.FC = () => {
 				clearTimeout(redirectTimeoutRef.current);
 			}
 		};
-		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
 	if (isTokenValidating) {

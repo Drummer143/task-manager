@@ -1,13 +1,12 @@
 import React, { useCallback } from "react";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { getTask, updateTask } from "@task-manager/api";
 import { App } from "antd";
-import { getTask, updateTask } from "api";
 import dayjs from "dayjs";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
-import { useAppStore } from "store/app";
-
+import { useAppStore } from "../../../../../app/store/app";
 import TaskForm from "../TaskForm";
 import { FormValues } from "../TaskForm/types";
 import TaskHistory from "../TaskHistory";

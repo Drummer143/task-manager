@@ -16,7 +16,7 @@ import (
 
 type updatePasswordBody struct {
 	Password string `json:"password" validate:"required,min=8,max=16"`
-	Token string `json:"token" validate:"required"`
+	Token    string `json:"token" validate:"required"`
 }
 
 func updatePassword(auth *auth.Auth, validate *validator.Validate, postgres *gorm.DB) gin.HandlerFunc {
