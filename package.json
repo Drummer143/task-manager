@@ -5,8 +5,8 @@
   "scripts": {
     "dev:all": "nx run-many --target=dev --all",
     "dev:base": "nx run-many --target=dev --projects=main,task-manager",
-    "lint": "nx lint",
-    "build": "nx build"
+    "lint": "nx run-many --target=lint --all",
+    "build": "nx run-many --target=build --all"
   },
   "private": true,
   "dependencies": {
@@ -71,6 +71,7 @@
     "typescript-eslint": "^8.19.0",
     "vite": "^6.0.0",
     "vite-bundle-visualizer": "^1.2.1",
+    "vite-plugin-dts": "^4.5.3",
     "vitest": "^3.0.0"
   },
   "pnpm": {

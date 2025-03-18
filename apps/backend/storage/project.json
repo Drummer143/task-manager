@@ -6,13 +6,13 @@
   "tags": [],
   "targets": {
     "build": {
+      "parallelism": true,
       "executor": "@nx-go/nx-go:build",
       "options": {
         "main": "{projectRoot}/main.go"
       }
     },
     "dev": {
-      "parallelism": true,
       "command": "air",
       "options": {
         "cwd": "{projectRoot}"

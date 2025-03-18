@@ -14,7 +14,11 @@
     "skipLibCheck": true,
     "skipDefaultLibCheck": true,
     "baseUrl": ".",
-    "paths": {}
+    "paths": {
+      "@task-manager/ant-config": ["libs/frontend/ant-config/src/index.ts"],
+      "@task-manager/api": ["libs/frontend/api/src/index.ts"],
+      "@task-manager/utils": ["libs/frontend/utils/src/index.ts"]
+    }
   },
   "exclude": ["node_modules", "tmp"]
 }
