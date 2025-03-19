@@ -25,6 +25,7 @@ const EditTaskForm: React.FC = () => {
 
 	const { isLoading, data } = useQuery({
 		queryKey: [taskId],
+		enabled: !!taskId,
 		queryFn: async (): Promise<FormValues> => {
 			const result = await getTask({
 				pageId,
@@ -40,8 +41,7 @@ const EditTaskForm: React.FC = () => {
 				assignedTo: result.assignee?.id,
 				dueDate: result.dueDate ? dayjs(result.dueDate) : undefined
 			};
-		},
-		enabled: !!taskId
+		}
 	});
 
 	const { mutateAsync, isPending } = useMutation({

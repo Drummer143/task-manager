@@ -42,7 +42,7 @@ const ConfirmEmail: React.FC = () => {
 			}
 		};
 		 
-	}, [mutateAsync, navigate, token]);
+	}, [mutateAsync, navigate, token, user]);
 
 	if (!token) {
 		return (

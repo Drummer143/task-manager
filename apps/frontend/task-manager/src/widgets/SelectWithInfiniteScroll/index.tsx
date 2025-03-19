@@ -1,28 +1,36 @@
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { InfiniteData, QueryKey, useInfiniteQuery } from "@tanstack/react-query";
+import { PaginationQuery, ResponseWithPagination } from "@task-manager/api";
 import { useDebouncedEffect } from "@task-manager/utils";
 import { Select, Spin, Tooltip } from "antd";
 import { DefaultOptionType, SelectProps } from "antd/es/select";
 import { BaseSelectRef } from "rc-select";
 import { DisplayValueType } from "rc-select/lib/interface";
 
-interface SelectWithInfiniteScrollProps<L, T extends ResponseWithPagination<L>, Q extends object = never>
-	extends Omit<
+interface SelectWithInfiniteScrollProps<
+	ItemType,
+	Response extends ResponseWithPagination<ItemType>,
+	ExtraQuery extends object
+> extends Omit<
 		SelectProps,
 		"options" | "onPopupScroll" | "onSearch" | "loading" | "filterOption" | "dropdownRender" | "maxTagPlaceholder"
 	> {
-	fetchItems: (query?: PaginationQuery<Q>) => Promise<T>;
-	transformItem: (item: T["data"][number]) => DefaultOptionType;
+	fetchItems: (query?: PaginationQuery<ExtraQuery>) => Promise<Response>;
+	transformItem: (item: Response["data"][number]) => DefaultOptionType;
 
 	queryKey: QueryKey;
 	filterQueryName?: string;
-	extraQueryParams?: Record<string, string>;
+	extraQueryParams?: ExtraQuery;
 	/** if equals to "withTooltip" then tag will open tooltip on hover */
 	maxTagPlaceholder?: "withTooltip" | React.ReactNode | ((omittedValues: DisplayValueType[]) => React.ReactNode);
 }
 
-const SelectWithInfiniteScroll = <L, T extends ResponseWithPagination<L>, Q extends object = never>({
+const SelectWithInfiniteScroll = <
+	ItemType,
+	Response extends ResponseWithPagination<ItemType>,
+	ExtraQuery extends object
+>({
 	fetchItems,
 	transformItem,
 	onFocus,
@@ -32,25 +40,25 @@ const SelectWithInfiniteScroll = <L, T extends ResponseWithPagination<L>, Q exte
 	extraQueryParams,
 	filterQueryName,
 	...props
-}: SelectWithInfiniteScrollProps<L, T, Q>) => {
+}: SelectWithInfiniteScrollProps<ItemType, Response, ExtraQuery>) => {
 	const [items, setItems] = useState<DefaultOptionType[]>([]);
 	const [searchText, setSearchText] = useState("");
 	const [debouncedSearchText, setDebouncedSearchText] = useState("");
 
-	const extraParams = useMemo(
+	const extraParams = useMemo<ExtraQuery>(
 		() => ({
 			...extraQueryParams,
 			...(filterQueryName ? { [filterQueryName]: debouncedSearchText } : {})
-		}),
+		}) as ExtraQuery,
 		[debouncedSearchText, extraQueryParams, filterQueryName]
 	);
 
 	const selectRef = useRef<BaseSelectRef | null>(null);
 
 	const { data, isFetching, isLoading, hasNextPage, fetchNextPage } = useInfiniteQuery<
-		T,
+		Response,
 		Error,
-		InfiniteData<T, number>,
+		InfiniteData<Response, number>,
 		QueryKey,
 		number
 	>({
@@ -60,7 +68,7 @@ const SelectWithInfiniteScroll = <L, T extends ResponseWithPagination<L>, Q exte
 		initialPageParam: 0,
 		initialData: {
 			pageParams: [0],
-			pages: [{ data: [], meta: { total: 0, limit: 10, offset: 0, hasMore: true } } as unknown as T]
+			pages: [{ data: [], meta: { total: 0, limit: 10, offset: 0, hasMore: true } } as unknown as Response]
 		}
 	});
 
@@ -69,7 +77,6 @@ const SelectWithInfiniteScroll = <L, T extends ResponseWithPagination<L>, Q exte
 			return propsMaxTagPlaceholder;
 		}
 
-		 
 		return omittedValues => (
 			<span onClick={e => e.stopPropagation()}>
 				<Tooltip style={{ userSelect: "all" }} title={omittedValues.map(item => item.label).join(", ")}>
@@ -105,8 +112,7 @@ const SelectWithInfiniteScroll = <L, T extends ResponseWithPagination<L>, Q exte
 		}
 
 		setItems(prevItems => prevItems.concat(data.pages.at(-1)?.data.map(transformItem) || []));
-		 
-	}, [data]);
+	}, [data, transformItem]);
 
 	useEffect(() => {
 		const ref = selectRef.current;

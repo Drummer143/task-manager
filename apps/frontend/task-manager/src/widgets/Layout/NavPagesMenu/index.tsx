@@ -2,7 +2,7 @@ import React, { memo, useCallback, useMemo, useState } from "react";
 
 import { PlusOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createPage, getPageList, parseApiError } from "@task-manager/api";
+import { createPage, getPageList, PageType, parseApiError } from "@task-manager/api";
 import { Button, Form, Input, Select, Typography } from "antd";
 import ErrorList from "antd/es/form/ErrorList";
 import { DefaultOptionType } from "antd/es/select";

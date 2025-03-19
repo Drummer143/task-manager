@@ -1,8 +1,7 @@
 import React, { useMemo } from "react";
 
 import { HistoryOutlined } from "@ant-design/icons";
-import { useQuery } from "@tanstack/react-query";
-import { ChangeList, getTaskHistory, TaskStatus, VersionHistoryLog } from "@task-manager/api";
+import { getTaskHistory, TaskStatus } from "@task-manager/api";
 import { useDisclosure } from "@task-manager/utils";
 import { Button, Drawer, Tag, Typography } from "antd";
 

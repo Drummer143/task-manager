@@ -2,7 +2,7 @@ import React, { useCallback, useRef, useState } from "react";
 
 import { MDXEditorMethods } from "@mdxeditor/editor";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { updatePage } from "@task-manager/api";
+import { Page, updatePage } from "@task-manager/api";
 import { App, Button } from "antd";
 
 import * as s from "./styled";
@@ -11,7 +11,7 @@ import { useAppStore } from "../../../app/store/app";
 import MDEditor from "../../../widgets/MDEditor";
 
 interface TextPageProps {
-	page: Omit<Page, "tasks" | "owner" | "childrenPages" | "parentPage">;
+	page: Omit<Page, "tasks" | "owner" | "childPages" | "parentPage">;
 }
 
 const TextPage: React.FC<TextPageProps> = ({ page }) => {

@@ -121,7 +121,7 @@ const VersionHistoryList = <Keys extends string = string>({
 						)}
 					</Flex>
 
-					{i !== versionList!.length - 1 && <Divider style={{ margin: "var(--ant-margin-xs) 0" }} />}
+					{i !== versionList.length - 1 && <Divider style={{ margin: "var(--ant-margin-xs) 0" }} />}
 				</>
 			)}
 		/>

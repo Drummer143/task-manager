@@ -1,8 +1,8 @@
 import React, { memo, useCallback } from "react";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { changeStatus } from "@task-manager/api";
-import { App, theme } from "antd";
+import { changeStatus, Task, TaskStatus } from "@task-manager/api";
+import { App, theme, ThemeConfig } from "antd";
 import { useNavigate, useParams } from "react-router-dom";
 import styled from "styled-components";
 

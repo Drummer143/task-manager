@@ -68,9 +68,9 @@ func getHistory(postgres *gorm.DB, tasksVersionCollection *mongo.Collection) gin
 		ctx.JSON(http.StatusOK, routerUtils.ResponseWithPagination[dbClient.EntityVersionDocument]{
 			Data: history,
 			Meta: routerUtils.Meta{
-				Total: int(total),
-				Offset: offset,
-				Limit: limit,
+				Total:   int(total),
+				Offset:  offset,
+				Limit:   limit,
 				HasMore: offset+limit < int(total),
 			},
 		})

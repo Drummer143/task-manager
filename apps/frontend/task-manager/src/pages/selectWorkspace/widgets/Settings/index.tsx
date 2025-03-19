@@ -33,11 +33,11 @@ const Settings: React.FC<SettingsProps> = ({ onClose, open, workspaceId }) => {
 		queries: [
 			{
 				queryKey: ["workspace"],
-				queryFn: () => getWorkspace({ workspaceId: workspaceId! })
+				queryFn: () => getWorkspace({ workspaceId })
 			},
 			{
 				queryKey: ["workspaceAccess"],
-				queryFn: () => getWorkspaceAccess({ workspaceId: workspaceId! })
+				queryFn: () => getWorkspaceAccess({ workspaceId })
 			}
 		]
 	});
@@ -110,8 +110,8 @@ const Settings: React.FC<SettingsProps> = ({ onClose, open, workspaceId }) => {
 						<s.AddMemberButtonContainer>
 							<PopoverInfiniteSelect
 								fetchItems={getUserList}
-								getItemValue={(user: User) => user.id}
-								itemRender={user => <UserCard hideOpenLink user={user} />}
+								getItemValue={(user) => user.id}
+								renderItem={user => <UserCard hideOpenLink user={user} />}
 								queryKey={["users"]}
 								onChange={setNewAddedUser}
 								value={newAddedUser}

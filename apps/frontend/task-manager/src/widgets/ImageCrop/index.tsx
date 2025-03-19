@@ -44,6 +44,7 @@ const ImageCrop: React.FC<ImageCropProps> = ({ image, isOpen, onCancel, onCropFi
 	}, [image, isOpen]);
 
 	return (
+		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		<Modal open={isOpen} onCancel={handleClose} onOk={() => onCropFinish(croppedAreaPixels!)}>
 			<CropWrapper ref={cropWrapperRef}>
 				<Cropper

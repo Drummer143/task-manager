@@ -30,10 +30,10 @@ const Settings: React.FC<SettingsProps> = ({ onClose, open, page }) => {
 
 	const message = App.useApp().message;
 
-	const workspaceId = useAppStore(state => state.workspaceId);
+	const workspaceId = useAppStore(state => state.workspaceId)!;
 
 	const { data, isLoading, error } = useQuery({
-		queryFn: async () => await getPageAccess({ workspaceId: workspaceId!, pageId: page.id }),
+		queryFn: async () => await getPageAccess({ workspaceId, pageId: page.id }),
 		enabled: open && !!workspaceId,
 		queryKey: ["pageAccesses"]
 	});
@@ -63,7 +63,7 @@ const Settings: React.FC<SettingsProps> = ({ onClose, open, page }) => {
 		(userId: string, role?: string) => {
 			updateAccess({
 				pageId: page.id,
-				workspaceId: workspaceId!,
+				workspaceId,
 				body: {
 					userId,
 					role
