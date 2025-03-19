@@ -1,6 +1,7 @@
 import React, { memo } from "react";
 
 import { SettingOutlined } from "@ant-design/icons";
+import { Page } from "@task-manager/api";
 import { useDisclosure } from "@task-manager/utils";
 import { Button, Flex, Typography } from "antd";
 

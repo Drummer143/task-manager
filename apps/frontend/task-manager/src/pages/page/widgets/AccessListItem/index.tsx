@@ -1,6 +1,7 @@
 import React, { memo } from "react";
 
 import { CloseOutlined } from "@ant-design/icons";
+import { User } from "@task-manager/api";
 import { Button, Flex, Select } from "antd";
 import styled from "styled-components";
 

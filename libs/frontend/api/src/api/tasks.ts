@@ -1,6 +1,6 @@
 import { axiosInstance } from "./base";
 
-import { Task, TaskStatus, VersionHistoryLog } from "../types";
+import { PaginationQuery, ResponseWithPagination, Task, TaskStatus, VersionHistoryLog } from "../types";
 
 interface Ids {
 	workspaceId: string;
@@ -86,10 +86,15 @@ export const changeStatus = async ({ taskId, pageId, workspaceId, status }: Chan
 	(await axiosInstance.patch<Task>(`/workspaces/${workspaceId}/pages/${pageId}/tasks/${taskId}/status`, { status }))
 		.data;
 
-interface TaskHistory {
-	current: Task;
-	history: VersionHistoryLog<"title" | "description" | "status" | "dueDate" | "assigneeId">[];
-}
-
-export const getTaskHistory = async ({ pageId, workspaceId, taskId }: Ids & { taskId: string }) =>
-	(await axiosInstance.get<TaskHistory>(`/workspaces/${workspaceId}/pages/${pageId}/tasks/${taskId}/history`)).data;
+export const getTaskHistory = async ({
+	pageId,
+	workspaceId,
+	taskId,
+	limit,
+	offset
+}: Ids & { taskId: string } & PaginationQuery) =>
+	(
+		await axiosInstance.get<
+			ResponseWithPagination<VersionHistoryLog<"title" | "description" | "status" | "dueDate" | "assigneeId">>
+		>(`/workspaces/${workspaceId}/pages/${pageId}/tasks/${taskId}/history?limit=${limit}&offset=${offset}`)
+	).data;

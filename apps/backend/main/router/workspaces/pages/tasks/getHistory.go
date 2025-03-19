@@ -4,6 +4,7 @@ import (
 	"context"
 	"main/dbClient"
 	"main/router/errorHandlers"
+	routerUtils "main/router/utils"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -12,17 +13,16 @@ import (
 	"gorm.io/gorm"
 )
 
-type getHistoryResponse struct {
-	History []dbClient.EntityVersionDocument `json:"history"`
-	Current dbClient.Task                    `json:"current"`
-}
-
 // @Summary				Get task history
 // @Description			Get task history
 // @Tags				Tasks
 // @Produce				json
-// @Param				id path string true "Task ID"
-// @Success				200 {object} []dbClient.Task
+// @Param				page_id path string true "Page ID"
+// @Param				workspace_id path string true "Workspace ID"
+// @Param				task_id path string true "Task ID"
+// @Param				limit query int false "If not provided or less than 1, all users will be returned"
+// @Param				offset query int false "Default is 0"
+// @Success				200 {object} routerUtils.ResponseWithPagination[dbClient.EntityVersionDocument]
 // @Failure				401 {object} errorHandlers.Error "Unauthorized if session is missing or invalid"
 // @Failure				404 {object} errorHandlers.Error
 // @Failure				500 {object} errorHandlers.Error
@@ -41,8 +41,17 @@ func getHistory(postgres *gorm.DB, tasksVersionCollection *mongo.Collection) gin
 			return
 		}
 
+		total, err := tasksVersionCollection.CountDocuments(context.Background(), map[string]interface{}{"id": task.ID})
+
+		if err != nil {
+			errorHandlers.InternalServerError(ctx, "failed to get task history")
+			return
+		}
+
+		limit, offset := routerUtils.ValidatePaginationParams(ctx, routerUtils.DefaultPaginationLimit, routerUtils.DefaultPaginationOffset)
+
 		var history []dbClient.EntityVersionDocument
-		options := options.Find().SetSort(gin.H{"version": -1})
+		options := options.Find().SetSort(gin.H{"version": -1}).SetSkip(int64(offset)).SetLimit(int64(limit))
 
 		cursor, err := tasksVersionCollection.Find(context.Background(), map[string]interface{}{"id": task.ID}, options)
 
@@ -56,6 +65,14 @@ func getHistory(postgres *gorm.DB, tasksVersionCollection *mongo.Collection) gin
 			return
 		}
 
-		ctx.JSON(http.StatusOK, getHistoryResponse{History: history, Current: task})
+		ctx.JSON(http.StatusOK, routerUtils.ResponseWithPagination[dbClient.EntityVersionDocument]{
+			Data: history,
+			Meta: routerUtils.Meta{
+				Total: int(total),
+				Offset: offset,
+				Limit: limit,
+				HasMore: offset+limit < int(total),
+			},
+		})
 	}
 }

@@ -2,7 +2,7 @@ import React, { useCallback, useMemo, useState } from "react";
 
 import { PlusOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getPageAccess, getUserList, parseApiError, updatePageAccess } from "@task-manager/api";
+import { ApiError, getPageAccess, getUserList, Page, parseApiError, updatePageAccess, User } from "@task-manager/api";
 import { App, Button, List, Modal, Tooltip } from "antd";
 import { AxiosError } from "axios";
 
@@ -111,8 +111,8 @@ const Settings: React.FC<SettingsProps> = ({ onClose, open, page }) => {
 						<s.AddMemberButtonContainer>
 							<PopoverInfiniteSelect
 								fetchItems={getUserList}
-								getItemValue={(user: User) => user.id}
-								itemRender={user => <UserCard hideOpenLink user={user} />}
+								getItemValue={(user) => user.id}
+								renderItem={(user) => <UserCard hideOpenLink user={user} />}
 								queryKey={["users"]}
 								onChange={setNewAddedUser}
 								value={newAddedUser}

@@ -1,9 +1,10 @@
-import React, { memo, useCallback, useMemo } from "react";
+import React, { memo, useCallback } from "react";
 
-import { MoreOutlined } from "@ant-design/icons";
-import { VersionHistoryLog } from "@task-manager/api";
-import { Avatar, Button, Divider, Dropdown, Empty, Flex, List, MenuProps, Typography } from "antd";
+import { PaginationQuery, ResponseWithPagination, VersionHistoryLog } from "@task-manager/api";
+import { Avatar, Button, Divider, Empty, Flex, Typography } from "antd";
 import { ListLocale } from "antd/es/list";
+
+import ListWithInfiniteScroll from "../ListWithInfiniteScroll";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type VersionEntryRendererFunction = (info: any) => React.ReactNode;
@@ -25,9 +26,11 @@ export type VersionHistoryEntryRenders<Keys extends string = string> = Partial<
 >;
 
 export interface VersionHistoryListProps<Keys extends string = string> {
-	versionList?: VersionHistoryLog<Keys>[];
+	enabled?: boolean;
 	changeOrder?: Keys[];
 	entryRenders?: VersionHistoryEntryRenders<Keys>;
+
+	fetchLog: (query?: PaginationQuery) => Promise<ResponseWithPagination<VersionHistoryLog<Keys>>>;
 }
 
 const defaultRenderer: VersionEntryRendererFunction = info => info?.toString();
@@ -37,9 +40,10 @@ const listLocale: ListLocale = {
 };
 
 const VersionHistoryList = <Keys extends string = string>({
+	fetchLog,
 	entryRenders,
-	versionList,
-	changeOrder
+	changeOrder,
+	enabled
 }: VersionHistoryListProps<Keys>) => {
 	const getRenderer = useCallback(
 		(key: Keys, change: "from" | "to"): VersionEntryRendererFunction => {
@@ -62,40 +66,37 @@ const VersionHistoryList = <Keys extends string = string>({
 		[entryRenders]
 	);
 
-	const dropdownMenu = useMemo<MenuProps>(
-		() => ({
-			items: [
-				{
-					key: "rollback",
-					label: "Rollback to this version"
-				}
-			]
-		}),
-		[]
-	);
+	// const dropdownMenu = useMemo<MenuProps>(
+	// 	() => ({
+	// 		items: [
+	// 			{
+	// 				key: "rollback",
+	// 				label: "Rollback to this version"
+	// 			}
+	// 		]
+	// 	}),
+	// 	[]
+	// );
 
 	return (
-		<List
+		<ListWithInfiniteScroll<VersionHistoryLog<Keys>>
+			itemLayout="vertical"
 			locale={listLocale}
-			dataSource={versionList || []}
-			renderItem={(item, i) => (
+			fetchItems={fetchLog}
+			enabled={enabled}
+			queryKey={["version-history"]}
+			renderItem={(item, i, versionList) => (
 				<>
-					<Flex vertical gap="var(--ant-margin-xxs)">
-						<Flex justify="flex-end">
+					<Flex vertical gap="var(--ant-margin-sm)">
+						<Flex justify="space-between" align="center">
+							<Typography.Title level={5}>Version {item.version}</Typography.Title>
+
 							<Button
 								type="text"
 								icon={<Avatar size="small" src={item.user.picture || "/avatar-placeholder-32.jpg"} />}
 							>
 								{item.user.name}
 							</Button>
-						</Flex>
-
-						<Flex justify="space-between" align="center">
-							<Typography.Title level={5}>Version {item.version}</Typography.Title>
-
-							<Dropdown menu={dropdownMenu} trigger={["click"]}>
-								<Button type="text" icon={<MoreOutlined />} shape="circle" />
-							</Dropdown>
 						</Flex>
 
 						{(changeOrder || Object.keys(item.changes)).map(
@@ -120,7 +121,6 @@ const VersionHistoryList = <Keys extends string = string>({
 						)}
 					</Flex>
 
-					{/* eslint-disable-next-line @typescript-eslint/no-non-null-assertion */}
 					{i !== versionList!.length - 1 && <Divider style={{ margin: "var(--ant-margin-xs) 0" }} />}
 				</>
 			)}

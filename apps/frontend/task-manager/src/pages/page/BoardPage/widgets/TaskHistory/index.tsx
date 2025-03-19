@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 
 import { HistoryOutlined } from "@ant-design/icons";
 import { useQuery } from "@tanstack/react-query";
-import { getTaskHistory } from "@task-manager/api";
+import { ChangeList, getTaskHistory, TaskStatus, VersionHistoryLog } from "@task-manager/api";
 import { useDisclosure } from "@task-manager/utils";
 import { Button, Drawer, Tag, Typography } from "antd";
 
@@ -16,19 +16,12 @@ interface TaskHistoryProps {
 	pageId: string;
 }
 
+type ChangeKeys = keyof Awaited<ReturnType<typeof getTaskHistory>>["data"][number]["changes"];
+
 const TaskHistory: React.FC<TaskHistoryProps> = props => {
 	const { open, onOpen, onClose } = useDisclosure();
 
-
-	const { data, isLoading } = useQuery({
-		queryKey: ["task-history", props.taskId],
-		queryFn: () => getTaskHistory({ ...props, workspaceId: useAppStore.getState().workspaceId! }),
-		enabled: open
-	});
-
-	const versionHistoryRenderers: VersionHistoryEntryRenders<
-		keyof NonNullable<typeof data>["history"][number]["changes"]
-	> = useMemo(
+	const versionHistoryRenderers: VersionHistoryEntryRenders<ChangeKeys> = useMemo(
 		() => ({
 			status: (info: TaskStatus) => <Tag color={`var(${statusColors[info]})`}>{taskStatusLocale[info]}</Tag>,
 			description: (info: string) =>
@@ -43,20 +36,20 @@ const TaskHistory: React.FC<TaskHistoryProps> = props => {
 		[]
 	);
 
-	const fieldsOrder = useMemo<(keyof NonNullable<typeof data>["history"][number]["changes"])[]>(
-		() => ["title", "status", "assigneeId", "dueDate", "description"],
-		[]
-	);
+	const fieldsOrder = useMemo<ChangeKeys[]>(() => ["title", "status", "assigneeId", "dueDate", "description"], []);
 
 	return (
 		<>
 			<Button icon={<HistoryOutlined />} type="text" onClick={onOpen} />
 
-			<Drawer open={open} onClose={onClose} title="Task history" loading={isLoading}>
+			<Drawer open={open} onClose={onClose} title="Task history">
 				<VersionHistoryList
+					enabled={open}
 					changeOrder={fieldsOrder}
-					versionList={data?.history}
 					entryRenders={versionHistoryRenderers}
+					fetchLog={query =>
+						getTaskHistory({ ...props, workspaceId: useAppStore.getState().workspaceId!, ...query })
+					}
 				/>
 			</Drawer>
 		</>

@@ -3,24 +3,12 @@ package usersRouter
 import (
 	"main/dbClient"
 	"main/router/errorHandlers"
-	"strconv"
+	routerUtils "main/router/utils"
 	"strings"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
 )
-
-type Meta struct {
-	Total   int  `json:"total"`
-	Limit   int  `json:"limit"`
-	Offset  int  `json:"offset"`
-	HasMore bool `json:"hasMore"`
-}
-
-type ResponseWithPagination[T any] struct {
-	Data []T  `json:"data"`
-	Meta Meta `json:"meta"`
-}
 
 // @Summary				Get user list
 // @Description 		Get user list
@@ -37,30 +25,18 @@ type ResponseWithPagination[T any] struct {
 func getUserList(postgres *gorm.DB) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		usernameOrEmail := c.Query("username_or_email")
-		limitStr := c.Query("limit")
-		offsetStr := c.Query("offset")
 		exclude := c.Query("exclude")
-
-		var limit, offset int
 
 		dbWithPagination := postgres
 
-		if limitStr != "" {
-			lim, err := strconv.ParseInt(limitStr, 10, 64)
+		limit, offset := routerUtils.ValidatePaginationParams(c, routerUtils.DefaultPaginationLimit, routerUtils.DefaultPaginationOffset)
 
-			if err == nil && lim > 0 {
-				limit = int(lim)
-				dbWithPagination = dbWithPagination.Limit(int(limit))
-			}
+		if limit > 0 {
+			dbWithPagination = dbWithPagination.Limit(limit)
 		}
 
-		if offsetStr != "" {
-			off, err := strconv.ParseInt(offsetStr, 10, 64)
-
-			if err == nil && int64(off) > 0 {
-				offset = int(off)
-				dbWithPagination = dbWithPagination.Offset(int(offset))
-			}
+		if offset > 0 {
+			dbWithPagination = dbWithPagination.Offset(offset)
 		}
 
 		if usernameOrEmail != "" {
@@ -93,9 +69,9 @@ func getUserList(postgres *gorm.DB) gin.HandlerFunc {
 			limit = int(total)
 		}
 
-		c.JSON(200, ResponseWithPagination[dbClient.User]{
+		c.JSON(200, routerUtils.ResponseWithPagination[dbClient.User]{
 			Data: users,
-			Meta: Meta{
+			Meta: routerUtils.Meta{
 				Total:   int(total),
 				Limit:   limit,
 				Offset:  offset,

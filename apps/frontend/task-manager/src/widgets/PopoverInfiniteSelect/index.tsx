@@ -1,27 +1,26 @@
-import React, { memo, useCallback, useEffect, useRef, useState } from "react";
+import React, { memo, useCallback, useEffect, useRef } from "react";
 
-import { InfiniteData, QueryKey, useInfiniteQuery } from "@tanstack/react-query";
+import { ResponseWithPagination } from "@task-manager/api";
 import { useDisclosure } from "@task-manager/utils";
-import { List, Popover, PopoverProps, Spin } from "antd";
+import { Popover, PopoverProps } from "antd";
 
 import * as s from "./styles";
 import "./styles.css";
+
+import ListWithInfiniteScroll, { ListWithInfiniteScrollProps } from "../ListWithInfiniteScroll";
 
 interface PopoverInfiniteSelectProps<
 	ItemValue,
 	Response extends ResponseWithPagination<ItemValue>
 	// Mode extends "single" | "multiple" = "single"
-> extends Omit<PopoverProps, "content" | "children"> {
+> extends Omit<PopoverProps, "content" | "children">,
+		Pick<ListWithInfiniteScrollProps<ItemValue, Response>, "queryKey" | "fetchItems" | "extraParams" | "renderItem"> {
 	// mode: Mode;
 	children: React.ReactNode;
-	queryKey: QueryKey;
 
-	itemRender: (item: ItemValue, index: number) => React.ReactNode;
-	fetchItems: (query?: PaginationQuery) => Promise<Response>;
 	getItemValue: (item: ItemValue) => unknown;
 
 	value?: /* Mode extends "multiple" ? ItemValue[] : */ ItemValue;
-	extraParams?: Record<string, string | number | boolean | string | undefined | null>;
 
 	onChange?: (value: /* Mode extends "multiple" ? ItemValue[] : */ ItemValue) => void;
 }
@@ -33,7 +32,7 @@ const PopoverInfiniteSelect = <
 >({
 	children,
 	fetchItems,
-	itemRender: propsItemRender,
+	renderItem: propsRenderItem,
 	// mode,
 	queryKey,
 	value,
@@ -42,39 +41,9 @@ const PopoverInfiniteSelect = <
 	getItemValue,
 	...popoverProps
 }: PopoverInfiniteSelectProps<ItemValue, Response /* , Mode */>) => {
-	const [items, setItems] = useState<ItemValue[]>([]);
-
 	const { open, onClose, setOpen } = useDisclosure();
 
 	const valueRef = useRef(value);
-
-	const { data, isFetching, isLoading, hasNextPage, fetchNextPage } = useInfiniteQuery<
-		Response,
-		Error,
-		InfiniteData<Response, number>,
-		QueryKey,
-		number
-	>({
-		queryKey,
-		queryFn: ({ pageParam }) => fetchItems({ ...extraParams, offset: pageParam, limit: 10 }),
-		getNextPageParam: lastPage => (lastPage.meta.hasMore ? lastPage.meta.offset + lastPage.meta.limit : undefined),
-		initialPageParam: 0,
-		initialData: {
-			pageParams: [0],
-			pages: [{ data: [], meta: { total: 0, limit: 10, offset: 0, hasMore: true } } as unknown as Response]
-		}
-	});
-
-	const handleScroll: React.UIEventHandler<HTMLElement> = useCallback(
-		event => {
-			const target = event.target as HTMLDivElement;
-
-			if (hasNextPage && target.scrollTop + target.offsetHeight > target.scrollHeight - 100) {
-				fetchNextPage();
-			}
-		},
-		[fetchNextPage, hasNextPage]
-	);
 
 	const handleSelectItem = useCallback(
 		(item: ItemValue) => {
@@ -89,7 +58,7 @@ const PopoverInfiniteSelect = <
 	const renderItem = useCallback(
 		(item: ItemValue, index: number) => {
 			const isSelected = !!valueRef.current && getItemValue(valueRef.current) === getItemValue(item);
-			const renderedItem = propsItemRender(item, index);
+			const renderedItem = propsRenderItem(item, index);
 
 			return (
 				<s.ItemWrapper selected={isSelected} onClick={isSelected ? onClose : () => handleSelectItem(item)}>
@@ -97,14 +66,8 @@ const PopoverInfiniteSelect = <
 				</s.ItemWrapper>
 			);
 		},
-		[getItemValue, handleSelectItem, onClose, propsItemRender]
+		[getItemValue, handleSelectItem, onClose, propsRenderItem]
 	);
-
-	useEffect(() => {
-		if (data) {
-			setItems(data.pages.flatMap(page => page.data));
-		}
-	}, [data]);
 
 	useEffect(() => {
 		valueRef.current = value;
@@ -117,21 +80,12 @@ const PopoverInfiniteSelect = <
 			onOpenChange={setOpen}
 			overlayClassName="popover-overlay"
 			content={
-				<div onScroll={handleScroll}>
-					<List
-						className="css-var-r3 ant-select-css-var"
-						loading={isLoading}
-						dataSource={items}
-						renderItem={renderItem}
-						loadMore={
-							isFetching && (
-								<s.LoadingMoreWrapper>
-									<Spin />
-								</s.LoadingMoreWrapper>
-							)
-						}
-					/>
-				</div>
+				<ListWithInfiniteScroll
+					queryKey={queryKey}
+					fetchItems={fetchItems}
+					extraParams={extraParams}
+					renderItem={renderItem}
+				/>
 			}
 		>
 			{children}

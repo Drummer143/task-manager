@@ -3,6 +3,7 @@ package routerUtils
 import (
 	"main/dbClient"
 	"main/router/errorHandlers"
+	"strconv"
 	"time"
 
 	"github.com/gin-contrib/sessions"
@@ -10,6 +11,39 @@ import (
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
+
+const (
+	DefaultPaginationLimit  = 10
+	DefaultPaginationOffset = 0
+)
+
+// Validates pagination params: limit and offset.
+//
+// If limit/offset is not provided or invalid, it will be set to -1
+func ValidatePaginationParams(ctx *gin.Context, fallbackLimit int, fallbackOffset int) (int, int) {
+	limitStr := ctx.Query("limit")
+	offsetStr := ctx.Query("offset")
+
+	limit, offset := fallbackLimit, fallbackOffset
+
+	if limitStr != "" {
+		lim, err := strconv.ParseInt(limitStr, 10, 64)
+
+		if err == nil && lim > 0 {
+			limit = int(lim)
+		}
+	}
+
+	if offsetStr != "" {
+		off, err := strconv.ParseInt(offsetStr, 10, 64)
+
+		if err == nil && int64(off) > 0 {
+			offset = int(off)
+		}
+	}
+
+	return limit, offset
+}
 
 func CheckPageAccess(ctx *gin.Context, dbWithIncludes *gorm.DB, postgres *gorm.DB, pageId uuid.UUID, userId uuid.UUID) (page dbClient.Page, pageAccess dbClient.PageAccess, ok bool) {
 	if err := dbWithIncludes.First(&page, "id = ?", pageId).Error; err != nil {

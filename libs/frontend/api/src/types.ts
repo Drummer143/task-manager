@@ -111,10 +111,12 @@ export interface Change {
 	to: unknown;
 }
 
+export type ChangeList<Keys extends string = string> = Partial<Record<Keys, Change>>;
+
 export interface VersionHistoryLog<Keys extends string = string> {
 	id: string;
 	user: Pick<User, "id" | "picture"> & { name: string };
 	version: number;
-	changes: Partial<Record<Keys, Change>>;
+	changes: ChangeList<Keys>;
 	createdAt: string;
 }

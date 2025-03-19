@@ -45,7 +45,7 @@ importers:
         specifier: ^9.0.1
         version: 9.1.0(@types/react@18.3.18)(react@18.3.1)
       react-router-dom:
-        specifier: 6.29.0
+        specifier: ^6.29.0
         version: 6.29.0(react-dom@18.3.1(react@18.3.1))(react@18.3.1)
       remark-gfm:
         specifier: ^4.0.0
