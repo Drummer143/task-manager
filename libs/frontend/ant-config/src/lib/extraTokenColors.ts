@@ -1,4 +1,4 @@
-import { ExtraThemeToken } from "antd";
+import { ExtraThemeToken } from "./types";
 
 export const lightExtra: ExtraThemeToken = {
 	colorDone: "rgba(0, 166, 90, 0.6)",

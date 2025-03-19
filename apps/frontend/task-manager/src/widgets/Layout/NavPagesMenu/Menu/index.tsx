@@ -1,5 +1,7 @@
 import React, { memo } from "react";
 
+import { Page } from "@task-manager/api";
+
 import ItemWithSubmenu from "./ItemWithSubmenu";
 import { MenuListItem, MenuWrapper } from "./styles";
 

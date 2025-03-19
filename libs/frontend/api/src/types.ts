@@ -104,7 +104,7 @@ export interface ResponseWithPagination<T> {
 export type PaginationQuery<T extends object = object> = T & {
 	offset?: number;
 	limit?: number;
-}
+};
 
 export interface Change {
 	from: unknown;
@@ -112,8 +112,9 @@ export interface Change {
 }
 
 export interface VersionHistoryLog<Keys extends string = string> {
-	version: number;
 	id: string;
+	user: Pick<User, "id" | "picture"> & { name: string };
+	version: number;
 	changes: Partial<Record<Keys, Change>>;
 	createdAt: string;
 }

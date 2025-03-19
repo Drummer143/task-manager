@@ -1,7 +1,8 @@
 import React, { memo, useCallback, useMemo } from "react";
 
 import { MoreOutlined } from "@ant-design/icons";
-import { Button, Divider, Dropdown, Empty, Flex, List, MenuProps, Typography } from "antd";
+import { VersionHistoryLog } from "@task-manager/api";
+import { Avatar, Button, Divider, Dropdown, Empty, Flex, List, MenuProps, Typography } from "antd";
 import { ListLocale } from "antd/es/list";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -79,7 +80,16 @@ const VersionHistoryList = <Keys extends string = string>({
 			dataSource={versionList || []}
 			renderItem={(item, i) => (
 				<>
-					<div>
+					<Flex vertical gap="var(--ant-margin-xxs)">
+						<Flex justify="flex-end">
+							<Button
+								type="text"
+								icon={<Avatar size="small" src={item.user.picture || "/avatar-placeholder-32.jpg"} />}
+							>
+								{item.user.name}
+							</Button>
+						</Flex>
+
 						<Flex justify="space-between" align="center">
 							<Typography.Title level={5}>Version {item.version}</Typography.Title>
 
@@ -108,8 +118,9 @@ const VersionHistoryList = <Keys extends string = string>({
 									</React.Fragment>
 								)
 						)}
-					</div>
+					</Flex>
 
+					{/* eslint-disable-next-line @typescript-eslint/no-non-null-assertion */}
 					{i !== versionList!.length - 1 && <Divider style={{ margin: "var(--ant-margin-xs) 0" }} />}
 				</>
 			)}
