@@ -13,6 +13,7 @@ export interface ListWithInfiniteScrollProps<
 > extends Omit<ListProps<ItemValue>, "loading" | "dataSource" | "renderItem"> {
 	queryKey: QueryKey;
 	enabled?: boolean;
+	visible?: boolean;
 	extraParams?: Record<string, string | number | boolean | string | undefined | null>;
 	renderItem: (item: ItemValue, index: number, array: ItemValue[]) => React.ReactNode;
 	fetchItems: (query?: PaginationQuery) => Promise<Response>;
@@ -55,8 +56,10 @@ const ListWithInfiniteScroll = <
 	const requestMetaRef = useRef({ hasNextPage, isFetching, isLoading, promise, fetchNextPage });
 
 	useEffect(() => {
-		if (data.pages?.[0]?.data?.[0]) {
+		if (data.pages[0].data?.[0]) {
 			setItems(data.pages.flatMap(page => page.data));
+		} else {
+			setItems([]);
 		}
 	}, [data]);
 
@@ -71,6 +74,9 @@ const ListWithInfiniteScroll = <
 
 		const observer = new IntersectionObserver(
 			entries => {
+				if (!requestMetaRef.current.hasNextPage) {
+					return observer.disconnect();
+				}
 				if (
 					entries[0].isIntersecting &&
 					requestMetaRef.current.hasNextPage &&
@@ -97,9 +103,7 @@ const ListWithInfiniteScroll = <
 		}
 
 		return () => {
-			if (currentElement) {
-				observer.unobserve(currentElement);
-			}
+			observer.disconnect();
 		};
 	}, [enabled]);
 
@@ -109,25 +113,25 @@ const ListWithInfiniteScroll = <
 	);
 
 	return (
-		<>
-			<List
-				{...listProps}
-				loading={isLoading}
-				dataSource={items}
-				renderItem={renderItem}
-				className={cn("css-var-r3 ant-select-css-var", className)}
-				loadMore={
-					isFetching &&
-					(loadMore || (
-						<s.LoadingMoreWrapper>
-							<Spin />
-						</s.LoadingMoreWrapper>
-					))
-				}
-			/>
+		<List
+			{...listProps}
+			loading={isLoading}
+			dataSource={items}
+			renderItem={renderItem}
+			className={cn("css-var-r3 ant-select-css-var", className)}
+			loadMore={
+				<>
+					{isFetching &&
+						(loadMore || (
+							<s.LoadingMoreWrapper>
+								<Spin />
+							</s.LoadingMoreWrapper>
+						))}
 
-			<div className="test-infinite-scroll" ref={observerRef}></div>
-		</>
+					<div className="test-infinite-scroll" ref={observerRef}></div>
+				</>
+			}
+		/>
 	);
 };
 
