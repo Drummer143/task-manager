@@ -23,6 +23,12 @@
     },
     "lint": {
       "executor": "@nx-go/nx-go:lint"
+    },
+    "swagger": {
+      "command": "swag init",
+      "options": {
+        "cwd": "{projectRoot}"
+      }
     }
   }
 }

@@ -28,6 +28,8 @@ type createTaskBody struct {
 // @Tags			Tasks
 // @Accept 			json
 // @Produce 		json
+// @Param			workspace_id path string true "Workspace ID"
+// @Param			page_id path int true "Page ID"
 // @Param 			task body createTaskBody true "Task object that needs to be created"
 // @Success 		201 {object} dbClient.Task
 // @Failure 		400 {object} errorHandlers.Error

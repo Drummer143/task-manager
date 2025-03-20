@@ -48,8 +48,10 @@ func New(auth *auth.Auth, postgres *gorm.DB, mongo *mongo.Client, validate *vali
 		AllowCredentials: true,
 	}))
 
-	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
-	router.GET("/api", func(ctx *gin.Context) { ctx.Redirect(http.StatusFound, "/swagger/index.html") })
+	router.GET("/api/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	router.GET("/api", func(ctx *gin.Context) { ctx.Redirect(http.StatusMovedPermanently, "/api/index.html") })
+
+	router.GET("/socket", IsAuthenticated(auth), handleWebSocket)
 
 	workspacesRouter.AddRoutes(router.Group("workspaces", IsAuthenticated(auth)), postgres, mongo, validate)
 	authRouter.AddRoutes(router.Group("auth"), auth, validate, postgres)

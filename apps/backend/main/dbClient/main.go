@@ -22,17 +22,25 @@ type Change struct {
 }
 
 type ShortUserInfo struct {
-	Id      uuid.UUID `json:"id"`
-	Name    string    `json:"name"`
-	Picture *string   `json:"picture,omitempty"`
+	Id       uuid.UUID `json:"id"`
+	Username string    `json:"username"`
+	Picture  *string   `json:"picture,omitempty"`
 }
 
 type EntityVersionDocument struct {
 	Version   int               `json:"version"`
 	Id        uuid.UUID         `json:"id"`
 	Changes   map[string]Change `json:"changes"`
-	Author    ShortUserInfo     `json:"user"`
+	Author    ShortUserInfo     `json:"author"`
 	CreatedAt time.Time         `gorm:"default:current_timestamp" json:"created_at"`
+}
+
+type TaskChatMessage struct {
+	ID        uuid.UUID     `json:"id"`
+	TaskID    uuid.UUID     `json:"-"`
+	Author    ShortUserInfo `json:"author"`
+	Text      string        `json:"text"`
+	CreatedAt time.Time     `json:"createdAt"`
 }
 
 func initPostgres() (*gorm.DB, error) {

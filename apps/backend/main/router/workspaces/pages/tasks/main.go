@@ -1,6 +1,8 @@
 package tasksRouter
 
 import (
+	tasksCharRouter "main/router/workspaces/pages/tasks/chat"
+
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"go.mongodb.org/mongo-driver/mongo"
@@ -30,4 +32,5 @@ func AddRoutes(group *gin.RouterGroup, postgres *gorm.DB, mongo *mongo.Client, v
 
 	group.DELETE("/:task_id", deleteTask(postgres))
 
+	tasksCharRouter.AddRoutes(group.Group("/:task_id/chat"), postgres, mongo, validate)
 }

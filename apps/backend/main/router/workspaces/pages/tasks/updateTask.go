@@ -30,7 +30,9 @@ type updateTaskBody struct {
 // @Tags			Tasks
 // @Accept			json
 // @Produce			json
-// @Param			id path string true "Task ID"
+// @Param			workspace_id path string true "Workspace ID"
+// @Param			page_id path int true "Page ID"
+// @Param			task_id path string true "Task ID"
 // @Param			task body updateTaskBody true "Task object that needs to be updated"
 // @Success			200 {object} dbClient.Task
 // @Failure			400 {object} errorHandlers.Error
@@ -110,7 +112,7 @@ func updateTask(postgres *gorm.DB, tasksVersionCollection *mongo.Collection, val
 		newChange := dbClient.EntityVersionDocument{
 			Changes:   changes,
 			Id:        task.ID,
-			Author:    dbClient.ShortUserInfo{Id: user.ID, Name: user.Username, Picture: user.Picture},
+			Author:    dbClient.ShortUserInfo{Id: user.ID, Username: user.Username, Picture: user.Picture},
 			CreatedAt: time.Now(),
 		}
 

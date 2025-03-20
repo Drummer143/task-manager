@@ -7,6 +7,7 @@ import { App as AntApp, theme as AntTheme, ConfigProvider, FloatButton, ThemeCon
 import { RouterProvider } from "react-router-dom";
 
 import router from "./router";
+import { useSocketStore } from "./store/socket";
 
 import { useAppStore } from "../app/store/app";
 import { useAuthStore } from "../app/store/auth";
@@ -28,11 +29,11 @@ function App() {
 		if (!theme) {
 			setTheme(window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
 		}
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, []);
 
-	useEffect(() => {
 		useAuthStore.getState().getSession();
+
+		useSocketStore.getState().init();
+		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
 	return (

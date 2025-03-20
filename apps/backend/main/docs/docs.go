@@ -511,6 +511,23 @@ const docTemplate = `{
                 }
             }
         },
+        "/socket": {
+            "get": {
+                "description": "Handle WebSocket requests",
+                "tags": [
+                    "WebSocket"
+                ],
+                "summary": "Handle WebSocket requests",
+                "responses": {
+                    "100": {
+                        "description": "Continue"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
         "/users": {
             "get": {
                 "description": "Get user list",
@@ -551,7 +568,7 @@ const docTemplate = `{
                     "200": {
                         "description": "User list",
                         "schema": {
-                            "$ref": "#/definitions/usersRouter.ResponseWithPagination-dbClient_User"
+                            "$ref": "#/definitions/routerUtils.ResponseWithPagination-dbClient_User"
                         }
                     },
                     "401": {
@@ -1360,6 +1377,20 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
+                        "description": "Workspace ID",
+                        "name": "workspace_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page ID",
+                        "name": "page_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
                         "description": "ID of the user who created the tasks",
                         "name": "owner_id",
                         "in": "query"
@@ -1399,6 +1430,20 @@ const docTemplate = `{
                 ],
                 "summary": "Create a new task",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Workspace ID",
+                        "name": "workspace_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page ID",
+                        "name": "page_id",
+                        "in": "path",
+                        "required": true
+                    },
                     {
                         "description": "Task object that needs to be created",
                         "name": "task",
@@ -1450,8 +1495,22 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
+                        "description": "Workspace ID",
+                        "name": "workspace_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page ID",
+                        "name": "page_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
                         "description": "Task ID",
-                        "name": "id",
+                        "name": "task_id",
                         "in": "path",
                         "required": true
                     }
@@ -1498,8 +1557,22 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
+                        "description": "Workspace ID",
+                        "name": "workspace_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page ID",
+                        "name": "page_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
                         "description": "Task ID",
-                        "name": "id",
+                        "name": "task_id",
                         "in": "path",
                         "required": true
                     },
@@ -1558,8 +1631,22 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
+                        "description": "Workspace ID",
+                        "name": "workspace_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page ID",
+                        "name": "page_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
                         "description": "Task ID",
-                        "name": "id",
+                        "name": "task_id",
                         "in": "path",
                         "required": true
                     }
@@ -1573,6 +1660,155 @@ const docTemplate = `{
                     },
                     "401": {
                         "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/workspaces/{workspace_id}/pages/{page_id}/tasks/{task_id}/chat": {
+            "post": {
+                "description": "Send Message in task chat",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Tasks Chat"
+                ],
+                "summary": "Send Message in task chat",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Workspace ID",
+                        "name": "workspace_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page ID",
+                        "name": "page_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Task ID",
+                        "name": "task_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Message",
+                        "name": "message",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/tasksCharRouter.chatMessage"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized if session is missing or invalid",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/workspaces/{workspace_id}/pages/{page_id}/tasks/{task_id}/history": {
+            "get": {
+                "description": "Get task history",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Tasks"
+                ],
+                "summary": "Get task history",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Page ID",
+                        "name": "page_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Workspace ID",
+                        "name": "workspace_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Task ID",
+                        "name": "task_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "If not provided or less than 1, all users will be returned",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Default is 0",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/routerUtils.ResponseWithPagination-dbClient_EntityVersionDocument"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized if session is missing or invalid",
                         "schema": {
                             "$ref": "#/definitions/errorHandlers.Error"
                         }
@@ -1607,9 +1843,23 @@ const docTemplate = `{
                 "summary": "Change task status",
                 "parameters": [
                     {
+                        "type": "string",
+                        "description": "Workspace ID",
+                        "name": "workspace_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
                         "type": "integer",
+                        "description": "Page ID",
+                        "name": "page_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
                         "description": "Task ID",
-                        "name": "id",
+                        "name": "task_id",
                         "in": "path",
                         "required": true
                     },
@@ -1744,6 +1994,36 @@ const docTemplate = `{
                 }
             }
         },
+        "dbClient.Change": {
+            "type": "object",
+            "properties": {
+                "from": {},
+                "to": {}
+            }
+        },
+        "dbClient.EntityVersionDocument": {
+            "type": "object",
+            "properties": {
+                "author": {
+                    "$ref": "#/definitions/dbClient.ShortUserInfo"
+                },
+                "changes": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/dbClient.Change"
+                    }
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "version": {
+                    "type": "integer"
+                }
+            }
+        },
         "dbClient.Page": {
             "type": "object",
             "properties": {
@@ -1826,6 +2106,20 @@ const docTemplate = `{
                 "PageTypeText",
                 "PageTypeGroup"
             ]
+        },
+        "dbClient.ShortUserInfo": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "picture": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
         },
         "dbClient.Task": {
             "type": "object",
@@ -2056,6 +2350,62 @@ const docTemplate = `{
                 }
             }
         },
+        "routerUtils.Meta": {
+            "type": "object",
+            "properties": {
+                "hasMore": {
+                    "type": "boolean"
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "offset": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "routerUtils.ResponseWithPagination-dbClient_EntityVersionDocument": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dbClient.EntityVersionDocument"
+                    }
+                },
+                "meta": {
+                    "$ref": "#/definitions/routerUtils.Meta"
+                }
+            }
+        },
+        "routerUtils.ResponseWithPagination-dbClient_User": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dbClient.User"
+                    }
+                },
+                "meta": {
+                    "$ref": "#/definitions/routerUtils.Meta"
+                }
+            }
+        },
+        "tasksCharRouter.chatMessage": {
+            "type": "object",
+            "required": [
+                "text"
+            ],
+            "properties": {
+                "text": {
+                    "type": "string"
+                }
+            }
+        },
         "tasksRouter.changeTaskStatusBody": {
             "type": "object",
             "required": [
@@ -2131,37 +2481,6 @@ const docTemplate = `{
                 "title": {
                     "type": "string",
                     "maxLength": 63
-                }
-            }
-        },
-        "usersRouter.Meta": {
-            "type": "object",
-            "properties": {
-                "hasMore": {
-                    "type": "boolean"
-                },
-                "limit": {
-                    "type": "integer"
-                },
-                "offset": {
-                    "type": "integer"
-                },
-                "total": {
-                    "type": "integer"
-                }
-            }
-        },
-        "usersRouter.ResponseWithPagination-dbClient_User": {
-            "type": "object",
-            "properties": {
-                "data": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dbClient.User"
-                    }
-                },
-                "meta": {
-                    "$ref": "#/definitions/usersRouter.Meta"
                 }
             }
         },

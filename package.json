@@ -7,7 +7,8 @@
     "dev:base": "nx run-many --target=dev --projects=main,task-manager",
     "lint": "nx run-many --target=lint --all --verbose",
     "lint:fix": "nx run-many --target=lint:fix --all --verbose",
-    "build": "nx run-many --target=build --all"
+    "build": "nx run-many --target=build --all",
+    "swagger": "nx run-many --target=swagger --all"
   },
   "private": true,
   "dependencies": {

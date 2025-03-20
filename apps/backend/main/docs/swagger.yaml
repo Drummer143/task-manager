@@ -56,6 +56,26 @@ definitions:
     - password
     - username
     type: object
+  dbClient.Change:
+    properties:
+      from: {}
+      to: {}
+    type: object
+  dbClient.EntityVersionDocument:
+    properties:
+      author:
+        $ref: '#/definitions/dbClient.ShortUserInfo'
+      changes:
+        additionalProperties:
+          $ref: '#/definitions/dbClient.Change'
+        type: object
+      created_at:
+        type: string
+      id:
+        type: string
+      version:
+        type: integer
+    type: object
   dbClient.Page:
     properties:
       childPages:
@@ -112,6 +132,15 @@ definitions:
     - PageTypeBoard
     - PageTypeText
     - PageTypeGroup
+  dbClient.ShortUserInfo:
+    properties:
+      id:
+        type: string
+      picture:
+        type: string
+      username:
+        type: string
+    type: object
   dbClient.Task:
     properties:
       assignee:
@@ -264,6 +293,42 @@ definitions:
     required:
     - username
     type: object
+  routerUtils.Meta:
+    properties:
+      hasMore:
+        type: boolean
+      limit:
+        type: integer
+      offset:
+        type: integer
+      total:
+        type: integer
+    type: object
+  routerUtils.ResponseWithPagination-dbClient_EntityVersionDocument:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/dbClient.EntityVersionDocument'
+        type: array
+      meta:
+        $ref: '#/definitions/routerUtils.Meta'
+    type: object
+  routerUtils.ResponseWithPagination-dbClient_User:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/dbClient.User'
+        type: array
+      meta:
+        $ref: '#/definitions/routerUtils.Meta'
+    type: object
+  tasksCharRouter.chatMessage:
+    properties:
+      text:
+        type: string
+    required:
+    - text
+    type: object
   tasksRouter.changeTaskStatusBody:
     properties:
       status:
@@ -317,26 +382,6 @@ definitions:
       title:
         maxLength: 63
         type: string
-    type: object
-  usersRouter.Meta:
-    properties:
-      hasMore:
-        type: boolean
-      limit:
-        type: integer
-      offset:
-        type: integer
-      total:
-        type: integer
-    type: object
-  usersRouter.ResponseWithPagination-dbClient_User:
-    properties:
-      data:
-        items:
-          $ref: '#/definitions/dbClient.User'
-        type: array
-      meta:
-        $ref: '#/definitions/usersRouter.Meta'
     type: object
   workspacesAccessesRouter.giveAccessBody:
     properties:
@@ -703,6 +748,17 @@ paths:
       summary: Change user email
       tags:
       - Profile
+  /socket:
+    get:
+      description: Handle WebSocket requests
+      responses:
+        "100":
+          description: Continue
+        "500":
+          description: Internal Server Error
+      summary: Handle WebSocket requests
+      tags:
+      - WebSocket
   /users:
     get:
       description: Get user list
@@ -729,7 +785,7 @@ paths:
         "200":
           description: User list
           schema:
-            $ref: '#/definitions/usersRouter.ResponseWithPagination-dbClient_User'
+            $ref: '#/definitions/routerUtils.ResponseWithPagination-dbClient_User'
         "401":
           description: Unauthorized if session is missing or invalid
           schema:
@@ -1270,6 +1326,16 @@ paths:
       description: Get a list of tasks created by user with the given ID. If no ID
         is provided, the ID of the currently logged in user is used
       parameters:
+      - description: Workspace ID
+        in: path
+        name: workspace_id
+        required: true
+        type: string
+      - description: Page ID
+        in: path
+        name: page_id
+        required: true
+        type: integer
       - description: ID of the user who created the tasks
         in: query
         name: owner_id
@@ -1297,6 +1363,16 @@ paths:
       - application/json
       description: Create a new task
       parameters:
+      - description: Workspace ID
+        in: path
+        name: workspace_id
+        required: true
+        type: string
+      - description: Page ID
+        in: path
+        name: page_id
+        required: true
+        type: integer
       - description: Task object that needs to be created
         in: body
         name: task
@@ -1329,9 +1405,19 @@ paths:
     delete:
       description: Delete a task
       parameters:
+      - description: Workspace ID
+        in: path
+        name: workspace_id
+        required: true
+        type: string
+      - description: Page ID
+        in: path
+        name: page_id
+        required: true
+        type: integer
       - description: Task ID
         in: path
-        name: id
+        name: task_id
         required: true
         type: string
       produces:
@@ -1359,9 +1445,19 @@ paths:
     get:
       description: Get a task
       parameters:
+      - description: Workspace ID
+        in: path
+        name: workspace_id
+        required: true
+        type: string
+      - description: Page ID
+        in: path
+        name: page_id
+        required: true
+        type: integer
       - description: Task ID
         in: path
-        name: id
+        name: task_id
         required: true
         type: string
       produces:
@@ -1391,9 +1487,19 @@ paths:
       - application/json
       description: Update a task
       parameters:
+      - description: Workspace ID
+        in: path
+        name: workspace_id
+        required: true
+        type: string
+      - description: Page ID
+        in: path
+        name: page_id
+        required: true
+        type: integer
       - description: Task ID
         in: path
-        name: id
+        name: task_id
         required: true
         type: string
       - description: Task object that needs to be updated
@@ -1428,17 +1534,127 @@ paths:
       summary: Update a task
       tags:
       - Tasks
+  /workspaces/{workspace_id}/pages/{page_id}/tasks/{task_id}/chat:
+    post:
+      consumes:
+      - application/json
+      description: Send Message in task chat
+      parameters:
+      - description: Workspace ID
+        in: path
+        name: workspace_id
+        required: true
+        type: string
+      - description: Page ID
+        in: path
+        name: page_id
+        required: true
+        type: integer
+      - description: Task ID
+        in: path
+        name: task_id
+        required: true
+        type: string
+      - description: Message
+        in: body
+        name: message
+        required: true
+        schema:
+          $ref: '#/definitions/tasksCharRouter.chatMessage'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "401":
+          description: Unauthorized if session is missing or invalid
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+      summary: Send Message in task chat
+      tags:
+      - Tasks Chat
+  /workspaces/{workspace_id}/pages/{page_id}/tasks/{task_id}/history:
+    get:
+      description: Get task history
+      parameters:
+      - description: Page ID
+        in: path
+        name: page_id
+        required: true
+        type: string
+      - description: Workspace ID
+        in: path
+        name: workspace_id
+        required: true
+        type: string
+      - description: Task ID
+        in: path
+        name: task_id
+        required: true
+        type: string
+      - description: If not provided or less than 1, all users will be returned
+        in: query
+        name: limit
+        type: integer
+      - description: Default is 0
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/routerUtils.ResponseWithPagination-dbClient_EntityVersionDocument'
+        "401":
+          description: Unauthorized if session is missing or invalid
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+      summary: Get task history
+      tags:
+      - Tasks
   /workspaces/{workspace_id}/pages/{page_id}/tasks/{task_id}/status:
     patch:
       consumes:
       - application/json
       description: Change task status
       parameters:
-      - description: Task ID
+      - description: Workspace ID
         in: path
-        name: id
+        name: workspace_id
+        required: true
+        type: string
+      - description: Page ID
+        in: path
+        name: page_id
         required: true
         type: integer
+      - description: Task ID
+        in: path
+        name: task_id
+        required: true
+        type: string
       - description: 'Task status. Must be one of: not_done, in_progress, done'
         in: body
         name: status

@@ -13,7 +13,9 @@ import (
 // @Description		Delete a task
 // @Tags			Tasks
 // @Produce			json
-// @Param			id path string true "Task ID"
+// @Param			workspace_id path string true "Workspace ID"
+// @Param			page_id path int true "Page ID"
+// @Param			task_id path string true "Task ID"
 // @Success			200 {object} dbClient.Task
 // @Failure			401 {object} errorHandlers.Error
 // @Failure			404 {object} errorHandlers.Error
