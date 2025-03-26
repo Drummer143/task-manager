@@ -1,10 +1,11 @@
-import { Link } from "react-router-dom";
-import styled from "styled-components";
+import { createStyles } from "antd-style";
 
-export const ResetPasswordLink = styled(Link)`
-	width: fit-content;
+export const useStyles = createStyles(({ css }) => ({
+	resetPasswordLink: css`
+		width: fit-content;
 
-	display: block;
+		display: block;
 
-	margin: 3px 0 0 auto;
-`;
+		margin: 3px 0 0 auto;
+	`
+}));

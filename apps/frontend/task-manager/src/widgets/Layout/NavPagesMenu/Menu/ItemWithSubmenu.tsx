@@ -1,9 +1,11 @@
 import React, { memo, useCallback, useEffect, useMemo, useState } from "react";
 
-import { PlusOutlined } from "@ant-design/icons";
+import { DownOutlined, PlusOutlined } from "@ant-design/icons";
+import { Page } from "@task-manager/api";
 import { Button, Flex, theme } from "antd";
+import { NavLink } from "react-router-dom";
 
-import { ExpandIcon, MenuListItem, SubmenuWrapper } from "./styles";
+import { useStyles } from "./styles";
 
 interface ItemWithSubmenuProps {
 	rootPage: Pick<Page, "childPages" | "title" | "type" | "id">;
@@ -14,6 +16,8 @@ const ItemWithSubmenu: React.FC<ItemWithSubmenuProps> = ({ onSubPageCreate, root
 	const [openStatus, setOpenStatus] = useState<"opened" | "pre-opening" | "opening" | "closing" | "closed">("closed");
 
 	const token = theme.useToken().token;
+
+	const { styles, cx } = useStyles({ open: openStatus === "opened" || openStatus === "opening" });
 
 	const totalSubmenuHeight = useMemo(() => {
 		if (!rootPage.childPages) {
@@ -60,24 +64,23 @@ const ItemWithSubmenu: React.FC<ItemWithSubmenuProps> = ({ onSubPageCreate, root
 
 	return (
 		<>
-			<MenuListItem to={`/pages/${rootPage.id}`}>
+			<NavLink
+				className={({ isActive }) => cx(styles.menuListItem, isActive && "active")}
+				to={`/pages/${rootPage.id}`}
+			>
 				{rootPage.title}
 
 				<Flex gap="var(--ant-padding-xxs)">
 					{!!rootPage.childPages?.length && (
-						<Button
-							type="text"
-							size="small"
-							icon={<ExpandIcon open={openStatus === "opened" || openStatus === "opening"} />}
-							onClick={handleExpandButtonClick}
-						/>
+						<Button type="text" size="small" icon={<DownOutlined />} onClick={handleExpandButtonClick} />
 					)}
 
 					<Button size="small" type="text" icon={<PlusOutlined />} onClick={handleSubPageCreate} />
 				</Flex>
-			</MenuListItem>
+			</NavLink>
 
-			<SubmenuWrapper
+			<div
+				className={cx("submenu", styles.menuWrapper)}
 				onTransitionEnd={e =>
 					e.propertyName === "height" && setOpenStatus(prev => (prev === "opening" ? "opened" : "closed"))
 				}
@@ -87,11 +90,15 @@ const ItemWithSubmenu: React.FC<ItemWithSubmenuProps> = ({ onSubPageCreate, root
 				}}
 			>
 				{rootPage.childPages?.map(item => (
-					<MenuListItem key={item.id} to={`/pages/${item.id}`}>
+					<NavLink
+						className={({ isActive }) => cx(styles.menuListItem, isActive && "active")}
+						key={item.id}
+						to={`/pages/${item.id}`}
+					>
 						{item.title}
-					</MenuListItem>
+					</NavLink>
 				))}
-			</SubmenuWrapper>
+			</div>
 		</>
 	);
 };

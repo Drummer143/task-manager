@@ -3,8 +3,8 @@ import React, { memo, useCallback } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { changeStatus, Task, TaskStatus } from "@task-manager/api";
 import { App, theme, ThemeConfig } from "antd";
+import { createStyles } from "antd-style";
 import { useNavigate, useParams } from "react-router-dom";
-import styled from "styled-components";
 
 import { drawTaskDragImage } from "./utils";
 
@@ -17,15 +17,19 @@ interface TaskListProps {
 	tasks?: Task[];
 }
 
-const TaskListWrapper = styled.div`
-	padding: 0 var(--ant-padding-xxs);
+const useStyles = createStyles(({ css }) => ({
+	taskList: css`
+		padding: 0 var(--ant-padding-xxs);
 
-	& > *:not(:last-child) {
-		margin-bottom: var(--ant-margin-xs);
-	}
-`;
+		& > *:not(:last-child) {
+			margin-bottom: var(--ant-margin-xs);
+		}
+	`
+}));
 
 const TaskList: React.FC<TaskListProps> = ({ tasks }) => {
+	const { taskList } = useStyles().styles;
+
 	const pageId = useParams<{ id: string }>().id!;
 
 	const message = App.useApp().message;
@@ -106,7 +110,7 @@ const TaskList: React.FC<TaskListProps> = ({ tasks }) => {
 	}
 
 	return (
-		<TaskListWrapper>
+		<div className={taskList}>
 			{tasks?.map(task => (
 				<TaskItem
 					onClick={() => handleOpenTask(task)}
@@ -115,7 +119,7 @@ const TaskList: React.FC<TaskListProps> = ({ tasks }) => {
 					onDragStart={handleDragStart}
 				/>
 			))}
-		</TaskListWrapper>
+		</div>
 	);
 };
 

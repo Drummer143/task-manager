@@ -1,8 +1,9 @@
 import React, { memo } from "react";
 
 import { CloseOutlined } from "@ant-design/icons";
+import { User } from "@task-manager/api";
 import { Button, Flex, Select } from "antd";
-import styled from "styled-components";
+import { createStyles } from "antd-style";
 
 import { userBoardRoleOptions } from "../../../../shared/constants";
 import UserCard from "../../../../widgets/UserCard";
@@ -14,29 +15,41 @@ interface AccessListItemProps {
 	onRoleChange: (userId: string, role?: string) => void;
 }
 
-export const ItemWrapper = styled.div`
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
+const useStyles = createStyles(({ css }) => ({
+	itemWrapper: css`
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
 
-	margin-bottom: var(--ant-margin-sm);
-`;
+		margin-bottom: var(--ant-margin-sm);
+	`
+}));
 
-const AccessListItem: React.FC<AccessListItemProps> = ({ user, role, isPending, onRoleChange }) => (
-	<ItemWrapper>
-		<UserCard user={user} />
+const AccessListItem: React.FC<AccessListItemProps> = ({ user, role, isPending, onRoleChange }) => {
+	const { itemWrapper } = useStyles().styles;
 
-		<Flex align="center" gap="var(--ant-margin-xxs)">
-			<Select
-				onChange={value => onRoleChange(user.id, value)}
-				value={role}
-				loading={isPending}
-				options={userBoardRoleOptions}
-			/>
+	return (
+		<div className={itemWrapper}>
+			<UserCard user={user} />
 
-			<Button type="text" danger size="small" icon={<CloseOutlined />} onClick={() => onRoleChange(user.id)} />
-		</Flex>
-	</ItemWrapper>
-);
+			<Flex align="center" gap="var(--ant-margin-xxs)">
+				<Select
+					onChange={value => onRoleChange(user.id, value)}
+					value={role}
+					loading={isPending}
+					options={userBoardRoleOptions}
+				/>
+
+				<Button
+					type="text"
+					danger
+					size="small"
+					icon={<CloseOutlined />}
+					onClick={() => onRoleChange(user.id)}
+				/>
+			</Flex>
+		</div>
+	);
+};
 
 export default memo(AccessListItem);

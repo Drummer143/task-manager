@@ -12,14 +12,16 @@ import NavContent from "../NavContent";
 const DesktopLayout: React.FC = () => {
 	const [collapsed, setCollapsed] = useState(false);
 
+	const { content, header } = s.useStyles().styles;
+
 	const workspaceId = useAppStore(state => state.workspaceId);
 
 	return (
 		<Layout className="h-full">
-			<s.Header>
+			<Layout.Header className={header}>
 				header
 				<UserMenu />
-			</s.Header>
+			</Layout.Header>
 
 			<Layout className="h-full">
 				{workspaceId && (
@@ -32,9 +34,9 @@ const DesktopLayout: React.FC = () => {
 					</Layout.Sider>
 				)}
 
-				<s.Content>
+				<Layout.Content className={content}>
 					<Outlet />
-				</s.Content>
+				</Layout.Content>
 			</Layout>
 		</Layout>
 	);

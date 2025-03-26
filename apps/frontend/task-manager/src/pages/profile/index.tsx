@@ -2,9 +2,9 @@ import React from "react";
 
 import { useQuery } from "@tanstack/react-query";
 import { getProfile } from "@task-manager/api";
-import { Alert, Spin } from "antd";
+import { Alert, Flex, Spin } from "antd";
 
-import { FormsContainer, StyledFlex } from "./styles";
+import { useStyles } from "./styles";
 import AvatarInput from "./widgets/AvatarUpload";
 import EmailForm from "./widgets/EmailForm";
 import UserInfoForm from "./widgets/UserInfoForm";
@@ -12,6 +12,8 @@ import UserInfoForm from "./widgets/UserInfoForm";
 import { withAuthPageCheck } from "../../shared/HOCs";
 
 const Profile: React.FC = () => {
+	const { formsContainer, wrapper } = useStyles().styles;
+
 	const { data, isLoading, error } = useQuery({
 		queryFn: getProfile,
 		queryKey: ["profile"]
@@ -26,14 +28,14 @@ const Profile: React.FC = () => {
 	}
 
 	return (
-		<StyledFlex gap="2rem">
-			<FormsContainer>
+		<Flex className={wrapper} gap="2rem">
+			<div className={formsContainer}>
 				<UserInfoForm username={data.username} />
 				<EmailForm email={data.email} />
-			</FormsContainer>
+			</div>
 
 			<AvatarInput avatarUrl={data.picture} />
-		</StyledFlex>
+		</Flex>
 	);
 };
 

@@ -4,8 +4,7 @@ import { ResponseWithPagination } from "@task-manager/api";
 import { useDisclosure } from "@task-manager/utils";
 import { Popover, PopoverProps } from "antd";
 
-import * as s from "./styles";
-import "./styles.css";
+import { useStyles } from "./styles";
 
 import ListWithInfiniteScroll, { ListWithInfiniteScrollProps } from "../ListWithInfiniteScroll";
 
@@ -14,7 +13,10 @@ interface PopoverInfiniteSelectProps<
 	Response extends ResponseWithPagination<ItemValue>
 	// Mode extends "single" | "multiple" = "single"
 > extends Omit<PopoverProps, "content" | "children">,
-		Pick<ListWithInfiniteScrollProps<ItemValue, Response>, "queryKey" | "fetchItems" | "extraParams" | "renderItem"> {
+		Pick<
+			ListWithInfiniteScrollProps<ItemValue, Response>,
+			"queryKey" | "fetchItems" | "extraParams" | "renderItem"
+		> {
 	// mode: Mode;
 	children: React.ReactNode;
 
@@ -43,6 +45,8 @@ const PopoverInfiniteSelect = <
 }: PopoverInfiniteSelectProps<ItemValue, Response /* , Mode */>) => {
 	const { open, onClose, setOpen } = useDisclosure();
 
+	const { itemWrapper, popoverOverlay } = useStyles({ selected: !!value }).styles;
+
 	const valueRef = useRef(value);
 
 	const handleSelectItem = useCallback(
@@ -61,12 +65,12 @@ const PopoverInfiniteSelect = <
 			const renderedItem = propsRenderItem(item, index, array);
 
 			return (
-				<s.ItemWrapper selected={isSelected} onClick={isSelected ? onClose : () => handleSelectItem(item)}>
+				<div key={index} className={itemWrapper} onClick={isSelected ? onClose : () => handleSelectItem(item)}>
 					{renderedItem}
-				</s.ItemWrapper>
+				</div>
 			);
 		},
-		[getItemValue, handleSelectItem, onClose, propsRenderItem]
+		[getItemValue, handleSelectItem, itemWrapper, onClose, propsRenderItem]
 	);
 
 	useEffect(() => {
@@ -78,7 +82,7 @@ const PopoverInfiniteSelect = <
 			{...popoverProps}
 			open={open}
 			onOpenChange={setOpen}
-			overlayClassName="popover-overlay"
+			classNames={{ root: popoverOverlay }}
 			content={
 				<ListWithInfiniteScroll
 					queryKey={queryKey}

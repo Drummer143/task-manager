@@ -4,13 +4,14 @@ import {
 	headingsPlugin,
 	listsPlugin,
 	markdownShortcutPlugin,
+	MDXEditor,
 	MDXEditorMethods,
 	MDXEditorProps,
 	quotePlugin,
 	thematicBreakPlugin
 } from "@mdxeditor/editor";
 
-import * as s from "./styled";
+import { useStyles } from "./styled";
 
 interface MDEditorProps {
 	value?: string;
@@ -28,6 +29,12 @@ const MDEditor: React.ForwardRefRenderFunction<MDXEditorMethods, MDEditorProps> 
 	{ onChange, value = "", horizontalPadding, editing, minHeight, autoFocus },
 	ref
 ) => {
+	const { bg, editor, editorScroll, placeholder } = useStyles({
+		contentEditableClassName: "editable-row",
+		editing,
+		horizontalPadding,
+		minHeight
+	}).styles;
 	const editorRef = useRef<MDXEditorMethods | null>(null);
 
 	const handleBgClick: React.MouseEventHandler<HTMLDivElement> = useCallback(
@@ -55,21 +62,21 @@ const MDEditor: React.ForwardRefRenderFunction<MDXEditorMethods, MDEditorProps> 
 	);
 
 	return (
-		<s.EditorScroll $horizontalPadding={horizontalPadding}>
-			<s.Bg onClick={handleBgClick} $editing={editing}>
-				<s.MDEditor
-					placeholder={<s.Placeholder>Write something...</s.Placeholder>}
+		<div className={editorScroll}>
+			<div className={bg} onClick={handleBgClick}>
+				<MDXEditor
+					className={editor}
+					placeholder={<p className={placeholder}>Write something...</p>}
 					ref={handleRef}
 					readOnly={!editing}
 					contentEditableClassName="editable-row"
 					autoFocus={autoFocus}
-					$minHeight={minHeight}
 					markdown={value}
 					onChange={onChange}
 					plugins={plugins}
 				/>
-			</s.Bg>
-		</s.EditorScroll>
+			</div>
+		</div>
 	);
 };
 

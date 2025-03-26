@@ -1,11 +1,19 @@
 import React, { memo, useMemo } from "react";
 
-import { Drawer as AntDrawer, DrawerProps as AntDrawerProps, Button, ButtonProps, Form, FormProps, Space } from "antd";
+import {
+	Drawer as AntDrawer,
+	DrawerProps as AntDrawerProps,
+	Button,
+	ButtonProps,
+	Form,
+	FormProps,
+	Space
+} from "antd";
 
 interface DrawerProps<Values extends object = never> extends Omit<AntDrawerProps, "open" | "onClose"> {
 	open: boolean;
 
-	onClose: () => void;
+	onClose: AntDrawerProps["onClose"];
 
 	okText?: string;
 	okType?: ButtonProps["type"];
@@ -21,6 +29,8 @@ interface DrawerProps<Values extends object = never> extends Omit<AntDrawerProps
 
 	onOk?: Values extends never ? React.MouseEventHandler<HTMLElement> : FormProps<Values>["onFinish"];
 	onCancel?: React.MouseEventHandler<HTMLElement>;
+
+	afterClose?: () => void;
 }
 
 const Drawer = <Values extends object = never>({
@@ -36,7 +46,9 @@ const Drawer = <Values extends object = never>({
 	onCancel,
 	cancelText,
 	cancelType,
+	afterClose,
 	cancelProps,
+	afterOpenChange,
 	...props
 }: DrawerProps<Values>) => {
 	const drawerRender: AntDrawerProps["drawerRender"] = useMemo(() => {
@@ -66,7 +78,6 @@ const Drawer = <Values extends object = never>({
 		}
 
 		if (formProps) {
-			 
 			return node => <Form {...formProps}>{node}</Form>;
 		}
 	}, [form, onOk, propsDrawerRender]);
@@ -126,7 +137,19 @@ const Drawer = <Values extends object = never>({
 		propsExtra
 	]);
 
-	return <AntDrawer {...props} drawerRender={drawerRender} extra={extra} />;
+	const handleAfterOpenChange = useMemo<DrawerProps["afterOpenChange"]>(() => {
+		if (afterClose || afterOpenChange) {
+			return open => {
+				if (!open) {
+					afterClose?.();
+				}
+
+				afterOpenChange?.(open);
+			};
+		}
+	}, [afterClose, afterOpenChange]);
+
+	return <AntDrawer {...props} afterOpenChange={handleAfterOpenChange} drawerRender={drawerRender} extra={extra} />;
 };
 
 export default memo(Drawer) as typeof Drawer;

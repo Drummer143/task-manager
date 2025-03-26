@@ -3,10 +3,10 @@ import React, { useCallback, useMemo, useState } from "react";
 import { PlusOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ApiError, getPageAccess, getUserList, Page, parseApiError, updatePageAccess, User } from "@task-manager/api";
-import { App, Button, List, Modal, Tooltip } from "antd";
+import { Alert, App, Button, List, Modal, Tooltip, Typography } from "antd";
 import { AxiosError } from "axios";
 
-import * as s from "./styles";
+import { useStyles } from "./styles";
 
 import { useAppStore } from "../../../../app/store/app";
 import { useAuthStore } from "../../../../app/store/auth";
@@ -23,6 +23,8 @@ interface SettingsProps {
 
 const Settings: React.FC<SettingsProps> = ({ onClose, open, page }) => {
 	const [newAddedUser, setNewAddedUser] = useState<User | undefined>();
+
+	const { addMemberButtonContainer, alert, body, header } = useStyles().styles;
 
 	const queryClient = useQueryClient();
 
@@ -82,12 +84,19 @@ const Settings: React.FC<SettingsProps> = ({ onClose, open, page }) => {
 	return (
 		<Modal open={open} loading={isLoading} onCancel={handleClose} onClose={handleClose} footer={!parsedError}>
 			{parsedError ? (
-				<s.Alert message="Error while getting page settings" description={parsedError} type="error" />
+				<Alert
+					className={alert}
+					message="Error while getting page settings"
+					description={parsedError}
+					type="error"
+				/>
 			) : (
 				<>
-					<s.Header level={4}>Settings for page &quot;{page.title}&quot;</s.Header>
+					<Typography.Title className={header} level={4}>
+						Settings for page &quot;{page.title}&quot;
+					</Typography.Title>
 
-					<s.Body>
+					<div className={body}>
 						<List
 							dataSource={data}
 							renderItem={item => (
@@ -108,11 +117,11 @@ const Settings: React.FC<SettingsProps> = ({ onClose, open, page }) => {
 							/>
 						)}
 
-						<s.AddMemberButtonContainer>
+						<div className={addMemberButtonContainer}>
 							<PopoverInfiniteSelect
 								fetchItems={getUserList}
-								getItemValue={(user) => user.id}
-								renderItem={(user) => <UserCard hideOpenLink user={user} />}
+								getItemValue={user => user.id}
+								renderItem={user => <UserCard hideOpenLink user={user} />}
 								queryKey={["users"]}
 								onChange={setNewAddedUser}
 								value={newAddedUser}
@@ -131,8 +140,8 @@ const Settings: React.FC<SettingsProps> = ({ onClose, open, page }) => {
 									</Button>
 								</Tooltip>
 							</PopoverInfiniteSelect>
-						</s.AddMemberButtonContainer>
-					</s.Body>
+						</div>
+					</div>
 				</>
 			)}
 		</Modal>

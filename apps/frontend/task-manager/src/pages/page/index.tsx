@@ -5,7 +5,7 @@ import { getPage } from "@task-manager/api";
 import { lazySuspense } from "@task-manager/utils";
 import { useNavigate, useParams } from "react-router-dom";
 
-import { PageContainer } from "./styles";
+import { useStyles } from "./styles";
 import PageHeader from "./widgets/PageHeader";
 
 import { useAppStore } from "../../app/store/app";
@@ -16,6 +16,8 @@ const BoardPage = lazySuspense(() => import("./BoardPage"), <FullSizeLoader />);
 const TextPage = lazySuspense(() => import("./TextPage"), <FullSizeLoader />);
 
 const Page: React.FC = () => {
+	const { container } = useStyles().styles;
+
 	const pageId = useParams<{ id: string }>().id!;
 
 	const workspaceId = useAppStore.getState().workspaceId!;
@@ -42,7 +44,7 @@ const Page: React.FC = () => {
 	}
 
 	return (
-		<PageContainer>
+		<div className={container}>
 			<PageHeader page={page} />
 
 			{page?.type === "board" ? (
@@ -52,7 +54,7 @@ const Page: React.FC = () => {
 			) : (
 				<div>Not implemented</div>
 			)}
-		</PageContainer>
+		</div>
 	);
 };
 

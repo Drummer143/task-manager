@@ -3,32 +3,36 @@ import React from "react";
 import { MenuOutlined } from "@ant-design/icons";
 import { useDisclosure } from "@task-manager/utils";
 import { Button, Divider, Layout } from "antd";
+import { createStyles } from "antd-style";
 import { Outlet } from "react-router-dom";
-import styled from "styled-components";
 
 import UserMenu from "./UserMenu";
 
 import MobileDrawer from "../../../widgets/MobileDrawer";
 
-const MainDrawer = styled(MobileDrawer)`
-	.ant-drawer-body {
-		padding: var(--ant-padding-lg);
+const useStyles = createStyles(({ css }) => ({
+	mobileDrawer: css`
+		.ant-drawer-body {
+			padding: var(--ant-padding-lg);
 
-		display: flex;
-		flex-direction: column;
-		justify-content: space-between;
-	}
-`;
+			display: flex;
+			flex-direction: column;
+			justify-content: space-between;
+		}
+	`
+}));
 
 const MobileLayout: React.FC = () => {
 	const { open, onOpen, onClose } = useDisclosure();
 
+	const { mobileDrawer } = useStyles().styles;
+
 	return (
 		<Layout className="h-full">
-			<MainDrawer open={open} onClose={onClose}>
+			<MobileDrawer className={mobileDrawer} open={open} onClose={onClose}>
 				nav
 				<UserMenu />
-			</MainDrawer>
+			</MobileDrawer>
 
 			<Layout className="h-full">
 				<Layout.Header style={{ paddingLeft: "var(--ant-padding-md)" }}>

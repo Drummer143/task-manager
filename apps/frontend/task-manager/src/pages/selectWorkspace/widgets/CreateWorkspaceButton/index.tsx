@@ -1,28 +1,31 @@
 import React from "react";
 
 import { PlusCircleOutlined } from "@ant-design/icons";
-import { Button as AntButton, Typography } from "antd";
-import styled from "styled-components";
+import { Button, Typography } from "antd";
+import { createStyles } from "antd-style";
 
-const Button = styled(AntButton).attrs({
-	block: false,
-	type: "dashed"
-})`
-	width: 30vw;
-	min-width: 200px;
-	height: fit-content;
+const useStyles = createStyles(({ css }) => ({
+	button: css`
+		width: 30vw;
+		min-width: 200px;
+		height: fit-content;
 
-	padding: var(--ant-padding) !important;
-`;
+		padding: var(--ant-padding) !important;
+	`
+}));
 
 interface CreateWorkspaceModalProps {
 	onClick: React.MouseEventHandler<HTMLElement>;
 }
 
-const CreateWorkspaceButton: React.FC<CreateWorkspaceModalProps> = ({ onClick }) => (
-	<Button icon={<PlusCircleOutlined />} onClick={onClick}>
-		<Typography.Text>Create new workspace</Typography.Text>
-	</Button>
-);
+const CreateWorkspaceButton: React.FC<CreateWorkspaceModalProps> = ({ onClick }) => {
+	const { button } = useStyles().styles;
+
+	return (
+		<Button block={false} className={button} type="dashed" icon={<PlusCircleOutlined />} onClick={onClick}>
+			<Typography.Text>Create new workspace</Typography.Text>
+		</Button>
+	);
+};
 
 export default CreateWorkspaceButton;

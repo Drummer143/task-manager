@@ -1,5 +1,6 @@
 import React from "react";
 
+import { Page } from "@task-manager/api";
 import { lazySuspense } from "@task-manager/utils";
 
 import TaskTable from "./widgets/TaskTable";

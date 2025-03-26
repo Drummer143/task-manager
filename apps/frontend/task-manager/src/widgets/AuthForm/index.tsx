@@ -25,9 +25,11 @@ const AuthForm = <Values,>({
 	headingText = "Login",
 	...props
 }: AuthFormProps<Values>) => {
+	const { styles, cx } = s.useStyles();
+
 	return (
-		<s.FormContainer>
-			<s.Form {...props} layout="vertical">
+		<div className={styles.formContainer}>
+			<Form {...props} className={cx(styles.form, props.className)} layout="vertical">
 				<Form.Item>
 					<Typography.Title className="text-center" level={3}>
 						{headingText}
@@ -37,20 +39,20 @@ const AuthForm = <Values,>({
 				{children}
 
 				{error !== null && (
-					<s.CenteredFormItem status={error ? "error" : undefined}>
+					<Form.Item className={styles.centeredFormItem} status={error ? "error" : undefined}>
 						<ErrorMessage error={error} />
-					</s.CenteredFormItem>
+					</Form.Item>
 				)}
 
-				<s.CenteredFormItem>
+				<Form.Item className={styles.centeredFormItem}>
 					<Button htmlType="submit" type="primary" loading={submitLoading}>
 						{submitText}
 					</Button>
-				</s.CenteredFormItem>
+				</Form.Item>
 
-				{bottomLink && <s.CenteredFormItem>{bottomLink}</s.CenteredFormItem>}
-			</s.Form>
-		</s.FormContainer>
+				{bottomLink && <Form.Item className={styles.centeredFormItem}>{bottomLink}</Form.Item>}
+			</Form>
+		</div>
 	);
 };
 

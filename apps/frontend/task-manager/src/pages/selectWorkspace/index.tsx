@@ -3,10 +3,10 @@ import React, { useState } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getWorkspaceList } from "@task-manager/api";
 import { useDisclosure } from "@task-manager/utils";
-import { List as AntList, Flex } from "antd";
+import { Flex, List } from "antd";
 import { ListLocale } from "antd/es/list";
+import { createStyles } from "antd-style";
 import { useNavigate } from "react-router-dom";
-import styled from "styled-components";
 
 import CreateWorkspaceButton from "./widgets/CreateWorkspaceButton";
 import Settings from "./widgets/Settings";
@@ -21,15 +21,19 @@ const listLocale: ListLocale = {
 	emptyText: <Empty description="You have no workspaces" />
 };
 
-const List = styled(AntList)`
-	.ant-list-items {
-		display: flex;
-		flex-direction: column;
-		gap: var(--ant-margin-sm);
-	}
-` as typeof AntList;
+const useStyles = createStyles(({ css }) => ({
+	list: css`
+		.ant-list-items {
+			display: flex;
+			flex-direction: column;
+			gap: var(--ant-margin-sm);
+		}
+	`
+}));
 
 const SelectWorkspace: React.FC = () => {
+	const { list } = useStyles().styles;
+
 	const { data: workspaces } = useQuery({
 		queryKey: ["workspaces"],
 		queryFn: () => getWorkspaceList(["owner"])
@@ -58,6 +62,7 @@ const SelectWorkspace: React.FC = () => {
 	return (
 		<Flex align="center" justify="center" className="w-full h-full" vertical gap="var(--ant-margin-sm)">
 			<List
+				className={list}
 				locale={listLocale}
 				dataSource={workspaces || []}
 				renderItem={workspace => (

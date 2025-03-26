@@ -2,10 +2,9 @@ import React, { memo, useCallback, useEffect, useRef, useState } from "react";
 
 import { InfiniteData, QueryKey, useInfiniteQuery } from "@tanstack/react-query";
 import { PaginationQuery, ResponseWithPagination } from "@task-manager/api";
-import { cn } from "@task-manager/utils";
 import { List, ListProps, Spin } from "antd";
 
-import * as s from "./styles";
+import { useStyles } from "./styles";
 
 export interface ListWithInfiniteScrollProps<
 	ItemValue,
@@ -33,7 +32,10 @@ const ListWithInfiniteScroll = <
 	...listProps
 }: ListWithInfiniteScrollProps<ItemValue, Response>) => {
 	const [items, setItems] = useState<ItemValue[]>([]);
+
 	const observerRef = useRef<HTMLDivElement | null>(null);
+
+	const { styles, cx } = useStyles();
 
 	const { data, isFetching, isLoading, hasNextPage, fetchNextPage, promise } = useInfiniteQuery<
 		Response,
@@ -118,14 +120,14 @@ const ListWithInfiniteScroll = <
 			loading={isLoading}
 			dataSource={items}
 			renderItem={renderItem}
-			className={cn("css-var-r3 ant-select-css-var", className)}
+			className={cx("css-var-r3 ant-select-css-var", className)}
 			loadMore={
 				<>
 					{isFetching &&
 						(loadMore || (
-							<s.LoadingMoreWrapper>
+							<div className={cx(styles.loadingMoreWrapper)}>
 								<Spin />
-							</s.LoadingMoreWrapper>
+							</div>
 						))}
 
 					<div className="test-infinite-scroll" ref={observerRef}></div>

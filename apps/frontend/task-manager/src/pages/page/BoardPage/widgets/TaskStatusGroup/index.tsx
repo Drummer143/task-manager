@@ -1,6 +1,7 @@
 import React, { memo, useCallback } from "react";
 
 import { PlusOutlined } from "@ant-design/icons";
+import { Task, TaskStatus } from "@task-manager/api";
 import { preventDefault } from "@task-manager/utils";
 
 import * as s from "./styles";

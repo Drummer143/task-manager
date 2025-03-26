@@ -3,7 +3,7 @@ import React, { memo } from "react";
 import { CloseOutlined } from "@ant-design/icons";
 import { User } from "@task-manager/api";
 import { Button, Flex, Select } from "antd";
-import styled from "styled-components";
+import { createStyles } from "antd-style";
 
 import { userBoardRoleOptions } from "../../../../shared/constants";
 import UserCard from "../../../../widgets/UserCard";
@@ -15,34 +15,46 @@ interface AccessListItemProps {
 	onRoleChange: (userId: string, role?: string) => void;
 }
 
-export const ItemWrapper = styled.div`
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
+export const useStyles = createStyles(({ css }) => ({
+	itemWrapper: css`
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
 
-	margin-bottom: var(--ant-margin-sm);
-`;
+		margin-bottom: var(--ant-margin-sm);
+	`,
+	roleSelect: css`
+		min-width: 7.5rem;
+	`
+}));
 
-export const RoleSelect = styled(Select)`
-	min-width: 7.5rem;
-` as typeof Select;
+const AccessListItem: React.FC<AccessListItemProps> = ({ user, role, isPending, onRoleChange }) => {
+	const { itemWrapper, roleSelect } = useStyles().styles;
 
-const AccessListItem: React.FC<AccessListItemProps> = ({ user, role, isPending, onRoleChange }) => (
-	<ItemWrapper>
-		<UserCard user={user} />
+	return (
+		<div className={itemWrapper}>
+			<UserCard user={user} />
 
-		<Flex align="center" gap="var(--ant-margin-xxs)">
-			<RoleSelect
-				onChange={value => onRoleChange(user.id, value)}
-				value={role}
-				loading={isPending}
-				options={userBoardRoleOptions}
-				placeholder="Select role"	
-			/>
+			<Flex align="center" gap="var(--ant-margin-xxs)">
+				<Select
+					className={roleSelect}
+					onChange={value => onRoleChange(user.id, value)}
+					value={role}
+					loading={isPending}
+					options={userBoardRoleOptions}
+					placeholder="Select role"
+				/>
 
-			<Button type="text" danger size="small" icon={<CloseOutlined />} onClick={() => onRoleChange(user.id)} />
-		</Flex>
-	</ItemWrapper>
-);
+				<Button
+					type="text"
+					danger
+					size="small"
+					icon={<CloseOutlined />}
+					onClick={() => onRoleChange(user.id)}
+				/>
+			</Flex>
+		</div>
+	);
+};
 
 export default memo(AccessListItem);

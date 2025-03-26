@@ -5,7 +5,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Page, updatePage } from "@task-manager/api";
 import { App, Button } from "antd";
 
-import * as s from "./styled";
+import { useStyles } from "./styled";
 
 import { useAppStore } from "../../../app/store/app";
 import MDEditor from "../../../widgets/MDEditor";
@@ -17,6 +17,8 @@ interface TextPageProps {
 const TextPage: React.FC<TextPageProps> = ({ page }) => {
 	const [text, setText] = useState(page.text || "");
 	const [editing, setEditing] = useState(false);
+
+	const { controlsWrapper } = useStyles().styles;
 
 	const message = App.useApp().message;
 
@@ -57,7 +59,7 @@ const TextPage: React.FC<TextPageProps> = ({ page }) => {
 		<>
 			<MDEditor autoFocus horizontalPadding onChange={setText} ref={editorRef} editing={editing} value={text} />
 
-			<s.ControlsWrapper>
+			<div className={controlsWrapper}>
 				{editing ? (
 					<>
 						<Button loading={isPending} onClick={handleSave}>
@@ -68,7 +70,7 @@ const TextPage: React.FC<TextPageProps> = ({ page }) => {
 				) : (
 					<Button onClick={handleEditButtonClick}>Edit</Button>
 				)}
-			</s.ControlsWrapper>
+			</div>
 		</>
 	);
 };

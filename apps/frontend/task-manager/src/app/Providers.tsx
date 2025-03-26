@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { darkThemeConfig, lightThemeConfig } from "@task-manager/ant-config";
-import { theme as antTheme, ConfigProvider } from "antd";
+import { theme as antTheme, ConfigProvider, ThemeConfig } from "antd";
 
 import { useAppStore } from "./store/app";
 

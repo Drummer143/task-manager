@@ -1,3 +1,4 @@
+import { TaskStatus } from "@task-manager/api";
 import { create } from "zustand";
 
 interface TasksState {

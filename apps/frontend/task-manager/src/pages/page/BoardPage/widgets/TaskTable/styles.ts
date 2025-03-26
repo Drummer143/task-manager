@@ -1,8 +1,8 @@
-import { Flex } from "antd";
-import styled from "styled-components";
+import { createStyles } from "antd-style";
 
-export const StyledFlex = styled(Flex)`
-	padding: 0.5rem 0.25rem;
-
-	overflow-x: auto;
-`;
+export const useStyles = createStyles(({ css }) => ({
+	container: css`
+		padding: var(--ant-padding-xs) var(--ant-padding-xxs);
+		overflow-x: auto;
+	`
+}));

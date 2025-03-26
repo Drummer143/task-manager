@@ -1,33 +1,25 @@
-import { Alert as AntAlert, Typography } from "antd";
-import styled from "styled-components";
+import { createStyles } from "antd-style";
 
-import SelectWithInfiniteScroll from "../../../../widgets/SelectWithInfiniteScroll";
+export const useStyles = createStyles(({ css }) => ({
+	alert: css`
+		margin-top: var(--ant-margin-xl);
+	`,
+	header: css`
+		margin-bottom: var(--ant-margin-xs);
+		padding-bottom: var(--ant-padding-xxs);
 
-export const Alert = styled(AntAlert)`
-	margin-top: var(--ant-margin-xl);
-`;
+		border-bottom: 1px solid var(--ant-color-split);
+	`,
+	body: css`
+		padding: var(--ant-padding-sm);
 
-export const Header = styled(Typography.Title)`
-	margin-bottom: var(--ant-margin-xs);
-	padding-bottom: var(--ant-padding-xxs);
+		background-color: var(--ant-color-bg-container);
+		border-radius: var(--ant-border-radius);
+	`,
+	addMemberButtonContainer: css`
+		display: flex;
+		justify-content: flex-end;
 
-	border-bottom: 1px solid var(--ant-color-split);
-`;
-
-export const Body = styled.div`
-	padding: var(--ant-padding-sm);
-
-	background-color: var(--ant-color-bg-container);
-	border-radius: var(--ant-border-radius);
-`;
-
-export const AddMemberButtonContainer = styled.div`
-	display: flex;
-	justify-content: flex-end;
-
-	margin-top: var(--ant-margin-md);
-`;
-
-export const UserSelect = styled(SelectWithInfiniteScroll)`
-	width: 15.5rem;
-` as typeof SelectWithInfiniteScroll;
+		margin-top: var(--ant-margin-md);
+	`
+}));

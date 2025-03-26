@@ -1,13 +1,12 @@
-import { Button as AntButton } from "antd";
-import styled from "styled-components";
+import { createStyles } from "antd-style";
 
-export const Button = styled(AntButton).attrs({
-	block: false
-})`
-	width: 30vw;
-	min-width: 200px;
-	height: fit-content;
+export const useStyles = createStyles(({ css }) => ({
+	button: css`
+		width: 30vw;
+		min-width: 200px;
+		height: fit-content;
 
-	padding: var(--ant-padding);
-	padding-left: var(--ant-padding-xl);
-`;
+		padding: var(--ant-padding);
+		padding-left: var(--ant-padding-xl);
+	`
+}));

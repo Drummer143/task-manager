@@ -2,11 +2,18 @@ import React, { useMemo, useState } from "react";
 
 import { PlusOutlined } from "@ant-design/icons";
 import { useMutation, useQueries, useQueryClient } from "@tanstack/react-query";
-import { getUserList, getWorkspace, getWorkspaceAccess, parseApiError, updateWorkspaceAccess, User } from "@task-manager/api";
+import {
+	getUserList,
+	getWorkspace,
+	getWorkspaceAccess,
+	parseApiError,
+	updateWorkspaceAccess,
+	User
+} from "@task-manager/api";
 import { useMessageOnErrorCallback } from "@task-manager/utils";
-import { App, Button, List, Modal, Tooltip } from "antd";
+import { Alert, App, Button, List, Modal, Tooltip, Typography } from "antd";
 
-import * as s from "./styles";
+import { useStyles } from "./styles";
 
 import PopoverInfiniteSelect from "../../../../widgets/PopoverInfiniteSelect";
 import UserCard from "../../../../widgets/UserCard";
@@ -21,6 +28,8 @@ interface SettingsProps {
 
 const Settings: React.FC<SettingsProps> = ({ onClose, open, workspaceId }) => {
 	const [newAddedUser, setNewAddedUser] = useState<User | undefined>();
+
+	const { addMemberButtonContainer, alert, body, header } = useStyles().styles;
 
 	const queryClient = useQueryClient();
 
@@ -81,12 +90,19 @@ const Settings: React.FC<SettingsProps> = ({ onClose, open, workspaceId }) => {
 			footer={!parsedError}
 		>
 			{parsedError ? (
-				<s.Alert message="Error while getting page settings" description={parsedError} type="error" />
+				<Alert
+					className={alert}
+					message="Error while getting page settings"
+					description={parsedError}
+					type="error"
+				/>
 			) : (
 				<>
-					<s.Header level={4}>Settings for page &quot;{workspace?.name}&quot;</s.Header>
+					<Typography.Title className={header} level={4}>
+						Settings for page &quot;{workspace?.name}&quot;
+					</Typography.Title>
 
-					<s.Body>
+					<div className={body}>
 						<List
 							dataSource={workspaceAccess}
 							renderItem={item => (
@@ -107,10 +123,10 @@ const Settings: React.FC<SettingsProps> = ({ onClose, open, workspaceId }) => {
 							/>
 						)}
 
-						<s.AddMemberButtonContainer>
+						<div className={addMemberButtonContainer}>
 							<PopoverInfiniteSelect
 								fetchItems={getUserList}
-								getItemValue={(user) => user.id}
+								getItemValue={user => user.id}
 								renderItem={user => <UserCard hideOpenLink user={user} />}
 								queryKey={["users"]}
 								onChange={setNewAddedUser}
@@ -130,8 +146,8 @@ const Settings: React.FC<SettingsProps> = ({ onClose, open, workspaceId }) => {
 									</Button>
 								</Tooltip>
 							</PopoverInfiniteSelect>
-						</s.AddMemberButtonContainer>
-					</s.Body>
+						</div>
+					</div>
 				</>
 			)}
 		</Modal>

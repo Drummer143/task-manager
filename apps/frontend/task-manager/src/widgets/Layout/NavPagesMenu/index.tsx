@@ -6,9 +6,9 @@ import { createPage, getPageList, PageType, parseApiError } from "@task-manager/
 import { Button, Form, Input, Select, Typography } from "antd";
 import ErrorList from "antd/es/form/ErrorList";
 import { DefaultOptionType } from "antd/es/select";
+import { createStyles } from "antd-style";
 
 import Menu from "./Menu";
-import { PageListTitleWrapper } from "./Menu/styles";
 
 import { useAppStore } from "../../../app/store/app";
 import { pageTypes } from "../../../shared/constants";
@@ -27,7 +27,22 @@ const pageTypeOptions: DefaultOptionType[] = pageTypes.map(type => ({
 	title: type
 }));
 
+const useStyles = createStyles(({ css }) => ({
+	pageListTitleWrapper: css`
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		gap: var(--ant-padding-xxs);
+
+		padding: var(--ant-padding-xxs);
+	`
+}));
+
 const NavPagesMenu: React.FC = () => {
+	const { styles } = useStyles();
+
+	const [form] = Form.useForm<FormValues>();
+
 	const [creatingPageType, setCreatingPageType] = useState<boolean | string>(false);
 
 	const queryClient = useQueryClient();
@@ -44,7 +59,7 @@ const NavPagesMenu: React.FC = () => {
 			})
 	});
 
-	const { mutateAsync, isPending, error } = useMutation({
+	const { mutateAsync, isPending, error, reset } = useMutation({
 		mutationFn: createPage,
 		onSuccess: page => {
 			queryClient.invalidateQueries({ queryKey: ["nav-pages"] });
@@ -55,6 +70,15 @@ const NavPagesMenu: React.FC = () => {
 	});
 
 	const parsedError = useMemo(() => (error ? [parseApiError(error)] : undefined), [error]);
+
+	const closeCreatingPageType = useCallback(() => setCreatingPageType(false), []);
+
+	const formProps = useMemo(
+		() => ({
+			form
+		}),
+		[form]
+	);
 
 	const handleFormSubmit = useCallback(
 		async (values: FormValues) => {
@@ -69,28 +93,35 @@ const NavPagesMenu: React.FC = () => {
 		[creatingPageType, mutateAsync, workspaceId]
 	);
 
+	const handleAfterClose = useCallback(() => {
+		reset();
+
+		form.resetFields();
+	}, [form, reset]);
+
 	if (isLoading) {
 		return <FullSizeLoader />;
 	}
 
 	return (
 		<>
-			<PageListTitleWrapper>
+			<div className={styles.pageListTitleWrapper}>
 				<Typography.Title className="flex-1" level={5}>
 					Pages
 				</Typography.Title>
 
 				<Button type="text" onClick={() => setCreatingPageType(true)} icon={<PlusOutlined />} />
-			</PageListTitleWrapper>
+			</div>
 
 			<Menu pages={data} onSubPageCreate={setCreatingPageType} />
 
 			<Drawer
-				form
+				form={formProps}
+				afterClose={handleAfterClose}
 				okLoading={isPending}
 				onOk={handleFormSubmit}
 				open={!!creatingPageType}
-				onClose={() => setCreatingPageType(false)}
+				onClose={closeCreatingPageType}
 			>
 				<Form.Item label="Page title" name="title">
 					<Input placeholder="Page title" />
