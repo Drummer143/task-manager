@@ -45,15 +45,10 @@
     "@nx/react": {
       "application": {
         "babel": true,
-        "style": "styled-components",
         "linter": "eslint",
         "bundler": "vite"
       },
-      "component": {
-        "style": "styled-components"
-      },
       "library": {
-        "style": "styled-components",
         "linter": "eslint"
       }
     }

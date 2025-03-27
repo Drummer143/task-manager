@@ -13,6 +13,7 @@ import { FormValues } from "../TaskForm/types";
 const NewTaskForm: React.FC = () => {
 	const queryClient = useQueryClient();
 
+	// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 	const pageId = useParams<{ id: string }>().id!;
 
 	const { onClose, onOpen, open } = useDisclosure();
@@ -26,17 +27,13 @@ const NewTaskForm: React.FC = () => {
 
 	const handleSubmit = useCallback(
 		async (values: FormValues) => {
-			try {
-				await mutateAsync({
-					task: { ...values, dueDate: values.dueDate?.toISOString() },
-					workspaceId: useAppStore.getState().workspaceId!,
-					pageId
-				});
+			await mutateAsync({
+				task: { ...values, dueDate: values.dueDate?.toISOString() },
+				workspaceId: useAppStore.getState().workspaceId!,
+				pageId
+			});
 
-				onClose();
-			} catch {
-				/* empty */
-			}
+			onClose();
 		},
 		[pageId, mutateAsync, onClose]
 	);

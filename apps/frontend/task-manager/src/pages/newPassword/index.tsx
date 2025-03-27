@@ -48,13 +48,9 @@ const NewPassword: React.FC = () => {
 
 	const passwordUpdateError = useMemo(() => parseApiError(error, undefined, [400, 404]), [error]);
 
-	const visibilityToggle = useMemo(
-		() => ({ onVisibleChange: setPasswordsVisible, visible: passwordsVisible }),
-		[passwordsVisible]
-	);
-
 	const handleSubmit = useCallback(
 		async (values: { password: string; confirmPassword: string }) => {
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 			await updatePassword({ password: values.password, token: token! });
 
 			redirectTimeoutRef.current = setTimeout(() => {
@@ -76,7 +72,7 @@ const NewPassword: React.FC = () => {
 				clearTimeout(redirectTimeoutRef.current);
 			}
 		};
-	}, []);
+	}, [token, verifyResetPasswordToken]);
 
 	if (isTokenValidating) {
 		return (
@@ -133,7 +129,7 @@ const NewPassword: React.FC = () => {
 			<Form.Item name="password" label="Password" rules={rules.password}>
 				<Input.Password
 					placeholder="********"
-					visibilityToggle={visibilityToggle}
+					visibilityToggle={{ onVisibleChange: setPasswordsVisible, visible: passwordsVisible }}
 					autoComplete="new-password"
 					name="password"
 					id="password"
@@ -148,7 +144,7 @@ const NewPassword: React.FC = () => {
 			>
 				<Input.Password
 					placeholder="********"
-					visibilityToggle={visibilityToggle}
+					visibilityToggle={{ onVisibleChange: setPasswordsVisible, visible: passwordsVisible }}
 					autoComplete="new-password"
 					name="confirm_password"
 					id="confirm_password"

@@ -3,8 +3,9 @@ import React, { memo, useCallback } from "react";
 import { PlusOutlined } from "@ant-design/icons";
 import { Task, TaskStatus } from "@task-manager/api";
 import { preventDefault } from "@task-manager/utils";
+import { Button, Typography } from "antd";
 
-import * as s from "./styles";
+import { useStyles } from "./styles";
 
 import { useTasksStore } from "../../../../../app/store/tasks";
 import { taskStatusLocale } from "../../../../../shared/constants";
@@ -18,6 +19,11 @@ interface TaskColumnProps {
 
 const TaskColumn: React.FC<TaskColumnProps> = ({ status, tasks }) => {
 	const { dropTarget } = useTasksStore();
+
+	const { addTaskButton, taskGroup, taskGroupHeader, taskGroupTitle } = useStyles({
+		isDragTarget: dropTarget === status,
+		status
+	}).styles;
 
 	const handleDragEnter: React.DragEventHandler<HTMLDivElement> = useCallback(
 		() => useTasksStore.setState({ dropTarget: status }),
@@ -37,21 +43,25 @@ const TaskColumn: React.FC<TaskColumnProps> = ({ status, tasks }) => {
 	}, [status]);
 
 	return (
-		<s.TaskGroup
-			status={status}
-			isDragTarget={dropTarget === status}
+		<div
+			className={taskGroup}
 			onDragOver={preventDefault}
 			onDragEnter={handleDragEnter}
 			onDragLeave={handleDragLeave}
 		>
-			<s.TaskGroupHeader>
-				<s.TaskGroupTitle>{taskStatusLocale[status]}</s.TaskGroupTitle>
+			<div className={taskGroupHeader}>
+				<Typography.Text className={taskGroupTitle}>{taskStatusLocale[status]}</Typography.Text>
 
-				<s.AddTaskButton onClick={handleCreateTaskButtonClick} type="text" icon={<PlusOutlined />} />
-			</s.TaskGroupHeader>
+				<Button
+					className={addTaskButton}
+					onClick={handleCreateTaskButtonClick}
+					type="text"
+					icon={<PlusOutlined />}
+				/>
+			</div>
 
 			<TaskList tasks={tasks} />
-		</s.TaskGroup>
+		</div>
 	);
 };
 

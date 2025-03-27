@@ -8,14 +8,14 @@ import { useNavigate } from "react-router-dom";
 import { useAuthStore } from "../../app/store/auth";
 
 export const useUserMenuItems = () => {
-	const clear = useAuthStore(state => state.clear);
+	const clearAuthStore = useAuthStore(state => state.clear);
 
 	const navigate = useNavigate();
 
 	const message = App.useApp().message;
 
 	const { mutateAsync } = useMutation({
-		mutationFn: () => logout().then(clear),
+		mutationFn: () => logout().then(clearAuthStore),
 		onSuccess: () => navigate("/login", { replace: true }),
 		onError: error => message.error(error.message ?? "Failed to log out")
 	});

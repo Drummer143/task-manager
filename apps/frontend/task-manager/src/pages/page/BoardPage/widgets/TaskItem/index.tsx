@@ -1,10 +1,9 @@
 import React, { memo } from "react";
 
-import { Task, TaskStatus } from "@task-manager/api";
+import { Task } from "@task-manager/api";
 import { Typography } from "antd";
-import { createStyles } from "antd-style";
 
-import { statusColors } from "../../../../../shared/constants";
+import { useStyles } from "./styles";
 
 interface TaskItemProps {
 	task: Task;
@@ -12,16 +11,6 @@ interface TaskItemProps {
 	onClick?: React.MouseEventHandler<HTMLElement>;
 	onDragStart: (e: React.DragEvent<HTMLElement>, task: Task) => void;
 }
-
-const useStyles = createStyles(({ css }, { status }: { status: TaskStatus }) => ({
-	taskWrapper: css`
-		padding: var(--ant-padding-xxs) var(--ant-padding-xs);
-
-		cursor: pointer;
-		border-radius: var(--inner-border-radius);
-		background-color: var(${statusColors[status]});
-	`
-}));
 
 const TaskItem: React.FC<TaskItemProps> = ({ task, onDragStart, onClick }) => {
 	const { taskWrapper } = useStyles({ status: task.status }).styles;

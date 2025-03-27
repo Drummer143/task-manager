@@ -11,7 +11,7 @@ import { useAppStore } from "../../../app/store/app";
 import MDEditor from "../../../widgets/MDEditor";
 
 interface TextPageProps {
-	page: Omit<Page, "tasks" | "owner" | "childPages" | "parentPage">;
+	page: Omit<Page, "tasks" | "owner" | "childPages" | "parentPage" | "workspace">;
 }
 
 const TextPage: React.FC<TextPageProps> = ({ page }) => {
@@ -65,6 +65,7 @@ const TextPage: React.FC<TextPageProps> = ({ page }) => {
 						<Button loading={isPending} onClick={handleSave}>
 							Save
 						</Button>
+
 						<Button onClick={handleReset}>Cancel</Button>
 					</>
 				) : (

@@ -3,10 +3,12 @@ import React, { memo } from "react";
 import { CloseOutlined } from "@ant-design/icons";
 import { User } from "@task-manager/api";
 import { Button, Flex, Select } from "antd";
-import { createStyles } from "antd-style";
+
+import { useStyles } from "./styles";
 
 import { userBoardRoleOptions } from "../../../../shared/constants";
 import UserCard from "../../../../widgets/UserCard";
+
 
 interface AccessListItemProps {
 	user: User;
@@ -14,19 +16,6 @@ interface AccessListItemProps {
 	isPending?: boolean;
 	onRoleChange: (userId: string, role?: string) => void;
 }
-
-export const useStyles = createStyles(({ css }) => ({
-	itemWrapper: css`
-		display: flex;
-		justify-content: space-between;
-		align-items: center;
-
-		margin-bottom: var(--ant-margin-sm);
-	`,
-	roleSelect: css`
-		min-width: 7.5rem;
-	`
-}));
 
 const AccessListItem: React.FC<AccessListItemProps> = ({ user, role, isPending, onRoleChange }) => {
 	const { itemWrapper, roleSelect } = useStyles().styles;

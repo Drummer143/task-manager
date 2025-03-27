@@ -12,6 +12,7 @@ import { FormValues } from "../TaskForm/types";
 import TaskHistory from "../TaskHistory";
 
 const EditTaskForm: React.FC = () => {
+	// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 	const pageId = useParams<{ id: string }>().id!;
 	const taskId = useSearchParams()[0].get("taskId");
 

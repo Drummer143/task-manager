@@ -39,12 +39,16 @@ export type VersionHistoryEntryRenders<Keys extends string = string> = Partial<
 	Record<Keys, VersionEntryRendererFunction | VersionEntryRendererObject>
 >;
 
+export type FetchLog<Keys extends string = string> = (
+	query?: PaginationQuery
+) => Promise<ResponseWithPagination<VersionHistoryLog<Keys>>>;
+
 export interface VersionHistoryListProps<Keys extends string = string> {
 	enabled?: boolean;
 	changeOrder?: Keys[];
 	entryRenders?: VersionHistoryEntryRenders<Keys>;
 
-	fetchLog: (query?: PaginationQuery) => Promise<ResponseWithPagination<VersionHistoryLog<Keys>>>;
+	fetchLog: FetchLog<Keys>;
 }
 
 const defaultRenderer: VersionEntryRendererFunction = info => info?.toString();
@@ -144,4 +148,4 @@ const VersionHistoryList = <Keys extends string = string>({
 	);
 };
 
-export default memo(VersionHistoryList);
+export default memo(VersionHistoryList) as typeof VersionHistoryList;
