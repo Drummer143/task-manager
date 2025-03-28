@@ -4,6 +4,8 @@ import (
 	"main/router/errorHandlers"
 	routerUtils "main/router/utils"
 	pagesRouter "main/router/workspaces/pages"
+	accessesRouter "main/router/workspaces/pages/accesses"
+	"main/socketManager"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -34,12 +36,14 @@ func hasAccessToWorkspaceMiddleware(postgres *gorm.DB) gin.HandlerFunc {
 	}
 }
 
-func AddRoutes(group *gin.RouterGroup, postgres *gorm.DB, mongo *mongo.Client, validate *validator.Validate) {
+func AddRoutes(group *gin.RouterGroup, postgres *gorm.DB, mongo *mongo.Client, validate *validator.Validate, sockets *socketManager.SocketManager) {
 	group.POST("", createWorkspace(postgres, validate))
 
 	group.GET("", getWorkspaceList(postgres))
 
 	group.GET("/:workspace_id", getWorkspace(postgres))
 
-	pagesRouter.AddRoutes(group.Group("/:workspace_id/pages", hasAccessToWorkspaceMiddleware(postgres)), postgres, mongo, validate)
+	accessesRouter.AddRoutes(group.Group("/:workspace_id/accesses"), postgres)
+
+	pagesRouter.AddRoutes(group.Group("/:workspace_id/pages", hasAccessToWorkspaceMiddleware(postgres)), postgres, mongo, validate, sockets)
 }

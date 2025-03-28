@@ -41,7 +41,7 @@ func getHistory(postgres *gorm.DB, tasksVersionCollection *mongo.Collection) gin
 			return
 		}
 
-		total, err := tasksVersionCollection.CountDocuments(context.Background(), map[string]interface{}{"id": task.ID})
+		total, err := tasksVersionCollection.CountDocuments(context.Background(), gin.H{"id": task.ID})
 
 		if err != nil {
 			errorHandlers.InternalServerError(ctx, "failed to get task history")
@@ -53,7 +53,7 @@ func getHistory(postgres *gorm.DB, tasksVersionCollection *mongo.Collection) gin
 		var history []dbClient.EntityVersionDocument
 		options := options.Find().SetSort(gin.H{"version": -1}).SetSkip(int64(offset)).SetLimit(int64(limit))
 
-		cursor, err := tasksVersionCollection.Find(context.Background(), map[string]interface{}{"id": task.ID}, options)
+		cursor, err := tasksVersionCollection.Find(context.Background(), gin.H{"id": task.ID}, options)
 
 		if err != nil {
 			errorHandlers.InternalServerError(ctx, "failed to get task history")
@@ -63,6 +63,10 @@ func getHistory(postgres *gorm.DB, tasksVersionCollection *mongo.Collection) gin
 		if err = cursor.All(context.Background(), &history); err != nil {
 			errorHandlers.InternalServerError(ctx, "failed to get task history")
 			return
+		}
+
+		if history == nil {
+			history = []dbClient.EntityVersionDocument{}
 		}
 
 		ctx.JSON(http.StatusOK, routerUtils.ResponseWithPagination[dbClient.EntityVersionDocument]{

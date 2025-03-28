@@ -4,6 +4,7 @@ import (
 	"main/auth"
 	"main/dbClient"
 	"main/router"
+	"main/socketManager"
 	"main/validation"
 
 	"github.com/joho/godotenv"
@@ -36,7 +37,9 @@ func main() {
 
 	validate := validation.New()
 
-	r := router.New(auth, postgresDB, mongoDB, validate)
+	sockets := socketManager.NewSubscriptionManager()
+
+	r := router.New(auth, postgresDB, mongoDB, validate, sockets)
 
 	r.Run(":8080")
 }

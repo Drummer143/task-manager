@@ -44,7 +44,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
 					}
 				: undefined
 		}
-		destroyOnClose={type === "update"}
+		destroyOnClose={type === "edit"}
 		extra={
 			!pageError && (
 				<Space>

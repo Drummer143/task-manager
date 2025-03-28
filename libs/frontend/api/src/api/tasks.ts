@@ -96,5 +96,7 @@ export const getTaskHistory = async ({
 	(
 		await axiosInstance.get<
 			ResponseWithPagination<VersionHistoryLog<"title" | "description" | "status" | "dueDate" | "assigneeId">>
-		>(`/workspaces/${workspaceId}/pages/${pageId}/tasks/${taskId}/history?limit=${limit}&offset=${offset}`)
+		>(`/workspaces/${workspaceId}/pages/${pageId}/tasks/${taskId}/history`, {
+			params: { limit, offset }
+		})
 	).data;

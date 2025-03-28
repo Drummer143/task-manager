@@ -113,9 +113,9 @@ const VersionHistoryList = <Keys extends string = string>({
 
 							<Button
 								type="text"
-								icon={<Avatar size="small" src={item.user.picture || "/avatar-placeholder-32.jpg"} />}
+								icon={<Avatar size="small" src={item.author.picture || "/avatar-placeholder-32.jpg"} />}
 							>
-								{item.user.name}
+								{item.author.username}
 							</Button>
 						</Flex>
 

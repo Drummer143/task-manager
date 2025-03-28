@@ -69,6 +69,10 @@ func getUserList(postgres *gorm.DB) gin.HandlerFunc {
 			limit = int(total)
 		}
 
+		if users == nil {
+			users = []dbClient.User{}
+		}
+
 		c.JSON(200, routerUtils.ResponseWithPagination[dbClient.User]{
 			Data: users,
 			Meta: routerUtils.Meta{

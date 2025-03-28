@@ -45,6 +45,7 @@ const Settings: React.FC<SettingsProps> = ({ page }) => {
 		isPending
 	} = useMutation({
 		mutationFn: updatePageAccess,
+		retry: (_, error) => (error.response?.status || 0) > 499,
 		onSuccess: (_, { body: { role, userId } }) => {
 			setNewAddedUser(undefined);
 

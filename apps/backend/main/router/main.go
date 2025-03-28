@@ -11,6 +11,7 @@ import (
 	profileRouter "main/router/profile"
 	usersRouter "main/router/users"
 	workspacesRouter "main/router/workspaces"
+	"main/socketManager"
 
 	// authRouter "main/router/auth"
 
@@ -26,7 +27,7 @@ import (
 	"gorm.io/gorm"
 )
 
-func New(auth *auth.Auth, postgres *gorm.DB, mongo *mongo.Client, validate *validator.Validate) *gin.Engine {
+func New(auth *auth.Auth, postgres *gorm.DB, mongo *mongo.Client, validate *validator.Validate, sockets *socketManager.SocketManager) *gin.Engine {
 	ginModeEnv := os.Getenv("GIN_MODE")
 
 	if ginModeEnv == "release" {
@@ -51,9 +52,9 @@ func New(auth *auth.Auth, postgres *gorm.DB, mongo *mongo.Client, validate *vali
 	router.GET("/api/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	router.GET("/api", func(ctx *gin.Context) { ctx.Redirect(http.StatusMovedPermanently, "/api/index.html") })
 
-	router.GET("/socket", IsAuthenticated(auth), handleWebSocket)
+	router.GET("/socket", IsAuthenticated(auth), handleWebSocket(sockets))
 
-	workspacesRouter.AddRoutes(router.Group("workspaces", IsAuthenticated(auth)), postgres, mongo, validate)
+	workspacesRouter.AddRoutes(router.Group("workspaces", IsAuthenticated(auth)), postgres, mongo, validate, sockets)
 	authRouter.AddRoutes(router.Group("auth"), auth, validate, postgres)
 	profileRouter.AddRoutes(router.Group("profile", IsAuthenticated(auth)), validate, postgres)
 	usersRouter.AddRoutes(router.Group("users", IsAuthenticated(auth)), postgres)

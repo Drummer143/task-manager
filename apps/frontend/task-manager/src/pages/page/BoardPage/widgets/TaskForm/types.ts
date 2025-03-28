@@ -13,7 +13,7 @@ export interface FormValues {
 
 export interface TaskFormProps {
 	open: boolean;
-	type: "create" | "update";
+	type: "create" | "edit";
 
 	onClose: () => void;
 	onCancel: () => void;

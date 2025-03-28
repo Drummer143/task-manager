@@ -5,6 +5,7 @@ import (
 	routerUtils "main/router/utils"
 	accessesRouter "main/router/workspaces/pages/accesses"
 	tasksRouter "main/router/workspaces/pages/tasks"
+	"main/socketManager"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -36,7 +37,7 @@ func hasAccessToPageMiddleware(postgres *gorm.DB) gin.HandlerFunc {
 	}
 }
 
-func AddRoutes(group *gin.RouterGroup, postgres *gorm.DB, mongo *mongo.Client, validate *validator.Validate) {
+func AddRoutes(group *gin.RouterGroup, postgres *gorm.DB, mongo *mongo.Client, validate *validator.Validate, sockets *socketManager.SocketManager) {
 	group.GET("", getPageList(postgres))
 
 	group.POST("", createPage(postgres, validate))
@@ -49,5 +50,5 @@ func AddRoutes(group *gin.RouterGroup, postgres *gorm.DB, mongo *mongo.Client, v
 
 	accessesRouter.AddRoutes(group.Group("/:page_id/accesses"), postgres)
 
-	tasksRouter.AddRoutes(group.Group("/:page_id/tasks", hasAccessToPageMiddleware(postgres)), postgres, mongo, validate)
+	tasksRouter.AddRoutes(group.Group("/:page_id/tasks", hasAccessToPageMiddleware(postgres)), postgres, mongo, validate, sockets)
 }

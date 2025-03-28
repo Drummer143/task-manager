@@ -11,13 +11,19 @@ import (
 	"gorm.io/gorm"
 )
 
+type getPageAccessesResponse struct {
+	dbClient.PageAccess
+	IsWorkspaceOwner bool `json:"isWorkspaceOwner"`
+	IsWorkspaceAdmin bool `json:"isWorkspaceAdmin"`
+}
+
 // @Summary				Get page accesses
 // @Description 		Get page accesses
 // @Tags				Page Accesses
 // @Produce				json
 // @Param				workspace_id path string true "Workspace ID"
 // @Param				page_id path string true "Page ID"
-// @Success				200 {object} []dbClient.PageAccess
+// @Success				200 {object} []getPageAccessesResponse
 // @Failure				400 {object} errorHandlers.Error
 // @Failure				401 {object} errorHandlers.Error "Unauthorized if session is missing or invalid"
 // @Failure				403 {object} errorHandlers.Error "No access to page or workspace or no access to get page accesses"
@@ -41,13 +47,44 @@ func getPageAccesses(postgres *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		var pageAccess []dbClient.PageAccess
+		var pageAccesses []dbClient.PageAccess
 
-		if err := postgres.Preload("User").Where("page_id = ?", pageId).Find(&pageAccess).Error; err != nil {
+		if err := postgres.Preload("User").Where("page_id = ?", pageId).Find(&pageAccesses).Error; err != nil {
 			errorHandlers.InternalServerError(ctx, "failed to get page accesses")
 			return
 		}
 
-		ctx.JSON(http.StatusOK, pageAccess)
+		var workspaceOwnersAndAdmins []dbClient.WorkspaceAccess
+
+		if err := postgres.Where("workspace_id = ? AND (role = ? OR role = ?)", uuid.MustParse(ctx.Param("workspace_id")), dbClient.UserRoleOwner, dbClient.UserRoleAdmin).Find(&workspaceOwnersAndAdmins).Error; err != nil {
+			errorHandlers.InternalServerError(ctx, "failed to get workspace owners and admins")
+			return
+		}
+
+		workspaceOwnersAndAdminsMap := make(map[uuid.UUID]map[dbClient.UserRole]bool)
+
+		for _, wa := range workspaceOwnersAndAdmins {
+			if _, exists := workspaceOwnersAndAdminsMap[wa.UserID]; !exists {
+				workspaceOwnersAndAdminsMap[wa.UserID] = make(map[dbClient.UserRole]bool)
+			}
+			workspaceOwnersAndAdminsMap[wa.UserID][wa.Role] = true
+		}
+
+		// Создание результата
+		var response []getPageAccessesResponse
+		for _, pa := range pageAccesses {
+			res := getPageAccessesResponse{
+				PageAccess:       pa,
+				IsWorkspaceOwner: workspaceOwnersAndAdminsMap[pa.UserID][dbClient.UserRoleOwner],
+				IsWorkspaceAdmin: workspaceOwnersAndAdminsMap[pa.UserID][dbClient.UserRoleAdmin],
+			}
+			response = append(response, res)
+		}
+
+		if !ok {
+			return
+		}
+
+		ctx.JSON(http.StatusOK, response)
 	}
 }

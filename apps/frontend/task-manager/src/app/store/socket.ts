@@ -1,15 +1,31 @@
+import { TaskChatMessage } from "@task-manager/api";
 import { create } from "zustand";
 
 export type DefaultSocketStatus = "connecting" | "open" | "closing" | "closed";
 
 export type ExtendedSocketStatus = DefaultSocketStatus | "uninitialized";
 
-export type SocketIncomingMessage = {
-	type: unknown;
-	body: unknown;
-};
-
 export type SocketEvent = keyof WebSocketEventMap;
+
+type SubscriptionEntities = "chat";
+
+export type SubscriptionId<T extends SubscriptionEntities = SubscriptionEntities> = `${T}:${string}`;
+
+export type SocketOutgoingMessage =
+	| {
+			type: "sub";
+			body: SubscriptionId;
+	  }
+	| {
+			type: "unsub";
+			body: SubscriptionId;
+	  };
+
+export type SocketIncomingMessage = {
+	type: "sub";
+	sub: SubscriptionId<"chat">;
+	body: TaskChatMessage;
+};
 
 export type WebSocketEventListenerMap = {
 	open: (event: WebSocketEventMap["open"]) => void;
@@ -34,9 +50,11 @@ interface SocketState {
 
 	destroy: () => void;
 
-	listen: (status: SocketEvent, cb: () => void, once?: boolean) => void;
+	listen: <T extends SocketEvent>(status: T, cb: WebSocketEventListenerMap[T], once?: boolean) => void;
 
-	unlisten: (status: SocketEvent, cb: () => void) => void;
+	unlisten: <T extends SocketEvent>(status: T, cb: WebSocketEventListenerMap[T]) => void;
+
+	sendMessage: (message: SocketOutgoingMessage) => void;
 }
 
 const DEFAULT_SOCKET_URL = "ws://localhost:8080/socket";
@@ -56,6 +74,8 @@ export const useSocketStore = create<SocketState>((set, get) => {
 		listeners[status] = listeners[status].filter(({ once }) => !once) as any;
 	};
 
+	let messageQueue: SocketOutgoingMessage[] = [];
+
 	return {
 		status: "uninitialized" as ExtendedSocketStatus,
 
@@ -70,6 +90,10 @@ export const useSocketStore = create<SocketState>((set, get) => {
 
 			socket.onopen = e => {
 				set({ status: "open" });
+
+				messageQueue.forEach(message => socket.send(JSON.stringify(message)));
+
+				messageQueue = [];
 
 				triggerListeners("open", e);
 			};
@@ -113,6 +137,16 @@ export const useSocketStore = create<SocketState>((set, get) => {
 		unlisten: (status, cb) => {
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			listeners[status] = listeners[status].filter(({ listener }) => listener !== cb) as any;
+		},
+
+		sendMessage: message => {
+			const { socket, status } = get();
+
+			if (status !== "open") {
+				messageQueue.push(message);
+			} else {
+				socket?.send(JSON.stringify(message));
+			}
 		}
 	};
 });

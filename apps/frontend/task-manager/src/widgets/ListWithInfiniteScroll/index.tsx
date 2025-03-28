@@ -13,9 +13,10 @@ export interface ListWithInfiniteScrollProps<
 	queryKey: QueryKey;
 	enabled?: boolean;
 	visible?: boolean;
-	extraParams?: Record<string, string | number | boolean | string | undefined | null>;
-	renderItem: (item: ItemValue, index: number, array: ItemValue[]) => React.ReactNode;
+	extraParams?: Record<string, number | boolean | string | undefined | null>;
+
 	fetchItems: (query?: PaginationQuery) => Promise<Response>;
+	renderItem: (item: Response["data"][number], index: number, array: Response["data"]) => React.ReactNode;
 }
 
 const ListWithInfiniteScroll = <
@@ -32,12 +33,11 @@ const ListWithInfiniteScroll = <
 	...listProps
 }: ListWithInfiniteScrollProps<ItemValue, Response>) => {
 	const [items, setItems] = useState<ItemValue[]>([]);
-
 	const observerRef = useRef<HTMLDivElement | null>(null);
 
 	const { styles, cx } = useStyles();
 
-	const { data, isFetching, isLoading, hasNextPage, fetchNextPage, promise } = useInfiniteQuery<
+	const { data, isFetching, isLoading, hasNextPage, fetchNextPage } = useInfiniteQuery<
 		Response,
 		Error,
 		InfiniteData<Response, number>,
@@ -55,7 +55,7 @@ const ListWithInfiniteScroll = <
 		}
 	});
 
-	const requestMetaRef = useRef({ hasNextPage, isFetching, isLoading, promise, fetchNextPage });
+	const requestMetaRef = useRef({ hasNextPage, isFetching, isLoading, fetchNextPage });
 
 	useEffect(() => {
 		if (data.pages[0].data?.[0]) {
@@ -66,8 +66,8 @@ const ListWithInfiniteScroll = <
 	}, [data]);
 
 	useEffect(() => {
-		requestMetaRef.current = { hasNextPage, isFetching, isLoading, promise, fetchNextPage };
-	}, [fetchNextPage, hasNextPage, isFetching, isLoading, promise]);
+		requestMetaRef.current = { hasNextPage, isFetching, isLoading, fetchNextPage };
+	}, [fetchNextPage, hasNextPage, isFetching, isLoading]);
 
 	useEffect(() => {
 		if (!enabled) {

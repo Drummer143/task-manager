@@ -1,9 +1,11 @@
 package tasksCharRouter
 
 import (
+	"fmt"
 	"main/dbClient"
 	"main/router/errorHandlers"
 	routerUtils "main/router/utils"
+	"main/socketManager"
 	"main/validation"
 	"time"
 
@@ -27,13 +29,13 @@ type chatMessage struct {
 // @Param			page_id path int true "Page ID"
 // @Param			task_id path string true "Task ID"
 // @Param			message body chatMessage true "Message"
-// @Success			204
+// @Success			200 {object} dbClient.TaskChatMessage
 // @Failure			400 {object} errorHandlers.Error
 // @Failure			401 {object} errorHandlers.Error "Unauthorized if session is missing or invalid"
 // @Failure			404 {object} errorHandlers.Error
 // @Failure			500 {object} errorHandlers.Error
 // @Router			/workspaces/{workspace_id}/pages/{page_id}/tasks/{task_id}/chat [post]
-func sendMessage(postgres *gorm.DB, taskChatCollection *mongo.Collection, validate *validator.Validate) gin.HandlerFunc {
+func sendMessage(postgres *gorm.DB, taskChatCollection *mongo.Collection, validate *validator.Validate, sockets *socketManager.SocketManager) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var task dbClient.Task
 
@@ -90,6 +92,8 @@ func sendMessage(postgres *gorm.DB, taskChatCollection *mongo.Collection, valida
 			errorHandlers.InternalServerError(ctx, "failed to send message")
 			return
 		}
+
+		sockets.Broadcast(fmt.Sprintf("chat:%v", task.ID), chatMessage)
 
 		ctx.JSON(200, chatMessage)
 	}
