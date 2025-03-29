@@ -2,7 +2,7 @@ import { axiosInstance } from "./base";
 
 import { Page, PageType } from "../types";
 
-type GetPageIncludes = "tasks" | "owner" | "childrenPages" | "parentPage";
+type GetPageIncludes = "tasks" | "owner" | "childPages" | "parentPage" | "workspace";
 
 interface Ids {
 	workspaceId: string;
@@ -17,7 +17,7 @@ interface CreatePageArgs extends Ids {
 	page: {
 		type: PageType;
 		title: string;
-	
+
 		text?: string;
 		parentId?: string;
 	};
@@ -42,17 +42,18 @@ export const getPage = async <T extends GetPageIncludes | undefined = undefined>
 		})
 	).data;
 
-interface GetPageListArgs<T extends GetPageIncludes | undefined = undefined> extends Ids {
-	include?: T[];
+type ListFormat = "list" | "tree";
+
+interface GetPageListArgs<T extends ListFormat = "list"> extends Ids {
+	format?: T;
 }
 
-export const getPageList = async <T extends GetPageIncludes | undefined = undefined>({
-	workspaceId,
-	include
-}: GetPageListArgs<T>) =>
+export const getPageList = async <T extends ListFormat = "list">({ workspaceId, format }: GetPageListArgs<T>) =>
 	(
-		await axiosInstance.get<ResponseWithIncludeFilter<T>[]>(`workspaces/${workspaceId}/pages`, {
-			params: { include: include?.join(",") }
+		await axiosInstance.get<
+			T extends "list" ? ResponseWithIncludeFilter[] : ResponseWithIncludeFilter<"childPages">[]
+		>(`workspaces/${workspaceId}/pages`, {
+			params: { format }
 		})
 	).data;
 

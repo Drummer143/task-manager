@@ -56,7 +56,7 @@ export interface Page extends Timestamps {
 
 	owner: User;
 	parentPage: Page;
-	childPages: Page[];
+	childPages?: Page[];
 	tasks: Task[];
 	workspace: Workspace;
 }

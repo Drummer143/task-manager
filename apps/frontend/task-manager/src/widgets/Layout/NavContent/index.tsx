@@ -1,12 +1,11 @@
 import React from "react";
 
-import { Menu } from "antd";
-
+import CommonMenu from "../CommonMenu";
 import NavPagesMenu from "../NavPagesMenu";
 
 const NavContent: React.FC = () => (
 	<div>
-		<Menu />
+		<CommonMenu />
 
 		<NavPagesMenu />
 	</div>

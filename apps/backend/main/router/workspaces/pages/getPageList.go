@@ -15,6 +15,7 @@ import (
 // @Tags				Pages
 // @Produce				json
 // @Param				workspace_id path string true "Workspace ID"
+// @Param				format query string false Enum(list, tree) "Format of the page list"
 // @Success				200 {object} []dbClient.Page
 // @Failure				400 {object} errorHandlers.Error
 // @Failure				401 {object} errorHandlers.Error "Unauthorized if session is missing or invalid"
@@ -25,7 +26,6 @@ import (
 func getPageList(postgres *gorm.DB) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		workspaceId := uuid.MustParse(ctx.Param("workspace_id"))
-
 		userId, _ := routerUtils.GetUserIdFromSession(ctx)
 
 		var pages []dbClient.Page
@@ -35,7 +35,6 @@ func getPageList(postgres *gorm.DB) gin.HandlerFunc {
 			Select("pages.*, page_accesses.role AS role").
 			Joins("INNER JOIN page_accesses ON page_accesses.page_id = pages.id").
 			Where("pages.workspace_id = ? AND page_accesses.user_id = ?", workspaceId, userId).
-			Preload("ChildPages").
 			Scan(&pages).Error
 
 		if err != nil {
@@ -43,6 +42,29 @@ func getPageList(postgres *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		ctx.JSON(200, pages)
+		pageTree := buildPageTree(pages)
+
+		ctx.JSON(200, pageTree)
 	}
+}
+
+func buildPageTree(pages []dbClient.Page) []*dbClient.Page {
+	pageMap := make(map[uuid.UUID]*dbClient.Page)
+	var rootPages []*dbClient.Page
+
+	for i := range pages {
+		pageMap[pages[i].ID] = &pages[i]
+	}
+
+	for i := range pages {
+		page := &pages[i]
+		if page.ParentPageID != nil {
+			parentPage := pageMap[*page.ParentPageID]
+			parentPage.ChildPages = append(parentPage.ChildPages, page)
+		} else {
+			rootPages = append(rootPages, page)
+		}
+	}
+
+	return rootPages
 }

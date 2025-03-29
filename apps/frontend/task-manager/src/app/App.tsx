@@ -3,7 +3,8 @@ import { useEffect, useMemo } from "react";
 import { MoonOutlined, SunOutlined } from "@ant-design/icons";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { darkThemeConfig, lightThemeConfig } from "@task-manager/ant-config";
-import { App as AntApp, theme as AntTheme, ConfigProvider, FloatButton, ThemeConfig } from "antd";
+import { App as AntApp, theme as AntTheme, FloatButton, ThemeConfig } from "antd";
+import { ThemeProvider } from "antd-style";
 import { RouterProvider } from "react-router-dom";
 
 import router from "./router";
@@ -36,8 +37,9 @@ function App() {
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
+	// <ConfigProvider theme={themeConfig}>
 	return (
-		<ConfigProvider theme={themeConfig}>
+		<ThemeProvider theme={themeConfig} themeMode={theme}>
 			<QueryClientProvider client={queryClient}>
 				<AntApp className="h-full">
 					<RouterProvider router={router} />
@@ -45,8 +47,9 @@ function App() {
 					<FloatButton icon={theme === "light" ? <MoonOutlined /> : <SunOutlined />} onClick={toggleTheme} />
 				</AntApp>
 			</QueryClientProvider>
-		</ConfigProvider>
+		</ThemeProvider>
 	);
+	// </ConfigProvider>
 }
 
 export default App;

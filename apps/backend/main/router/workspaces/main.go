@@ -3,8 +3,8 @@ package workspacesRouter
 import (
 	"main/router/errorHandlers"
 	routerUtils "main/router/utils"
+	workspacesAccessesRouter "main/router/workspaces/accesses"
 	pagesRouter "main/router/workspaces/pages"
-	accessesRouter "main/router/workspaces/pages/accesses"
 	"main/socketManager"
 
 	"github.com/gin-gonic/gin"
@@ -43,7 +43,7 @@ func AddRoutes(group *gin.RouterGroup, postgres *gorm.DB, mongo *mongo.Client, v
 
 	group.GET("/:workspace_id", getWorkspace(postgres))
 
-	accessesRouter.AddRoutes(group.Group("/:workspace_id/accesses"), postgres)
+	workspacesAccessesRouter.AddRoutes(group.Group("/:workspace_id/accesses"), postgres)
 
 	pagesRouter.AddRoutes(group.Group("/:workspace_id/pages", hasAccessToWorkspaceMiddleware(postgres)), postgres, mongo, validate, sockets)
 }

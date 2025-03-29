@@ -15,7 +15,7 @@ const Menu: React.FC<MenuProps> = ({ pages, onSubPageCreate }) => {
 	const { cx, styles } = useStyles();
 
 	return (
-		<div className={cx(styles.menuWrapper, "menu css-var-r3 ant-menu-css-var")}>
+		<div className={cx(styles.menuWrapper, "menu css-var-r1 ant-menu-css-var")}>
 			{pages?.map(page =>
 				page.type === "group" ? (
 					<ItemWithSubmenu key={page.id} rootPage={page} onSubPageCreate={onSubPageCreate} />

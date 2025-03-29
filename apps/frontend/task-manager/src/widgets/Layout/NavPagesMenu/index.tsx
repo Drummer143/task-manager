@@ -50,12 +50,12 @@ const NavPagesMenu: React.FC = () => {
 	const workspaceId = useAppStore(state => state.workspaceId);
 
 	const { data, isLoading } = useQuery({
-		queryKey: ["nav-pages"],
+		queryKey: ["pages", "tree", workspaceId],
 		enabled: !!workspaceId,
 		queryFn: () =>
 			getPageList({
 				workspaceId: workspaceId!,
-				include: ["childrenPages"]
+				format: "tree"
 			})
 	});
 
@@ -75,22 +75,18 @@ const NavPagesMenu: React.FC = () => {
 
 	const formProps = useMemo(
 		() => ({
-			form
+			form,
+			onFinish: async (values: FormValues) => {
+				await mutateAsync({
+					workspaceId: workspaceId!,
+					page: {
+						...values,
+						parentId: typeof creatingPageType === "string" ? creatingPageType : undefined
+					}
+				});
+			}
 		}),
-		[form]
-	);
-
-	const handleFormSubmit = useCallback(
-		async (values: FormValues) => {
-			await mutateAsync({
-				workspaceId: workspaceId!,
-				page: {
-					...values,
-					parentId: typeof creatingPageType === "string" ? creatingPageType : undefined
-				}
-			});
-		},
-		[creatingPageType, mutateAsync, workspaceId]
+		[creatingPageType, form, mutateAsync, workspaceId]
 	);
 
 	const handleAfterClose = useCallback(() => {
@@ -119,7 +115,6 @@ const NavPagesMenu: React.FC = () => {
 				form={formProps}
 				afterClose={handleAfterClose}
 				okLoading={isPending}
-				onOk={handleFormSubmit}
 				open={!!creatingPageType}
 				onClose={closeCreatingPageType}
 			>

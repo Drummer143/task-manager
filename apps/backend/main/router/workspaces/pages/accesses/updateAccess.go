@@ -68,7 +68,6 @@ func updateAccess(postgres *gorm.DB) gin.HandlerFunc {
 // 2. user is not admin or owner
 // 3. user trying to change role to workspace owner
 // 4. if user is admin and trying to change role to admin or owner
-
 func checkAccess(ctx *gin.Context, tx *gorm.DB, pageId uuid.UUID, userId uuid.UUID, newRole *dbClient.UserRole) bool {
 	page, pageAccess, ok := routerUtils.CheckPageAccess(ctx, tx.Preload("Owner"), tx, pageId, userId)
 

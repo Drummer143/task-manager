@@ -1,30 +1,35 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect } from "react";
 
-import { lazySuspense, useWindowResize } from "@task-manager/utils";
-import { useNavigate } from "react-router-dom";
+import { useQuery } from "@tanstack/react-query";
+import { getWorkspaceList } from "@task-manager/api";
+import { lazySuspense } from "@task-manager/utils";
 
 import { useAppStore } from "../../app/store/app";
 import FullSizeLoader from "../../shared/ui/FullSizeLoader";
 
 const DesktopLayout = lazySuspense(() => import("./Desktop"), <FullSizeLoader />);
-const MobileLayout = lazySuspense(() => import("./Mobile"), <FullSizeLoader />);
+// const MobileLayout = lazySuspense(() => import("./Mobile"), <FullSizeLoader />);
 
 const Layout: React.FC = () => {
-	const [mobileLayout, setMobileLayout] = useState(false);
+	// const [mobileLayout, setMobileLayout] = useState(false);
 
-	const workspaceId = useAppStore(state => state.workspaceId);
+	// useWindowResize("md", setMobileLayout);
 
-	const navigate = useNavigate();
+	const { workspaceId, setWorkspaceId } = useAppStore();
 
-	useWindowResize("md", setMobileLayout);
+	const { data: workspaces } = useQuery({
+		queryKey: ["workspaces"],
+		queryFn: () => getWorkspaceList(),
+		enabled: !workspaceId
+	});
 
 	useEffect(() => {
-		if (!workspaceId && !window.location.pathname.includes("/select-workspace")) {
-			navigate("/select-workspace?from=" + window.location.pathname, { replace: true });
+		if (!workspaceId && workspaces) {
+			setWorkspaceId(workspaces[0].id);
 		}
-	}, [navigate, workspaceId]);
+	}, [setWorkspaceId, workspaceId, workspaces]);
 
-	return mobileLayout ? <MobileLayout /> : <DesktopLayout />;
+	return /* mobileLayout ? <MobileLayout /> :  */ <DesktopLayout />;
 };
 
 export default Layout;

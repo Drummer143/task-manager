@@ -1,18 +1,25 @@
-import { useMemo } from "react";
+import { useEffect, useMemo } from "react";
 
-import { useMutation } from "@tanstack/react-query";
-import { logout } from "@task-manager/api";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { getWorkspaceList, logout } from "@task-manager/api";
 import { App, MenuProps } from "antd";
 import { useNavigate } from "react-router-dom";
 
+import { useAppStore } from "../../app/store/app";
 import { useAuthStore } from "../../app/store/auth";
 
 export const useUserMenuItems = () => {
 	const clearAuthStore = useAuthStore(state => state.clear);
+	const { setWorkspaceId, workspaceId } = useAppStore();
 
 	const navigate = useNavigate();
 
 	const message = App.useApp().message;
+
+	const { data, isLoading } = useQuery({
+		queryKey: ["workspaces"],
+		queryFn: () => getWorkspaceList()
+	});
 
 	const { mutateAsync } = useMutation({
 		mutationFn: () => logout().then(clearAuthStore),
@@ -34,8 +41,16 @@ export const useUserMenuItems = () => {
 				},
 				{
 					key: "workspace",
-					label: "Change workspace",
-					onClick: () => navigate("/select-workspace")
+					label: data ? "Change workspace" : "Loading...",
+					disabled: isLoading,
+					type: data ? "submenu" : undefined,
+					children:
+						data?.map(workspace => ({
+							key: workspace.id,
+							label: workspace.name,
+							disabled: workspace.id === workspaceId,
+							onClick: () => setWorkspaceId(workspace.id)
+						})) ?? []
 				},
 				{
 					key: "div2",
@@ -48,7 +63,7 @@ export const useUserMenuItems = () => {
 				}
 			]
 		}),
-		[mutateAsync, navigate]
+		[data, isLoading, mutateAsync, navigate, setWorkspaceId, workspaceId]
 	);
 
 	return menu;

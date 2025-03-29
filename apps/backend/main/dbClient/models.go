@@ -86,7 +86,7 @@ type Page struct {
 	ID    uuid.UUID `gorm:"primaryKey;default:uuid_generate_v4()" json:"id"`
 	Type  PageType  `gorm:"not null" json:"type"`
 	Title string    `gorm:"not null" json:"title"`
-	Text  *string   `json:"text"`
+	Text  *string   `json:"text,omitempty"`
 
 	Role *UserRole `gorm:"-" json:"role,omitempty"`
 

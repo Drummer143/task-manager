@@ -120,7 +120,7 @@ const ListWithInfiniteScroll = <
 			loading={isLoading}
 			dataSource={items}
 			renderItem={renderItem}
-			className={cx("css-var-r3 ant-select-css-var", className)}
+			className={cx("css-var-r1 ant-select-css-var", className)}
 			loadMore={
 				<>
 					{isFetching &&
