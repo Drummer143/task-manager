@@ -11,16 +11,18 @@ definitions:
       statusCode:
         type: integer
     type: object
-  router.SendEmailConfirmationRequest:
+  router.emailConfirmationRequest:
     properties:
       email:
         type: string
       token:
         type: string
     type: object
-  router.SendEmailConfirmationResponse:
+  router.resetPasswordRequest:
     properties:
-      message:
+      email:
+        type: string
+      token:
         type: string
     type: object
 info:
@@ -37,14 +39,12 @@ paths:
         name: body
         required: true
         schema:
-          $ref: '#/definitions/router.SendEmailConfirmationRequest'
+          $ref: '#/definitions/router.emailConfirmationRequest'
       produces:
       - application/json
       responses:
-        "200":
-          description: Email confirmation sent
-          schema:
-            $ref: '#/definitions/router.SendEmailConfirmationResponse'
+        "204":
+          description: No Content
         "400":
           description: Invalid request
           schema:
@@ -54,4 +54,30 @@ paths:
           schema:
             $ref: '#/definitions/errorHandlers.Error'
       summary: Send email confirmation mail
+  /send-reset-password:
+    post:
+      consumes:
+      - application/json
+      description: Send reset password mail
+      parameters:
+      - description: Send reset password object
+        in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/router.resetPasswordRequest'
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "500":
+          description: Internal server error if server fails
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+      summary: Send reset password mail
 swagger: "2.0"

@@ -21,6 +21,21 @@ services:
     networks:
       - net
 
+  # rmq:
+  #   image: rabbitmq:management-alpine
+  #   ports:
+  #     - 5672:5672
+  #     - 15672:15672
+  #   depends_on:
+  #     - postgres
+  #   environment:
+  #     RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+  #     RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+  #   networks:
+  #     - net
+  #   volumes:
+  #     - rmqdata:/var/lib/rabbitmq
+
   main-service:
     image: main-service:latest
     ports:
@@ -30,6 +45,8 @@ services:
     depends_on:
       - postgres
       - mongo
+    build:
+      context: ./apps/backend/main
     environment:
       GIN_MODE: release
       SELF_PORT: 8080
@@ -48,6 +65,10 @@ services:
     image: mailer-service:latest
     ports:
       - 8081:8081
+    depends_on:
+      - postgres
+    build:
+      context: ./apps/backend/mailer
     environment:
       GIN_MODE: release
       SELF_PORT: 8081
@@ -62,6 +83,10 @@ services:
     image: storage-service:latest
     ports:
       - 8082:8082
+    depends_on:
+      - postgres
+    build:
+      context: ./apps/backend/storage
     environment:
       GIN_MODE: release
       SELF_PORT: 8082

@@ -10,24 +10,25 @@ const tryParse = <Value>(value: string | null): Value | null => {
 	}
 };
 
-export const useLocalStorage = <Value>(
+export const useStorage = <Value>(
 	key: string,
 	initialValue?: Value,
-	notListen?: boolean
-): [Value | null, React.Dispatch<React.SetStateAction<Value | null>>] => {
+	listenChanges = false,
+	storage: Storage = localStorage
+) => {
 	const [value, setValue] = useState<Value | null>(() => {
-		const jsonValue = localStorage.getItem(key);
+		const jsonValue = storage.getItem(key);
 
 		return tryParse(jsonValue) ?? initialValue ?? null;
 	});
 
-	const setLocalStorageValue: React.Dispatch<React.SetStateAction<Value | null>> = useCallback(
+	const setStorageValue: React.Dispatch<React.SetStateAction<Value | null>> = useCallback(
 		value => {
 			setValue(prev => {
 				const realValue =
 					typeof value === "function" ? (value as (value: Value | null) => Value | null)(prev) : value;
 
-				localStorage.setItem(key, JSON.stringify(realValue));
+				storage.setItem(key, JSON.stringify(realValue));
 
 				return realValue;
 			});
@@ -35,19 +36,25 @@ export const useLocalStorage = <Value>(
 		[key]
 	);
 
-	useEffect(() => {
-		if (notListen) return;
+	const clear = useCallback(() => {
+		storage.removeItem(key);
+		setValue(null);
+	}, [key]);
 
-		const listenLocalStorage = (e: StorageEvent) => {
+	useEffect(() => {
+		if (!listenChanges) return;
+
+		const listenStorage = (e: StorageEvent) => {
+			console.debug(e);
 			if (e.key === key) {
 				setValue(tryParse(e.newValue));
 			}
 		};
 
-		window.addEventListener("storage", listenLocalStorage);
+		window.addEventListener("storage", listenStorage);
 
-		return () => window.removeEventListener("storage", listenLocalStorage);
-	}, [key, notListen]);
+		return () => window.removeEventListener("storage", listenStorage);
+	}, [key, listenChanges]);
 
-	return [value, setLocalStorageValue];
+	return [value, setStorageValue, clear] as const;
 };

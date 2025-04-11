@@ -1,4 +1,23 @@
 definitions:
+  accessesRouter.getPageAccessesResponse:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        type: string
+      id:
+        type: string
+      isWorkspaceAdmin:
+        type: boolean
+      isWorkspaceOwner:
+        type: boolean
+      role:
+        $ref: '#/definitions/dbClient.UserRole'
+      updatedAt:
+        type: string
+      user:
+        $ref: '#/definitions/dbClient.User'
+    type: object
   accessesRouter.giveAccessBody:
     properties:
       role:
@@ -107,21 +126,6 @@ definitions:
       updatedAt:
         type: string
     type: object
-  dbClient.PageAccess:
-    properties:
-      createdAt:
-        type: string
-      deletedAt:
-        type: string
-      id:
-        type: string
-      role:
-        $ref: '#/definitions/dbClient.UserRole'
-      updatedAt:
-        type: string
-      user:
-        $ref: '#/definitions/dbClient.User'
-    type: object
   dbClient.PageType:
     enum:
     - board
@@ -164,6 +168,17 @@ definitions:
       title:
         type: string
       updatedAt:
+        type: string
+    type: object
+  dbClient.TaskChatMessage:
+    properties:
+      author:
+        $ref: '#/definitions/dbClient.ShortUserInfo'
+      createdAt:
+        type: string
+      id:
+        type: string
+      text:
         type: string
     type: object
   dbClient.User:
@@ -313,6 +328,15 @@ definitions:
       meta:
         $ref: '#/definitions/routerUtils.Meta'
     type: object
+  routerUtils.ResponseWithPagination-dbClient_TaskChatMessage:
+    properties:
+      data:
+        items:
+          $ref: '#/definitions/dbClient.TaskChatMessage'
+        type: array
+      meta:
+        $ref: '#/definitions/routerUtils.Meta'
+    type: object
   routerUtils.ResponseWithPagination-dbClient_User:
     properties:
       data:
@@ -400,6 +424,13 @@ definitions:
     - userId
     type: object
   workspacesRouter.createWorkspaceBody:
+    properties:
+      name:
+        type: string
+    required:
+    - name
+    type: object
+  workspacesRouter.updateWorkspaceBody:
     properties:
       name:
         type: string
@@ -752,8 +783,8 @@ paths:
     get:
       description: Handle WebSocket requests
       responses:
-        "100":
-          description: Continue
+        "101":
+          description: Switching Protocols
         "500":
           description: Internal Server Error
       summary: Handle WebSocket requests
@@ -903,6 +934,52 @@ paths:
       summary: Get workspace
       tags:
       - Workspaces
+    put:
+      consumes:
+      - application/json
+      description: Update workspace by id
+      parameters:
+      - description: Workspace ID
+        in: path
+        name: workspace_id
+        required: true
+        type: string
+      - description: Workspace object that needs to be updated
+        in: body
+        name: workspace
+        required: true
+        schema:
+          $ref: '#/definitions/workspacesRouter.updateWorkspaceBody'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dbClient.Workspace'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "401":
+          description: Unauthorized if session is missing or invalid
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "403":
+          description: No access to workspace or no access to update workspace
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+      summary: Update workspace by id
+      tags:
+      - Workspaces
   /workspaces/{workspace_id}/accesses:
     get:
       description: Get workspace accesses
@@ -997,6 +1074,43 @@ paths:
       summary: Give access to a workspace
       tags:
       - Workspace Accesses
+  /workspaces/{workspace_id}/cancel-soft-delete:
+    post:
+      description: Cancel soft deletion of workspace
+      parameters:
+      - description: Workspace ID
+        in: path
+        name: workspace_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "401":
+          description: Unauthorized if session is missing or invalid
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "403":
+          description: No access to workspace
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+      summary: Cancel soft deletion of workspace
+      tags:
+      - Workspaces
   /workspaces/{workspace_id}/pages:
     get:
       description: Get page list
@@ -1005,6 +1119,10 @@ paths:
         in: path
         name: workspace_id
         required: true
+        type: string
+      - description: Format of the page list
+        in: query
+        name: format
         type: string
       produces:
       - application/json
@@ -1244,7 +1362,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/dbClient.PageAccess'
+              $ref: '#/definitions/accessesRouter.getPageAccessesResponse'
             type: array
         "400":
           description: Bad Request
@@ -1535,6 +1653,54 @@ paths:
       tags:
       - Tasks
   /workspaces/{workspace_id}/pages/{page_id}/tasks/{task_id}/chat:
+    get:
+      description: Get messages
+      parameters:
+      - description: Workspace ID
+        in: path
+        name: workspace_id
+        required: true
+        type: string
+      - description: Page ID
+        in: path
+        name: page_id
+        required: true
+        type: integer
+      - description: Task ID
+        in: path
+        name: task_id
+        required: true
+        type: string
+      - description: Default is 10
+        in: query
+        name: limit
+        type: integer
+      - description: Default is 0
+        in: query
+        name: offset
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/routerUtils.ResponseWithPagination-dbClient_TaskChatMessage'
+        "401":
+          description: Unauthorized if session is missing or invalid
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+      summary: Get messages
+      tags:
+      - Tasks
     post:
       consumes:
       - application/json
@@ -1564,8 +1730,10 @@ paths:
       produces:
       - application/json
       responses:
-        "204":
-          description: No Content
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/dbClient.TaskChatMessage'
         "400":
           description: Bad Request
           schema:
@@ -1687,4 +1855,41 @@ paths:
       summary: Change task status
       tags:
       - Tasks
+  /workspaces/{workspace_id}/soft-delete:
+    delete:
+      description: Soft delete workspace
+      parameters:
+      - description: Workspace ID
+        in: path
+        name: workspace_id
+        required: true
+        type: string
+      produces:
+      - application/json
+      responses:
+        "204":
+          description: No Content
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "401":
+          description: Unauthorized if session is missing or invalid
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "403":
+          description: No access to workspace or no access to delete workspace
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "404":
+          description: Not Found
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+      summary: Soft delete workspace
+      tags:
+      - Workspaces
 swagger: "2.0"

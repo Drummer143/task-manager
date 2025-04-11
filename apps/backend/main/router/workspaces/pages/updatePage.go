@@ -34,7 +34,7 @@ type updatePageBody struct {
 // @Router 			/workspaces/{workspace_id}/pages/{page_id} [put]
 func updatePage(postgres *gorm.DB, validate *validator.Validate) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		pageId, err := uuid.Parse(ctx.Param("id"))
+		pageId, err := uuid.Parse(ctx.Param("page_id"))
 
 		if err != nil {
 			errorHandlers.BadRequest(ctx, "invalid page id", nil)
@@ -49,7 +49,7 @@ func updatePage(postgres *gorm.DB, validate *validator.Validate) gin.HandlerFunc
 			return
 		}
 
-		if pageAccess.Role == dbClient.UserRoleGuest || pageAccess.Role == dbClient.UserRoleCommentator {
+		if pageAccess.Role != dbClient.UserRoleGuest || pageAccess.Role != dbClient.UserRoleCommentator {
 			errorHandlers.Forbidden(ctx, "no access to page")
 			return
 		}

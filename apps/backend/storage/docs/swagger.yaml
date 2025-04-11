@@ -13,7 +13,7 @@ definitions:
     type: object
   router.uploadResponse:
     properties:
-      path:
+      link:
         type: string
     type: object
 info:

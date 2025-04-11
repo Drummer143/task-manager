@@ -2,6 +2,7 @@ package main
 
 import (
 	"main/auth"
+	"main/cleanup"
 	"main/dbClient"
 	"main/router"
 	"main/socketManager"
@@ -23,9 +24,7 @@ func main() {
 		panic(err)
 	}
 
-	err = dbClient.MigratePostgres()
-
-	if err != nil {
+	if err = dbClient.MigratePostgres(); err != nil {
 		panic(err)
 	}
 
@@ -38,6 +37,8 @@ func main() {
 	validate := validation.New()
 
 	sockets := socketManager.NewSubscriptionManager()
+
+	cleanup.Setup(postgresDB)
 
 	r := router.New(auth, postgresDB, mongoDB, validate, sockets)
 

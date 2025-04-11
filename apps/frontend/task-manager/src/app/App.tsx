@@ -27,14 +27,9 @@ function App() {
 	);
 
 	useEffect(() => {
-		if (!theme) {
-			setTheme(window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light");
-		}
-
 		useAuthStore.getState().getSession();
 
 		useSocketStore.getState().init();
-		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, []);
 
 	// <ConfigProvider theme={themeConfig}>

@@ -29,6 +29,13 @@ export interface UserCredential extends Timestamps {
 	emailVerificationToken?: string;
 }
 
+export interface EntityAccess extends Timestamps {
+	id: string;
+	role: UserRole;
+
+	user: User;
+}
+
 export interface Workspace extends Timestamps {
 	id: string;
 	name: string;
@@ -39,12 +46,7 @@ export interface Workspace extends Timestamps {
 	pages: Page[];
 }
 
-export interface WorkspaceAccess extends Timestamps {
-	id: string;
-	role: UserRole;
-
-	user: User;
-}
+export type WorkspaceAccess = EntityAccess
 
 export interface Page extends Timestamps {
 	id: string;
@@ -61,11 +63,7 @@ export interface Page extends Timestamps {
 	workspace: Workspace;
 }
 
-export interface PageAccess extends Timestamps {
-	role: UserRole;
-
-	user: User;
-}
+export type PageAccess = EntityAccess
 
 export interface Task extends Timestamps {
 	id: string;

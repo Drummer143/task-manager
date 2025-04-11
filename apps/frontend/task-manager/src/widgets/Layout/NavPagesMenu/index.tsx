@@ -62,7 +62,7 @@ const NavPagesMenu: React.FC = () => {
 	const { mutateAsync, isPending, error, reset } = useMutation({
 		mutationFn: createPage,
 		onSuccess: page => {
-			queryClient.invalidateQueries({ queryKey: ["nav-pages"] });
+			queryClient.invalidateQueries({ queryKey: ["pages"] });
 			queryClient.invalidateQueries({ queryKey: ["page", page.id] });
 
 			setCreatingPageType(false);

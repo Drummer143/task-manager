@@ -8,6 +8,7 @@ import UserMenu from "./UserMenu";
 
 import { useAppStore } from "../../../app/store/app";
 import NavContent from "../NavContent";
+import WorkspaceDeletionBanner from "../WorkspaceDeletionBanner";
 
 const DesktopLayout: React.FC = () => {
 	const [collapsed, setCollapsed] = useState(false);
@@ -22,6 +23,8 @@ const DesktopLayout: React.FC = () => {
 				header
 				<UserMenu />
 			</Layout.Header>
+
+			<WorkspaceDeletionBanner />
 
 			<Layout className="h-full">
 				{workspaceId && (

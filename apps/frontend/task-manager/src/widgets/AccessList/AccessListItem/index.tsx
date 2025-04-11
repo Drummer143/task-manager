@@ -6,8 +6,8 @@ import { Button, Flex, Select, Typography } from "antd";
 
 import { useStyles } from "./styles";
 
-import { userBoardRoleOptions } from "../../../../shared/constants";
-import UserCard from "../../../../widgets/UserCard";
+import { userBoardRoleOptions } from "../../../shared/constants";
+import UserCard from "../../UserCard";
 
 interface AccessListItemProps {
 	user: User;
@@ -15,7 +15,7 @@ interface AccessListItemProps {
 	editable?: boolean;
 	isPending?: boolean;
 
-	onRoleChange?: (userId: string, role?: string) => void;
+	onRoleChange?: (body: { userId: string; role?: string }) => void;
 }
 
 const AccessListItem: React.FC<AccessListItemProps> = ({ user, role, isPending, onRoleChange, editable }) => {
@@ -29,7 +29,7 @@ const AccessListItem: React.FC<AccessListItemProps> = ({ user, role, isPending, 
 				<Flex align="center" gap="var(--ant-margin-xxs)">
 					<Select
 						className={roleSelect}
-						onChange={value => onRoleChange?.(user.id, value)}
+						onChange={role => onRoleChange?.({ userId: user.id, role })}
 						value={role}
 						loading={isPending}
 						options={userBoardRoleOptions}
@@ -41,7 +41,7 @@ const AccessListItem: React.FC<AccessListItemProps> = ({ user, role, isPending, 
 						danger
 						size="small"
 						icon={<CloseOutlined />}
-						onClick={() => onRoleChange?.(user.id)}
+						onClick={() => onRoleChange?.({ userId: user.id })}
 					/>
 				</Flex>
 			) : (

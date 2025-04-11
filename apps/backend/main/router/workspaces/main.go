@@ -43,6 +43,11 @@ func AddRoutes(group *gin.RouterGroup, postgres *gorm.DB, mongo *mongo.Client, v
 
 	group.GET("/:workspace_id", getWorkspace(postgres))
 
+	group.PUT("/:workspace_id", updateWorkspace(postgres, validate))
+	group.POST("/:workspace_id/cancel-soft-delete", cancelSoftDeleteWorkspace(postgres))
+
+	group.DELETE("/:workspace_id/soft-delete", softDeleteWorkspace(postgres))
+
 	workspacesAccessesRouter.AddRoutes(group.Group("/:workspace_id/accesses"), postgres)
 
 	pagesRouter.AddRoutes(group.Group("/:workspace_id/pages", hasAccessToWorkspaceMiddleware(postgres)), postgres, mongo, validate, sockets)

@@ -15,7 +15,7 @@ import (
 // @Tags				Pages
 // @Produce				json
 // @Param				workspace_id path string true "Workspace ID"
-// @Param				format query string false Enum(list, tree) "Format of the page list"
+// @Param				format query string false "Format of the page list" Enum(list, tree)
 // @Success				200 {object} []dbClient.Page
 // @Failure				400 {object} errorHandlers.Error
 // @Failure				401 {object} errorHandlers.Error "Unauthorized if session is missing or invalid"

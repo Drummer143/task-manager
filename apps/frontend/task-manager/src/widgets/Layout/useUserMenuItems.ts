@@ -1,4 +1,4 @@
-import { useEffect, useMemo } from "react";
+import { useMemo } from "react";
 
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { getWorkspaceList, logout } from "@task-manager/api";
@@ -49,7 +49,13 @@ export const useUserMenuItems = () => {
 							key: workspace.id,
 							label: workspace.name,
 							disabled: workspace.id === workspaceId,
-							onClick: () => setWorkspaceId(workspace.id)
+							onClick: () => {
+								// eslint-disable-next-line no-restricted-globals
+								if (!location.pathname.startsWith("/profile")) {
+									navigate(`workspace/${workspace.id}`);
+								}
+								setWorkspaceId(workspace.id);
+							}
 						})) ?? []
 				},
 				{
