@@ -6,18 +6,18 @@ import { useStorage } from "@task-manager/utils";
 import { Alert } from "antd";
 import { useLocation } from "react-router-dom";
 
-import { useAppStore } from "../../../app/store/app";
+import { useAuthStore } from "../../../app/store/auth";
 
 const WorkspaceDeletionBanner: React.FC = () => {
 	const location = useLocation();
 
-	const workspaceId = useAppStore(state => state.workspaceId);
+	const workspaceId = useAuthStore(state => state.user.workspace.id);
 
 	const [closed, setClosed] = useStorage("workspace-deletion-banner-closed", false, false, sessionStorage);
 
 	const { data } = useQuery({
 		queryKey: ["workspace", workspaceId],
-		queryFn: () => getWorkspace({ workspaceId: workspaceId! }),
+		queryFn: () => getWorkspace({ workspaceId }),
 		enabled: !closed && !!workspaceId && !location.pathname.startsWith("/profile")
 	});
 

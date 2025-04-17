@@ -8,7 +8,7 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useStyles } from "./styles";
 import { drawTaskDragImage } from "./utils";
 
-import { useAppStore } from "../../../../../app/store/app";
+import { useAuthStore } from "../../../../../app/store/auth";
 import { useTasksStore } from "../../../../../app/store/tasks";
 import { taskStatusLocale } from "../../../../../shared/constants";
 import TaskItem from "../TaskItem";
@@ -49,7 +49,7 @@ const TaskList: React.FC<TaskListProps> = ({ tasks }) => {
 				return;
 			}
 
-			changeTaskStatus({ taskId, pageId, workspaceId: useAppStore.getState().workspaceId!, status });
+			changeTaskStatus({ taskId, pageId, workspaceId: useAuthStore.getState().user.workspace.id, status });
 		},
 		[changeTaskStatus, pageId]
 	);

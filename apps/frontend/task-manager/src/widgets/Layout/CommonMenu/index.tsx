@@ -6,10 +6,10 @@ import { Menu, Spin } from "antd";
 import { ItemType, MenuItemType } from "antd/es/menu/interface";
 import { useLocation, useNavigate } from "react-router-dom";
 
-import { useAppStore } from "../../../app/store/app";
+import { useAuthStore } from "../../../app/store/auth";
 
 const CommonMenu: React.FC = () => {
-	const workspaceId = useAppStore(state => state.workspaceId)!;
+	const workspaceId = useAuthStore(state => state.user.workspace.id);
 
 	const navigate = useNavigate();
 

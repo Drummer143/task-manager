@@ -51,6 +51,19 @@ type UserCredential struct {
 	DeletedAt *time.Time `json:"-"`
 }
 
+type UserMeta struct {
+	ID                uuid.UUID  `gorm:"primaryKey;default:uuid_generate_v4()" json:"-"`
+	UserID            uuid.UUID  `gorm:"unique;not null" json:"-"`
+	SelectedWorkspace *uuid.UUID `json:"-"`
+
+	User      *User      `gorm:"foreignKey:UserID" json:"-"`
+	Workspace *Workspace `gorm:"foreignKey:SelectedWorkspace" json:"-"`
+
+	CreatedAt time.Time  `gorm:"default:current_timestamp" json:"-"`
+	UpdatedAt time.Time  `gorm:"default:current_timestamp" json:"-"`
+	DeletedAt *time.Time `json:"-"`
+}
+
 type Workspace struct {
 	ID   uuid.UUID `gorm:"primaryKey;default:uuid_generate_v4()" json:"id"`
 	Name string    `gorm:"not null" json:"name"`

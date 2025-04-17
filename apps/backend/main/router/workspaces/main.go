@@ -40,10 +40,10 @@ func AddRoutes(group *gin.RouterGroup, postgres *gorm.DB, mongo *mongo.Client, v
 	group.POST("", createWorkspace(postgres, validate))
 
 	group.GET("", getWorkspaceList(postgres))
-
 	group.GET("/:workspace_id", getWorkspace(postgres))
 
 	group.PUT("/:workspace_id", updateWorkspace(postgres, validate))
+
 	group.POST("/:workspace_id/cancel-soft-delete", cancelSoftDeleteWorkspace(postgres))
 
 	group.DELETE("/:workspace_id/soft-delete", softDeleteWorkspace(postgres))

@@ -9,12 +9,12 @@ import DangerZone from "./widgets/DangerZone";
 import PageTree from "./widgets/PageTree";
 import WorkspaceInfo from "./widgets/WorkspaceInfo";
 
-import { useAppStore } from "../../app/store/app";
+import { useAuthStore } from "../../app/store/auth";
 import FullSizeLoader from "../../shared/ui/FullSizeLoader";
 import AccessList, { AccessListProps } from "../../widgets/AccessList";
 
 const CurrentWorkspace: React.FC = () => {
-	const workspaceId = useAppStore(state => state.workspaceId!);
+	const workspaceId = useAuthStore(state => state.user.workspace.id);
 
 	const { container } = useStyles().styles;
 

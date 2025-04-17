@@ -8,7 +8,7 @@ import { Button, Flex, Form, Input } from "antd";
 import { createStyles } from "antd-style";
 import { useParams, useSearchParams } from "react-router-dom";
 
-import { useAppStore } from "../../../../../app/store/app";
+import { useAuthStore } from "../../../../../app/store/auth";
 import Drawer from "../../../../../widgets/Drawer";
 import ChatMessageList from "../ChatMessageList";
 
@@ -40,7 +40,7 @@ const TaskChat: React.FC = () => {
 
 	const taskId = useSearchParams()[0].get("taskId")!;
 	const pageId = useParams<{ id: string }>().id!;
-	const workspaceId = useAppStore(state => state.workspaceId!);
+	const workspaceId = useAuthStore(state => state.user.workspace.id);
 
 	const [form] = Form.useForm<{ text: string }>();
 

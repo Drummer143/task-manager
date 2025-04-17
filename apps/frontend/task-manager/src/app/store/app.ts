@@ -3,11 +3,9 @@ import { create } from "zustand/react";
 
 interface AppState {
 	theme: "light" | "dark";
-	workspaceId: string;
 
 	setTheme: (theme: "light" | "dark") => void;
 	toggleTheme: () => void;
-	setWorkspaceId: (workspaceId: string) => void;
 }
 
 export const useAppStore = create<AppState>()(
@@ -15,13 +13,11 @@ export const useAppStore = create<AppState>()(
 		persist(
 			set => ({
 				theme: window.matchMedia("(prefers-color-scheme: dark)").matches ? "dark" : "light",
-				workspaceId: "",
 
 				setTheme: theme => set({ theme }),
 
 				toggleTheme: () => set(state => ({ theme: state.theme === "light" ? "dark" : "light" })),
 
-				setWorkspaceId: workspaceId => set({ workspaceId })
 			}),
 			{ name: "app-store" }
 		),

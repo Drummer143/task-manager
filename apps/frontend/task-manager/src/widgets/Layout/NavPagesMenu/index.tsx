@@ -10,7 +10,7 @@ import { createStyles } from "antd-style";
 
 import Menu from "./Menu";
 
-import { useAppStore } from "../../../app/store/app";
+import { useAuthStore } from "../../../app/store/auth";
 import { pageTypes } from "../../../shared/constants";
 import FullSizeLoader from "../../../shared/ui/FullSizeLoader";
 import Drawer from "../../../widgets/Drawer";
@@ -47,14 +47,14 @@ const NavPagesMenu: React.FC = () => {
 
 	const queryClient = useQueryClient();
 
-	const workspaceId = useAppStore(state => state.workspaceId);
+	const workspaceId = useAuthStore(state => state.user.workspace.id);
 
 	const { data, isLoading } = useQuery({
 		queryKey: ["pages", "tree", workspaceId],
 		enabled: !!workspaceId,
 		queryFn: () =>
 			getPageList({
-				workspaceId: workspaceId!,
+				workspaceId,
 				format: "tree"
 			})
 	});
@@ -78,7 +78,7 @@ const NavPagesMenu: React.FC = () => {
 			form,
 			onFinish: async (values: FormValues) => {
 				await mutateAsync({
-					workspaceId: workspaceId!,
+					workspaceId,
 					page: {
 						...values,
 						parentId: typeof creatingPageType === "string" ? creatingPageType : undefined

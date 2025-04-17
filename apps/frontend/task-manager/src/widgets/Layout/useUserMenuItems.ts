@@ -5,12 +5,10 @@ import { getWorkspaceList, logout } from "@task-manager/api";
 import { App, MenuProps } from "antd";
 import { useNavigate } from "react-router-dom";
 
-import { useAppStore } from "../../app/store/app";
 import { useAuthStore } from "../../app/store/auth";
 
 export const useUserMenuItems = () => {
-	const clearAuthStore = useAuthStore(state => state.clear);
-	const { setWorkspaceId, workspaceId } = useAppStore();
+	const { user, clear: clearAuthStore } = useAuthStore();
 
 	const navigate = useNavigate();
 
@@ -48,13 +46,14 @@ export const useUserMenuItems = () => {
 						data?.map(workspace => ({
 							key: workspace.id,
 							label: workspace.name,
-							disabled: workspace.id === workspaceId,
+							disabled: workspace.id === user?.workspace.id,
 							onClick: () => {
 								// eslint-disable-next-line no-restricted-globals
 								if (!location.pathname.startsWith("/profile")) {
 									navigate(`workspace/${workspace.id}`);
 								}
-								setWorkspaceId(workspace.id);
+
+								// setWorkspaceId(workspace.id);
 							}
 						})) ?? []
 				},
@@ -69,7 +68,7 @@ export const useUserMenuItems = () => {
 				}
 			]
 		}),
-		[data, isLoading, mutateAsync, navigate, setWorkspaceId, workspaceId]
+		[data, isLoading, mutateAsync, navigate, user?.workspace.id]
 	);
 
 	return menu;

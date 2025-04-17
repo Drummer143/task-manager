@@ -8,7 +8,7 @@ import { Navigate, useNavigate, useParams } from "react-router-dom";
 import { useStyles } from "./styles";
 import PageHeader from "./widgets/PageHeader";
 
-import { useAppStore } from "../../app/store/app";
+import { useAuthStore } from "../../app/store/auth";
 import { withAuthPageCheck } from "../../shared/HOCs/withAuthPageCheck";
 import FullSizeLoader from "../../shared/ui/FullSizeLoader";
 
@@ -21,7 +21,7 @@ const Page: React.FC = () => {
 	// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 	const pageId = useParams<{ id: string }>().id!;
 
-	const workspaceId = useAppStore.getState().workspaceId!;
+	const workspaceId = useAuthStore.getState().user.workspace.id;
 
 	const navigate = useNavigate();
 

@@ -1,60 +1,60 @@
-import nx from '@nx/eslint-plugin';
+import nx from "@nx/eslint-plugin";
+import typescriptEslint from "@typescript-eslint/eslint-plugin";
+import _import from "eslint-plugin-import";
 import react from "eslint-plugin-react";
 import reactHooks from "eslint-plugin-react-hooks";
-import _import from "eslint-plugin-import";
-import typescriptEslint from "@typescript-eslint/eslint-plugin";
 
 export default [
-  ...nx.configs['flat/base'],
-  ...nx.configs['flat/typescript'],
-  ...nx.configs['flat/javascript'],
+  ...nx.configs["flat/base"],
+  ...nx.configs["flat/typescript"],
+  ...nx.configs["flat/javascript"],
   {
     ignores: [
-      '**/dist',
-      '**/vite.config.*.timestamp*',
-      '**/vitest.config.*.timestamp*',
-    ],
+      "**/dist",
+      "**/vite.config.*.timestamp*",
+      "**/vitest.config.*.timestamp*"
+    ]
   },
   {
-    files: ['**/*.ts', '**/*.tsx', '**/*.js', '**/*.jsx'],
+    files: ["**/*.ts", "**/*.tsx", "**/*.js", "**/*.jsx"],
     rules: {
-      '@nx/enforce-module-boundaries': [
-        'error',
+      "@nx/enforce-module-boundaries": [
+        "error",
         {
           enforceBuildableLibDependency: true,
-          allow: ['^.*/eslint(\\.base)?\\.config\\.[cm]?js$'],
+          allow: ["^.*/eslint(\\.base)?\\.config\\.[cm]?js$"],
           depConstraints: [
             {
-              sourceTag: '*',
-              onlyDependOnLibsWithTags: ['*'],
-            },
-          ],
-        },
-      ],
-    },
+              sourceTag: "*",
+              onlyDependOnLibsWithTags: ["*"]
+            }
+          ]
+        }
+      ]
+    }
   },
   {
     files: [
-      '**/*.ts',
-      '**/*.tsx',
-      '**/*.cts',
-      '**/*.mts',
-      '**/*.js',
-      '**/*.jsx',
-      '**/*.cjs',
-      '**/*.mjs',
+      "**/*.ts",
+      "**/*.tsx",
+      "**/*.cts",
+      "**/*.mts",
+      "**/*.js",
+      "**/*.jsx",
+      "**/*.cjs",
+      "**/*.mjs"
     ],
     plugins: {
       react,
-      'import': _import,
-      'react-hooks': reactHooks,
-      '@typescript-eslint': typescriptEslint
+      "import": _import,
+      "react-hooks": reactHooks,
+      "@typescript-eslint": typescriptEslint
     },
     // Override or add rules here
     rules: {
       indent: ["off", "tab"],
       "react/react-in-jsx-scope": "off",
-      "linebreak-style": ["error", "windows"],
+      "linebreak-style": ["error", "unix"],
 
       "no-console": ["warn", {
         allow: ["warn", "error", "info"]
@@ -143,6 +143,6 @@ export default [
       quotes: ["warn", "double", {
         avoidEscape: true
       }]
-    },
-  },
+    }
+  }
 ];

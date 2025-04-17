@@ -273,11 +273,19 @@ const docTemplate = `{
                     "Profile"
                 ],
                 "summary": "Get current user profile",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Include additional user data. One of: workspace",
+                        "name": "includes",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "User profile data",
                         "schema": {
-                            "$ref": "#/definitions/dbClient.User"
+                            "$ref": "#/definitions/profileRouter.getProfileResponse"
                         }
                     },
                     "401": {
@@ -446,6 +454,53 @@ const docTemplate = `{
                     },
                     "500": {
                         "description": "Internal server error if request to Auth0 fails",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/profile/current-workspace": {
+            "get": {
+                "description": "Get current workspace",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Profile"
+                ],
+                "summary": "Get current workspace",
+                "responses": {
+                    "200": {
+                        "description": "Workspace data",
+                        "schema": {
+                            "$ref": "#/definitions/dbClient.Workspace"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized if session is missing or invalid",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Workspace not found",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error if server fails",
                         "schema": {
                             "$ref": "#/definitions/errorHandlers.Error"
                         }
@@ -2623,6 +2678,44 @@ const docTemplate = `{
                 }
             }
         },
+        "profileRouter.getProfileResponse": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "emailVerified": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "lastLogin": {
+                    "type": "string"
+                },
+                "lastPasswordReset": {
+                    "type": "string"
+                },
+                "picture": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                },
+                "workspace": {
+                    "$ref": "#/definitions/dbClient.Workspace"
+                }
+            }
+        },
         "profileRouter.patchProfileBody": {
             "type": "object",
             "required": [
@@ -2820,9 +2913,6 @@ const docTemplate = `{
         },
         "workspacesRouter.updateWorkspaceBody": {
             "type": "object",
-            "required": [
-                "name"
-            ],
             "properties": {
                 "name": {
                     "type": "string"

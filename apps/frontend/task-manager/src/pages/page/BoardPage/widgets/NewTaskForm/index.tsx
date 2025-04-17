@@ -6,7 +6,7 @@ import { useDisclosure } from "@task-manager/utils";
 import { Form } from "antd";
 import { useParams } from "react-router-dom";
 
-import { useAppStore } from "../../../../../app/store/app";
+import { useAuthStore } from "../../../../../app/store/auth";
 import TaskForm from "../TaskForm";
 import { FormValues } from "../TaskForm/types";
 
@@ -29,7 +29,7 @@ const NewTaskForm: React.FC = () => {
 		async (values: FormValues) => {
 			await mutateAsync({
 				task: { ...values, dueDate: values.dueDate?.toISOString() },
-				workspaceId: useAppStore.getState().workspaceId!,
+				workspaceId: useAuthStore.getState().user.workspace.id,
 				pageId
 			});
 

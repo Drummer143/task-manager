@@ -301,6 +301,31 @@ definitions:
     required:
     - email
     type: object
+  profileRouter.getProfileResponse:
+    properties:
+      createdAt:
+        type: string
+      deletedAt:
+        type: string
+      email:
+        type: string
+      emailVerified:
+        type: boolean
+      id:
+        type: string
+      lastLogin:
+        type: string
+      lastPasswordReset:
+        type: string
+      picture:
+        type: string
+      updatedAt:
+        type: string
+      username:
+        type: string
+      workspace:
+        $ref: '#/definitions/dbClient.Workspace'
+    type: object
   profileRouter.patchProfileBody:
     properties:
       username:
@@ -434,8 +459,6 @@ definitions:
     properties:
       name:
         type: string
-    required:
-    - name
     type: object
 info:
   contact: {}
@@ -608,13 +631,18 @@ paths:
         Management API using the user's ID from the session. The ID is obtained from
         the session and used to query the user data from the external identity provider
         (Auth0). The user must be authenticated, and a valid session must exist.
+      parameters:
+      - description: 'Include additional user data. One of: workspace'
+        in: query
+        name: includes
+        type: string
       produces:
       - application/json
       responses:
         "200":
           description: User profile data
           schema:
-            $ref: '#/definitions/dbClient.User'
+            $ref: '#/definitions/profileRouter.getProfileResponse'
         "401":
           description: Unauthorized if session is missing or invalid
           schema:
@@ -739,6 +767,37 @@ paths:
           schema:
             $ref: '#/definitions/errorHandlers.Error'
       summary: Upload user avatar
+      tags:
+      - Profile
+  /profile/current-workspace:
+    get:
+      consumes:
+      - application/json
+      description: Get current workspace
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: Workspace data
+          schema:
+            $ref: '#/definitions/dbClient.Workspace'
+        "400":
+          description: Invalid request
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "401":
+          description: Unauthorized if session is missing or invalid
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "404":
+          description: Workspace not found
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+        "500":
+          description: Internal server error if server fails
+          schema:
+            $ref: '#/definitions/errorHandlers.Error'
+      summary: Get current workspace
       tags:
       - Profile
   /profile/email:

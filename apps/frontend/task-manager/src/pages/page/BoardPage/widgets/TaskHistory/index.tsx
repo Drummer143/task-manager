@@ -5,7 +5,7 @@ import { getTaskHistory, TaskStatus } from "@task-manager/api";
 import { useDisclosure } from "@task-manager/utils";
 import { Button, Drawer, Tag, Typography } from "antd";
 
-import { useAppStore } from "../../../../../app/store/app";
+import { useAuthStore } from "../../../../../app/store/auth";
 import { statusColors, taskStatusLocale } from "../../../../../shared/constants";
 import MDEditor from "../../../../../widgets/MDEditor";
 import VersionHistoryList, { FetchLog, VersionHistoryEntryRenders } from "../../../../../widgets/VersionHistoryList";
@@ -38,7 +38,7 @@ const TaskHistory: React.FC<TaskHistoryProps> = props => {
 	const fieldsOrder = useMemo<ChangeKeys[]>(() => ["title", "status", "assigneeId", "dueDate", "description"], []);
 
 	const fetchLog = useCallback<FetchLog<ChangeKeys>>(
-		query => getTaskHistory({ ...props, ...query, workspaceId: useAppStore.getState().workspaceId! }),
+		query => getTaskHistory({ ...props, ...query, workspaceId: useAuthStore.getState().user.workspace.id }),
 		[props]
 	);
 

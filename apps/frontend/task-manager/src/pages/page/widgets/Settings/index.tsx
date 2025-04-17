@@ -9,7 +9,6 @@ import { AxiosError } from "axios";
 
 import { useStyles } from "./styles";
 
-import { useAppStore } from "../../../../app/store/app";
 import { useAuthStore } from "../../../../app/store/auth";
 import PopoverInfiniteSelect from "../../../../widgets/PopoverInfiniteSelect";
 import UserCard from "../../../../widgets/UserCard";
@@ -28,14 +27,13 @@ const Settings: React.FC<SettingsProps> = ({ page }) => {
 
 	const queryClient = useQueryClient();
 
-	const workspaceId = useAppStore(state => state.workspaceId)!;
-	const currentUserId = useAuthStore(state => state.user?.id)!;
+	const currentUser = useAuthStore(state => state.user);
 
 	const message = App.useApp().message;
 
 	const { data, isLoading, error } = useQuery({
-		queryFn: async () => await getPageAccess({ workspaceId, pageId: page.id }),
-		enabled: open && !!workspaceId,
+		queryFn: async () => await getPageAccess({ workspaceId: currentUser.workspace.id, pageId: page.id }),
+		enabled: open && !!currentUser.workspace.id,
 		queryKey: ["pageAccesses"]
 	});
 
@@ -49,7 +47,7 @@ const Settings: React.FC<SettingsProps> = ({ page }) => {
 		onSuccess: (_, { body: { role, userId } }) => {
 			setNewAddedUser(undefined);
 
-			if (userId === currentUserId && role !== "admin" && role !== "owner") {
+			if (userId === currentUser.id && role !== "admin" && role !== "owner") {
 				queryClient.invalidateQueries({ queryKey: [page.id] });
 			} else {
 				queryClient.invalidateQueries({ queryKey: ["pageAccesses"] });
@@ -65,14 +63,14 @@ const Settings: React.FC<SettingsProps> = ({ page }) => {
 		(userId: string, role?: string) => {
 			updateAccess({
 				pageId: page.id,
-				workspaceId,
+				workspaceId: currentUser.workspace.id,
 				body: {
 					userId,
 					role
 				}
 			});
 		},
-		[page.id, updateAccess, workspaceId]
+		[currentUser.workspace.id, page.id, updateAccess]
 	);
 
 	const handleClose = useCallback(() => {

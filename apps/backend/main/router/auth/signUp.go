@@ -92,7 +92,7 @@ func signUp(auth *auth.Auth, validate *validator.Validate, postgres *gorm.DB) gi
 			PasswordHash:           string(passwordHash),
 			EmailVerificationToken: &emailVerificationToken,
 		}).Error; err != nil {
-			errorHandlers.InternalServerError(ctx, "failed to create user credentials")
+			errorHandlers.InternalServerError(ctx, "failed to create user")
 
 			tx.Delete(&user)
 			tx.Rollback()
@@ -110,7 +110,7 @@ func signUp(auth *auth.Auth, validate *validator.Validate, postgres *gorm.DB) gi
 
 		if err := tx.Create(&userWorkspace).Error; err != nil {
 			tx.Rollback()
-			errorHandlers.InternalServerError(ctx, "failed to create workspace")
+			errorHandlers.InternalServerError(ctx, "failed to create user")
 			return
 		}
 
@@ -122,13 +122,24 @@ func signUp(auth *auth.Auth, validate *validator.Validate, postgres *gorm.DB) gi
 
 		if err := tx.Create(&userWorkspaceAccess).Error; err != nil {
 			tx.Rollback()
-			errorHandlers.InternalServerError(ctx, "failed to create workspace access")
+			errorHandlers.InternalServerError(ctx, "failed to create user")
+			return
+		}
+
+		userMeta := dbClient.UserMeta{
+			UserID:            user.ID,
+			SelectedWorkspace: &userWorkspace.ID,
+		}
+
+		if err := tx.Create(&userMeta).Error; err != nil {
+			tx.Rollback()
+			errorHandlers.InternalServerError(ctx, "failed to create user")
 			return
 		}
 
 		if err := tx.Commit().Error; err != nil {
 			tx.Rollback()
-			errorHandlers.InternalServerError(ctx, "failed to create workspace access")
+			errorHandlers.InternalServerError(ctx, "failed to create user")
 			return
 		}
 
@@ -138,6 +149,7 @@ func signUp(auth *auth.Auth, validate *validator.Validate, postgres *gorm.DB) gi
 
 		session.Set("token", token)
 		session.Set("id", user.ID)
+		session.Set("selected_workspace", userWorkspace.ID)
 		session.Save()
 
 		url := os.Getenv("MAILER_URL") + "/send-email-confirmation"

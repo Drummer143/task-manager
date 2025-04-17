@@ -1,30 +1,19 @@
-import { useEffect, useMemo } from "react";
+import { useEffect } from "react";
 
-import { MoonOutlined, SunOutlined } from "@ant-design/icons";
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { darkThemeConfig, lightThemeConfig } from "@task-manager/ant-config";
-import { App as AntApp, theme as AntTheme, FloatButton, ThemeConfig } from "antd";
-import { ThemeProvider } from "antd-style";
+import { useQuery } from "@tanstack/react-query";
 import { RouterProvider } from "react-router-dom";
 
 import router from "./router";
 import { useSocketStore } from "./store/socket";
 
-import { useAppStore } from "../app/store/app";
 import { useAuthStore } from "../app/store/auth";
-
-const queryClient = new QueryClient();
+import FullSizeLoader from "../shared/ui/FullSizeLoader";
 
 function App() {
-	const { theme, setTheme, toggleTheme } = useAppStore();
-
-	const themeConfig: ThemeConfig = useMemo(
-		() => ({
-			...(theme === "light" ? lightThemeConfig : darkThemeConfig),
-			algorithm: theme === "light" ? undefined : AntTheme.darkAlgorithm
-		}),
-		[theme]
-	);
+	const { isLoading } = useQuery({
+		queryFn: useAuthStore.getState().getSession,
+		queryKey: ["profile"]
+	});
 
 	useEffect(() => {
 		useAuthStore.getState().getSession();
@@ -32,19 +21,7 @@ function App() {
 		useSocketStore.getState().init();
 	}, []);
 
-	// <ConfigProvider theme={themeConfig}>
-	return (
-		<ThemeProvider theme={themeConfig} themeMode={theme}>
-			<QueryClientProvider client={queryClient}>
-				<AntApp className="h-full">
-					<RouterProvider router={router} />
-
-					<FloatButton icon={theme === "light" ? <MoonOutlined /> : <SunOutlined />} onClick={toggleTheme} />
-				</AntApp>
-			</QueryClientProvider>
-		</ThemeProvider>
-	);
-	// </ConfigProvider>
+	return isLoading ? <FullSizeLoader /> : <RouterProvider router={router} />;
 }
 
 export default App;
