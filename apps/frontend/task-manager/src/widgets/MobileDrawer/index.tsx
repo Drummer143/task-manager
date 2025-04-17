@@ -1,7 +1,7 @@
 import React, { memo, useCallback, useState } from "react";
 
-import { Drawer as AntDrawer, DrawerProps } from "antd";
-import styled from "styled-components";
+import { Drawer, DrawerProps } from "antd";
+import { createStyles } from "antd-style";
 
 const SWIPE_DISTANCE_TO_CLOSE = 50;
 
@@ -12,17 +12,21 @@ type MobileDrawerProps = Omit<
 	onClose: () => void;
 };
 
-export const SMobileDrawer = styled(AntDrawer)<{ shiftX: number }>`
-	transform: translateX(${({ shiftX }) => shiftX}px);
+const useStyles = createStyles(({ css }, { shiftX }: { shiftX: number }) => ({
+	mobileDrawer: css`
+		transform: translateX(${shiftX}px);
 
-	.ant-drawer-body {
-		padding: 0;
-	}
-`;
+		.ant-drawer-body {
+			padding: 0;
+		}
+	`
+}));
 
 const MobileDrawer: React.FC<MobileDrawerProps> = props => {
 	const [touchStartX, setTouchStartX] = useState(0);
 	const [touchMoveX, setTouchMoveX] = useState(0);
+
+	const { styles, cx } = useStyles({ shiftX: touchMoveX });
 
 	const handleTouchStart = useCallback<React.TouchEventHandler<HTMLDivElement>>(e => {
 		e.stopPropagation();
@@ -75,13 +79,13 @@ const MobileDrawer: React.FC<MobileDrawerProps> = props => {
 	);
 
 	return (
-		<SMobileDrawer
+		<Drawer
 			placement="left"
 			keyboard={false}
-			shiftX={touchMoveX}
 			afterOpenChange={handleAfterOpenChange}
 			drawerRender={drawerRender}
 			{...props}
+			className={cx(styles.mobileDrawer, props.className)}
 		/>
 	);
 };

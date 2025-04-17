@@ -273,11 +273,19 @@ const docTemplate = `{
                     "Profile"
                 ],
                 "summary": "Get current user profile",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Include additional user data. One of: workspace",
+                        "name": "includes",
+                        "in": "query"
+                    }
+                ],
                 "responses": {
                     "200": {
                         "description": "User profile data",
                         "schema": {
-                            "$ref": "#/definitions/dbClient.User"
+                            "$ref": "#/definitions/profileRouter.getProfileResponse"
                         }
                     },
                     "401": {
@@ -453,6 +461,53 @@ const docTemplate = `{
                 }
             }
         },
+        "/profile/current-workspace": {
+            "get": {
+                "description": "Get current workspace",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Profile"
+                ],
+                "summary": "Get current workspace",
+                "responses": {
+                    "200": {
+                        "description": "Workspace data",
+                        "schema": {
+                            "$ref": "#/definitions/dbClient.Workspace"
+                        }
+                    },
+                    "400": {
+                        "description": "Invalid request",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized if session is missing or invalid",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Workspace not found",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal server error if server fails",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/profile/email": {
             "patch": {
                 "description": "Update email of the current user",
@@ -511,6 +566,23 @@ const docTemplate = `{
                 }
             }
         },
+        "/socket": {
+            "get": {
+                "description": "Handle WebSocket requests",
+                "tags": [
+                    "WebSocket"
+                ],
+                "summary": "Handle WebSocket requests",
+                "responses": {
+                    "101": {
+                        "description": "Switching Protocols"
+                    },
+                    "500": {
+                        "description": "Internal Server Error"
+                    }
+                }
+            }
+        },
         "/users": {
             "get": {
                 "description": "Get user list",
@@ -551,7 +623,7 @@ const docTemplate = `{
                     "200": {
                         "description": "User list",
                         "schema": {
-                            "$ref": "#/definitions/usersRouter.ResponseWithPagination-dbClient_User"
+                            "$ref": "#/definitions/routerUtils.ResponseWithPagination-dbClient_User"
                         }
                     },
                     "401": {
@@ -725,6 +797,75 @@ const docTemplate = `{
                         }
                     }
                 }
+            },
+            "put": {
+                "description": "Update workspace by id",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Workspaces"
+                ],
+                "summary": "Update workspace by id",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Workspace ID",
+                        "name": "workspace_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Workspace object that needs to be updated",
+                        "name": "workspace",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/workspacesRouter.updateWorkspaceBody"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dbClient.Workspace"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized if session is missing or invalid",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "403": {
+                        "description": "No access to workspace or no access to update workspace",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    }
+                }
             }
         },
         "/workspaces/{workspace_id}/accesses": {
@@ -865,6 +1006,62 @@ const docTemplate = `{
                 }
             }
         },
+        "/workspaces/{workspace_id}/cancel-soft-delete": {
+            "post": {
+                "description": "Cancel soft deletion of workspace",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Workspaces"
+                ],
+                "summary": "Cancel soft deletion of workspace",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Workspace ID",
+                        "name": "workspace_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized if session is missing or invalid",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "403": {
+                        "description": "No access to workspace",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    }
+                }
+            }
+        },
         "/workspaces/{workspace_id}/pages": {
             "get": {
                 "description": "Get page list",
@@ -882,6 +1079,12 @@ const docTemplate = `{
                         "name": "workspace_id",
                         "in": "path",
                         "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Format of the page list",
+                        "name": "format",
+                        "in": "query"
                     }
                 ],
                 "responses": {
@@ -1234,7 +1437,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/dbClient.PageAccess"
+                                "$ref": "#/definitions/accessesRouter.getPageAccessesResponse"
                             }
                         }
                     },
@@ -1360,6 +1563,20 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
+                        "description": "Workspace ID",
+                        "name": "workspace_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page ID",
+                        "name": "page_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
                         "description": "ID of the user who created the tasks",
                         "name": "owner_id",
                         "in": "query"
@@ -1399,6 +1616,20 @@ const docTemplate = `{
                 ],
                 "summary": "Create a new task",
                 "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Workspace ID",
+                        "name": "workspace_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page ID",
+                        "name": "page_id",
+                        "in": "path",
+                        "required": true
+                    },
                     {
                         "description": "Task object that needs to be created",
                         "name": "task",
@@ -1450,8 +1681,22 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
+                        "description": "Workspace ID",
+                        "name": "workspace_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page ID",
+                        "name": "page_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
                         "description": "Task ID",
-                        "name": "id",
+                        "name": "task_id",
                         "in": "path",
                         "required": true
                     }
@@ -1498,8 +1743,22 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
+                        "description": "Workspace ID",
+                        "name": "workspace_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page ID",
+                        "name": "page_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
                         "description": "Task ID",
-                        "name": "id",
+                        "name": "task_id",
                         "in": "path",
                         "required": true
                     },
@@ -1558,8 +1817,22 @@ const docTemplate = `{
                 "parameters": [
                     {
                         "type": "string",
+                        "description": "Workspace ID",
+                        "name": "workspace_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page ID",
+                        "name": "page_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
                         "description": "Task ID",
-                        "name": "id",
+                        "name": "task_id",
                         "in": "path",
                         "required": true
                     }
@@ -1573,6 +1846,229 @@ const docTemplate = `{
                     },
                     "401": {
                         "description": "Unauthorized",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/workspaces/{workspace_id}/pages/{page_id}/tasks/{task_id}/chat": {
+            "get": {
+                "description": "Get messages",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Tasks"
+                ],
+                "summary": "Get messages",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Workspace ID",
+                        "name": "workspace_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page ID",
+                        "name": "page_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Task ID",
+                        "name": "task_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Default is 10",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Default is 0",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/routerUtils.ResponseWithPagination-dbClient_TaskChatMessage"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized if session is missing or invalid",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "Send Message in task chat",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Tasks Chat"
+                ],
+                "summary": "Send Message in task chat",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Workspace ID",
+                        "name": "workspace_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Page ID",
+                        "name": "page_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Task ID",
+                        "name": "task_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "Message",
+                        "name": "message",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/tasksCharRouter.chatMessage"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/dbClient.TaskChatMessage"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized if session is missing or invalid",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/workspaces/{workspace_id}/pages/{page_id}/tasks/{task_id}/history": {
+            "get": {
+                "description": "Get task history",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Tasks"
+                ],
+                "summary": "Get task history",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Page ID",
+                        "name": "page_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Workspace ID",
+                        "name": "workspace_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Task ID",
+                        "name": "task_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "integer",
+                        "description": "If not provided or less than 1, all users will be returned",
+                        "name": "limit",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "Default is 0",
+                        "name": "offset",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/routerUtils.ResponseWithPagination-dbClient_EntityVersionDocument"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized if session is missing or invalid",
                         "schema": {
                             "$ref": "#/definitions/errorHandlers.Error"
                         }
@@ -1607,9 +2103,23 @@ const docTemplate = `{
                 "summary": "Change task status",
                 "parameters": [
                     {
+                        "type": "string",
+                        "description": "Workspace ID",
+                        "name": "workspace_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
                         "type": "integer",
+                        "description": "Page ID",
+                        "name": "page_id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
                         "description": "Task ID",
-                        "name": "id",
+                        "name": "task_id",
                         "in": "path",
                         "required": true
                     },
@@ -1656,9 +2166,94 @@ const docTemplate = `{
                     }
                 }
             }
+        },
+        "/workspaces/{workspace_id}/soft-delete": {
+            "delete": {
+                "description": "Soft delete workspace",
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Workspaces"
+                ],
+                "summary": "Soft delete workspace",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "Workspace ID",
+                        "name": "workspace_id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "401": {
+                        "description": "Unauthorized if session is missing or invalid",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "403": {
+                        "description": "No access to workspace or no access to delete workspace",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "404": {
+                        "description": "Not Found",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
+        "accessesRouter.getPageAccessesResponse": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "isWorkspaceAdmin": {
+                    "type": "boolean"
+                },
+                "isWorkspaceOwner": {
+                    "type": "boolean"
+                },
+                "role": {
+                    "$ref": "#/definitions/dbClient.UserRole"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "user": {
+                    "$ref": "#/definitions/dbClient.User"
+                }
+            }
+        },
         "accessesRouter.giveAccessBody": {
             "type": "object",
             "required": [
@@ -1744,6 +2339,36 @@ const docTemplate = `{
                 }
             }
         },
+        "dbClient.Change": {
+            "type": "object",
+            "properties": {
+                "from": {},
+                "to": {}
+            }
+        },
+        "dbClient.EntityVersionDocument": {
+            "type": "object",
+            "properties": {
+                "author": {
+                    "$ref": "#/definitions/dbClient.ShortUserInfo"
+                },
+                "changes": {
+                    "type": "object",
+                    "additionalProperties": {
+                        "$ref": "#/definitions/dbClient.Change"
+                    }
+                },
+                "created_at": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "version": {
+                    "type": "integer"
+                }
+            }
+        },
         "dbClient.Page": {
             "type": "object",
             "properties": {
@@ -1791,29 +2416,6 @@ const docTemplate = `{
                 }
             }
         },
-        "dbClient.PageAccess": {
-            "type": "object",
-            "properties": {
-                "createdAt": {
-                    "type": "string"
-                },
-                "deletedAt": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "role": {
-                    "$ref": "#/definitions/dbClient.UserRole"
-                },
-                "updatedAt": {
-                    "type": "string"
-                },
-                "user": {
-                    "$ref": "#/definitions/dbClient.User"
-                }
-            }
-        },
         "dbClient.PageType": {
             "type": "string",
             "enum": [
@@ -1826,6 +2428,20 @@ const docTemplate = `{
                 "PageTypeText",
                 "PageTypeGroup"
             ]
+        },
+        "dbClient.ShortUserInfo": {
+            "type": "object",
+            "properties": {
+                "id": {
+                    "type": "string"
+                },
+                "picture": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                }
+            }
         },
         "dbClient.Task": {
             "type": "object",
@@ -1861,6 +2477,23 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "dbClient.TaskChatMessage": {
+            "type": "object",
+            "properties": {
+                "author": {
+                    "$ref": "#/definitions/dbClient.ShortUserInfo"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "text": {
                     "type": "string"
                 }
             }
@@ -2045,6 +2678,44 @@ const docTemplate = `{
                 }
             }
         },
+        "profileRouter.getProfileResponse": {
+            "type": "object",
+            "properties": {
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "type": "string"
+                },
+                "email": {
+                    "type": "string"
+                },
+                "emailVerified": {
+                    "type": "boolean"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "lastLogin": {
+                    "type": "string"
+                },
+                "lastPasswordReset": {
+                    "type": "string"
+                },
+                "picture": {
+                    "type": "string"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "username": {
+                    "type": "string"
+                },
+                "workspace": {
+                    "$ref": "#/definitions/dbClient.Workspace"
+                }
+            }
+        },
         "profileRouter.patchProfileBody": {
             "type": "object",
             "required": [
@@ -2052,6 +2723,76 @@ const docTemplate = `{
             ],
             "properties": {
                 "username": {
+                    "type": "string"
+                }
+            }
+        },
+        "routerUtils.Meta": {
+            "type": "object",
+            "properties": {
+                "hasMore": {
+                    "type": "boolean"
+                },
+                "limit": {
+                    "type": "integer"
+                },
+                "offset": {
+                    "type": "integer"
+                },
+                "total": {
+                    "type": "integer"
+                }
+            }
+        },
+        "routerUtils.ResponseWithPagination-dbClient_EntityVersionDocument": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dbClient.EntityVersionDocument"
+                    }
+                },
+                "meta": {
+                    "$ref": "#/definitions/routerUtils.Meta"
+                }
+            }
+        },
+        "routerUtils.ResponseWithPagination-dbClient_TaskChatMessage": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dbClient.TaskChatMessage"
+                    }
+                },
+                "meta": {
+                    "$ref": "#/definitions/routerUtils.Meta"
+                }
+            }
+        },
+        "routerUtils.ResponseWithPagination-dbClient_User": {
+            "type": "object",
+            "properties": {
+                "data": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/dbClient.User"
+                    }
+                },
+                "meta": {
+                    "$ref": "#/definitions/routerUtils.Meta"
+                }
+            }
+        },
+        "tasksCharRouter.chatMessage": {
+            "type": "object",
+            "required": [
+                "text"
+            ],
+            "properties": {
+                "text": {
                     "type": "string"
                 }
             }
@@ -2134,37 +2875,6 @@ const docTemplate = `{
                 }
             }
         },
-        "usersRouter.Meta": {
-            "type": "object",
-            "properties": {
-                "hasMore": {
-                    "type": "boolean"
-                },
-                "limit": {
-                    "type": "integer"
-                },
-                "offset": {
-                    "type": "integer"
-                },
-                "total": {
-                    "type": "integer"
-                }
-            }
-        },
-        "usersRouter.ResponseWithPagination-dbClient_User": {
-            "type": "object",
-            "properties": {
-                "data": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dbClient.User"
-                    }
-                },
-                "meta": {
-                    "$ref": "#/definitions/usersRouter.Meta"
-                }
-            }
-        },
         "workspacesAccessesRouter.giveAccessBody": {
             "type": "object",
             "required": [
@@ -2195,6 +2905,14 @@ const docTemplate = `{
             "required": [
                 "name"
             ],
+            "properties": {
+                "name": {
+                    "type": "string"
+                }
+            }
+        },
+        "workspacesRouter.updateWorkspaceBody": {
+            "type": "object",
             "properties": {
                 "name": {
                     "type": "string"

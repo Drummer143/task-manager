@@ -38,12 +38,13 @@ func getWorkspace(postgres *gorm.DB) gin.HandlerFunc {
 
 		dbWithIncludes := postgres
 
-		if strings.Contains(include, "pages") {
-			dbWithIncludes.Preload("Pages")
-		}
-
-		if strings.Contains(include, "owner") {
-			dbWithIncludes.Preload("Owner")
+		for _, param := range strings.Split(include, ",") {
+			switch param {
+			case "pages":
+				dbWithIncludes = dbWithIncludes.Preload("Pages")
+			case "owner":
+				dbWithIncludes = dbWithIncludes.Preload("Owner")
+			}
 		}
 
 		workspace, _, ok := routerUtils.CheckWorkspaceAccess(ctx, dbWithIncludes, postgres, workspaceId, userId)

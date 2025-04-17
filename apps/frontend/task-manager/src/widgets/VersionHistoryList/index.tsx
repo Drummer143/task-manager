@@ -4,22 +4,24 @@ import { ArrowRightOutlined } from "@ant-design/icons";
 import { PaginationQuery, ResponseWithPagination, VersionHistoryLog } from "@task-manager/api";
 import { Avatar, Button, Divider, Empty, Flex, Typography } from "antd";
 import { ListLocale } from "antd/es/list";
-import styled from "styled-components";
+import { createStyles } from "antd-style";
 
 import ListWithInfiniteScroll from "../ListWithInfiniteScroll";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
 type VersionEntryRendererFunction = (info: any) => React.ReactNode;
 
-const ChangeCompareWrapper = styled.div`
-	display: grid;
-	grid-template-columns: 1fr min-content 1fr;
-	align-items: center;
+const useStyles = createStyles(({ css }) => ({
+	changeCompareWrapper: css`
+		display: grid;
+		grid-template-columns: 1fr min-content 1fr;
+		align-items: center;
 
-	& > *:last-child {
-		justify-self: end;
-	}
-`;
+		& > *:last-child {
+			justify-self: end;
+		}
+	`
+}));
 
 type VersionEntryRendererObject = {
 	withFieldName?: boolean;
@@ -37,12 +39,16 @@ export type VersionHistoryEntryRenders<Keys extends string = string> = Partial<
 	Record<Keys, VersionEntryRendererFunction | VersionEntryRendererObject>
 >;
 
+export type FetchLog<Keys extends string = string> = (
+	query?: PaginationQuery
+) => Promise<ResponseWithPagination<VersionHistoryLog<Keys>>>;
+
 export interface VersionHistoryListProps<Keys extends string = string> {
 	enabled?: boolean;
 	changeOrder?: Keys[];
 	entryRenders?: VersionHistoryEntryRenders<Keys>;
 
-	fetchLog: (query?: PaginationQuery) => Promise<ResponseWithPagination<VersionHistoryLog<Keys>>>;
+	fetchLog: FetchLog<Keys>;
 }
 
 const defaultRenderer: VersionEntryRendererFunction = info => info?.toString();
@@ -57,6 +63,8 @@ const VersionHistoryList = <Keys extends string = string>({
 	changeOrder,
 	enabled
 }: VersionHistoryListProps<Keys>) => {
+	const { styles } = useStyles();
+
 	const getRenderer = useCallback(
 		(key: Keys, change: "from" | "to"): VersionEntryRendererFunction => {
 			if (!entryRenders) {
@@ -105,9 +113,9 @@ const VersionHistoryList = <Keys extends string = string>({
 
 							<Button
 								type="text"
-								icon={<Avatar size="small" src={item.user.picture || "/avatar-placeholder-32.jpg"} />}
+								icon={<Avatar size="small" src={item.author.picture || "/avatar-placeholder-32.jpg"} />}
 							>
-								{item.user.name}
+								{item.author.username}
 							</Button>
 						</Flex>
 
@@ -121,13 +129,13 @@ const VersionHistoryList = <Keys extends string = string>({
 											] as VersionEntryRendererObject
 										)?.withFieldName && <Typography.Text strong>{key}</Typography.Text>}
 
-										<ChangeCompareWrapper>
+										<div className={styles.changeCompareWrapper}>
 											<div>
 												{getRenderer(key as Keys, "from")(item.changes[key as Keys]?.from)}
 											</div>
 											<ArrowRightOutlined />
 											<div>{getRenderer(key as Keys, "to")(item.changes[key as Keys]?.to)}</div>
-										</ChangeCompareWrapper>
+										</div>
 									</React.Fragment>
 								)
 						)}
@@ -140,4 +148,4 @@ const VersionHistoryList = <Keys extends string = string>({
 	);
 };
 
-export default memo(VersionHistoryList);
+export default memo(VersionHistoryList) as typeof VersionHistoryList;

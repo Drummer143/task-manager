@@ -32,7 +32,7 @@ type giveAccessBody struct {
 // @Router				/workspaces/{workspace_id}/accesses [put]
 func updateAccess(postgres *gorm.DB) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		workspaceId := uuid.MustParse(ctx.Param("id"))
+		workspaceId := uuid.MustParse(ctx.Param("workspace_id"))
 
 		var body giveAccessBody
 		if err := ctx.BindJSON(&body); err != nil {
@@ -50,22 +50,50 @@ func updateAccess(postgres *gorm.DB) gin.HandlerFunc {
 			}
 		}()
 
-		_, workspaceAccess, ok := routerUtils.CheckWorkspaceAccess(ctx, postgres, postgres, workspaceId, currentUserId)
-
-		if !ok {
-			tx.Rollback()
-			errorHandlers.Forbidden(ctx, "No access to workspace")
-			return
-		}
-
-		if !canModifyAccess(workspaceAccess.Role, postgres, ctx, workspaceId, currentUserId, body.UserId, body.Role) {
+		if !checkAccess(ctx, tx, workspaceId, currentUserId, body.Role) {
 			tx.Rollback()
 			return
 		}
 
-		if err := handleAccessUpdate(ctx, workspaceAccess, tx, workspaceId, body, currentUserId); err != nil {
-			tx.Rollback()
-			return
+		var targetUserAccess dbClient.WorkspaceAccess
+
+		if err := tx.First(&targetUserAccess, "workspace_id = ? AND user_id = ?", workspaceId, body.UserId).Error; err != nil {
+			if err != gorm.ErrRecordNotFound {
+				errorHandlers.InternalServerError(ctx, "failed to get workspace access")
+				return
+			}
+		}
+
+		if targetUserAccess == (dbClient.WorkspaceAccess{}) {
+			if body.Role == nil {
+				errorHandlers.BadRequest(ctx, "Target user has no access to workspace", nil)
+				return
+			}
+
+			targetUserAccess = dbClient.WorkspaceAccess{
+				WorkspaceID: workspaceId,
+				UserID:      body.UserId,
+				Role:        *body.Role,
+			}
+
+			if err := tx.Create(&targetUserAccess).Error; err != nil {
+				errorHandlers.InternalServerError(ctx, "failed to create workspace access")
+				return
+			}
+		} else {
+			if body.Role == nil {
+				if err := tx.Delete(&targetUserAccess).Error; err != nil {
+					errorHandlers.InternalServerError(ctx, "failed to delete workspace access")
+					return
+				}
+			} else {
+				targetUserAccess.Role = *body.Role
+
+				if err := tx.Save(&targetUserAccess).Error; err != nil {
+					errorHandlers.InternalServerError(ctx, "failed to update workspace access")
+					return
+				}
+			}
 		}
 
 		if err := tx.Commit().Error; err != nil {
@@ -78,63 +106,30 @@ func updateAccess(postgres *gorm.DB) gin.HandlerFunc {
 	}
 }
 
-func canModifyAccess(currentUserRole dbClient.UserRole, postgres *gorm.DB, ctx *gin.Context, workspaceId uuid.UUID, currentUserId uuid.UUID, targetUserId uuid.UUID, targetRole *dbClient.UserRole) bool {
-	if currentUserRole != dbClient.UserRoleOwner && currentUserRole != dbClient.UserRoleAdmin {
-		errorHandlers.Forbidden(ctx, "Not allowed to change access to workspace")
+// 403 if:
+// 1. no access to page
+// 2. user is not admin or owner
+// 4. if user is admin and trying to change role to admin or owner
+func checkAccess(ctx *gin.Context, tx *gorm.DB, workspaceId uuid.UUID, userId uuid.UUID, newRole *dbClient.UserRole) bool {
+	_, workspaceAccess, ok := routerUtils.CheckWorkspaceAccess(ctx, tx.Preload("Owner"), tx, workspaceId, userId)
+
+	if !ok {
 		return false
 	}
 
-	if currentUserRole == dbClient.UserRoleOwner && currentUserId == targetUserId && (targetRole == nil || *targetRole != dbClient.UserRoleOwner) {
-		if !checkOtherOwnerExists(workspaceId, ctx, postgres, currentUserId) {
-			errorHandlers.Forbidden(ctx, "Not allowed to remove the only owner of the workspace. Set another owner first")
-			return false
-		}
+	if workspaceAccess.Role != dbClient.UserRoleOwner && workspaceAccess.Role != dbClient.UserRoleAdmin {
+		errorHandlers.Forbidden(ctx, "Not enough permissions to change access")
+		return false
 	}
 
-	if currentUserRole == dbClient.UserRoleAdmin && targetRole != nil && (*targetRole == dbClient.UserRoleOwner || *targetRole == dbClient.UserRoleAdmin) {
-		errorHandlers.Forbidden(ctx, "Admin can't give admin or owner access")
+	if !ok {
+		return false
+	}
+
+	if workspaceAccess.Role == dbClient.UserRoleAdmin && (*newRole == dbClient.UserRoleAdmin || *newRole == dbClient.UserRoleOwner) {
+		errorHandlers.Forbidden(ctx, "Cannot change role to admin or owner")
 		return false
 	}
 
 	return true
-}
-
-func checkOtherOwnerExists(workspaceId uuid.UUID, ctx *gin.Context, postgres *gorm.DB, currentUserId uuid.UUID) bool {
-	var nonCurrentUserOwner dbClient.WorkspaceAccess
-	if err := postgres.First(&nonCurrentUserOwner, "workspace_id = ? AND role = ? AND user_id <> ?", workspaceId, dbClient.UserRoleOwner, currentUserId).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			return false
-		}
-		errorHandlers.InternalServerError(ctx, "Failed to check access to the workspace")
-		return false
-	}
-	return true
-}
-
-func handleAccessUpdate(ctx *gin.Context, workspaceAccess dbClient.WorkspaceAccess, tx *gorm.DB, workspaceId uuid.UUID, body giveAccessBody, currentUserId uuid.UUID) error {
-	if body.Role == nil {
-		if err := tx.Where("workspace_id = ? AND user_id = ?", workspaceId, body.UserId).Delete(&dbClient.WorkspaceAccess{}).Error; err != nil {
-			errorHandlers.InternalServerError(ctx, "Failed to delete workspace access")
-			return err
-		}
-	} else {
-		var bodyUserAccess dbClient.WorkspaceAccess
-		if body.UserId == currentUserId {
-			bodyUserAccess = workspaceAccess
-		} else {
-			if err := tx.First(&bodyUserAccess, "workspace_id = ? AND user_id = ?", workspaceId, body.UserId).Error; err != nil {
-				if err != gorm.ErrRecordNotFound {
-					errorHandlers.InternalServerError(ctx, "Failed to get workspace access")
-					return err
-				}
-			}
-		}
-
-		if err := tx.Model(&bodyUserAccess).Update("role", *body.Role).Error; err != nil {
-			errorHandlers.InternalServerError(ctx, "Failed to update workspace access")
-			return err
-		}
-	}
-
-	return nil
 }

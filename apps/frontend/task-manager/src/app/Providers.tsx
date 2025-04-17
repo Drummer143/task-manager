@@ -1,8 +1,10 @@
 import React, { useMemo } from "react";
 
+import { MoonOutlined, SunOutlined } from "@ant-design/icons";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { darkThemeConfig, lightThemeConfig } from "@task-manager/ant-config";
-import { theme as antTheme, ConfigProvider } from "antd";
+import { App as AntApp, theme as antTheme, FloatButton, ThemeConfig } from "antd";
+import { ThemeProvider } from "antd-style";
 
 import { useAppStore } from "./store/app";
 
@@ -12,8 +14,8 @@ interface ProvidersProps {
 
 const queryClient = new QueryClient();
 
-const Providers: React.FC<ProvidersProps> = ({ children }) => {
-	const theme = useAppStore(state => state.theme);
+const Providers: React.FC<ProvidersProps> = props => {
+	const { theme, toggleTheme } = useAppStore();
 
 	const themeConfig: ThemeConfig = useMemo(
 		() => ({
@@ -24,9 +26,14 @@ const Providers: React.FC<ProvidersProps> = ({ children }) => {
 	);
 
 	return (
-		<ConfigProvider theme={themeConfig}>
-			<QueryClientProvider client={queryClient}>{children}</QueryClientProvider>
-		</ConfigProvider>
+		<ThemeProvider theme={themeConfig} themeMode={theme}>
+			<QueryClientProvider client={queryClient}>
+				<AntApp className="h-full">
+					{props.children}
+					<FloatButton icon={theme === "light" ? <MoonOutlined /> : <SunOutlined />} onClick={toggleTheme} />
+				</AntApp>
+			</QueryClientProvider>
+		</ThemeProvider>
 	);
 };
 

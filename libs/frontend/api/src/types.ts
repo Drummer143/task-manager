@@ -29,6 +29,13 @@ export interface UserCredential extends Timestamps {
 	emailVerificationToken?: string;
 }
 
+export interface EntityAccess extends Timestamps {
+	id: string;
+	role: UserRole;
+
+	user: User;
+}
+
 export interface Workspace extends Timestamps {
 	id: string;
 	name: string;
@@ -39,12 +46,7 @@ export interface Workspace extends Timestamps {
 	pages: Page[];
 }
 
-export interface WorkspaceAccess extends Timestamps {
-	id: string;
-	role: UserRole;
-
-	user: User;
-}
+export type WorkspaceAccess = EntityAccess
 
 export interface Page extends Timestamps {
 	id: string;
@@ -56,16 +58,12 @@ export interface Page extends Timestamps {
 
 	owner: User;
 	parentPage: Page;
-	childPages: Page[];
+	childPages?: Page[];
 	tasks: Task[];
 	workspace: Workspace;
 }
 
-export interface PageAccess extends Timestamps {
-	role: UserRole;
-
-	user: User;
-}
+export type PageAccess = EntityAccess
 
 export interface Task extends Timestamps {
 	id: string;
@@ -113,10 +111,19 @@ export interface Change {
 
 export type ChangeList<Keys extends string = string> = Partial<Record<Keys, Change>>;
 
+export type ShortUserInfo = Pick<User, "id" | "picture" | "username">;
+
 export interface VersionHistoryLog<Keys extends string = string> {
 	id: string;
-	user: Pick<User, "id" | "picture"> & { name: string };
+	author: ShortUserInfo;
 	version: number;
 	changes: ChangeList<Keys>;
+	createdAt: string;
+}
+
+export interface TaskChatMessage {
+	id: string;
+	author: ShortUserInfo;
+	text: string;
 	createdAt: string;
 }

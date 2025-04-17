@@ -2,17 +2,20 @@ import React, { useCallback } from "react";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getTask, updateTask } from "@task-manager/api";
-import { App } from "antd";
+import { App, Flex } from "antd";
 import dayjs from "dayjs";
 import { useNavigate, useParams, useSearchParams } from "react-router-dom";
 
-import { useAppStore } from "../../../../../app/store/app";
+import { useAuthStore } from "../../../../../app/store/auth";
+import TaskChat from "../TaskChat";
 import TaskForm from "../TaskForm";
 import { FormValues } from "../TaskForm/types";
 import TaskHistory from "../TaskHistory";
 
 const EditTaskForm: React.FC = () => {
+	// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 	const pageId = useParams<{ id: string }>().id!;
+
 	const taskId = useSearchParams()[0].get("taskId");
 
 	const message = App.useApp().message;
@@ -30,7 +33,7 @@ const EditTaskForm: React.FC = () => {
 			const result = await getTask({
 				pageId,
 				taskId: taskId!,
-				workspaceId: useAppStore.getState().workspaceId!,
+				workspaceId: useAuthStore.getState().user.workspace.id,
 				include: ["assignee"]
 			});
 
@@ -58,7 +61,7 @@ const EditTaskForm: React.FC = () => {
 			mutateAsync({
 				taskId: taskId!,
 				pageId,
-				workspaceId: useAppStore.getState().workspaceId!,
+				workspaceId: useAuthStore.getState().user.workspace.id,
 				body: {
 					...values,
 					dueDate: values.dueDate?.toISOString()
@@ -76,8 +79,13 @@ const EditTaskForm: React.FC = () => {
 			onCancel={handleClose}
 			onClose={handleClose}
 			open={!!taskId}
-			type="update"
-			extraHeader={<TaskHistory taskId={taskId!} pageId={pageId} />}
+			type="edit"
+			extraHeader={
+				<Flex gap={"var(--ant-margin-xxs)"}>
+					<TaskChat />
+					<TaskHistory taskId={taskId!} pageId={pageId} />
+				</Flex>
+			}
 		/>
 	);
 };

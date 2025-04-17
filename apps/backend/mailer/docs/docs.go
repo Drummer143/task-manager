@@ -32,16 +32,53 @@ const docTemplate = `{
                         "in": "body",
                         "required": true,
                         "schema": {
-                            "$ref": "#/definitions/router.SendEmailConfirmationRequest"
+                            "$ref": "#/definitions/router.emailConfirmationRequest"
                         }
                     }
                 ],
                 "responses": {
-                    "200": {
-                        "description": "Email confirmation sent",
+                    "204": {
+                        "description": "No Content"
+                    },
+                    "400": {
+                        "description": "Invalid request",
                         "schema": {
-                            "$ref": "#/definitions/router.SendEmailConfirmationResponse"
+                            "$ref": "#/definitions/errorHandlers.Error"
                         }
+                    },
+                    "500": {
+                        "description": "Internal server error if server fails",
+                        "schema": {
+                            "$ref": "#/definitions/errorHandlers.Error"
+                        }
+                    }
+                }
+            }
+        },
+        "/send-reset-password": {
+            "post": {
+                "description": "Send reset password mail",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "summary": "Send reset password mail",
+                "parameters": [
+                    {
+                        "description": "Send reset password object",
+                        "name": "body",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/router.resetPasswordRequest"
+                        }
+                    }
+                ],
+                "responses": {
+                    "204": {
+                        "description": "No Content"
                     },
                     "400": {
                         "description": "Invalid request",
@@ -78,7 +115,7 @@ const docTemplate = `{
                 }
             }
         },
-        "router.SendEmailConfirmationRequest": {
+        "router.emailConfirmationRequest": {
             "type": "object",
             "properties": {
                 "email": {
@@ -89,10 +126,13 @@ const docTemplate = `{
                 }
             }
         },
-        "router.SendEmailConfirmationResponse": {
+        "router.resetPasswordRequest": {
             "type": "object",
             "properties": {
-                "message": {
+                "email": {
+                    "type": "string"
+                },
+                "token": {
                     "type": "string"
                 }
             }

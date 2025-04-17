@@ -6,20 +6,25 @@ import { Outlet } from "react-router-dom";
 import * as s from "./styles";
 import UserMenu from "./UserMenu";
 
-import { useAppStore } from "../../../app/store/app";
+import { useAuthStore } from "../../../app/store/auth";
 import NavContent from "../NavContent";
+import WorkspaceDeletionBanner from "../WorkspaceDeletionBanner";
 
 const DesktopLayout: React.FC = () => {
 	const [collapsed, setCollapsed] = useState(false);
 
-	const workspaceId = useAppStore(state => state.workspaceId);
+	const { content, header } = s.useStyles().styles;
+
+	const workspaceId = useAuthStore(state => state.user.workspace.id);
 
 	return (
 		<Layout className="h-full">
-			<s.Header>
+			<Layout.Header className={header}>
 				header
 				<UserMenu />
-			</s.Header>
+			</Layout.Header>
+
+			<WorkspaceDeletionBanner />
 
 			<Layout className="h-full">
 				{workspaceId && (
@@ -32,9 +37,9 @@ const DesktopLayout: React.FC = () => {
 					</Layout.Sider>
 				)}
 
-				<s.Content>
+				<Layout.Content className={content}>
 					<Outlet />
-				</s.Content>
+				</Layout.Content>
 			</Layout>
 		</Layout>
 	);

@@ -9,5 +9,7 @@ export * from "./pages";
 export * from "./pageAccess";
 
 export * from "./tasks";
+export * from "./taskChat";
 
 export * from "./users";
+

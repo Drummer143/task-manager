@@ -8,6 +8,7 @@ import (
 
 func AddRoutes(group *gin.RouterGroup, validate *validator.Validate, postgres *gorm.DB) {
 	group.GET("", getProfile(postgres))
+	group.GET("/current-workspace", getCurrentWorkspace(postgres))
 
 	group.PATCH("", patchProfile(validate, postgres))
 	group.PATCH("/email", changeEmail(validate, postgres))

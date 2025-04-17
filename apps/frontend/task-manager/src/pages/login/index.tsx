@@ -5,7 +5,7 @@ import { login, parseApiError } from "@task-manager/api";
 import { Form, Input } from "antd";
 import { Link, useNavigate } from "react-router-dom";
 
-import { ResetPasswordLink } from "./styles";
+import { useStyles } from "./styles";
 
 import { useAuthStore } from "../../app/store/auth";
 import { withAuthPageCheck } from "../../shared/HOCs/withAuthPageCheck";
@@ -18,14 +18,16 @@ const rules = {
 };
 
 const Login: React.FC = () => {
-	const setSession = useAuthStore(state => state.setSession);
+	const { resetPasswordLink } = useStyles().styles;
+
+	const getSession = useAuthStore(state => state.getSession);
 
 	const navigate = useNavigate();
 
 	const { mutateAsync, error, reset, isPending } = useMutation({
 		mutationFn: login,
-		onSuccess: user => {
-			setSession(user);
+		onSuccess: () => {
+			getSession();
 
 			navigate("/profile", { replace: true });
 		}
@@ -56,7 +58,7 @@ const Login: React.FC = () => {
 				name="password"
 				label="Password"
 				rules={rules.password}
-				extra={<ResetPasswordLink to="/reset-password">Forgot password?</ResetPasswordLink>}
+				extra={<Link to="/reset-password" className={resetPasswordLink}>Forgot password?</Link>}
 			>
 				<Input.Password placeholder="********" />
 			</Form.Item>

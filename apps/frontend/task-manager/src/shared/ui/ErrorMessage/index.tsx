@@ -1,23 +1,27 @@
 import React, { memo } from "react";
 
 import { Form } from "antd";
-import styled from "styled-components";
+import { createStyles } from "antd-style";
 
 interface ErrorMessageProps {
 	error?: React.ReactNode;
 }
 
-const SErrorList = styled(Form.ErrorList)`
-	color: var(--ant-color-error);
-	text-align: center;
+const useStyles = createStyles(({ css }) => ({
+	errorList: css`
+		color: var(--ant-color-error);
+		text-align: center;
 
-	.-item-explain-error::first-letter {
-		text-transform: capitalize;
-	}
-`;
+		.-item-explain-error::first-letter {
+			text-transform: capitalize;
+		}
+	`
+}));
 
 const ErrorMessage: React.FC<ErrorMessageProps> = ({ error }) => {
-	return <SErrorList errors={[error]} />;
+	const { errorList } = useStyles().styles;
+
+	return <Form.ErrorList className={errorList} errors={[error]} />;
 };
 
 export default memo(ErrorMessage);

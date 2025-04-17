@@ -2,8 +2,10 @@ package main
 
 import (
 	"main/auth"
+	"main/cleanup"
 	"main/dbClient"
 	"main/router"
+	"main/socketManager"
 	"main/validation"
 
 	"github.com/joho/godotenv"
@@ -22,9 +24,7 @@ func main() {
 		panic(err)
 	}
 
-	err = dbClient.MigratePostgres()
-
-	if err != nil {
+	if err = dbClient.MigratePostgres(); err != nil {
 		panic(err)
 	}
 
@@ -36,7 +36,11 @@ func main() {
 
 	validate := validation.New()
 
-	r := router.New(auth, postgresDB, mongoDB, validate)
+	sockets := socketManager.NewSubscriptionManager()
+
+	cleanup.Setup(postgresDB)
+
+	r := router.New(auth, postgresDB, mongoDB, validate, sockets)
 
 	r.Run(":8080")
 }

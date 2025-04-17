@@ -1,3 +1,4 @@
+import { TaskStatus } from "@task-manager/api";
 import { FormInstance } from "antd";
 import { Dayjs } from "dayjs";
 
@@ -12,7 +13,7 @@ export interface FormValues {
 
 export interface TaskFormProps {
 	open: boolean;
-	type: "create" | "update";
+	type: "create" | "edit";
 
 	onClose: () => void;
 	onCancel: () => void;

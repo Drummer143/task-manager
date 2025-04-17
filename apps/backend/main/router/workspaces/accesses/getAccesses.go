@@ -3,7 +3,6 @@ package workspacesAccessesRouter
 import (
 	"main/dbClient"
 	"main/router/errorHandlers"
-	routerUtils "main/router/utils"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -27,18 +26,18 @@ func getWorkspaceAccesses(postgres *gorm.DB) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		workspaceId := uuid.MustParse(ctx.Param("workspace_id"))
 
-		userId, _ := routerUtils.GetUserIdFromSession(ctx)
+		// userId, _ := routerUtils.GetUserIdFromSession(ctx)
 
-		_, access, ok := routerUtils.CheckWorkspaceAccess(ctx, postgres, postgres, workspaceId, userId)
+		// _, access, ok := routerUtils.CheckWorkspaceAccess(ctx, postgres, postgres, workspaceId, userId)
 
-		if !ok {
-			return
-		}
+		// if !ok {
+		// 	return
+		// }
 
-		if access.Role != dbClient.UserRoleOwner && access.Role != dbClient.UserRoleAdmin {
-			errorHandlers.Forbidden(ctx, "no access to workspace")
-			return
-		}
+		// if access.Role != dbClient.UserRoleOwner && access.Role != dbClient.UserRoleAdmin {
+		// 	errorHandlers.Forbidden(ctx, "no access to workspace")
+		// 	return
+		// }
 
 		var workspaceAccess []dbClient.WorkspaceAccess
 

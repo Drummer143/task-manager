@@ -1,10 +1,12 @@
-import styled from "styled-components";
+import { createStyles } from "antd-style";
 
-export const ControlsWrapper = styled.div`
-	display: flex;
-	justify-content: center;
-	align-items: center;
-	gap: var(--ant-margin);
+export const useStyles = createStyles(({ css }) => ({
+	controlsWrapper: css`
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		gap: var(--ant-margin);
 
-	padding-top: var(--ant-padding-xs);
-`;
+		padding-top: var(--ant-padding-xs);
+	`
+}));

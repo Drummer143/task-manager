@@ -25,7 +25,9 @@ type changeTaskStatusBody struct {
 // @Tags			Tasks
 // @Accept			json
 // @Produce			json
-// @Param			id path int true "Task ID"
+// @Param			workspace_id path string true "Workspace ID"
+// @Param			page_id path int true "Page ID"
+// @Param			task_id path string true "Task ID"
 // @Param			status body changeTaskStatusBody true "Task status. Must be one of: not_done, in_progress, done"
 // @Success			200 {object} dbClient.Task
 // @Failure			400 {object} errorHandlers.Error
@@ -80,7 +82,7 @@ func changeStatus(postgres *gorm.DB, tasksVersionCollection *mongo.Collection, v
 		newChange := dbClient.EntityVersionDocument{
 			Changes:   map[string]dbClient.Change{"status": {From: task.Status, To: body.Status}},
 			Id:        task.ID,
-			Author:    dbClient.ShortUserInfo{Id: user.ID, Name: user.Username, Picture: user.Picture},
+			Author:    dbClient.ShortUserInfo{Id: user.ID, Username: user.Username, Picture: user.Picture},
 			CreatedAt: time.Now(),
 		}
 

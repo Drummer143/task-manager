@@ -13,7 +13,7 @@ const ConfirmEmail: React.FC = () => {
 
 	const navigate = useNavigate();
 
-	const [searchParams] = useSearchParams();
+	const token = useSearchParams()[0].get("token");
 
 	const { mutateAsync, isPending, error } = useMutation({
 		mutationFn: confirmEmail
@@ -21,7 +21,6 @@ const ConfirmEmail: React.FC = () => {
 
 	const redirectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-	const token = useMemo(() => searchParams.get("token"), [searchParams]);
 	const parsedError = useMemo(() => parseApiError(error, undefined, [400, 401]), [error]);
 
 	useEffect(() => {
@@ -29,7 +28,7 @@ const ConfirmEmail: React.FC = () => {
 			return;
 		}
 
-		mutateAsync({ token: token }).then(
+		mutateAsync({ token }).then(
 			() =>
 				(redirectTimeoutRef.current = setTimeout(() => {
 					navigate(user ? "/profile" : "/login", { replace: true });

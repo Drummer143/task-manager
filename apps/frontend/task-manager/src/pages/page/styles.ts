@@ -1,13 +1,15 @@
-import styled from "styled-components";
+import { createStyles } from "antd-style";
 
-export const PageContainer = styled.div`
-	height: 100%;
-	max-height: 100%;
+export const useStyles = createStyles(({ css }) => ({
+	container: css`
+		height: 100%;
+		max-height: 100%;
 
-	display: grid;
-	grid-template-rows: min-content 1fr;
+		display: grid;
+		grid-template-rows: min-content 1fr;
 
-	padding: var(--ant-padding);
+		padding: var(--ant-padding);
 
-	overflow: hidden;
-`;
+		overflow: hidden;
+	`
+}));

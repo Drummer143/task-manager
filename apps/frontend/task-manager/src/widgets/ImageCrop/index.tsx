@@ -3,7 +3,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import { Modal } from "antd";
 import Cropper, { Area } from "react-easy-crop";
 
-import { CropWrapper } from "./styles";
+import { useStyles } from "./styles";
 
 interface ImageCropProps {
 	onCropFinish: (croppedAreaPixels: Area) => void;
@@ -19,6 +19,8 @@ const ImageCrop: React.FC<ImageCropProps> = ({ image, isOpen, onCancel, onCropFi
 	const [crop, setCrop] = useState({ x: 0, y: 0 });
 	const [imageUrl, setImageUrl] = useState<string | undefined>(undefined);
 	const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | undefined>(undefined);
+
+	const { cropWrapper } = useStyles().styles;
 
 	const cropWrapperRef = useRef<HTMLDivElement | null>(null);
 
@@ -46,7 +48,7 @@ const ImageCrop: React.FC<ImageCropProps> = ({ image, isOpen, onCancel, onCropFi
 	return (
 		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 		<Modal open={isOpen} onCancel={handleClose} onOk={() => onCropFinish(croppedAreaPixels!)}>
-			<CropWrapper ref={cropWrapperRef}>
+			<div className={cropWrapper} ref={cropWrapperRef}>
 				<Cropper
 					crop={crop}
 					zoom={zoom}
@@ -56,7 +58,7 @@ const ImageCrop: React.FC<ImageCropProps> = ({ image, isOpen, onCancel, onCropFi
 					image={imageUrl}
 					onCropComplete={handleCropComplete}
 				/>
-			</CropWrapper>
+			</div>
 		</Modal>
 	);
 };

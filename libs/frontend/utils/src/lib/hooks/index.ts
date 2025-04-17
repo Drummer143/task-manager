@@ -1,5 +1,5 @@
 export * from "./useDisclosure";
-export * from "./useLocalStorage";
+export * from "./useStorage";
 export * from "./useWindowResize";
 export * from "./useDebouncedEffect";
-export * from "./useMessageOnErrorCallback";
+export * from "./useFunctionWithFeedback";

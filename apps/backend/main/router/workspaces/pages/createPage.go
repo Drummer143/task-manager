@@ -63,18 +63,18 @@ func createPage(postgres *gorm.DB, validate *validator.Validate) gin.HandlerFunc
 		userId, _ := routerUtils.GetUserIdFromSession(ctx)
 
 		if body.ParentId != nil {
-			parentPage, access, ok := routerUtils.CheckPageAccess(ctx, postgres, postgres, *body.ParentId, userId)
+			_, access, ok := routerUtils.CheckPageAccess(ctx, postgres, postgres, *body.ParentId, userId)
 
 			if !ok {
 				return
 			}
 
-			if access.Role == dbClient.UserRoleOwner || access.Role == dbClient.UserRoleAdmin {
+			if access.Role != dbClient.UserRoleOwner && access.Role != dbClient.UserRoleAdmin {
 				errorHandlers.Forbidden(ctx, "access to parent parentPage is forbidden")
 				return
 			}
 
-			if parentPage.Type == dbClient.PageTypeGroup {
+			if body.Type == dbClient.PageTypeGroup {
 				errorHandlers.BadRequest(ctx, "unable to create group page inside group page", nil)
 				return
 			}

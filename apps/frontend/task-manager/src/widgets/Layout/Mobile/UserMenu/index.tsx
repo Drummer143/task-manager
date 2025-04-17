@@ -1,22 +1,24 @@
 import React, { memo } from "react";
 
 import { useDisclosure } from "@task-manager/utils";
-import { Menu as AntMenu, Flex, Spin } from "antd";
-import styled from "styled-components";
+import { Flex, Menu, Spin } from "antd";
+import { createStyles } from "antd-style";
 
 import { useAuthStore } from "../../../../app/store/auth";
 import MobileDrawer from "../../../../widgets/MobileDrawer";
 import UserMenuInfo from "../../UserMenuInfo";
 import { useUserMenuItems } from "../../useUserMenuItems";
 
-export const Menu = styled(AntMenu)`
-	height: 100%;
+const useStyles = createStyles(({ css }) => ({
+	menu: css`
+		height: 100%;
 
-	padding: var(--ant-padding);
+		padding: var(--ant-padding);
 
-	border-inline: none !important;
-	background-color: transparent;
-`;
+		border-inline: none !important;
+		background-color: transparent;
+	`
+}));
 
 const UserMenu: React.FC = () => {
 	const { items } = useUserMenuItems();
@@ -24,6 +26,8 @@ const UserMenu: React.FC = () => {
 	const { loading, user } = useAuthStore();
 
 	const { open, onOpen, onClose } = useDisclosure();
+
+	const { menu } = useStyles().styles;
 
 	if (loading) {
 		return (
@@ -38,7 +42,7 @@ const UserMenu: React.FC = () => {
 			<UserMenuInfo mobile username={user?.username} picture={user?.picture} onClick={onOpen} />
 
 			<MobileDrawer open={open} onClose={onClose}>
-				<Menu mode="inline" items={items} />
+				<Menu className={menu} mode="inline" items={items} />
 			</MobileDrawer>
 		</div>
 	);

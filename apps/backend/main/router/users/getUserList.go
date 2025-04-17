@@ -18,7 +18,7 @@ import (
 // @Param				offset query int false "Default is 0"
 // @Param				exclude query string false "comma separated list of ids to exclude"
 // @Produce				json
-// @Success				200 {object} ResponseWithPagination[dbClient.User] "User list"
+// @Success				200 {object} routerUtils.ResponseWithPagination[dbClient.User] "User list"
 // @Failure				401 {object} errorHandlers.Error "Unauthorized if session is missing or invalid"
 // @Failure				500 {object} errorHandlers.Error
 // @Router				/users [get]
@@ -67,6 +67,10 @@ func getUserList(postgres *gorm.DB) gin.HandlerFunc {
 
 		if limit == 0 {
 			limit = int(total)
+		}
+
+		if users == nil {
+			users = []dbClient.User{}
 		}
 
 		c.JSON(200, routerUtils.ResponseWithPagination[dbClient.User]{

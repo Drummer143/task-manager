@@ -1,14 +1,14 @@
-import React, { useMemo } from "react";
+import React, { useCallback, useMemo } from "react";
 
 import { HistoryOutlined } from "@ant-design/icons";
 import { getTaskHistory, TaskStatus } from "@task-manager/api";
 import { useDisclosure } from "@task-manager/utils";
 import { Button, Drawer, Tag, Typography } from "antd";
 
-import { useAppStore } from "../../../../../app/store/app";
+import { useAuthStore } from "../../../../../app/store/auth";
 import { statusColors, taskStatusLocale } from "../../../../../shared/constants";
 import MDEditor from "../../../../../widgets/MDEditor";
-import VersionHistoryList, { VersionHistoryEntryRenders } from "../../../../../widgets/VersionHistoryList";
+import VersionHistoryList, { FetchLog, VersionHistoryEntryRenders } from "../../../../../widgets/VersionHistoryList";
 
 interface TaskHistoryProps {
 	taskId: string;
@@ -37,6 +37,11 @@ const TaskHistory: React.FC<TaskHistoryProps> = props => {
 
 	const fieldsOrder = useMemo<ChangeKeys[]>(() => ["title", "status", "assigneeId", "dueDate", "description"], []);
 
+	const fetchLog = useCallback<FetchLog<ChangeKeys>>(
+		query => getTaskHistory({ ...props, ...query, workspaceId: useAuthStore.getState().user.workspace.id }),
+		[props]
+	);
+
 	return (
 		<>
 			<Button icon={<HistoryOutlined />} type="text" onClick={onOpen} />
@@ -46,9 +51,7 @@ const TaskHistory: React.FC<TaskHistoryProps> = props => {
 					enabled={open}
 					changeOrder={fieldsOrder}
 					entryRenders={versionHistoryRenderers}
-					fetchLog={query =>
-						getTaskHistory({ ...props, workspaceId: useAppStore.getState().workspaceId!, ...query })
-					}
+					fetchLog={fetchLog}
 				/>
 			</Drawer>
 		</>

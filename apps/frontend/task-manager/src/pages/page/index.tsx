@@ -3,12 +3,12 @@ import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getPage } from "@task-manager/api";
 import { lazySuspense } from "@task-manager/utils";
-import { useNavigate, useParams } from "react-router-dom";
+import { Navigate, useNavigate, useParams } from "react-router-dom";
 
-import { PageContainer } from "./styles";
+import { useStyles } from "./styles";
 import PageHeader from "./widgets/PageHeader";
 
-import { useAppStore } from "../../app/store/app";
+import { useAuthStore } from "../../app/store/auth";
 import { withAuthPageCheck } from "../../shared/HOCs/withAuthPageCheck";
 import FullSizeLoader from "../../shared/ui/FullSizeLoader";
 
@@ -16,9 +16,12 @@ const BoardPage = lazySuspense(() => import("./BoardPage"), <FullSizeLoader />);
 const TextPage = lazySuspense(() => import("./TextPage"), <FullSizeLoader />);
 
 const Page: React.FC = () => {
+	const { container } = useStyles().styles;
+
+	// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 	const pageId = useParams<{ id: string }>().id!;
 
-	const workspaceId = useAppStore.getState().workspaceId!;
+	const workspaceId = useAuthStore.getState().user.workspace.id;
 
 	const navigate = useNavigate();
 
@@ -27,9 +30,9 @@ const Page: React.FC = () => {
 		enabled: !!workspaceId,
 		queryFn: () =>
 			getPage({
-				pageId: pageId,
+				pageId,
 				workspaceId,
-				include: ["childrenPages", "tasks"]
+				include: ["childPages", "tasks"]
 			}).catch(error => {
 				navigate("/profile", { replace: true });
 
@@ -41,8 +44,12 @@ const Page: React.FC = () => {
 		return <FullSizeLoader />;
 	}
 
+	if (!page) {
+		return <Navigate to="/profile" />;
+	}
+
 	return (
-		<PageContainer>
+		<div className={container}>
 			<PageHeader page={page} />
 
 			{page?.type === "board" ? (
@@ -52,7 +59,7 @@ const Page: React.FC = () => {
 			) : (
 				<div>Not implemented</div>
 			)}
-		</PageContainer>
+		</div>
 	);
 };
 

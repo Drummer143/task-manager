@@ -1,36 +1,35 @@
-import { Form as AntForm } from "antd";
-import styled from "styled-components";
+import { createStyles } from "antd-style";
 
-export const FormContainer = styled.div`
-	height: 100%;
+export const useStyles = createStyles(({ css, responsive }) => ({
+	formContainer: css`
+		height: 100%;
 
-	display: flex;
-	flex-direction: column;
-	justify-content: center;
-	align-items: center;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
 
-	@media screen and (max-width: 480px) {
-		padding: 0 0.5rem;
-	}
-`;
+		${responsive.xs} {
+			padding: 0 0.5rem;
+		}
+	`,
+	form: css`
+		width: 25%;
 
-export const Form = styled(AntForm)`
-	width: 25%;
+		${responsive.lg} {
+			width: 40%;
+		}
 
-	@media screen and (max-width: 1200px) {
-		width: 40%;
-	}
+		${responsive.sm} {
+			width: 80%;
+		}
 
-	@media screen and (max-width: 768px) {
-		width: 80%;
-	}
-
-	@media screen and (max-width: 480px) {
-		width: 100%;
-	}
-` as typeof AntForm;
-
-export const CenteredFormItem = styled(AntForm.Item)`
-	display: flex;
-	justify-content: center;
-`;
+		${responsive.xs} {
+			width: 100%;
+		}
+	`,
+	centeredFormItem: css`
+		display: flex;
+		justify-content: center;
+	`
+}));

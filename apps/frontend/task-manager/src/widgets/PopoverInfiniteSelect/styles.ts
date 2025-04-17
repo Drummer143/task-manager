@@ -1,14 +1,14 @@
-import styled, { css } from "styled-components";
+import { createStyles } from "antd-style";
 
-export const ItemWrapper = styled.div<{ selected: boolean }>`
-	transition: background var(--ant-motion-duration-slow) ease;
+export const useStyles = createStyles(({ css }, { selected }: { selected: boolean }) => ({
+	itemWrapper: css`
+		transition: background var(--ant-motion-duration-slow) ease;
 
-	padding: var(--ant-padding-xxs) var(--ant-padding-xs);
-	border-radius: var(--ant-border-radius);
-	cursor: pointer;
+		padding: var(--ant-padding-xxs) var(--ant-padding-xs);
+		border-radius: var(--ant-border-radius);
+		cursor: pointer;
 
-	${({ selected }) =>
-		selected
+		${selected
 			? css`
 					background-color: var(--ant-select-option-selected-bg);
 				`
@@ -17,4 +17,12 @@ export const ItemWrapper = styled.div<{ selected: boolean }>`
 						background-color: var(--ant-select-option-active-bg);
 					}
 				`}
-`;
+	`,
+	popoverOverlay: css`
+		.ant-popover-inner {
+			min-width: 15rem;
+
+			padding: var(--ant-padding-xxs) !important;
+		}
+	`
+}));

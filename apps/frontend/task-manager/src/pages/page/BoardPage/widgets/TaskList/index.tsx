@@ -2,13 +2,13 @@ import React, { memo, useCallback } from "react";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { changeStatus, Task, TaskStatus } from "@task-manager/api";
-import { App, theme, ThemeConfig } from "antd";
+import { App } from "antd";
 import { useNavigate, useParams } from "react-router-dom";
-import styled from "styled-components";
 
+import { useStyles } from "./styles";
 import { drawTaskDragImage } from "./utils";
 
-import { useAppStore } from "../../../../../app/store/app";
+import { useAuthStore } from "../../../../../app/store/auth";
 import { useTasksStore } from "../../../../../app/store/tasks";
 import { taskStatusLocale } from "../../../../../shared/constants";
 import TaskItem from "../TaskItem";
@@ -17,15 +17,9 @@ interface TaskListProps {
 	tasks?: Task[];
 }
 
-const TaskListWrapper = styled.div`
-	padding: 0 var(--ant-padding-xxs);
-
-	& > *:not(:last-child) {
-		margin-bottom: var(--ant-margin-xs);
-	}
-`;
-
 const TaskList: React.FC<TaskListProps> = ({ tasks }) => {
+	const { styles, theme } = useStyles();
+
 	const pageId = useParams<{ id: string }>().id!;
 
 	const message = App.useApp().message;
@@ -33,8 +27,6 @@ const TaskList: React.FC<TaskListProps> = ({ tasks }) => {
 	const navigate = useNavigate();
 
 	const queryClient = useQueryClient();
-
-	const token: ThemeConfig["token"] = theme.useToken().token;
 
 	const { mutateAsync: changeTaskStatus } = useMutation({
 		mutationFn: changeStatus,
@@ -57,7 +49,7 @@ const TaskList: React.FC<TaskListProps> = ({ tasks }) => {
 				return;
 			}
 
-			changeTaskStatus({ taskId, pageId, workspaceId: useAppStore.getState().workspaceId!, status });
+			changeTaskStatus({ taskId, pageId, workspaceId: useAuthStore.getState().user.workspace.id, status });
 		},
 		[changeTaskStatus, pageId]
 	);
@@ -83,9 +75,9 @@ const TaskList: React.FC<TaskListProps> = ({ tasks }) => {
 			useTasksStore.setState({ dragging: task.id });
 
 			const colors: Record<TaskStatus, string> = {
-				done: token.colorDone!,
-				in_progress: token.colorInProgress!,
-				not_done: token.colorNotDone!
+				done: theme.colorDone,
+				in_progress: theme.colorInProgress,
+				not_done: theme.colorNotDone
 			};
 
 			const canvas = drawTaskDragImage(task, colors[task.status]);
@@ -98,7 +90,7 @@ const TaskList: React.FC<TaskListProps> = ({ tasks }) => {
 
 			document.addEventListener("dragend", () => handleDragEnd(task.status), { once: true });
 		},
-		[handleDragEnd, setTransferData, token.colorDone, token.colorInProgress, token.colorNotDone]
+		[handleDragEnd, setTransferData, theme.colorDone, theme.colorInProgress, theme.colorNotDone]
 	);
 
 	if (!tasks?.length) {
@@ -106,7 +98,7 @@ const TaskList: React.FC<TaskListProps> = ({ tasks }) => {
 	}
 
 	return (
-		<TaskListWrapper>
+		<div className={styles.taskList}>
 			{tasks?.map(task => (
 				<TaskItem
 					onClick={() => handleOpenTask(task)}
@@ -115,7 +107,7 @@ const TaskList: React.FC<TaskListProps> = ({ tasks }) => {
 					onDragStart={handleDragStart}
 				/>
 			))}
-		</TaskListWrapper>
+		</div>
 	);
 };
 

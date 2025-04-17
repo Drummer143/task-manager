@@ -2,10 +2,9 @@ import React, { memo, useCallback, useEffect, useRef, useState } from "react";
 
 import { InfiniteData, QueryKey, useInfiniteQuery } from "@tanstack/react-query";
 import { PaginationQuery, ResponseWithPagination } from "@task-manager/api";
-import { cn } from "@task-manager/utils";
 import { List, ListProps, Spin } from "antd";
 
-import * as s from "./styles";
+import { useStyles } from "./styles";
 
 export interface ListWithInfiniteScrollProps<
 	ItemValue,
@@ -14,9 +13,10 @@ export interface ListWithInfiniteScrollProps<
 	queryKey: QueryKey;
 	enabled?: boolean;
 	visible?: boolean;
-	extraParams?: Record<string, string | number | boolean | string | undefined | null>;
-	renderItem: (item: ItemValue, index: number, array: ItemValue[]) => React.ReactNode;
+	extraParams?: Record<string, number | boolean | string | undefined | null>;
+
 	fetchItems: (query?: PaginationQuery) => Promise<Response>;
+	renderItem: (item: Response["data"][number], index: number, array: Response["data"]) => React.ReactNode;
 }
 
 const ListWithInfiniteScroll = <
@@ -35,7 +35,9 @@ const ListWithInfiniteScroll = <
 	const [items, setItems] = useState<ItemValue[]>([]);
 	const observerRef = useRef<HTMLDivElement | null>(null);
 
-	const { data, isFetching, isLoading, hasNextPage, fetchNextPage, promise } = useInfiniteQuery<
+	const { styles, cx } = useStyles();
+
+	const { data, isFetching, isLoading, hasNextPage, fetchNextPage } = useInfiniteQuery<
 		Response,
 		Error,
 		InfiniteData<Response, number>,
@@ -53,7 +55,7 @@ const ListWithInfiniteScroll = <
 		}
 	});
 
-	const requestMetaRef = useRef({ hasNextPage, isFetching, isLoading, promise, fetchNextPage });
+	const requestMetaRef = useRef({ hasNextPage, isFetching, isLoading, fetchNextPage });
 
 	useEffect(() => {
 		if (data.pages[0].data?.[0]) {
@@ -64,8 +66,8 @@ const ListWithInfiniteScroll = <
 	}, [data]);
 
 	useEffect(() => {
-		requestMetaRef.current = { hasNextPage, isFetching, isLoading, promise, fetchNextPage };
-	}, [fetchNextPage, hasNextPage, isFetching, isLoading, promise]);
+		requestMetaRef.current = { hasNextPage, isFetching, isLoading, fetchNextPage };
+	}, [fetchNextPage, hasNextPage, isFetching, isLoading]);
 
 	useEffect(() => {
 		if (!enabled) {
@@ -118,14 +120,14 @@ const ListWithInfiniteScroll = <
 			loading={isLoading}
 			dataSource={items}
 			renderItem={renderItem}
-			className={cn("css-var-r3 ant-select-css-var", className)}
+			className={cx("css-var-r1 ant-select-css-var", className)}
 			loadMore={
 				<>
 					{isFetching &&
 						(loadMore || (
-							<s.LoadingMoreWrapper>
+							<div className={cx(styles.loadingMoreWrapper)}>
 								<Spin />
-							</s.LoadingMoreWrapper>
+							</div>
 						))}
 
 					<div className="test-infinite-scroll" ref={observerRef}></div>

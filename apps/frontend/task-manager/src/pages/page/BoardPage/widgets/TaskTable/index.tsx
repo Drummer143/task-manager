@@ -1,6 +1,9 @@
 import React, { memo, useMemo } from "react";
 
-import { StyledFlex } from "./styles";
+import { Task, TaskStatus } from "@task-manager/api";
+import { Flex } from "antd";
+
+import { useStyles } from "./styles";
 
 import { statusArray } from "../../../../../shared/constants";
 import TaskColumn from "../TaskStatusGroup";
@@ -10,6 +13,8 @@ interface TaskTableProps {
 }
 
 const TaskTable: React.FC<TaskTableProps> = ({ tasks }) => {
+	const { container } = useStyles().styles;
+
 	const tasksByStatus = useMemo(
 		() =>
 			tasks?.reduce(
@@ -20,11 +25,11 @@ const TaskTable: React.FC<TaskTableProps> = ({ tasks }) => {
 	);
 
 	return (
-		<StyledFlex gap="1rem" align="flex-start">
+		<Flex className={container} gap="1rem" align="flex-start">
 			{statusArray.map(status => (
 				<TaskColumn key={status} status={status} tasks={tasksByStatus?.[status]} />
 			))}
-		</StyledFlex>
+		</Flex>
 	);
 };
 

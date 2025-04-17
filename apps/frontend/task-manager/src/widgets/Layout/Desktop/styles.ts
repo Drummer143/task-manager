@@ -1,20 +1,20 @@
-import { Layout } from "antd";
-import styled from "styled-components";
+import { createStyles } from "antd-style";
 
-export const Header = styled(Layout.Header)`
-	display: flex;
-	justify-content: space-between;
-	align-items: center;
+export const useStyles = createStyles(({ css }) => ({
+	header: css`
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
 
-	padding: 0 var(--ant-padding);
+		padding: 0 var(--ant-padding);
 
-	border-bottom: var(--ant-line-width) solid var(--ant-color-split);
-`;
+		border-bottom: var(--ant-line-width) solid var(--ant-color-split);
+	`,
+	content: css`
+		max-height: 100%;
 
-export const Content = styled(Layout.Content)`
-	max-height: 100%;
+		border-left: var(--ant-line-width) solid var(--ant-color-split);
 
-	border-left: var(--ant-line-width) solid var(--ant-color-split);
-
-	overflow: hidden;
-`;
+		overflow: hidden;
+	`
+}));

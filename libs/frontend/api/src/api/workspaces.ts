@@ -40,3 +40,18 @@ interface CreateWorkspaceArgs {
 
 export const createWorkspace = async (body: CreateWorkspaceArgs) =>
 	(await axiosInstance.post<Omit<Workspace, "owner" | "pages">>("/workspaces", body)).data;
+
+export const softDeleteWorkspace = async ({ workspaceId }: Ids) =>
+	(await axiosInstance.delete<void>(`/workspaces/${workspaceId}/soft-delete`)).data;
+
+export const cancelSoftDeleteWorkspace = async ({ workspaceId }: Ids) =>
+	(await axiosInstance.post<void>(`/workspaces/${workspaceId}/cancel-soft-delete`)).data;
+
+interface UpdateWorkspaceArgs extends Ids {
+	body: {
+		name?: string;
+	};
+}
+
+export const updateWorkspace = async ({ workspaceId, body }: UpdateWorkspaceArgs) =>
+	(await axiosInstance.put<Workspace>(`/workspaces/${workspaceId}`, body)).data;

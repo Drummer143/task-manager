@@ -1,6 +1,7 @@
 package authRouter
 
 import (
+	"fmt"
 	"main/auth"
 	"main/dbClient"
 	"main/router/errorHandlers"
@@ -49,11 +50,22 @@ func signUp(auth *auth.Auth, validate *validator.Validate, postgres *gorm.DB) gi
 			return
 		}
 
-		if err := postgres.Create(&dbClient.User{
+		tx := postgres.Begin()
+		defer func() {
+			if r := recover(); r != nil {
+				tx.Rollback()
+				errorHandlers.InternalServerError(ctx, "An unexpected error occurred")
+				return
+			}
+		}()
+
+		if err := tx.Create(&dbClient.User{
 			Email:     body.Email,
 			Username:  body.Username,
 			LastLogin: time.Now(),
 		}).Error; err != nil {
+			tx.Rollback()
+
 			if err.Error() == "ERROR: duplicate key value violates unique constraint \"users_email_key\" (SQLSTATE 23505)" {
 				errorHandlers.BadRequest(ctx, "user with this email already exists", nil)
 				return
@@ -63,13 +75,15 @@ func signUp(auth *auth.Auth, validate *validator.Validate, postgres *gorm.DB) gi
 			return
 		}
 
-		var user dbClient.User
-
-		postgres.First(&dbClient.User{}, "email = ?", body.Email)
-
 		passwordHash, _ := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.DefaultCost)
 
-		postgres.First(&user, "email = ?", body.Email)
+		var user dbClient.User
+
+		if err := tx.First(&user, "email = ?", body.Email).Error; err != nil {
+			tx.Rollback()
+			errorHandlers.InternalServerError(ctx, "failed to get user")
+			return
+		}
 
 		emailVerificationToken, _ := auth.GenerateJWT(user.Email, EMAIL_VERIFICATION_TOKEN_LIFETIME)
 
@@ -78,10 +92,54 @@ func signUp(auth *auth.Auth, validate *validator.Validate, postgres *gorm.DB) gi
 			PasswordHash:           string(passwordHash),
 			EmailVerificationToken: &emailVerificationToken,
 		}).Error; err != nil {
-			errorHandlers.InternalServerError(ctx, "failed to create user credentials")
+			errorHandlers.InternalServerError(ctx, "failed to create user")
 
-			postgres.Delete(&user)
+			tx.Delete(&user)
+			tx.Rollback()
 
+			return
+		}
+
+		userWorkspace := dbClient.Workspace{
+			OwnerID: user.ID,
+			Name: fmt.Sprintf(
+				"%s's workspace",
+				user.Username,
+			),
+		}
+
+		if err := tx.Create(&userWorkspace).Error; err != nil {
+			tx.Rollback()
+			errorHandlers.InternalServerError(ctx, "failed to create user")
+			return
+		}
+
+		userWorkspaceAccess := dbClient.WorkspaceAccess{
+			WorkspaceID: userWorkspace.ID,
+			UserID:      user.ID,
+			Role:        dbClient.UserRoleOwner,
+		}
+
+		if err := tx.Create(&userWorkspaceAccess).Error; err != nil {
+			tx.Rollback()
+			errorHandlers.InternalServerError(ctx, "failed to create user")
+			return
+		}
+
+		userMeta := dbClient.UserMeta{
+			UserID:            user.ID,
+			SelectedWorkspace: &userWorkspace.ID,
+		}
+
+		if err := tx.Create(&userMeta).Error; err != nil {
+			tx.Rollback()
+			errorHandlers.InternalServerError(ctx, "failed to create user")
+			return
+		}
+
+		if err := tx.Commit().Error; err != nil {
+			tx.Rollback()
+			errorHandlers.InternalServerError(ctx, "failed to create user")
 			return
 		}
 
@@ -91,6 +149,7 @@ func signUp(auth *auth.Auth, validate *validator.Validate, postgres *gorm.DB) gi
 
 		session.Set("token", token)
 		session.Set("id", user.ID)
+		session.Set("selected_workspace", userWorkspace.ID)
 		session.Save()
 
 		url := os.Getenv("MAILER_URL") + "/send-email-confirmation"

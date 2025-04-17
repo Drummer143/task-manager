@@ -3,10 +3,8 @@ import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from "
 import { InfiniteData, QueryKey, useInfiniteQuery } from "@tanstack/react-query";
 import { PaginationQuery, ResponseWithPagination } from "@task-manager/api";
 import { useDebouncedEffect } from "@task-manager/utils";
-import { Select, Spin, Tooltip } from "antd";
+import { GetRef, Select, Spin, Tooltip } from "antd";
 import { DefaultOptionType, SelectProps } from "antd/es/select";
-import { BaseSelectRef } from "rc-select";
-import { DisplayValueType } from "rc-select/lib/interface";
 
 interface SelectWithInfiniteScrollProps<
 	ItemType,
@@ -23,7 +21,18 @@ interface SelectWithInfiniteScrollProps<
 	filterQueryName?: string;
 	extraQueryParams?: ExtraQuery;
 	/** if equals to "withTooltip" then tag will open tooltip on hover */
-	maxTagPlaceholder?: "withTooltip" | React.ReactNode | ((omittedValues: DisplayValueType[]) => React.ReactNode);
+	maxTagPlaceholder?:
+		| "withTooltip"
+		| React.ReactNode
+		| ((
+				omittedValues: {
+					key?: React.Key;
+					value?: string | number;
+					label?: React.ReactNode;
+					title?: React.ReactNode;
+					disabled?: boolean;
+				}[]
+		  ) => React.ReactNode);
 }
 
 const SelectWithInfiniteScroll = <
@@ -46,14 +55,15 @@ const SelectWithInfiniteScroll = <
 	const [debouncedSearchText, setDebouncedSearchText] = useState("");
 
 	const extraParams = useMemo<ExtraQuery>(
-		() => ({
-			...extraQueryParams,
-			...(filterQueryName ? { [filterQueryName]: debouncedSearchText } : {})
-		}) as ExtraQuery,
+		() =>
+			({
+				...extraQueryParams,
+				...(filterQueryName ? { [filterQueryName]: debouncedSearchText } : {})
+			}) as ExtraQuery,
 		[debouncedSearchText, extraQueryParams, filterQueryName]
 	);
 
-	const selectRef = useRef<BaseSelectRef | null>(null);
+	const selectRef = useRef<GetRef<typeof Select> | null>(null);
 
 	const { data, isFetching, isLoading, hasNextPage, fetchNextPage } = useInfiniteQuery<
 		Response,

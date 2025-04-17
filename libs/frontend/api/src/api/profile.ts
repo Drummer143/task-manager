@@ -2,9 +2,22 @@ import { removeEmptyFields } from "@task-manager/utils";
 
 import { axiosInstance } from "./base";
 
-import { User } from "../types";
+import { User, Workspace } from "../types";
 
-export const getProfile = async () => (await axiosInstance.get<User>("/profile")).data;
+type GetProfileIncludes = "workspace";
+
+type ResponseWithIncludeFilter<T extends GetProfileIncludes | undefined = undefined> = Omit<
+	User & { workspace: Workspace },
+	Exclude<GetProfileIncludes, T>
+>;
+
+export const getProfile = async <T extends GetProfileIncludes | undefined = undefined>({
+	includes
+}: {
+	includes?: T[];
+}) =>
+	(await axiosInstance.get<ResponseWithIncludeFilter<T>>("/profile", { params: { includes: includes?.toString() } }))
+		.data;
 
 export const updateProfile = async (data: { username: string }) =>
 	(await axiosInstance.patch<User>("/profile", removeEmptyFields(data))).data;

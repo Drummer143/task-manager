@@ -16,6 +16,8 @@ type groupedByStatusTasks = map[taskStatus][]dbClient.Task
 // @Description		Get a list of tasks created by user with the given ID. If no ID is provided, the ID of the currently logged in user is used
 // @Tags			Tasks
 // @Produce			json
+// @Param			workspace_id path string true "Workspace ID"
+// @Param			page_id path int true "Page ID"
 // @Param			owner_id query string false "ID of the user who created the tasks"
 // @Success			200 {object} groupedByStatusTasks
 // @Failure			401 {object} errorHandlers.Error "Unauthorized if session is missing or invalid"

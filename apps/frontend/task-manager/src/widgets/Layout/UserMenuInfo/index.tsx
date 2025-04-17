@@ -1,7 +1,7 @@
 import React, { memo } from "react";
 
 import { Avatar } from "antd";
-import styled, { css } from "styled-components";
+import { createStyles } from "antd-style";
 
 interface UserMenuInfoProps {
 	mobile?: boolean;
@@ -11,36 +11,41 @@ interface UserMenuInfoProps {
 	onClick?: React.MouseEventHandler<HTMLDivElement>;
 }
 
-export const Wrapper = styled.div<{ mobile?: boolean }>`
-	height: fit-content;
+export const useStyles = createStyles(({ css }, { mobile }: { mobile?: boolean }) => ({
+	wrapper: css`
+		height: fit-content;
 
-	padding: 0.5rem 0;
+		padding: var(--ant-padding-xs) 0;
 
-	display: flex;
-	gap: 0.75rem;
-	align-items: center;
+		display: flex;
+		gap: var(--ant-margin-sm);
+		align-items: center;
 
-	cursor: pointer;
+		cursor: pointer;
 
-	${({ mobile }) =>
-		mobile &&
+		${mobile &&
 		css`
 			width: fit-content;
 
 			margin: 0 auto;
 		`}
 
-	p {
-		margin: 0;
-	}
-`;
+		p {
+			margin: 0;
+		}
+	`
+}));
 
-const UserMenuInfo: React.FC<UserMenuInfoProps> = ({ username, picture, mobile, onClick }) => (
-	<Wrapper mobile={mobile} onClick={onClick}>
-		<p>{username}</p>
+const UserMenuInfo: React.FC<UserMenuInfoProps> = ({ username, picture, mobile, onClick }) => {
+	const { wrapper } = useStyles({ mobile }).styles;
 
-		<Avatar src={picture || "avatar-placeholder-32.jpg"} />
-	</Wrapper>
-);
+	return (
+		<div className={wrapper} onClick={onClick}>
+			<p>{username}</p>
+
+			<Avatar src={picture || "avatar-placeholder-32.jpg"} />
+		</div>
+	);
+};
 
 export default memo(UserMenuInfo);

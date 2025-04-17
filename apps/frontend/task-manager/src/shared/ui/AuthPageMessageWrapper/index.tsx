@@ -1,17 +1,28 @@
-import { Typography } from "antd";
-import styled from "styled-components";
+import { GetProps, Typography } from "antd";
+import { createStyles } from "antd-style";
 
-const AuthPageMessageWrapper = styled(Typography)`
-	height: 100%;
+const useStyles = createStyles(({ css }) => ({
+	wrapper: css`
+		height: 100%;
 
-	padding: 0 1rem;
+		padding: 0 var(--ant-padding);
 
-	display: flex;
-	flex-direction: column;
-	justify-content: center;
-	align-items: center;
+		display: flex;
+		flex-direction: column;
+		justify-content: center;
+		align-items: center;
 
-	text-align: center;
-`;
+		text-align: center;
+	`
+}));
+
+const AuthPageMessageWrapper = (props: GetProps<typeof Typography>) => {
+	const {
+		styles: { wrapper },
+		cx
+	} = useStyles();
+
+	return <Typography {...props} className={cx(wrapper, props.className)} />;
+};
 
 export default AuthPageMessageWrapper;

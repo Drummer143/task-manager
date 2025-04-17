@@ -86,6 +86,21 @@ func login(auth *auth.Auth, validate *validator.Validate, postgres *gorm.DB) gin
 
 		session := sessions.Default(ctx)
 
+		selectedWorkspaceId := session.Get("selected_workspace")
+
+		if selectedWorkspaceId != nil {
+			var userMeta dbClient.UserMeta
+
+			if err := postgres.Where("user_id = ?", user.ID).First(&userMeta).Error; err != nil {
+				errorHandlers.InternalServerError(ctx, "failed to get user meta")
+				return
+			}
+
+			if userMeta.SelectedWorkspace != nil {
+				session.Set("selected_workspace", userMeta.SelectedWorkspace)
+			}
+		}
+
 		session.Set("id", user.ID)
 		session.Set("token", token)
 

@@ -88,7 +88,7 @@ const docTemplate = `{
         "router.uploadResponse": {
             "type": "object",
             "properties": {
-                "path": {
+                "link": {
                     "type": "string"
                 }
             }
