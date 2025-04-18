@@ -1,12 +1,13 @@
 import { lazySuspense } from "@task-manager/utils";
 import { createBrowserRouter, Navigate } from "react-router-dom";
 
+import Login from "../pages/login";
+import LoginCallback from "../pages/loginCallback";
 import FullSizeLoader from "../shared/ui/FullSizeLoader";
 import AuthLayout from "../widgets/AuthLayout";
 import Layout from "../widgets/Layout";
 
 const Profile = lazySuspense(() => import("../pages/profile"), <FullSizeLoader />);
-const Login = lazySuspense(() => import("../pages/login"), <FullSizeLoader />);
 const SignUp = lazySuspense(() => import("../pages/signUp"), <FullSizeLoader />);
 const ConfirmEmail = lazySuspense(() => import("../pages/confirmEmail"), <FullSizeLoader />);
 const ResetPassword = lazySuspense(() => import("../pages/resetPassword"), <FullSizeLoader />);
@@ -21,13 +22,18 @@ export default createBrowserRouter([
 	},
 
 	{
+		path: "/login",
+		Component: Login
+	},
+	{
+		path: "/callback",
+		Component: LoginCallback
+	},
+
+	{
 		path: "/",
 		Component: AuthLayout,
 		children: [
-			{
-				path: "/login",
-				Component: Login
-			},
 			{
 				path: "/sign-up",
 				Component: SignUp

@@ -3,6 +3,7 @@ import { nxCopyAssetsPlugin } from "@nx/vite/plugins/nx-copy-assets.plugin";
 import { nxViteTsPaths } from "@nx/vite/plugins/nx-tsconfig-paths.plugin";
 import react from "@vitejs/plugin-react";
 // import { resolve } from "node:path";
+import fs from "node:fs";
 import { defineConfig } from "vite";
 
 export default defineConfig(() => ({
@@ -10,7 +11,11 @@ export default defineConfig(() => ({
   cacheDir: "../../../node_modules/.vite/apps/task-manager",
   server: {
     port: 1346,
-    host: "localhost"
+    host: "localhost",
+    https: {
+      cert: fs.readFileSync("localhost.pem"),
+      key: fs.readFileSync("localhost-key.pem")
+    }
   },
   preview: {
     port: 2346,

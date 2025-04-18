@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { useEffect, useMemo } from "react";
 
 import { useMutation } from "@tanstack/react-query";
 import { login, parseApiError } from "@task-manager/api";
@@ -7,8 +7,10 @@ import { Link, useNavigate } from "react-router-dom";
 
 import { useStyles } from "./styles";
 
+import { userManager } from "../../app/auth";
 import { useAuthStore } from "../../app/store/auth";
 import { withAuthPageCheck } from "../../shared/HOCs/withAuthPageCheck";
+import FullSizeLoader from "../../shared/ui/FullSizeLoader";
 import { composeRules, email, required } from "../../shared/validation";
 import AuthForm from "../../widgets/AuthForm";
 
@@ -18,51 +20,56 @@ const rules = {
 };
 
 const Login: React.FC = () => {
-	const { resetPasswordLink } = useStyles().styles;
+	// const { resetPasswordLink } = useStyles().styles;
 
-	const getSession = useAuthStore(state => state.getSession);
+	// const getSession = useAuthStore(state => state.getSession);
 
-	const navigate = useNavigate();
+	// const navigate = useNavigate();
 
-	const { mutateAsync, error, reset, isPending } = useMutation({
-		mutationFn: login,
-		onSuccess: () => {
-			getSession();
+	// const { mutateAsync, error, reset, isPending } = useMutation({
+	// 	mutationFn: login,
+	// 	onSuccess: () => {
+	// 		getSession();
 
-			navigate("/profile", { replace: true });
-		}
-	});
+	// 		navigate("/profile", { replace: true });
+	// 	}
+	// });
 
-	const parsedError = useMemo(() => parseApiError(error, undefined, [400]), [error]);
+	// const parsedError = useMemo(() => parseApiError(error, undefined, [400]), [error]);
+
+	useEffect(() => {
+		userManager.signinRedirect();
+	}, []);
 
 	return (
-		<AuthForm
-			onFinish={mutateAsync}
-			onValuesChange={reset}
-			submitText="Login"
-			headingText="Login"
-			error={parsedError}
-			submitLoading={isPending}
-			bottomLink={
-				<>
-					Don&apos;t have an account?
-					<Link to="/sign-up"> Sign up</Link>
-				</>
-			}
-		>
-			<Form.Item name="email" label="Email" rules={rules.email}>
-				<Input placeholder="email@example.com" />
-			</Form.Item>
+		<FullSizeLoader />
+		// <AuthForm
+		// 	onFinish={mutateAsync}
+		// 	onValuesChange={reset}
+		// 	submitText="Login"
+		// 	headingText="Login"
+		// 	error={parsedError}
+		// 	submitLoading={isPending}
+		// 	bottomLink={
+		// 		<>
+		// 			Don&apos;t have an account?
+		// 			<Link to="/sign-up"> Sign up</Link>
+		// 		</>
+		// 	}
+		// >
+		// 	<Form.Item name="email" label="Email" rules={rules.email}>
+		// 		<Input placeholder="email@example.com" />
+		// 	</Form.Item>
 
-			<Form.Item
-				name="password"
-				label="Password"
-				rules={rules.password}
-				extra={<Link to="/reset-password" className={resetPasswordLink}>Forgot password?</Link>}
-			>
-				<Input.Password placeholder="********" />
-			</Form.Item>
-		</AuthForm>
+		// 	<Form.Item
+		// 		name="password"
+		// 		label="Password"
+		// 		rules={rules.password}
+		// 		extra={<Link to="/reset-password" className={resetPasswordLink}>Forgot password?</Link>}
+		// 	>
+		// 		<Input.Password placeholder="********" />
+		// 	</Form.Item>
+		// </AuthForm>
 	);
 };
 
