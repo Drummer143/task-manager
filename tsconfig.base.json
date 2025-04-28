@@ -16,8 +16,13 @@
 		"baseUrl": ".",
 		"paths": {
 			"@task-manager/ant-config": ["libs/frontend/ant-config/src/index.ts"],
+			"@task-manager/antd-vatidation": ["libs/frontend/antd-vatidation/src/index.ts"],
 			"@task-manager/api": ["libs/frontend/api/src/index.ts"],
-			"@task-manager/utils": ["libs/frontend/utils/src/index.ts"]
+			"@task-manager/utils": ["libs/frontend/utils/src/index.ts"],
+			"@task-manager/utils/*": ["libs/frontend/utils/src/lib/*"],
+			"@task-manager/zitadel-api/*": ["libs/frontend/zitadel-api/src/*"],
+			"@task-manager/zitadel-client": ["libs/frontend/zitadel-client/src/index.ts"],
+			"@task-manager/zitadel-client/*": ["libs/frontend/zitadel-client/src/lib/*"]
 		}
 	},
 	"exclude": ["node_modules", "tmp"]

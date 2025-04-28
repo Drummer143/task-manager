@@ -1,13 +1,16 @@
 {
-  "name": "@task-manager/utils",
-  "version": "0.0.1",
-  "private": true,
-  "type": "module",
-  "main": "./index.js",
-  "types": "./index.d.ts",
-  "dependencies": {
-    "antd": "*",
-    "react": "*",
-    "use-debounce": "*"
-  }
+	"name": "@task-manager/utils",
+	"version": "0.0.1",
+	"private": true,
+	"type": "module",
+  "files": [
+    "index.js",
+    "index.d.ts",
+    "src/lib/**"
+  ],
+	"dependencies": {
+		"antd": "*",
+		"react": "*",
+		"use-debounce": "*"
+	}
 }

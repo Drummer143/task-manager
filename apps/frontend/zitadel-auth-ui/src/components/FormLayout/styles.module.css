@@ -1,0 +1,31 @@
+.screen {
+	width: 100%;
+	height: 100%;
+
+	padding: var(--ant-padding-md);
+
+	display: flex;
+	justify-content: center;
+	align-items: center;
+}
+
+.header {
+	margin-bottom: var(--ant-padding-md);
+
+	text-align: center;
+}
+
+.form-wrapper {
+	max-width: 400px;
+
+	width: 100%;
+
+	margin: 0 auto;
+}
+
+.error-list {
+	margin-bottom: var(--ant-padding-md);
+
+	text-align: center;
+	color: var(--ant-color-error);
+}

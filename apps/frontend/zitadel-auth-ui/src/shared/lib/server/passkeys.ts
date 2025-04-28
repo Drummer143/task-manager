@@ -1,0 +1,211 @@
+"use server";
+
+import { Checks } from "@task-manager/zitadel-api/zitadel/session/v2/session_service_pb";
+import {
+	RegisterPasskeyResponse,
+	VerifyPasskeyRegistrationRequestSchema
+} from "@task-manager/zitadel-api/zitadel/user/v2/user_service_pb";
+import { create, Duration } from "@task-manager/zitadel-client";
+import { headers } from "next/headers";
+import { userAgent } from "next/server";
+
+import { setSessionAndUpdateCookie } from "./cookie";
+
+import { getNextUrl } from "../client";
+import { getMostRecentSessionCookie, getSessionCookieById, getSessionCookieByLoginName } from "../cookies";
+import { getServiceUrlFromHeaders } from "../service";
+import { checkEmailVerification } from "../verify-helper";
+import {
+	createPasskeyRegistrationLink,
+	getLoginSettings,
+	getSession,
+	getUserByID,
+	registerPasskey,
+	verifyPasskeyRegistration as zitadelVerifyPasskeyRegistration
+} from "../zitadel";
+
+type VerifyPasskeyCommand = {
+	passkeyId: string;
+	passkeyName?: string;
+	publicKeyCredential: any;
+	sessionId: string;
+};
+
+type RegisterPasskeyCommand = {
+	sessionId: string;
+};
+
+export async function registerPasskeyLink(command: RegisterPasskeyCommand): Promise<RegisterPasskeyResponse> {
+	const { sessionId } = command;
+
+	const _headers = await headers();
+	const { serviceUrl } = getServiceUrlFromHeaders(_headers);
+	const host = _headers.get("host");
+
+	if (!host) {
+		throw new Error("Could not get domain");
+	}
+
+	const sessionCookie = await getSessionCookieById({ sessionId });
+	const session = await getSession({
+		serviceUrl,
+		sessionId: sessionCookie.id,
+		sessionToken: sessionCookie.token
+	});
+
+	const [hostname] = host.split(":");
+
+	if (!hostname) {
+		throw new Error("Could not get hostname");
+	}
+
+	const userId = session?.session?.factors?.user?.id;
+
+	if (!userId) {
+		throw new Error("Could not get session");
+	}
+	// TODO: add org context
+
+	// use session token to add the passkey
+	const registerLink = await createPasskeyRegistrationLink({
+		serviceUrl,
+		userId
+	});
+
+	if (!registerLink.code) {
+		throw new Error("Missing code in response");
+	}
+
+	return registerPasskey({
+		serviceUrl,
+		userId,
+		code: registerLink.code,
+		domain: hostname
+	});
+}
+
+export async function verifyPasskeyRegistration(command: VerifyPasskeyCommand) {
+	const _headers = await headers();
+	const { serviceUrl } = getServiceUrlFromHeaders(_headers);
+
+	// if no name is provided, try to generate one from the user agent
+	let passkeyName = command.passkeyName;
+
+	if (!passkeyName) {
+		const headersList = await headers();
+		const userAgentStructure = { headers: headersList };
+		const { browser, device, os } = userAgent(userAgentStructure);
+
+		passkeyName = `${device.vendor ?? ""} ${device.model ?? ""}${
+			device.vendor || device.model ? ", " : ""
+		}${os.name}${os.name ? ", " : ""}${browser.name}`;
+	}
+
+	const sessionCookie = await getSessionCookieById({
+		sessionId: command.sessionId
+	});
+	const session = await getSession({
+		serviceUrl,
+		sessionId: sessionCookie.id,
+		sessionToken: sessionCookie.token
+	});
+	const userId = session?.session?.factors?.user?.id;
+
+	if (!userId) {
+		throw new Error("Could not get session");
+	}
+
+	return zitadelVerifyPasskeyRegistration({
+		serviceUrl,
+		request: create(VerifyPasskeyRegistrationRequestSchema, {
+			passkeyId: command.passkeyId,
+			publicKeyCredential: command.publicKeyCredential,
+			passkeyName,
+			userId
+		})
+	});
+}
+
+type SendPasskeyCommand = {
+	loginName?: string;
+	sessionId?: string;
+	organization?: string;
+	checks?: Checks;
+	requestId?: string;
+	lifetime?: Duration;
+};
+
+export async function sendPasskey(command: SendPasskeyCommand) {
+	const { loginName, sessionId, organization, checks, requestId } = command;
+	const recentSession = sessionId
+		? await getSessionCookieById({ sessionId })
+		: loginName
+			? await getSessionCookieByLoginName({ loginName, organization })
+			: await getMostRecentSessionCookie();
+
+	if (!recentSession) {
+		return {
+			error: "Could not find session"
+		};
+	}
+
+	const _headers = await headers();
+	const { serviceUrl } = getServiceUrlFromHeaders(_headers);
+
+	const loginSettings = await getLoginSettings({
+		serviceUrl,
+		organization
+	});
+
+	const lifetime = checks?.webAuthN
+		? loginSettings?.multiFactorCheckLifetime // TODO different lifetime for webauthn u2f/passkey
+		: checks?.otpEmail || checks?.otpSms
+			? loginSettings?.secondFactorCheckLifetime
+			: undefined;
+
+	const session = await setSessionAndUpdateCookie(recentSession, checks, undefined, requestId, lifetime);
+
+	if (!session || !session?.factors?.user?.id) {
+		return { error: "Could not update session" };
+	}
+
+	const userResponse = await getUserByID({
+		serviceUrl,
+		userId: session?.factors?.user?.id
+	});
+
+	if (!userResponse.user) {
+		return { error: "User not found in the system" };
+	}
+
+	const humanUser = userResponse.user.type.case === "human" ? userResponse.user.type.value : undefined;
+
+	const emailVerificationCheck = checkEmailVerification(session, humanUser, organization, requestId);
+
+	if (emailVerificationCheck?.redirect) {
+		return emailVerificationCheck;
+	}
+
+	const url =
+		requestId && session.id
+			? await getNextUrl(
+					{
+						sessionId: session.id,
+						requestId: requestId,
+						organization: organization
+					},
+					loginSettings?.defaultRedirectUri
+				)
+			: session?.factors?.user?.loginName
+				? await getNextUrl(
+						{
+							loginName: session.factors.user.loginName,
+							organization: organization
+						},
+						loginSettings?.defaultRedirectUri
+					)
+				: null;
+
+	return { redirect: url };
+}
+

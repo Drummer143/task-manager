@@ -1,0 +1,18 @@
+.wrapper {
+    width: 100%;
+
+    padding: 1px 7px 1px 1px;
+
+    border: 1px solid var(--ant-color-border);
+    border-radius: 999px;
+}
+
+.display-name {
+    flex: 1;
+}
+
+.link {
+    display: flex;
+
+    font-size: var(--ant-font-size-lg);
+}

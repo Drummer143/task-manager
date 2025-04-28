@@ -1,13 +1,13 @@
 import React, { useMemo } from "react";
 
 import { useMutation } from "@tanstack/react-query";
+import { composeRules, email, required } from "@task-manager/antd-vatidation";
 import { parseApiError, resetPassword } from "@task-manager/api";
 import { App, Form, Input, Typography } from "antd";
 import { Link } from "react-router-dom";
 
 import { withAuthPageCheck } from "../../shared/HOCs/withAuthPageCheck";
 import AuthPageMessageWrapper from "../../shared/ui/AuthPageMessageWrapper";
-import { composeRules, email, required } from "../../shared/validation";
 import AuthForm from "../../widgets/AuthForm";
 
 const emailRule = composeRules(required(), email());

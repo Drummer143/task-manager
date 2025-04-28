@@ -1,0 +1,215 @@
+import { Session } from "@task-manager/zitadel-api/zitadel/session/v2/session_pb";
+import { LoginSettings } from "@task-manager/zitadel-api/zitadel/settings/v2/login_settings_pb";
+import { PasswordExpirySettings } from "@task-manager/zitadel-api/zitadel/settings/v2/password_settings_pb";
+import { HumanUser } from "@task-manager/zitadel-api/zitadel/user/v2/user_pb";
+import { AuthenticationMethodType } from "@task-manager/zitadel-api/zitadel/user/v2/user_service_pb";
+import { timestampDate } from "@task-manager/zitadel-client";
+import dayjs from "dayjs";
+
+import { getUserByID } from "./zitadel";
+
+export function checkPasswordChangeRequired(
+	expirySettings: PasswordExpirySettings | undefined,
+	session: Session,
+	humanUser: HumanUser | undefined,
+	organization?: string,
+	requestId?: string
+) {
+	let isOutdated = false;
+
+	if (expirySettings?.maxAgeDays && humanUser?.passwordChanged) {
+		const maxAgeDays = Number(expirySettings.maxAgeDays); // Convert bigint to number
+		const passwordChangedDate = dayjs(timestampDate(humanUser.passwordChanged));
+		const outdatedPassword = passwordChangedDate.add(maxAgeDays, "days");
+
+		isOutdated = dayjs().isAfter(outdatedPassword);
+	}
+
+	if (humanUser?.passwordChangeRequired || isOutdated) {
+		const params = new URLSearchParams({
+			loginName: session.factors?.user?.loginName as string
+		});
+
+		if (organization || session.factors?.user?.organizationId) {
+			params.append("organization", session.factors?.user?.organizationId as string);
+		}
+
+		if (requestId) {
+			params.append("requestId", requestId);
+		}
+
+		return { redirect: "/password/change?" + params };
+	}
+}
+
+export function checkInvite(session: Session, humanUser?: HumanUser, organization?: string, requestId?: string) {
+	if (!humanUser?.email?.isVerified) {
+		const paramsVerify = new URLSearchParams({
+			loginName: session.factors?.user?.loginName as string,
+			userId: session.factors?.user?.id as string, // verify needs user id
+			invite: "true" // TODO: check - set this to true as we dont expect old email verification method here
+		});
+
+		if (organization || session.factors?.user?.organizationId) {
+			paramsVerify.append("organization", organization ?? (session.factors?.user?.organizationId as string));
+		}
+
+		if (requestId) {
+			paramsVerify.append("requestId", requestId);
+		}
+
+		return { redirect: "/verify?" + paramsVerify };
+	}
+}
+
+export function checkEmailVerification(
+	session: Session,
+	humanUser?: HumanUser,
+	organization?: string,
+	requestId?: string
+) {
+	if (!humanUser?.email?.isVerified && process.env.EMAIL_VERIFICATION === "true") {
+		const params = new URLSearchParams({
+			loginName: session.factors?.user?.loginName as string
+		});
+
+		if (requestId) {
+			params.append("requestId", requestId);
+		}
+
+		if (organization || session.factors?.user?.organizationId) {
+			params.append("organization", organization ?? (session.factors?.user?.organizationId as string));
+		}
+
+		return { redirect: "/verify?" + params };
+	}
+}
+
+export async function checkMFAFactors(
+	serviceUrl: string,
+	session: Session,
+	loginSettings: LoginSettings | undefined,
+	authMethods: AuthenticationMethodType[],
+	organization?: string,
+	requestId?: string
+) {
+	const availableMultiFactors = authMethods?.filter(
+		(m: AuthenticationMethodType) =>
+			m !== AuthenticationMethodType.PASSWORD && m !== AuthenticationMethodType.PASSKEY
+	);
+
+	const hasAuthenticatedWithPasskey =
+		session.factors?.webAuthN?.verifiedAt && session.factors?.webAuthN?.userVerified;
+
+	// escape further checks if user has authenticated with passkey
+	if (hasAuthenticatedWithPasskey) {
+		return;
+	}
+
+	// if user has not authenticated with passkey and has only one additional mfa factor, redirect to that
+	if (availableMultiFactors?.length === 1) {
+		const params = new URLSearchParams({
+			loginName: session.factors?.user?.loginName as string
+		});
+
+		if (requestId) {
+			params.append("requestId", requestId);
+		}
+
+		if (organization || session.factors?.user?.organizationId) {
+			params.append("organization", organization ?? (session.factors?.user?.organizationId as string));
+		}
+
+		const factor = availableMultiFactors[0];
+		// if passwordless is other method, but user selected password as alternative, perform a login
+
+		if (factor === AuthenticationMethodType.TOTP) {
+			return { redirect: "/otp/time-based?" + params };
+		} else if (factor === AuthenticationMethodType.OTP_SMS) {
+			return { redirect: "/otp/sms?" + params };
+		} else if (factor === AuthenticationMethodType.OTP_EMAIL) {
+			return { redirect: "/otp/email?" + params };
+		} else if (factor === AuthenticationMethodType.U2F) {
+			return { redirect: "/u2f?" + params };
+		}
+	} else if (availableMultiFactors?.length > 1) {
+		const params = new URLSearchParams({
+			loginName: session.factors?.user?.loginName as string
+		});
+
+		if (requestId) {
+			params.append("requestId", requestId);
+		}
+
+		if (organization || session.factors?.user?.organizationId) {
+			params.append("organization", organization ?? (session.factors?.user?.organizationId as string));
+		}
+
+		return { redirect: "/mfa?" + params };
+	} else if ((loginSettings?.forceMfa || loginSettings?.forceMfaLocalOnly) && !availableMultiFactors.length) {
+		const params = new URLSearchParams({
+			loginName: session.factors?.user?.loginName as string,
+			force: "true", // this defines if the mfa is forced in the settings
+			checkAfter: "true" // this defines if the check is directly made after the setup
+		});
+
+		if (requestId) {
+			params.append("requestId", requestId);
+		}
+
+		if (organization || session.factors?.user?.organizationId) {
+			params.append("organization", organization ?? (session.factors?.user?.organizationId as string));
+		}
+
+		// TODO: provide a way to setup passkeys on mfa page?
+		return { redirect: "/mfa/set?" + params };
+	} else if (
+		loginSettings?.mfaInitSkipLifetime &&
+		(loginSettings.mfaInitSkipLifetime.nanos > 0 || loginSettings.mfaInitSkipLifetime.seconds > 0) &&
+		!availableMultiFactors.length &&
+		session?.factors?.user?.id
+	) {
+		const userResponse = await getUserByID({
+			serviceUrl,
+			userId: session.factors?.user?.id
+		});
+
+		const humanUser = userResponse?.user?.type.case === "human" ? userResponse?.user.type.value : undefined;
+
+		if (humanUser?.mfaInitSkipped) {
+			const mfaInitSkippedTimestamp = timestampDate(humanUser.mfaInitSkipped);
+
+			const mfaInitSkipLifetimeMillis =
+				Number(loginSettings.mfaInitSkipLifetime.seconds) * 1000 +
+				loginSettings.mfaInitSkipLifetime.nanos / 1000000;
+			const currentTime = Date.now();
+			const mfaInitSkippedTime = mfaInitSkippedTimestamp.getTime();
+			const timeDifference = currentTime - mfaInitSkippedTime;
+
+			if (!(timeDifference > mfaInitSkipLifetimeMillis)) {
+				// if the time difference is smaller than the lifetime, skip the mfa setup
+				return;
+			}
+		}
+
+		// the user has never skipped the mfa init but we have a setting so we redirect
+
+		const params = new URLSearchParams({
+			loginName: session.factors?.user?.loginName as string,
+			force: "false", // this defines if the mfa is not forced in the settings and can be skipped
+			checkAfter: "true" // this defines if the check is directly made after the setup
+		});
+
+		if (requestId) {
+			params.append("requestId", requestId);
+		}
+
+		if (organization || session.factors?.user?.organizationId) {
+			params.append("organization", organization ?? (session.factors?.user?.organizationId as string));
+		}
+
+		// TODO: provide a way to setup passkeys on mfa page?
+		return { redirect: "/mfa/set?" + params };
+	}
+}
+

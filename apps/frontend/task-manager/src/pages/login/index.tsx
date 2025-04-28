@@ -1,6 +1,7 @@
 import React, { useEffect, useMemo } from "react";
 
 import { useMutation } from "@tanstack/react-query";
+import { composeRules, email, required } from "@task-manager/antd-vatidation";
 import { login, parseApiError } from "@task-manager/api";
 import { Form, Input } from "antd";
 import { Link, useNavigate } from "react-router-dom";
@@ -11,7 +12,6 @@ import { userManager } from "../../app/auth";
 import { useAuthStore } from "../../app/store/auth";
 import { withAuthPageCheck } from "../../shared/HOCs/withAuthPageCheck";
 import FullSizeLoader from "../../shared/ui/FullSizeLoader";
-import { composeRules, email, required } from "../../shared/validation";
 import AuthForm from "../../widgets/AuthForm";
 
 const rules = {

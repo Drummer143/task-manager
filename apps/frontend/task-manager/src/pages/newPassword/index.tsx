@@ -1,6 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useRef } from "react";
 
 import { useMutation } from "@tanstack/react-query";
+import { confirmPassword, password } from "@task-manager/antd-vatidation";
 import {
 	updatePassword as apiUpdatePassword,
 	verifyResetPasswordToken as apiVerifyResetPasswordToken,
@@ -12,7 +13,6 @@ import { Link, useNavigate, useSearchParams } from "react-router-dom";
 
 import { withAuthPageCheck } from "../../shared/HOCs/withAuthPageCheck";
 import AuthPageMessageWrapper from "../../shared/ui/AuthPageMessageWrapper";
-import { confirmPassword, password } from "../../shared/validation";
 import AuthForm from "../../widgets/AuthForm";
 
 const rules: Record<string, Rule[]> = {

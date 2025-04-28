@@ -1,9 +1,9 @@
+import { required } from "@task-manager/antd-vatidation";
 import { DefaultOptionType } from "antd/es/select";
 
 import { FormValues } from "./types";
 
 import { statusArray, taskStatusLocale } from "../../../../../shared/constants";
-import { required } from "../../../../../shared/validation";
 
 export const requiredRule = required();
 

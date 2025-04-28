@@ -1,7 +1,6 @@
 services:
     postgres:
         image: postgres:latest
-        restart: always
         container_name: postgres
         environment:
             POSTGRES_USER: ${POSTGRES_USER}
@@ -20,7 +19,6 @@ services:
     zitadel:
         image: ghcr.io/zitadel/zitadel:latest
         container_name: zitadel
-        # restart: unless-stopped
         ports:
               - 6088:8080
         volumes:
@@ -41,7 +39,6 @@ services:
 
     mongo:
         image: mongo:latest
-        restart: always
         container_name: mongo
         ports:
             - 27017:27017
@@ -66,7 +63,6 @@ services:
     #     - rmqdata:/var/lib/rabbitmq
 
     main-service:
-        restart: always
         container_name: main-service
         image: main-service:latest
         ports:
@@ -93,7 +89,6 @@ services:
             MONGO_URL: ${MONGO_URL}
 
     mailer-service:
-        restart: always
         container_name: mailer-service
         image: mailer-service:latest
         ports:
@@ -113,7 +108,6 @@ services:
             - net
 
     storage-service:
-        restart: always
         container_name: storage-service
         image: storage-service:latest
         ports:
@@ -132,7 +126,6 @@ services:
             - storage:/static
 
     frontend:
-        restart: always
         container_name: frontend
         image: frontend:latest
         ports:

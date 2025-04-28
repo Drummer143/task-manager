@@ -47,3 +47,10 @@ vitest.config.*.timestamp*
 .env
 
 *.pem
+
+# Next.js
+.next
+out
+
+# Zitadel api package 
+libs/frontend/zitadel-api/src

@@ -1,0 +1,46 @@
+{
+	"name": "@task-manager/zitadel-client",
+	"version": "0.0.1",
+	"private": true,
+	"type": "module",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"import": "./dist/index.js",
+			"require": "./dist/index.cjs"
+		},
+		"./v1": {
+			"types": "./dist/v1.d.ts",
+			"import": "./dist/v1.js",
+			"require": "./dist/v1.cjs"
+		},
+		"./v2": {
+			"types": "./dist/v2.d.ts",
+			"import": "./dist/v2.js",
+			"require": "./dist/v2.cjs"
+		},
+		"./v3alpha": {
+			"types": "./dist/v3alpha.d.ts",
+			"import": "./dist/v3alpha.js",
+			"require": "./dist/v3alpha.cjs"
+		},
+		"./node": {
+			"types": "./dist/node.d.ts",
+			"import": "./dist/node.js",
+			"require": "./dist/node.cjs"
+		},
+		"./web": {
+			"types": "./dist/web.d.ts",
+			"import": "./dist/web.js",
+			"require": "./dist/web.cjs"
+		}
+	},
+	"dependencies": {
+		"@bufbuild/protobuf": "^2.2.5",
+		"@connectrpc/connect": "^2.0.2",
+		"@connectrpc/connect-node": "^2.0.2",
+		"jose": "^6.0.10",
+		"@task-manager/zitadel-api": "0.0.1",
+		"@connectrpc/connect-web": "^2.0.2"
+	}
+}
