@@ -1,7 +1,6 @@
 package main
 
 import (
-	"mailer/mail"
 	"mailer/router"
 	"os"
 
@@ -17,9 +16,7 @@ func main() {
 		panic("SELF_PORT must be set")
 	}
 
-	mailer := mail.New()
-
-	router := router.New(mailer)
+	router := router.New()
 
 	router.Run(":" + port)
 }
