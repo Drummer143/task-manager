@@ -21,10 +21,8 @@ type SocketOutgoingMessage struct {
 	Type  string  `json:"type"`
 }
 
-func NewSubscriptionManager() *SocketManager {
-	return &SocketManager{
-		subscriptions: make(map[string][]*websocket.Conn),
-	}
+var Manager *SocketManager = &SocketManager{
+	subscriptions: make(map[string][]*websocket.Conn),
 }
 
 func (sm *SocketManager) Subscribe(target string, conn *websocket.Conn) {

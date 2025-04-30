@@ -4,9 +4,9 @@ import (
 	"fmt"
 	mongoClient "main/internal/mongo"
 	"main/internal/postgres"
+	"main/internal/socketManager"
 	"main/router/errorHandlers"
 	routerUtils "main/router/utils"
-	"main/socketManager"
 	"main/validation"
 	"time"
 
@@ -36,7 +36,7 @@ type chatMessage struct {
 // @Failure			404 {object} errorHandlers.Error
 // @Failure			500 {object} errorHandlers.Error
 // @Router			/workspaces/{workspace_id}/pages/{page_id}/tasks/{task_id}/chat [post]
-func sendMessage(taskChatCollection *mongo.Collection, validate *validator.Validate, sockets *socketManager.SocketManager) gin.HandlerFunc {
+func sendMessage(taskChatCollection *mongo.Collection, validate *validator.Validate) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var task postgres.Task
 
@@ -94,7 +94,7 @@ func sendMessage(taskChatCollection *mongo.Collection, validate *validator.Valid
 			return
 		}
 
-		sockets.Broadcast(fmt.Sprintf("chat:%v", task.ID), chatMessage)
+		socketManager.Manager.Broadcast(fmt.Sprintf("chat:%v", task.ID), chatMessage)
 
 		ctx.JSON(200, chatMessage)
 	}

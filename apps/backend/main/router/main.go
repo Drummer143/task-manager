@@ -13,7 +13,6 @@ import (
 	usersRouter "main/router/users"
 	routerUtils "main/router/utils"
 	workspacesRouter "main/router/workspaces"
-	"main/socketManager"
 
 	// authRouter "main/router/auth"
 
@@ -70,7 +69,7 @@ func setDefaultWorkspace(ctx *gin.Context) {
 	session.Save()
 }
 
-func New(validate *validator.Validate, sockets *socketManager.SocketManager) *gin.Engine {
+func New(validate *validator.Validate) *gin.Engine {
 	ginModeEnv := os.Getenv("GIN_MODE")
 
 	if ginModeEnv == "release" {
@@ -95,11 +94,11 @@ func New(validate *validator.Validate, sockets *socketManager.SocketManager) *gi
 	router.GET("/api/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	router.GET("/api", func(ctx *gin.Context) { ctx.Redirect(http.StatusMovedPermanently, "/api/index.html") })
 
-	router.GET("/socket", IsAuthenticated, handleWebSocket(sockets))
+	router.GET("/socket", IsAuthenticated, handleWebSocket)
 
 	authRouter.AddRoutes(router.Group("auth"), validate)
 
-	workspacesRouter.AddRoutes(router.Group("workspaces", IsAuthenticated), validate, sockets)
+	workspacesRouter.AddRoutes(router.Group("workspaces", IsAuthenticated), validate)
 
 	profileRouter.AddRoutes(router.Group("profile", IsAuthenticated, setDefaultWorkspace), validate)
 	usersRouter.AddRoutes(router.Group("users", IsAuthenticated))

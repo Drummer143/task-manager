@@ -6,7 +6,6 @@ import (
 	routerUtils "main/router/utils"
 	accessesRouter "main/router/workspaces/pages/accesses"
 	tasksRouter "main/router/workspaces/pages/tasks"
-	"main/socketManager"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -34,7 +33,7 @@ func hasAccessToPageMiddleware(ctx *gin.Context) {
 	ctx.Next()
 }
 
-func AddRoutes(group *gin.RouterGroup, validate *validator.Validate, sockets *socketManager.SocketManager) {
+func AddRoutes(group *gin.RouterGroup, validate *validator.Validate) {
 	group.GET("", getPageList)
 
 	group.POST("", createPage(validate))
@@ -47,5 +46,5 @@ func AddRoutes(group *gin.RouterGroup, validate *validator.Validate, sockets *so
 
 	accessesRouter.AddRoutes(group.Group("/:page_id/accesses"))
 
-	tasksRouter.AddRoutes(group.Group("/:page_id/tasks", hasAccessToPageMiddleware), validate, sockets)
+	tasksRouter.AddRoutes(group.Group("/:page_id/tasks", hasAccessToPageMiddleware), validate)
 }

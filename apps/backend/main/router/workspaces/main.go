@@ -6,7 +6,6 @@ import (
 	routerUtils "main/router/utils"
 	workspacesAccessesRouter "main/router/workspaces/accesses"
 	pagesRouter "main/router/workspaces/pages"
-	"main/socketManager"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -33,7 +32,7 @@ func hasAccessToWorkspaceMiddleware(ctx *gin.Context) {
 	ctx.Next()
 }
 
-func AddRoutes(group *gin.RouterGroup, validate *validator.Validate, sockets *socketManager.SocketManager) {
+func AddRoutes(group *gin.RouterGroup, validate *validator.Validate) {
 	group.POST("", createWorkspace(validate))
 
 	group.GET("", getWorkspaceList)
@@ -47,5 +46,5 @@ func AddRoutes(group *gin.RouterGroup, validate *validator.Validate, sockets *so
 
 	workspacesAccessesRouter.AddRoutes(group.Group("/:workspace_id/accesses"))
 
-	pagesRouter.AddRoutes(group.Group("/:workspace_id/pages", hasAccessToWorkspaceMiddleware), validate, sockets)
+	pagesRouter.AddRoutes(group.Group("/:workspace_id/pages", hasAccessToWorkspaceMiddleware), validate)
 }

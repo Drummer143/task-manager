@@ -3,7 +3,6 @@ package tasksRouter
 import (
 	"main/internal/mongo"
 	tasksCharRouter "main/router/workspaces/pages/tasks/chat"
-	"main/socketManager"
 
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
@@ -17,7 +16,7 @@ var (
 	Done       taskStatus = "done"
 )
 
-func AddRoutes(group *gin.RouterGroup, validate *validator.Validate, sockets *socketManager.SocketManager) {
+func AddRoutes(group *gin.RouterGroup, validate *validator.Validate) {
 	taskVersionsCollection := mongo.DB.Database("versions").Collection("tasks")
 
 	group.GET("", getTaskList)
@@ -32,5 +31,5 @@ func AddRoutes(group *gin.RouterGroup, validate *validator.Validate, sockets *so
 
 	group.DELETE("/:task_id", deleteTask)
 
-	tasksCharRouter.AddRoutes(group.Group("/:task_id/chat"), validate, sockets)
+	tasksCharRouter.AddRoutes(group.Group("/:task_id/chat"), validate)
 }

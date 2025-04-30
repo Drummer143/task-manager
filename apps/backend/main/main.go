@@ -5,7 +5,6 @@ import (
 	_ "main/internal/mongo"
 	"main/internal/postgres"
 	"main/router"
-	"main/socketManager"
 	"main/validation"
 
 	"github.com/joho/godotenv"
@@ -26,11 +25,9 @@ func main() {
 		panic(err)
 	}
 
-	sockets := socketManager.NewSubscriptionManager()
-
 	cleanup.Setup()
 
-	r := router.New(validate, sockets)
+	r := router.New(validate)
 
 	r.Run(":8080")
 }
