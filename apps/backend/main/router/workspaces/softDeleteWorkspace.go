@@ -1,15 +1,16 @@
 package workspacesRouter
 
 import (
-	"main/dbClient"
-	"main/router/errorHandlers"
-	routerUtils "main/router/utils"
+	"libs/backend/errorHandlers/libs/errorCodes"
+	"libs/backend/errorHandlers/libs/errorHandlers"
+	"main/internal/postgres"
+	"main/utils/ginTools"
+	"main/utils/routerUtils"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
-	"gorm.io/gorm"
 )
 
 // @Summary				Soft delete workspace
@@ -24,39 +25,37 @@ import (
 // @Failure				404 {object} errorHandlers.Error
 // @Failure				500 {object} errorHandlers.Error
 // @Router				/workspaces/{workspace_id}/soft-delete [delete]
-func softDeleteWorkspace(postgres *gorm.DB) gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		workspaceId, err := uuid.Parse(ctx.Param("workspace_id"))
+func softDeleteWorkspace(ctx *gin.Context) {
+	workspaceId, err := uuid.Parse(ctx.Param("workspace_id"))
 
-		if err != nil {
-			errorHandlers.BadRequest(ctx, "invalid workspace id", nil)
-			return
-		}
-
-		userId, _ := routerUtils.GetUserIdFromSession(ctx)
-
-		_, workspaceAccess, ok := routerUtils.CheckWorkspaceAccess(ctx, postgres, postgres, workspaceId, userId)
-
-		if !ok {
-			errorHandlers.Forbidden(ctx, "no access to workspace")
-			return
-		}
-
-		if workspaceAccess.Role != dbClient.UserRoleOwner {
-			errorHandlers.Forbidden(ctx, "no access to delete workspace")
-			return
-		}
-
-		today := time.Now()
-		deletionTime := time.Date(today.Year(), today.Month(), today.Day(), 0, 0, 0, 0, time.UTC)
-
-		deletionTime = deletionTime.AddDate(0, 0, 14)
-
-		if err := postgres.Model(&dbClient.Workspace{}).Where("id = ?", workspaceId).Update("deleted_at", &deletionTime).Error; err != nil {
-			errorHandlers.InternalServerError(ctx, "failed to delete workspace")
-			return
-		}
-
-		ctx.Status(http.StatusNoContent)
+	if err != nil {
+		errorHandlers.BadRequest(ctx, errorCodes.BadRequestErrorCodeInvalidParams, []string{"workspace_id"})
+		return
 	}
+
+	userId := ginTools.MustGetUserIdFromSession(ctx)
+
+	_, workspaceAccess, ok := routerUtils.CheckWorkspaceAccess(ctx, postgres.DB, postgres.DB, workspaceId, userId)
+
+	if !ok {
+		errorHandlers.Forbidden(ctx, errorCodes.ForbiddenErrorCodeAccessDenied, errorCodes.DetailCodeEntityWorkspace)
+		return
+	}
+
+	if workspaceAccess.Role != postgres.UserRoleOwner {
+		errorHandlers.Forbidden(ctx, errorCodes.ForbiddenErrorCodeInsufficientPermissions, map[string]string{"action": errorCodes.DetailCodeActionDelete, "target": errorCodes.DetailCodeEntityWorkspace})
+		return
+	}
+
+	today := time.Now()
+	deletionTime := time.Date(today.Year(), today.Month(), today.Day(), 0, 0, 0, 0, time.UTC)
+
+	deletionTime = deletionTime.AddDate(0, 0, 14)
+
+	if err := postgres.DB.Model(&postgres.Workspace{}).Where("id = ?", workspaceId).Update("deleted_at", &deletionTime).Error; err != nil {
+		errorHandlers.InternalServerError(ctx)
+		return
+	}
+
+	ctx.Status(http.StatusNoContent)
 }

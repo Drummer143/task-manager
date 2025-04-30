@@ -3,10 +3,11 @@ package router
 import (
 	"fmt"
 	"io"
+	"libs/backend/errorHandlers/libs/errorCodes"
+	"libs/backend/errorHandlers/libs/errorHandlers"
 	"net/http"
 	"os"
 	"path/filepath"
-	"storage/router/errorHandlers"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -32,14 +33,14 @@ func upload(ctx *gin.Context) {
 	file, err := ctx.FormFile("file")
 
 	if err != nil {
-		errorHandlers.BadRequest(ctx, "no file provided", nil)
+		errorHandlers.BadRequest(ctx, errorCodes.BadRequestErrorCodeInvalidBody, nil)
 		return
 	}
 
 	fileContent, err := file.Open()
 
 	if err != nil {
-		errorHandlers.InternalServerError(ctx, "failed to handle file")
+		errorHandlers.InternalServerError(ctx)
 		return
 	}
 
@@ -70,7 +71,7 @@ func upload(ctx *gin.Context) {
 	out, err := os.Create(path)
 
 	if err != nil {
-		errorHandlers.InternalServerError(ctx, "failed to save file")
+		errorHandlers.InternalServerError(ctx)
 		return
 	}
 
@@ -79,7 +80,7 @@ func upload(ctx *gin.Context) {
 	_, err = io.Copy(out, fileContent)
 
 	if err != nil {
-		errorHandlers.InternalServerError(ctx, "failed to save file")
+		errorHandlers.InternalServerError(ctx)
 		return
 	}
 

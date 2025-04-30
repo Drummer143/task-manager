@@ -3,7 +3,7 @@ import React, { useCallback, useMemo, useState } from "react";
 import { PlusOutlined, SettingOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { ApiError, getPageAccess, getUserList, Page, parseApiError, updatePageAccess, User } from "@task-manager/api";
-import { useDisclosure } from "@task-manager/utils";
+import { useDisclosure } from "@task-manager/react-utils";
 import { Alert, App, Button, List, Modal, Tooltip, Typography } from "antd";
 import { AxiosError } from "axios";
 
@@ -54,7 +54,7 @@ const Settings: React.FC<SettingsProps> = ({ page }) => {
 			}
 		},
 		onError: (error: AxiosError<ApiError>) =>
-			message.error(error.response?.data?.message ?? "Failed to update page settings")
+			message.error(error.response?.data?.errorCode ?? "Failed to update page settings")
 	});
 
 	const parsedError = useMemo(() => error && parseApiError(error), [error]);

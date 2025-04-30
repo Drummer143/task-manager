@@ -1,7 +1,7 @@
 import React, { memo, useCallback, useEffect, useRef } from "react";
 
 import { ResponseWithPagination } from "@task-manager/api";
-import { useDisclosure } from "@task-manager/utils";
+import { useDisclosure } from "@task-manager/react-utils";
 import { Popover, PopoverProps } from "antd";
 
 import { useStyles } from "./styles";

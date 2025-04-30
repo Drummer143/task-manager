@@ -4,4 +4,5 @@ use (
 	./apps/backend/mailer
 	./apps/backend/main
 	./apps/backend/storage
+	./libs/backend/errorHandlers
 )

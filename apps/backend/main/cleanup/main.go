@@ -1,25 +1,22 @@
 package cleanup
 
 import (
-	"main/dbClient"
+	"main/internal/postgres"
 	"time"
 
 	"github.com/robfig/cron/v3"
-	"gorm.io/gorm"
 )
 
-func deleteWorkspaces(postgres *gorm.DB) {
+func deleteWorkspaces() {
 	cutoff := time.Now()
 
-	postgres.Where("deleted_at < ?", cutoff).Delete(&dbClient.Workspace{})
+	postgres.DB.Where("deleted_at < ?", cutoff).Delete(&postgres.Workspace{})
 }
 
-func Setup(postgres *gorm.DB) error {
+func Setup() error {
 	c := cron.New()
 
-	_, err := c.AddFunc("0 0 * * *", func() {
-		deleteWorkspaces(postgres)
-	})
+	_, err := c.AddFunc("0 0 * * *", deleteWorkspaces)
 
 	if err != nil {
 		return err

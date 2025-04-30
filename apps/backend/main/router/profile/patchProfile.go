@@ -1,15 +1,15 @@
 package profileRouter
 
 import (
-	"main/dbClient"
-	"main/router/errorHandlers"
-	"main/validation"
+	"libs/backend/errorHandlers/libs/errorCodes"
+	"libs/backend/errorHandlers/libs/errorHandlers"
+	"main/internal/postgres"
+	"main/internal/validation"
 	"net/http"
 	"time"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
-	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
@@ -24,56 +24,54 @@ type patchProfileBody struct {
 // @Accept			json
 // @Produce			json
 // @Param			user body patchProfileBody  true "User profile data"
-// @Success			200 {object} dbClient.User "User profile data"
+// @Success			200 {object} postgres.User "User profile data"
 // @Failure			400 {object} errorHandlers.Error "Invalid request"
 // @Failure			401 {object} errorHandlers.Error "Unauthorized if session is missing or invalid"
 // @Failure			404 {object} errorHandlers.Error "User not found in Auth0 database"
 // @Failure			429 {object} errorHandlers.Error "Rate limit exceeded"
 // @Failure			500 {object} errorHandlers.Error "Internal server error if request to Auth0 fails"
 // @Router			/profile [patch]
-func patchProfile(validate *validator.Validate, postgres *gorm.DB) gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		session := sessions.Default(ctx)
+func patchProfile(ctx *gin.Context) {
+	session := sessions.Default(ctx)
 
-		userId := session.Get("id").(uuid.UUID)
+	userId := session.Get("id").(uuid.UUID)
 
-		var user dbClient.User
+	var user postgres.User
 
-		if err := postgres.First(&user, "id = ?", userId).Error; err != nil {
-			if err == gorm.ErrRecordNotFound {
-				errorHandlers.NotFound(ctx, "user not found")
-				return
-			} else {
-				errorHandlers.InternalServerError(ctx, "failed to get user")
-				return
-			}
-		}
-
-		var body patchProfileBody
-
-		if err := ctx.BindJSON(&body); err != nil {
-			errorHandlers.InternalServerError(ctx, "failed to read request body")
+	if err := postgres.DB.First(&user, "id = ?", userId).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			errorHandlers.NotFound(ctx, errorCodes.NotFoundErrorCodeNotFound, errorCodes.DetailCodeEntityUser)
+			return
+		} else {
+			errorHandlers.InternalServerError(ctx)
 			return
 		}
-
-		if err := validate.Struct(body); err != nil {
-			if errors, ok := validation.ParseValidationError(err); ok {
-				errorHandlers.BadRequest(ctx, "invalid request", errors)
-				return
-			}
-
-			errorHandlers.BadRequest(ctx, "invalid request", validation.UnknownError)
-			return
-		}
-
-		user.Username = body.Username
-		user.UpdatedAt = time.Now()
-
-		if err := postgres.Save(&user).Error; err != nil {
-			errorHandlers.InternalServerError(ctx, "failed to update user")
-			return
-		}
-
-		ctx.JSON(http.StatusOK, user)
 	}
+
+	var body patchProfileBody
+
+	if err := ctx.BindJSON(&body); err != nil {
+		errorHandlers.InternalServerError(ctx)
+		return
+	}
+
+	if err := validation.Validator.Struct(body); err != nil {
+		if errors, ok := validation.ParseValidationError(err); ok {
+			errorHandlers.BadRequest(ctx, errorCodes.BadRequestErrorCodeValidationErrors, errors)
+			return
+		}
+
+		errorHandlers.BadRequest(ctx, errorCodes.BadRequestErrorCodeInvalidBody, nil)
+		return
+	}
+
+	user.Username = body.Username
+	user.UpdatedAt = time.Now()
+
+	if err := postgres.DB.Save(&user).Error; err != nil {
+		errorHandlers.InternalServerError(ctx)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, user)
 }

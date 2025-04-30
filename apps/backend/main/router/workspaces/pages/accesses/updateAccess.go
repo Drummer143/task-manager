@@ -1,9 +1,11 @@
 package accessesRouter
 
 import (
-	"main/dbClient"
-	"main/router/errorHandlers"
-	routerUtils "main/router/utils"
+	"libs/backend/errorHandlers/libs/errorCodes"
+	"libs/backend/errorHandlers/libs/errorHandlers"
+	"main/internal/postgres"
+	"main/utils/ginTools"
+	"main/utils/routerUtils"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -12,7 +14,7 @@ import (
 
 type giveAccessBody struct {
 	UserId uuid.UUID          `json:"userId" validate:"required,uuid4"`
-	Role   *dbClient.UserRole `json:"role" validate:"oneof=owner admin member commentator guest"`
+	Role   *postgres.UserRole `json:"role" validate:"oneof=owner admin member commentator guest"`
 }
 
 // @Summary				Give access to a page
@@ -30,37 +32,35 @@ type giveAccessBody struct {
 // @Failure				404 {object} errorHandlers.Error
 // @Failure				500 {object} errorHandlers.Error
 // @Router				/workspaces/{workspace_id}/pages/{page_id}/accesses [put]
-func updateAccess(postgres *gorm.DB) gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		var body giveAccessBody
-		if err := ctx.BindJSON(&body); err != nil {
-			errorHandlers.BadRequest(ctx, "invalid request body", nil)
-			return
-		}
-
-		tx := postgres.Begin()
-		defer func() {
-			if r := recover(); r != nil {
-				tx.Rollback()
-				errorHandlers.InternalServerError(ctx, "An unexpected error occurred")
-			}
-		}()
-
-		pageId := uuid.MustParse(ctx.Param("page_id"))
-		currentUserId, _ := routerUtils.GetUserIdFromSession(ctx)
-
-		if !checkAccess(ctx, tx, pageId, currentUserId, body.Role) {
-			tx.Rollback()
-			return
-		}
-
-		if err := tx.Commit().Error; err != nil {
-			tx.Rollback()
-			return
-		}
-
-		ctx.String(200, "Success")
+func updateAccess(ctx *gin.Context) {
+	var body giveAccessBody
+	if err := ctx.BindJSON(&body); err != nil {
+		errorHandlers.BadRequest(ctx, errorCodes.BadRequestErrorCodeInvalidBody, nil)
+		return
 	}
+
+	tx := postgres.DB.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+			errorHandlers.InternalServerError(ctx)
+		}
+	}()
+
+	pageId := uuid.MustParse(ctx.Param("page_id"))
+	currentUserId := ginTools.MustGetUserIdFromSession(ctx)
+
+	if !checkAccess(ctx, tx, pageId, currentUserId, body.Role) {
+		tx.Rollback()
+		return
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		tx.Rollback()
+		return
+	}
+
+	ctx.String(200, "Success")
 }
 
 // 403 if:
@@ -68,15 +68,15 @@ func updateAccess(postgres *gorm.DB) gin.HandlerFunc {
 // 2. user is not admin or owner
 // 3. user trying to change role to workspace owner
 // 4. if user is admin and trying to change role to admin or owner
-func checkAccess(ctx *gin.Context, tx *gorm.DB, pageId uuid.UUID, userId uuid.UUID, newRole *dbClient.UserRole) bool {
+func checkAccess(ctx *gin.Context, tx *gorm.DB, pageId uuid.UUID, userId uuid.UUID, newRole *postgres.UserRole) bool {
 	page, pageAccess, ok := routerUtils.CheckPageAccess(ctx, tx.Preload("Owner"), tx, pageId, userId)
 
 	if !ok {
 		return false
 	}
 
-	if pageAccess.Role != dbClient.UserRoleOwner && pageAccess.Role != dbClient.UserRoleAdmin {
-		errorHandlers.Forbidden(ctx, "Not enough permissions to change access")
+	if pageAccess.Role != postgres.UserRoleOwner && pageAccess.Role != postgres.UserRoleAdmin {
+		errorHandlers.Forbidden(ctx, errorCodes.ForbiddenErrorCodeInsufficientPermissions, map[string]string{"action": errorCodes.DetailCodeActionChangeAccess, "target": errorCodes.DetailCodeEntityPage})
 		return false
 	}
 
@@ -87,12 +87,12 @@ func checkAccess(ctx *gin.Context, tx *gorm.DB, pageId uuid.UUID, userId uuid.UU
 	}
 
 	if userId == workspace.OwnerID {
-		errorHandlers.Forbidden(ctx, "Cannot change role to workspace owner")
+		errorHandlers.Forbidden(ctx, errorCodes.ForbiddenErrorCodeInsufficientPermissions, map[string]string{"action": errorCodes.DetailCodeActionChangeAccess, "target": errorCodes.DetailCodeEntityPage})
 		return false
 	}
 
-	if pageAccess.Role == dbClient.UserRoleAdmin && (*newRole == dbClient.UserRoleAdmin || *newRole == dbClient.UserRoleOwner) {
-		errorHandlers.Forbidden(ctx, "Cannot change role to admin or owner")
+	if pageAccess.Role == postgres.UserRoleAdmin && (*newRole == postgres.UserRoleAdmin || *newRole == postgres.UserRoleOwner) {
+		errorHandlers.Forbidden(ctx, errorCodes.ForbiddenErrorCodeInsufficientPermissions, map[string]string{"action": errorCodes.DetailCodeActionChangeAccess, "target": errorCodes.DetailCodeEntityPage})
 		return false
 	}
 

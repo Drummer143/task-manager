@@ -2,7 +2,7 @@ package router
 
 import (
 	"encoding/json"
-	"main/socketManager"
+	"main/internal/socketManager"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -21,35 +21,33 @@ var upgrader = websocket.Upgrader{
 // @Success			101 "Switching Protocols"
 // @Failure			500 "Internal Server Error"
 // @Router			/socket [get]
-func handleWebSocket(socket *socketManager.SocketManager) func(c *gin.Context) {
-	return func(c *gin.Context) {
-		conn, err := upgrader.Upgrade(c.Writer, c.Request, nil)
+func handleWebSocket(ctx *gin.Context) {
+	conn, err := upgrader.Upgrade(ctx.Writer, ctx.Request, nil)
+	if err != nil {
+		ctx.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to upgrade connection"})
+		return
+	}
+	defer conn.Close()
+
+	for {
+		_, msg, err := conn.ReadMessage()
+
 		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to upgrade connection"})
-			return
+			break
 		}
-		defer conn.Close()
 
-		for {
-			_, msg, err := conn.ReadMessage()
+		var msgData socketManager.SocketIncomingMessage
 
-			if err != nil {
-				break
-			}
+		if err := json.Unmarshal(msg, &msgData); err != nil {
+			// conn.WriteMessage(websocket.TextMessage, []byte())
+			continue
+		}
 
-			var msgData socketManager.SocketIncomingMessage
-
-			if err := json.Unmarshal(msg, &msgData); err != nil {
-				// conn.WriteMessage(websocket.TextMessage, []byte())
-				continue
-			}
-
-			switch msgData.Type {
-			case "sub":
-				socket.Subscribe(msgData.Body, conn)
-			case "unsub":
-				socket.Unsubscribe(msgData.Body, conn)
-			}
+		switch msgData.Type {
+		case "sub":
+			socketManager.Manager.Subscribe(msgData.Body, conn)
+		case "unsub":
+			socketManager.Manager.Unsubscribe(msgData.Body, conn)
 		}
 	}
 }

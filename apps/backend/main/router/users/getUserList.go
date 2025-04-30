@@ -1,13 +1,12 @@
 package usersRouter
 
 import (
-	"main/dbClient"
-	"main/router/errorHandlers"
-	routerUtils "main/router/utils"
+	"libs/backend/errorHandlers/libs/errorHandlers"
+	"main/internal/postgres"
+	"main/utils/pagination"
 	"strings"
 
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
 
 // @Summary				Get user list
@@ -18,69 +17,59 @@ import (
 // @Param				offset query int false "Default is 0"
 // @Param				exclude query string false "comma separated list of ids to exclude"
 // @Produce				json
-// @Success				200 {object} routerUtils.ResponseWithPagination[dbClient.User] "User list"
+// @Success				200 {object} pagination.ResponseWithPagination[postgres.User] "User list"
 // @Failure				401 {object} errorHandlers.Error "Unauthorized if session is missing or invalid"
 // @Failure				500 {object} errorHandlers.Error
 // @Router				/users [get]
-func getUserList(postgres *gorm.DB) gin.HandlerFunc {
-	return func(c *gin.Context) {
-		usernameOrEmail := c.Query("username_or_email")
-		exclude := c.Query("exclude")
+func getUserList(ctx *gin.Context) {
+	usernameOrEmail := ctx.Query("username_or_email")
+	exclude := ctx.Query("exclude")
 
-		dbWithPagination := postgres
+	dbWithPagination := postgres.DB
 
-		limit, offset := routerUtils.ValidatePaginationParams(c, routerUtils.DefaultPaginationLimit, routerUtils.DefaultPaginationOffset)
+	limit, offset := pagination.ValidatePaginationParams(ctx, pagination.DefaultPaginationLimit, pagination.DefaultPaginationOffset)
 
-		if limit > 0 {
-			dbWithPagination = dbWithPagination.Limit(limit)
-		}
-
-		if offset > 0 {
-			dbWithPagination = dbWithPagination.Offset(offset)
-		}
-
-		if usernameOrEmail != "" {
-			query := "%" + usernameOrEmail + "%"
-
-			dbWithPagination = dbWithPagination.Where("email ILIKE ? OR username ILIKE ?", query, query)
-		}
-
-		if exclude != "" {
-			ids := strings.Split(exclude, ",")
-
-			dbWithPagination = dbWithPagination.Where("id NOT IN ?", ids)
-		}
-
-		var users []dbClient.User
-
-		if err := dbWithPagination.Find(&users).Error; err != nil {
-			errorHandlers.InternalServerError(c, "failed to get user list")
-			return
-		}
-
-		var total int64
-
-		if err := dbWithPagination.Model(&dbClient.User{}).Count(&total).Error; err != nil {
-			errorHandlers.InternalServerError(c, "failed to get user list")
-			return
-		}
-
-		if limit == 0 {
-			limit = int(total)
-		}
-
-		if users == nil {
-			users = []dbClient.User{}
-		}
-
-		c.JSON(200, routerUtils.ResponseWithPagination[dbClient.User]{
-			Data: users,
-			Meta: routerUtils.Meta{
-				Total:   int(total),
-				Limit:   limit,
-				Offset:  offset,
-				HasMore: offset+limit < int(total),
-			},
-		})
+	if limit > 0 {
+		dbWithPagination = dbWithPagination.Limit(limit)
 	}
+
+	if offset > 0 {
+		dbWithPagination = dbWithPagination.Offset(offset)
+	}
+
+	if usernameOrEmail != "" {
+		query := "%" + usernameOrEmail + "%"
+
+		dbWithPagination = dbWithPagination.Where("email ILIKE ? OR username ILIKE ?", query, query)
+	}
+
+	if exclude != "" {
+		ids := strings.Split(exclude, ",")
+
+		dbWithPagination = dbWithPagination.Where("id NOT IN ?", ids)
+	}
+
+	var users []postgres.User
+
+	if err := dbWithPagination.Find(&users).Error; err != nil {
+		errorHandlers.InternalServerError(ctx)
+		return
+	}
+
+	var total int64
+
+	if err := dbWithPagination.Model(&postgres.User{}).Count(&total).Error; err != nil {
+		errorHandlers.InternalServerError(ctx)
+		return
+	}
+
+	if limit == 0 {
+		limit = int(total)
+	}
+
+	if users == nil {
+		users = []postgres.User{}
+	}
+
+	ctx.JSON(200, pagination.NewResponseWithPagination(users, limit, offset, int(total)))
 }

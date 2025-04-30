@@ -2,7 +2,7 @@ import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from "
 
 import { InfiniteData, QueryKey, useInfiniteQuery } from "@tanstack/react-query";
 import { PaginationQuery, ResponseWithPagination } from "@task-manager/api";
-import { useDebouncedEffect } from "@task-manager/utils";
+import { useDebouncedEffect } from "@task-manager/react-utils";
 import { GetRef, Select, Spin, Tooltip } from "antd";
 import { DefaultOptionType, SelectProps } from "antd/es/select";
 

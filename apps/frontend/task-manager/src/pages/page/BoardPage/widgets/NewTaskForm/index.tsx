@@ -2,7 +2,7 @@ import React, { useCallback, useEffect } from "react";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createTask } from "@task-manager/api";
-import { useDisclosure } from "@task-manager/utils";
+import { useDisclosure } from "@task-manager/react-utils";
 import { Form } from "antd";
 import { useParams } from "react-router-dom";
 

@@ -1,8 +1,9 @@
 package profileRouter
 
 import (
-	"main/dbClient"
-	"main/router/errorHandlers"
+	"libs/backend/errorHandlers/libs/errorCodes"
+	"libs/backend/errorHandlers/libs/errorHandlers"
+	"main/internal/postgres"
 	"net/http"
 	"strings"
 
@@ -13,8 +14,8 @@ import (
 )
 
 type getProfileResponse struct {
-	dbClient.User
-	Workspace *dbClient.Workspace `json:"workspace,omitempty"`
+	postgres.User
+	Workspace *postgres.Workspace `json:"workspace,omitempty"`
 }
 
 // @Summary			Get current user profile
@@ -28,41 +29,39 @@ type getProfileResponse struct {
 // @Failure			404 {object} errorHandlers.Error "User not found in database"
 // @Failure			500 {object} errorHandlers.Error "Internal server error if server fails"
 // @Router			/profile [get]
-func getProfile(postgres *gorm.DB) gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		session := sessions.Default(ctx)
+func getProfile(ctx *gin.Context) {
+	session := sessions.Default(ctx)
 
-		var dbUser dbClient.User
+	var dbUser postgres.User
 
-		userId := session.Get("id").(uuid.UUID)
+	userId := session.Get("id").(uuid.UUID)
 
-		if err := postgres.First(&dbUser, "id = ?", userId).Error; err != nil {
-			if err == gorm.ErrRecordNotFound {
-				errorHandlers.NotFound(ctx, "user not found")
-				return
-			} else {
-				errorHandlers.InternalServerError(ctx, "failed to get user")
-				return
-			}
+	if err := postgres.DB.First(&dbUser, "id = ?", userId).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			errorHandlers.NotFound(ctx, errorCodes.NotFoundErrorCodeNotFound, errorCodes.DetailCodeEntityUser)
+			return
+		} else {
+			errorHandlers.InternalServerError(ctx)
+			return
 		}
-
-		includes := ctx.Query("includes")
-
-		response := getProfileResponse{
-			User:      dbUser,
-			Workspace: nil,
-		}
-
-		if strings.Contains(includes, "workspace") {
-			workspace, ok := getUserCurrentWorkspace(ctx, postgres)
-
-			if !ok {
-				return
-			}
-
-			response.Workspace = workspace
-		}
-
-		ctx.JSON(http.StatusOK, response)
 	}
+
+	includes := ctx.Query("includes")
+
+	response := getProfileResponse{
+		User:      dbUser,
+		Workspace: nil,
+	}
+
+	if strings.Contains(includes, "workspace") {
+		workspace, ok := getUserCurrentWorkspace(ctx)
+
+		if !ok {
+			return
+		}
+
+		response.Workspace = workspace
+	}
+
+	ctx.JSON(http.StatusOK, response)
 }

@@ -12,17 +12,17 @@ definitions:
       isWorkspaceOwner:
         type: boolean
       role:
-        $ref: '#/definitions/dbClient.UserRole'
+        $ref: '#/definitions/postgres.UserRole'
       updatedAt:
         type: string
       user:
-        $ref: '#/definitions/dbClient.User'
+        $ref: '#/definitions/postgres.User'
     type: object
   accessesRouter.giveAccessBody:
     properties:
       role:
         allOf:
-        - $ref: '#/definitions/dbClient.UserRole'
+        - $ref: '#/definitions/postgres.UserRole'
         enum:
         - owner
         - admin
@@ -75,18 +75,30 @@ definitions:
     - password
     - username
     type: object
-  dbClient.Change:
+  errorHandlers.Error:
+    properties:
+      details: {}
+      error:
+        type: string
+      errorCode:
+        type: string
+      message:
+        type: string
+      statusCode:
+        type: integer
+    type: object
+  mongo.Change:
     properties:
       from: {}
       to: {}
     type: object
-  dbClient.EntityVersionDocument:
+  mongo.EntityVersionDocument:
     properties:
       author:
-        $ref: '#/definitions/dbClient.ShortUserInfo'
+        $ref: '#/definitions/mongo.ShortUserInfo'
       changes:
         additionalProperties:
-          $ref: '#/definitions/dbClient.Change'
+          $ref: '#/definitions/mongo.Change'
         type: object
       created_at:
         type: string
@@ -95,11 +107,57 @@ definitions:
       version:
         type: integer
     type: object
-  dbClient.Page:
+  mongo.ShortUserInfo:
+    properties:
+      id:
+        type: string
+      picture:
+        type: string
+      username:
+        type: string
+    type: object
+  mongo.TaskChatMessage:
+    properties:
+      author:
+        $ref: '#/definitions/mongo.ShortUserInfo'
+      createdAt:
+        type: string
+      id:
+        type: string
+      text:
+        type: string
+    type: object
+  pagesRouter.createPageBody:
+    properties:
+      parentId:
+        type: string
+      text:
+        type: string
+      title:
+        type: string
+      type:
+        allOf:
+        - $ref: '#/definitions/postgres.PageType'
+        enum:
+        - text
+        - board
+        - group
+    required:
+    - title
+    - type
+    type: object
+  pagesRouter.updatePageBody:
+    properties:
+      name:
+        type: string
+      text:
+        type: string
+    type: object
+  postgres.Page:
     properties:
       childPages:
         items:
-          $ref: '#/definitions/dbClient.Page'
+          $ref: '#/definitions/postgres.Page'
         type: array
       createdAt:
         type: string
@@ -108,25 +166,25 @@ definitions:
       id:
         type: string
       owner:
-        $ref: '#/definitions/dbClient.User'
+        $ref: '#/definitions/postgres.User'
       parentPage:
-        $ref: '#/definitions/dbClient.Page'
+        $ref: '#/definitions/postgres.Page'
       role:
-        $ref: '#/definitions/dbClient.UserRole'
+        $ref: '#/definitions/postgres.UserRole'
       tasks:
         items:
-          $ref: '#/definitions/dbClient.Task'
+          $ref: '#/definitions/postgres.Task'
         type: array
       text:
         type: string
       title:
         type: string
       type:
-        $ref: '#/definitions/dbClient.PageType'
+        $ref: '#/definitions/postgres.PageType'
       updatedAt:
         type: string
     type: object
-  dbClient.PageType:
+  postgres.PageType:
     enum:
     - board
     - text
@@ -136,19 +194,10 @@ definitions:
     - PageTypeBoard
     - PageTypeText
     - PageTypeGroup
-  dbClient.ShortUserInfo:
-    properties:
-      id:
-        type: string
-      picture:
-        type: string
-      username:
-        type: string
-    type: object
-  dbClient.Task:
+  postgres.Task:
     properties:
       assignee:
-        $ref: '#/definitions/dbClient.User'
+        $ref: '#/definitions/postgres.User'
       createdAt:
         type: string
       deletedAt:
@@ -160,9 +209,9 @@ definitions:
       id:
         type: string
       page:
-        $ref: '#/definitions/dbClient.Page'
+        $ref: '#/definitions/postgres.Page'
       reporter:
-        $ref: '#/definitions/dbClient.User'
+        $ref: '#/definitions/postgres.User'
       status:
         type: string
       title:
@@ -170,18 +219,7 @@ definitions:
       updatedAt:
         type: string
     type: object
-  dbClient.TaskChatMessage:
-    properties:
-      author:
-        $ref: '#/definitions/dbClient.ShortUserInfo'
-      createdAt:
-        type: string
-      id:
-        type: string
-      text:
-        type: string
-    type: object
-  dbClient.User:
+  postgres.User:
     properties:
       createdAt:
         type: string
@@ -204,7 +242,7 @@ definitions:
       username:
         type: string
     type: object
-  dbClient.UserRole:
+  postgres.UserRole:
     enum:
     - owner
     - admin
@@ -218,7 +256,7 @@ definitions:
     - UserRoleMember
     - UserRoleCommentator
     - UserRoleGuest
-  dbClient.Workspace:
+  postgres.Workspace:
     properties:
       createdAt:
         type: string
@@ -229,19 +267,19 @@ definitions:
       name:
         type: string
       owner:
-        $ref: '#/definitions/dbClient.User'
+        $ref: '#/definitions/postgres.User'
       pages:
         items:
-          $ref: '#/definitions/dbClient.Page'
+          $ref: '#/definitions/postgres.Page'
         type: array
       role:
-        $ref: '#/definitions/dbClient.UserRole'
+        $ref: '#/definitions/postgres.UserRole'
       type:
         type: string
       updatedAt:
         type: string
     type: object
-  dbClient.WorkspaceAccess:
+  postgres.WorkspaceAccess:
     properties:
       createdAt:
         type: string
@@ -250,49 +288,11 @@ definitions:
       id:
         type: string
       role:
-        $ref: '#/definitions/dbClient.UserRole'
+        $ref: '#/definitions/postgres.UserRole'
       updatedAt:
         type: string
       user:
-        $ref: '#/definitions/dbClient.User'
-    type: object
-  errorHandlers.Error:
-    properties:
-      details: {}
-      error:
-        type: string
-      errorCode:
-        type: string
-      message:
-        type: string
-      statusCode:
-        type: integer
-    type: object
-  pagesRouter.createPageBody:
-    properties:
-      parentId:
-        type: string
-      text:
-        type: string
-      title:
-        type: string
-      type:
-        allOf:
-        - $ref: '#/definitions/dbClient.PageType'
-        enum:
-        - text
-        - board
-        - group
-    required:
-    - title
-    - type
-    type: object
-  pagesRouter.updatePageBody:
-    properties:
-      name:
-        type: string
-      text:
-        type: string
+        $ref: '#/definitions/postgres.User'
     type: object
   profileRouter.changeEmailBody:
     properties:
@@ -324,7 +324,7 @@ definitions:
       username:
         type: string
       workspace:
-        $ref: '#/definitions/dbClient.Workspace'
+        $ref: '#/definitions/postgres.Workspace'
     type: object
   profileRouter.patchProfileBody:
     properties:
@@ -344,29 +344,29 @@ definitions:
       total:
         type: integer
     type: object
-  routerUtils.ResponseWithPagination-dbClient_EntityVersionDocument:
+  routerUtils.ResponseWithPagination-mongo_EntityVersionDocument:
     properties:
       data:
         items:
-          $ref: '#/definitions/dbClient.EntityVersionDocument'
+          $ref: '#/definitions/mongo.EntityVersionDocument'
         type: array
       meta:
         $ref: '#/definitions/routerUtils.Meta'
     type: object
-  routerUtils.ResponseWithPagination-dbClient_TaskChatMessage:
+  routerUtils.ResponseWithPagination-mongo_TaskChatMessage:
     properties:
       data:
         items:
-          $ref: '#/definitions/dbClient.TaskChatMessage'
+          $ref: '#/definitions/mongo.TaskChatMessage'
         type: array
       meta:
         $ref: '#/definitions/routerUtils.Meta'
     type: object
-  routerUtils.ResponseWithPagination-dbClient_User:
+  routerUtils.ResponseWithPagination-postgres_User:
     properties:
       data:
         items:
-          $ref: '#/definitions/dbClient.User'
+          $ref: '#/definitions/postgres.User'
         type: array
       meta:
         $ref: '#/definitions/routerUtils.Meta'
@@ -410,7 +410,7 @@ definitions:
   tasksRouter.groupedByStatusTasks:
     additionalProperties:
       items:
-        $ref: '#/definitions/dbClient.Task'
+        $ref: '#/definitions/postgres.Task'
       type: array
     type: object
   tasksRouter.updateTaskBody:
@@ -436,7 +436,7 @@ definitions:
     properties:
       role:
         allOf:
-        - $ref: '#/definitions/dbClient.UserRole'
+        - $ref: '#/definitions/postgres.UserRole'
         enum:
         - owner
         - admin
@@ -513,7 +513,7 @@ paths:
         "200":
           description: User profile data
           schema:
-            $ref: '#/definitions/dbClient.User'
+            $ref: '#/definitions/postgres.User'
         "400":
           description: Invalid request
           schema:
@@ -584,7 +584,7 @@ paths:
         "201":
           description: User profile data
           schema:
-            $ref: '#/definitions/dbClient.User'
+            $ref: '#/definitions/postgres.User'
         "400":
           description: Invalid request
           schema:
@@ -679,7 +679,7 @@ paths:
         "200":
           description: User profile data
           schema:
-            $ref: '#/definitions/dbClient.User'
+            $ref: '#/definitions/postgres.User'
         "400":
           description: Invalid request
           schema:
@@ -745,7 +745,7 @@ paths:
         "200":
           description: User profile data
           schema:
-            $ref: '#/definitions/dbClient.User'
+            $ref: '#/definitions/postgres.User'
         "400":
           description: Invalid request
           schema:
@@ -780,7 +780,7 @@ paths:
         "200":
           description: Workspace data
           schema:
-            $ref: '#/definitions/dbClient.Workspace'
+            $ref: '#/definitions/postgres.Workspace'
         "400":
           description: Invalid request
           schema:
@@ -818,7 +818,7 @@ paths:
         "200":
           description: User profile data
           schema:
-            $ref: '#/definitions/dbClient.User'
+            $ref: '#/definitions/postgres.User'
         "400":
           description: Email is invalid or missing
           schema:
@@ -875,7 +875,7 @@ paths:
         "200":
           description: User list
           schema:
-            $ref: '#/definitions/routerUtils.ResponseWithPagination-dbClient_User'
+            $ref: '#/definitions/routerUtils.ResponseWithPagination-postgres_User'
         "401":
           description: Unauthorized if session is missing or invalid
           schema:
@@ -903,7 +903,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/dbClient.Workspace'
+              $ref: '#/definitions/postgres.Workspace'
             type: array
         "401":
           description: Unauthorized if session is missing or invalid
@@ -933,7 +933,7 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/dbClient.Workspace'
+            $ref: '#/definitions/postgres.Workspace'
         "400":
           description: Bad Request
           schema:
@@ -969,7 +969,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dbClient.Workspace'
+            $ref: '#/definitions/postgres.Workspace'
         "400":
           description: Bad Request
           schema:
@@ -1015,7 +1015,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dbClient.Workspace'
+            $ref: '#/definitions/postgres.Workspace'
         "400":
           description: Bad Request
           schema:
@@ -1055,7 +1055,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/dbClient.WorkspaceAccess'
+              $ref: '#/definitions/postgres.WorkspaceAccess'
             type: array
         "400":
           description: Bad Request
@@ -1190,7 +1190,7 @@ paths:
           description: OK
           schema:
             items:
-              $ref: '#/definitions/dbClient.Page'
+              $ref: '#/definitions/postgres.Page'
             type: array
         "400":
           description: Bad Request
@@ -1237,7 +1237,7 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/dbClient.Page'
+            $ref: '#/definitions/postgres.Page'
         "400":
           description: Bad Request
           schema:
@@ -1277,7 +1277,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dbClient.Page'
+            $ref: '#/definitions/postgres.Page'
         "400":
           description: Bad Request
           schema:
@@ -1325,7 +1325,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dbClient.Page'
+            $ref: '#/definitions/postgres.Page'
         "400":
           description: Bad Request
           schema:
@@ -1376,7 +1376,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dbClient.Page'
+            $ref: '#/definitions/postgres.Page'
         "400":
           description: Bad Request
           schema:
@@ -1562,7 +1562,7 @@ paths:
         "201":
           description: Created
           schema:
-            $ref: '#/definitions/dbClient.Task'
+            $ref: '#/definitions/postgres.Task'
         "400":
           description: Bad Request
           schema:
@@ -1603,7 +1603,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dbClient.Task'
+            $ref: '#/definitions/postgres.Task'
         "401":
           description: Unauthorized
           schema:
@@ -1643,7 +1643,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dbClient.Task'
+            $ref: '#/definitions/postgres.Task'
         "401":
           description: Unauthorized if session is missing or invalid
           schema:
@@ -1691,7 +1691,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dbClient.Task'
+            $ref: '#/definitions/postgres.Task'
         "400":
           description: Bad Request
           schema:
@@ -1744,7 +1744,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/routerUtils.ResponseWithPagination-dbClient_TaskChatMessage'
+            $ref: '#/definitions/routerUtils.ResponseWithPagination-mongo_TaskChatMessage'
         "401":
           description: Unauthorized if session is missing or invalid
           schema:
@@ -1792,7 +1792,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dbClient.TaskChatMessage'
+            $ref: '#/definitions/mongo.TaskChatMessage'
         "400":
           description: Bad Request
           schema:
@@ -1845,7 +1845,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/routerUtils.ResponseWithPagination-dbClient_EntityVersionDocument'
+            $ref: '#/definitions/routerUtils.ResponseWithPagination-mongo_EntityVersionDocument'
         "401":
           description: Unauthorized if session is missing or invalid
           schema:
@@ -1894,7 +1894,7 @@ paths:
         "200":
           description: OK
           schema:
-            $ref: '#/definitions/dbClient.Task'
+            $ref: '#/definitions/postgres.Task'
         "400":
           description: Bad Request
           schema:
