@@ -2,8 +2,8 @@ package pagesRouter
 
 import (
 	"main/internal/postgres"
-	"main/router/errorHandlers"
-	routerUtils "main/router/utils"
+	"main/utils/errorHandlers"
+	"main/utils/routerUtils"
 	"net/http"
 
 	"github.com/gin-contrib/sessions"

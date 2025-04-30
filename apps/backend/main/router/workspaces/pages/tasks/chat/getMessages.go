@@ -3,8 +3,8 @@ package tasksCharRouter
 import (
 	"context"
 	mongoClient "main/internal/mongo"
-	"main/router/errorHandlers"
-	routerUtils "main/router/utils"
+	"main/utils/errorHandlers"
+	"main/utils/pagination"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -22,7 +22,7 @@ import (
 // @Param				task_id path string true "Task ID"
 // @Param				limit query int false "Default is 10"
 // @Param				offset query int false "Default is 0"
-// @Success				200 {object} routerUtils.ResponseWithPagination[mongoClient.TaskChatMessage]
+// @Success				200 {object} pagination.ResponseWithPagination[mongoClient.TaskChatMessage]
 // @Failure				401 {object} errorHandlers.Error "Unauthorized if session is missing or invalid"
 // @Failure				404 {object} errorHandlers.Error
 // @Failure				500 {object} errorHandlers.Error
@@ -36,7 +36,7 @@ func getMessages(taskChatsCollection *mongo.Collection) gin.HandlerFunc {
 			return
 		}
 
-		limit, offset := routerUtils.ValidatePaginationParams(ctx, routerUtils.DefaultPaginationLimit, routerUtils.DefaultPaginationOffset)
+		limit, offset := pagination.ValidatePaginationParams(ctx, pagination.DefaultPaginationLimit, pagination.DefaultPaginationOffset)
 
 		options := options.Find().SetSort(gin.H{"createdat": -1}).SetLimit(int64(limit)).SetSkip(int64(offset))
 
@@ -67,14 +67,6 @@ func getMessages(taskChatsCollection *mongo.Collection) gin.HandlerFunc {
 			messages = []mongoClient.TaskChatMessage{}
 		}
 
-		ctx.JSON(http.StatusOK, routerUtils.ResponseWithPagination[mongoClient.TaskChatMessage]{
-			Data: messages,
-			Meta: routerUtils.Meta{
-				Total:   int(total),
-				Limit:   limit,
-				Offset:  offset,
-				HasMore: limit+offset < int(total),
-			},
-		})
+		ctx.JSON(http.StatusOK, pagination.NewResponseWithPagination(messages, limit, offset, int(total)))
 	}
 }

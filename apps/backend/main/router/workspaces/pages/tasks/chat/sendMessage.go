@@ -6,8 +6,8 @@ import (
 	"main/internal/postgres"
 	"main/internal/socketManager"
 	"main/internal/validation"
-	"main/router/errorHandlers"
-	routerUtils "main/router/utils"
+	"main/utils/errorHandlers"
+	"main/utils/sessionTools"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -66,11 +66,11 @@ func sendMessage(taskChatCollection *mongo.Collection) gin.HandlerFunc {
 			return
 		}
 
-		user_id, _ := routerUtils.GetUserIdFromSession(ctx)
+		userId := sessionTools.MustGetUserIdFromSession(ctx)
 
 		var user postgres.User
 
-		if err := postgres.DB.First(&user, "id = ?", user_id).Error; err != nil {
+		if err := postgres.DB.First(&user, "id = ?", userId).Error; err != nil {
 			if err == gorm.ErrRecordNotFound {
 				errorHandlers.NotFound(ctx, "user not found")
 			} else {

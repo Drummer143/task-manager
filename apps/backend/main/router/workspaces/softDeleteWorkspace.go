@@ -2,8 +2,9 @@ package workspacesRouter
 
 import (
 	"main/internal/postgres"
-	"main/router/errorHandlers"
-	routerUtils "main/router/utils"
+	"main/utils/errorHandlers"
+	"main/utils/routerUtils"
+	"main/utils/sessionTools"
 	"net/http"
 	"time"
 
@@ -31,7 +32,7 @@ func softDeleteWorkspace(ctx *gin.Context) {
 		return
 	}
 
-	userId, _ := routerUtils.GetUserIdFromSession(ctx)
+	userId := sessionTools.MustGetUserIdFromSession(ctx)
 
 	_, workspaceAccess, ok := routerUtils.CheckWorkspaceAccess(ctx, postgres.DB, postgres.DB, workspaceId, userId)
 

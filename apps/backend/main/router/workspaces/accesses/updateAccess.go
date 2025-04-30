@@ -2,8 +2,9 @@ package workspacesAccessesRouter
 
 import (
 	"main/internal/postgres"
-	"main/router/errorHandlers"
-	routerUtils "main/router/utils"
+	"main/utils/errorHandlers"
+	"main/utils/routerUtils"
+	"main/utils/sessionTools"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -39,7 +40,7 @@ func updateAccess(ctx *gin.Context) {
 		return
 	}
 
-	currentUserId, _ := routerUtils.GetUserIdFromSession(ctx)
+	currentUserId := sessionTools.MustGetUserIdFromSession(ctx)
 
 	tx := postgres.DB.Begin()
 	defer func() {

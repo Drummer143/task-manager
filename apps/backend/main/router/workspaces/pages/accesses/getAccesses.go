@@ -2,8 +2,9 @@ package accessesRouter
 
 import (
 	"main/internal/postgres"
-	"main/router/errorHandlers"
-	routerUtils "main/router/utils"
+	"main/utils/errorHandlers"
+	"main/utils/routerUtils"
+	"main/utils/sessionTools"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -32,7 +33,7 @@ type getPageAccessesResponse struct {
 func getPageAccesses(ctx *gin.Context) {
 	pageId := uuid.MustParse(ctx.Param("page_id"))
 
-	userId, _ := routerUtils.GetUserIdFromSession(ctx)
+	userId := sessionTools.MustGetUserIdFromSession(ctx)
 
 	_, access, ok := routerUtils.CheckPageAccess(ctx, postgres.DB, postgres.DB, pageId, userId)
 

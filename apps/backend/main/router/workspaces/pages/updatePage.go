@@ -3,8 +3,9 @@ package pagesRouter
 import (
 	"main/internal/postgres"
 	"main/internal/validation"
-	"main/router/errorHandlers"
-	routerUtils "main/router/utils"
+	"main/utils/errorHandlers"
+	"main/utils/routerUtils"
+	"main/utils/sessionTools"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -38,7 +39,7 @@ func updatePage(ctx *gin.Context) {
 		return
 	}
 
-	userId, _ := routerUtils.GetUserIdFromSession(ctx)
+	userId := sessionTools.MustGetUserIdFromSession(ctx)
 
 	page, pageAccess, ok := routerUtils.CheckPageAccess(ctx, postgres.DB, postgres.DB, pageId, userId)
 

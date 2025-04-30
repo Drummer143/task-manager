@@ -2,7 +2,7 @@ package workspacesAccessesRouter
 
 import (
 	"main/internal/postgres"
-	"main/router/errorHandlers"
+	"main/utils/errorHandlers"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -24,7 +24,7 @@ import (
 func getWorkspaceAccesses(ctx *gin.Context) {
 	workspaceId := uuid.MustParse(ctx.Param("workspace_id"))
 
-	// userId, _ := routerUtils.GetUserIdFromSession(ctx)
+	// userId := sessionTools.MustGetUserIdFromSession(ctx)
 
 	// _, access, ok := routerUtils.CheckWorkspaceAccess(ctx, postgres.DB, postgres.DB, workspaceId, userId)
 

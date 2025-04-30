@@ -3,7 +3,7 @@ package workspacesRouter
 import (
 	"main/internal/postgres"
 	"main/internal/validation"
-	"main/router/errorHandlers"
+	"main/utils/errorHandlers"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"

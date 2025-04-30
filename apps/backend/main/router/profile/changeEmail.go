@@ -3,7 +3,7 @@ package profileRouter
 import (
 	"main/internal/postgres"
 	"main/internal/validation"
-	"main/router/errorHandlers"
+	"main/utils/errorHandlers"
 	"net/http"
 	"time"
 

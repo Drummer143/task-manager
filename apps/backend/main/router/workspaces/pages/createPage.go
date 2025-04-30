@@ -3,8 +3,9 @@ package pagesRouter
 import (
 	"main/internal/postgres"
 	"main/internal/validation"
-	"main/router/errorHandlers"
-	routerUtils "main/router/utils"
+	"main/utils/errorHandlers"
+	"main/utils/routerUtils"
+	"main/utils/sessionTools"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -57,7 +58,7 @@ func createPage(ctx *gin.Context) {
 		return
 	}
 
-	userId, _ := routerUtils.GetUserIdFromSession(ctx)
+	userId := sessionTools.MustGetUserIdFromSession(ctx)
 
 	if body.ParentId != nil {
 		_, access, ok := routerUtils.CheckPageAccess(ctx, postgres.DB, postgres.DB, *body.ParentId, userId)

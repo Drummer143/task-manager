@@ -5,8 +5,8 @@ import (
 	mongoClient "main/internal/mongo"
 	"main/internal/postgres"
 	"main/internal/validation"
-	"main/router/errorHandlers"
-	routerUtils "main/router/utils"
+	"main/utils/errorHandlers"
+	"main/utils/sessionTools"
 	"net/http"
 	"time"
 
@@ -69,7 +69,7 @@ func changeStatus(tasksVersionCollection *mongo.Collection) gin.HandlerFunc {
 			return
 		}
 
-		currentUserId, _ := routerUtils.GetUserIdFromSession(ctx)
+		currentUserId := sessionTools.MustGetUserIdFromSession(ctx)
 		var user postgres.User
 
 		if err := postgres.DB.First(&user, "id = ?", currentUserId).Error; err != nil {

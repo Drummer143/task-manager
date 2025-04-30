@@ -3,8 +3,9 @@ package workspacesRouter
 import (
 	"main/internal/postgres"
 	"main/internal/validation"
-	"main/router/errorHandlers"
-	routerUtils "main/router/utils"
+	"main/utils/errorHandlers"
+	"main/utils/routerUtils"
+	"main/utils/sessionTools"
 	"net/http"
 	"time"
 
@@ -38,7 +39,7 @@ func updateWorkspace(ctx *gin.Context) {
 		return
 	}
 
-	userId, _ := routerUtils.GetUserIdFromSession(ctx)
+	userId := sessionTools.MustGetUserIdFromSession(ctx)
 
 	workspace, workspaceAccess, ok := routerUtils.CheckWorkspaceAccess(ctx, postgres.DB, postgres.DB, workspaceId, userId)
 

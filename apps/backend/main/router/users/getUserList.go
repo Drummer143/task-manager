@@ -2,8 +2,8 @@ package usersRouter
 
 import (
 	"main/internal/postgres"
-	"main/router/errorHandlers"
-	routerUtils "main/router/utils"
+	"main/utils/errorHandlers"
+	"main/utils/pagination"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -17,7 +17,7 @@ import (
 // @Param				offset query int false "Default is 0"
 // @Param				exclude query string false "comma separated list of ids to exclude"
 // @Produce				json
-// @Success				200 {object} routerUtils.ResponseWithPagination[postgres.User] "User list"
+// @Success				200 {object} pagination.ResponseWithPagination[postgres.User] "User list"
 // @Failure				401 {object} errorHandlers.Error "Unauthorized if session is missing or invalid"
 // @Failure				500 {object} errorHandlers.Error
 // @Router				/users [get]
@@ -27,7 +27,7 @@ func getUserList(ctx *gin.Context) {
 
 	dbWithPagination := postgres.DB
 
-	limit, offset := routerUtils.ValidatePaginationParams(ctx, routerUtils.DefaultPaginationLimit, routerUtils.DefaultPaginationOffset)
+	limit, offset := pagination.ValidatePaginationParams(ctx, pagination.DefaultPaginationLimit, pagination.DefaultPaginationOffset)
 
 	if limit > 0 {
 		dbWithPagination = dbWithPagination.Limit(limit)
@@ -71,13 +71,5 @@ func getUserList(ctx *gin.Context) {
 		users = []postgres.User{}
 	}
 
-	ctx.JSON(200, routerUtils.ResponseWithPagination[postgres.User]{
-		Data: users,
-		Meta: routerUtils.Meta{
-			Total:   int(total),
-			Limit:   limit,
-			Offset:  offset,
-			HasMore: offset+limit < int(total),
-		},
-	})
+	ctx.JSON(200, pagination.NewResponseWithPagination(users, limit, offset, int(total)))
 }

@@ -9,7 +9,7 @@ import (
 	"image/jpeg"
 	"image/png"
 	"main/internal/postgres"
-	"main/router/errorHandlers"
+	"main/utils/errorHandlers"
 	"mime/multipart"
 	"net/http"
 	"os"

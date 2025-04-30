@@ -1,9 +1,9 @@
 package authRouter
 
 import (
-	"main/auth"
 	"main/internal/postgres"
-	"main/router/errorHandlers"
+	"main/utils/auth"
+	"main/utils/errorHandlers"
 	"net/http"
 
 	"github.com/gin-gonic/gin"

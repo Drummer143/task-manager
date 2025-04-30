@@ -2,8 +2,8 @@ package pagesRouter
 
 import (
 	"main/internal/postgres"
-	"main/router/errorHandlers"
-	routerUtils "main/router/utils"
+	"main/utils/errorHandlers"
+	"main/utils/sessionTools"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -24,7 +24,7 @@ import (
 // @Router				/workspaces/{workspace_id}/pages [get]
 func getPageList(ctx *gin.Context) {
 	workspaceId := uuid.MustParse(ctx.Param("workspace_id"))
-	userId, _ := routerUtils.GetUserIdFromSession(ctx)
+	userId := sessionTools.MustGetUserIdFromSession(ctx)
 
 	var pages []postgres.Page
 

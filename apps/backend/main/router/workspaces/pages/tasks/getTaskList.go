@@ -2,7 +2,7 @@ package tasksRouter
 
 import (
 	"main/internal/postgres"
-	"main/router/errorHandlers"
+	"main/utils/errorHandlers"
 	"net/http"
 	"strings"
 

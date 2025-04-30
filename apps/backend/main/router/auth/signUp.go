@@ -2,10 +2,10 @@ package authRouter
 
 import (
 	"fmt"
-	"main/auth"
 	"main/internal/postgres"
 	"main/internal/validation"
-	"main/router/errorHandlers"
+	"main/utils/auth"
+	"main/utils/errorHandlers"
 	"net/http"
 	"time"
 
