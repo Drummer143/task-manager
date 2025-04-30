@@ -1,8 +1,8 @@
 package workspacesAccessesRouter
 
 import (
+	"libs/backend/errorHandlers/libs/errorHandlers"
 	"main/internal/postgres"
-	"main/utils/errorHandlers"
 	"net/http"
 
 	"github.com/gin-gonic/gin"

@@ -2,9 +2,9 @@ package tasksCharRouter
 
 import (
 	"context"
+	"libs/backend/errorHandlers/libs/errorCodes"
+	"libs/backend/errorHandlers/libs/errorHandlers"
 	mongoClient "main/internal/mongo"
-	"main/utils/errorCodes"
-	"main/utils/errorHandlers"
 	"main/utils/pagination"
 	"net/http"
 

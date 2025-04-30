@@ -2,11 +2,11 @@ package authRouter
 
 import (
 	"fmt"
+	"libs/backend/errorHandlers/libs/errorCodes"
+	"libs/backend/errorHandlers/libs/errorHandlers"
 	"main/internal/postgres"
 	"main/internal/validation"
 	"main/utils/auth"
-	"main/utils/errorCodes"
-	"main/utils/errorHandlers"
 	"net/http"
 	"time"
 

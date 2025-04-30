@@ -1,9 +1,9 @@
 package routerUtils
 
 import (
+	"libs/backend/errorHandlers/libs/errorCodes"
+	"libs/backend/errorHandlers/libs/errorHandlers"
 	"main/internal/postgres"
-	"main/utils/errorCodes"
-	"main/utils/errorHandlers"
 	"time"
 
 	"github.com/gin-gonic/gin"

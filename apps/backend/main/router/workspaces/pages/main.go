@@ -1,11 +1,11 @@
 package pagesRouter
 
 import (
+	"libs/backend/errorHandlers/libs/errorCodes"
+	"libs/backend/errorHandlers/libs/errorHandlers"
 	"main/internal/postgres"
 	accessesRouter "main/router/workspaces/pages/accesses"
 	tasksRouter "main/router/workspaces/pages/tasks"
-	"main/utils/errorCodes"
-	"main/utils/errorHandlers"
 	"main/utils/ginTools"
 	"main/utils/routerUtils"
 

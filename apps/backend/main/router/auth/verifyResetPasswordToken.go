@@ -1,10 +1,10 @@
 package authRouter
 
 import (
+	"libs/backend/errorHandlers/libs/errorCodes"
+	"libs/backend/errorHandlers/libs/errorHandlers"
 	"main/internal/postgres"
 	"main/utils/auth"
-	"main/utils/errorCodes"
-	"main/utils/errorHandlers"
 	"net/http"
 
 	"github.com/gin-gonic/gin"

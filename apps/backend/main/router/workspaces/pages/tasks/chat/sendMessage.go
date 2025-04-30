@@ -2,12 +2,12 @@ package tasksCharRouter
 
 import (
 	"fmt"
+	"libs/backend/errorHandlers/libs/errorCodes"
+	"libs/backend/errorHandlers/libs/errorHandlers"
 	mongoClient "main/internal/mongo"
 	"main/internal/postgres"
 	"main/internal/socketManager"
 	"main/internal/validation"
-	"main/utils/errorCodes"
-	"main/utils/errorHandlers"
 	"main/utils/ginTools"
 	"time"
 

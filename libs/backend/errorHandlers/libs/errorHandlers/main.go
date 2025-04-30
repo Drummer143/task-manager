@@ -1,7 +1,7 @@
 package errorHandlers
 
 import (
-	"main/utils/errorCodes"
+	"libs/backend/errorHandlers/libs/errorCodes"
 	"net/http"
 
 	"github.com/gin-gonic/gin"

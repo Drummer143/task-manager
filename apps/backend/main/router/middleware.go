@@ -1,10 +1,10 @@
 package router
 
 import (
+	"libs/backend/errorHandlers/libs/errorCodes"
+	"libs/backend/errorHandlers/libs/errorHandlers"
 	"main/internal/postgres"
 	"main/utils/auth"
-	"main/utils/errorCodes"
-	"main/utils/errorHandlers"
 	"main/utils/ginTools"
 
 	"github.com/gin-contrib/sessions"

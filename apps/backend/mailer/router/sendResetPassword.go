@@ -1,8 +1,9 @@
 package router
 
 import (
+	"libs/backend/errorHandlers/libs/errorCodes"
+	"libs/backend/errorHandlers/libs/errorHandlers"
 	"mailer/mail"
-	"mailer/router/errorHandlers"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -26,12 +27,12 @@ func resetPassword(ctx *gin.Context) {
 	var body resetPasswordRequest
 
 	if err := ctx.BindJSON(&body); err != nil {
-		errorHandlers.BadRequest(ctx, "invalid request", err)
+		errorHandlers.BadRequest(ctx, errorCodes.BadRequestErrorCodeInvalidBody, nil)
 		return
 	}
 
 	if err := mail.SendResetPasswordMessage(body.Email, body.Token); err != nil {
-		errorHandlers.InternalServerError(ctx, "error while sending email")
+		errorHandlers.InternalServerError(ctx)
 		return
 	}
 

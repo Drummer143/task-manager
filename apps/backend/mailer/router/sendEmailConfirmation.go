@@ -1,10 +1,11 @@
 package router
 
 import (
+	"libs/backend/errorHandlers/libs/errorCodes"
+	"libs/backend/errorHandlers/libs/errorHandlers"
 	"net/http"
 
 	"mailer/mail"
-	"mailer/router/errorHandlers"
 
 	"github.com/gin-gonic/gin"
 )
@@ -27,12 +28,12 @@ func emailConfirmation(ctx *gin.Context) {
 	var body emailConfirmationRequest
 
 	if err := ctx.BindJSON(&body); err != nil {
-		errorHandlers.BadRequest(ctx, "invalid request", err)
+		errorHandlers.BadRequest(ctx, errorCodes.BadRequestErrorCodeInvalidBody, nil)
 		return
 	}
 
 	if err := mail.SendEmailConfirmationMessage(body.Email, body.Token); err != nil {
-		errorHandlers.InternalServerError(ctx, "failed to send email confirmation")
+		errorHandlers.InternalServerError(ctx)
 		return
 	}
 

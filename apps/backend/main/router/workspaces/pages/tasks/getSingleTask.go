@@ -1,9 +1,9 @@
 package tasksRouter
 
 import (
+	"libs/backend/errorHandlers/libs/errorCodes"
+	"libs/backend/errorHandlers/libs/errorHandlers"
 	"main/internal/postgres"
-	"main/utils/errorCodes"
-	"main/utils/errorHandlers"
 	"net/http"
 
 	"github.com/gin-gonic/gin"

@@ -1,8 +1,8 @@
 package usersRouter
 
 import (
+	"libs/backend/errorHandlers/libs/errorHandlers"
 	"main/internal/postgres"
-	"main/utils/errorHandlers"
 	"main/utils/pagination"
 	"strings"
 

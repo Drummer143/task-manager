@@ -1,9 +1,9 @@
 package accessesRouter
 
 import (
+	"libs/backend/errorHandlers/libs/errorCodes"
+	"libs/backend/errorHandlers/libs/errorHandlers"
 	"main/internal/postgres"
-	"main/utils/errorCodes"
-	"main/utils/errorHandlers"
 	"main/utils/ginTools"
 	"main/utils/routerUtils"
 

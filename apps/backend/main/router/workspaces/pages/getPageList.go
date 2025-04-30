@@ -1,8 +1,8 @@
 package pagesRouter
 
 import (
+	"libs/backend/errorHandlers/libs/errorHandlers"
 	"main/internal/postgres"
-	"main/utils/errorHandlers"
 	"main/utils/ginTools"
 
 	"github.com/gin-gonic/gin"

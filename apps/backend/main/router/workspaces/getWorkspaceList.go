@@ -1,8 +1,8 @@
 package workspacesRouter
 
 import (
+	"libs/backend/errorHandlers/libs/errorHandlers"
 	"main/internal/postgres"
-	"main/utils/errorHandlers"
 	"main/utils/ginTools"
 	"net/http"
 	"strings"
