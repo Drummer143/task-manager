@@ -2,7 +2,7 @@ package authRouter
 
 import (
 	"main/auth"
-	"main/dbClient"
+	"main/internal/postgres"
 	"main/router/errorHandlers"
 	"net/http"
 
@@ -20,32 +20,30 @@ import (
 // @Failure			400 {object} errorHandlers.Error "Invalid request"
 // @Failure			500 {object} errorHandlers.Error "Internal server error if server fails"
 // @Router			/auth/verify-reset-password-token [get]
-func verifyResetPasswordToken(postgres *gorm.DB) gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		token := ctx.Query("token")
+func verifyResetPasswordToken(ctx *gin.Context) {
+	token := ctx.Query("token")
 
-		if token == "" {
-			errorHandlers.BadRequest(ctx, "invalid token", nil)
-			return
-		}
-
-		var userCredentials dbClient.UserCredential
-
-		if err := postgres.Where("password_reset_token = ?", token).First(&userCredentials).Error; err != nil {
-			if err == gorm.ErrRecordNotFound {
-				errorHandlers.BadRequest(ctx, "invalid token", nil)
-				return
-			}
-
-			errorHandlers.InternalServerError(ctx, "failed to get user credentials")
-			return
-		}
-
-		if _, err := auth.ValidateJWT(token); err != nil {
-			errorHandlers.BadRequest(ctx, "invalid token", nil)
-			return
-		}
-
-		ctx.Status(http.StatusNoContent)
+	if token == "" {
+		errorHandlers.BadRequest(ctx, "invalid token", nil)
+		return
 	}
+
+	var userCredentials postgres.UserCredential
+
+	if err := postgres.DB.Where("password_reset_token = ?", token).First(&userCredentials).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			errorHandlers.BadRequest(ctx, "invalid token", nil)
+			return
+		}
+
+		errorHandlers.InternalServerError(ctx, "failed to get user credentials")
+		return
+	}
+
+	if _, err := auth.ValidateJWT(token); err != nil {
+		errorHandlers.BadRequest(ctx, "invalid token", nil)
+		return
+	}
+
+	ctx.Status(http.StatusNoContent)
 }

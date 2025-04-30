@@ -92,7 +92,7 @@ const docTemplate = `{
                     "200": {
                         "description": "User profile data",
                         "schema": {
-                            "$ref": "#/definitions/dbClient.User"
+                            "$ref": "#/definitions/postgres.User"
                         }
                     },
                     "400": {
@@ -201,7 +201,7 @@ const docTemplate = `{
                     "201": {
                         "description": "User profile data",
                         "schema": {
-                            "$ref": "#/definitions/dbClient.User"
+                            "$ref": "#/definitions/postgres.User"
                         }
                     },
                     "400": {
@@ -335,7 +335,7 @@ const docTemplate = `{
                     "200": {
                         "description": "User profile data",
                         "schema": {
-                            "$ref": "#/definitions/dbClient.User"
+                            "$ref": "#/definitions/postgres.User"
                         }
                     },
                     "400": {
@@ -425,7 +425,7 @@ const docTemplate = `{
                     "200": {
                         "description": "User profile data",
                         "schema": {
-                            "$ref": "#/definitions/dbClient.User"
+                            "$ref": "#/definitions/postgres.User"
                         }
                     },
                     "400": {
@@ -478,7 +478,7 @@ const docTemplate = `{
                     "200": {
                         "description": "Workspace data",
                         "schema": {
-                            "$ref": "#/definitions/dbClient.Workspace"
+                            "$ref": "#/definitions/postgres.Workspace"
                         }
                     },
                     "400": {
@@ -536,7 +536,7 @@ const docTemplate = `{
                     "200": {
                         "description": "User profile data",
                         "schema": {
-                            "$ref": "#/definitions/dbClient.User"
+                            "$ref": "#/definitions/postgres.User"
                         }
                     },
                     "400": {
@@ -623,7 +623,7 @@ const docTemplate = `{
                     "200": {
                         "description": "User list",
                         "schema": {
-                            "$ref": "#/definitions/routerUtils.ResponseWithPagination-dbClient_User"
+                            "$ref": "#/definitions/routerUtils.ResponseWithPagination-postgres_User"
                         }
                     },
                     "401": {
@@ -665,7 +665,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/dbClient.Workspace"
+                                "$ref": "#/definitions/postgres.Workspace"
                             }
                         }
                     },
@@ -710,7 +710,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/dbClient.Workspace"
+                            "$ref": "#/definitions/postgres.Workspace"
                         }
                     },
                     "400": {
@@ -763,7 +763,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dbClient.Workspace"
+                            "$ref": "#/definitions/postgres.Workspace"
                         }
                     },
                     "400": {
@@ -832,7 +832,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dbClient.Workspace"
+                            "$ref": "#/definitions/postgres.Workspace"
                         }
                     },
                     "400": {
@@ -893,7 +893,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/dbClient.WorkspaceAccess"
+                                "$ref": "#/definitions/postgres.WorkspaceAccess"
                             }
                         }
                     },
@@ -1093,7 +1093,7 @@ const docTemplate = `{
                         "schema": {
                             "type": "array",
                             "items": {
-                                "$ref": "#/definitions/dbClient.Page"
+                                "$ref": "#/definitions/postgres.Page"
                             }
                         }
                     },
@@ -1163,7 +1163,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/dbClient.Page"
+                            "$ref": "#/definitions/postgres.Page"
                         }
                     },
                     "400": {
@@ -1229,7 +1229,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dbClient.Page"
+                            "$ref": "#/definitions/postgres.Page"
                         }
                     },
                     "400": {
@@ -1305,7 +1305,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dbClient.Page"
+                            "$ref": "#/definitions/postgres.Page"
                         }
                     },
                     "400": {
@@ -1369,7 +1369,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dbClient.Page"
+                            "$ref": "#/definitions/postgres.Page"
                         }
                     },
                     "400": {
@@ -1644,7 +1644,7 @@ const docTemplate = `{
                     "201": {
                         "description": "Created",
                         "schema": {
-                            "$ref": "#/definitions/dbClient.Task"
+                            "$ref": "#/definitions/postgres.Task"
                         }
                     },
                     "400": {
@@ -1705,7 +1705,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dbClient.Task"
+                            "$ref": "#/definitions/postgres.Task"
                         }
                     },
                     "401": {
@@ -1776,7 +1776,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dbClient.Task"
+                            "$ref": "#/definitions/postgres.Task"
                         }
                     },
                     "400": {
@@ -1841,7 +1841,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dbClient.Task"
+                            "$ref": "#/definitions/postgres.Task"
                         }
                     },
                     "401": {
@@ -1914,7 +1914,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/routerUtils.ResponseWithPagination-dbClient_TaskChatMessage"
+                            "$ref": "#/definitions/routerUtils.ResponseWithPagination-mongo_TaskChatMessage"
                         }
                     },
                     "401": {
@@ -1985,7 +1985,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dbClient.TaskChatMessage"
+                            "$ref": "#/definitions/mongo.TaskChatMessage"
                         }
                     },
                     "400": {
@@ -2064,7 +2064,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/routerUtils.ResponseWithPagination-dbClient_EntityVersionDocument"
+                            "$ref": "#/definitions/routerUtils.ResponseWithPagination-mongo_EntityVersionDocument"
                         }
                     },
                     "401": {
@@ -2137,7 +2137,7 @@ const docTemplate = `{
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/dbClient.Task"
+                            "$ref": "#/definitions/postgres.Task"
                         }
                     },
                     "400": {
@@ -2244,13 +2244,13 @@ const docTemplate = `{
                     "type": "boolean"
                 },
                 "role": {
-                    "$ref": "#/definitions/dbClient.UserRole"
+                    "$ref": "#/definitions/postgres.UserRole"
                 },
                 "updatedAt": {
                     "type": "string"
                 },
                 "user": {
-                    "$ref": "#/definitions/dbClient.User"
+                    "$ref": "#/definitions/postgres.User"
                 }
             }
         },
@@ -2270,7 +2270,7 @@ const docTemplate = `{
                     ],
                     "allOf": [
                         {
-                            "$ref": "#/definitions/dbClient.UserRole"
+                            "$ref": "#/definitions/postgres.UserRole"
                         }
                     ]
                 },
@@ -2339,23 +2339,41 @@ const docTemplate = `{
                 }
             }
         },
-        "dbClient.Change": {
+        "errorHandlers.Error": {
+            "type": "object",
+            "properties": {
+                "details": {},
+                "error": {
+                    "type": "string"
+                },
+                "errorCode": {
+                    "type": "string"
+                },
+                "message": {
+                    "type": "string"
+                },
+                "statusCode": {
+                    "type": "integer"
+                }
+            }
+        },
+        "mongo.Change": {
             "type": "object",
             "properties": {
                 "from": {},
                 "to": {}
             }
         },
-        "dbClient.EntityVersionDocument": {
+        "mongo.EntityVersionDocument": {
             "type": "object",
             "properties": {
                 "author": {
-                    "$ref": "#/definitions/dbClient.ShortUserInfo"
+                    "$ref": "#/definitions/mongo.ShortUserInfo"
                 },
                 "changes": {
                     "type": "object",
                     "additionalProperties": {
-                        "$ref": "#/definitions/dbClient.Change"
+                        "$ref": "#/definitions/mongo.Change"
                     }
                 },
                 "created_at": {
@@ -2369,67 +2387,7 @@ const docTemplate = `{
                 }
             }
         },
-        "dbClient.Page": {
-            "type": "object",
-            "properties": {
-                "childPages": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dbClient.Page"
-                    }
-                },
-                "createdAt": {
-                    "type": "string"
-                },
-                "deletedAt": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "owner": {
-                    "$ref": "#/definitions/dbClient.User"
-                },
-                "parentPage": {
-                    "$ref": "#/definitions/dbClient.Page"
-                },
-                "role": {
-                    "$ref": "#/definitions/dbClient.UserRole"
-                },
-                "tasks": {
-                    "type": "array",
-                    "items": {
-                        "$ref": "#/definitions/dbClient.Task"
-                    }
-                },
-                "text": {
-                    "type": "string"
-                },
-                "title": {
-                    "type": "string"
-                },
-                "type": {
-                    "$ref": "#/definitions/dbClient.PageType"
-                },
-                "updatedAt": {
-                    "type": "string"
-                }
-            }
-        },
-        "dbClient.PageType": {
-            "type": "string",
-            "enum": [
-                "board",
-                "text",
-                "group"
-            ],
-            "x-enum-varnames": [
-                "PageTypeBoard",
-                "PageTypeText",
-                "PageTypeGroup"
-            ]
-        },
-        "dbClient.ShortUserInfo": {
+        "mongo.ShortUserInfo": {
             "type": "object",
             "properties": {
                 "id": {
@@ -2443,11 +2401,129 @@ const docTemplate = `{
                 }
             }
         },
-        "dbClient.Task": {
+        "mongo.TaskChatMessage": {
+            "type": "object",
+            "properties": {
+                "author": {
+                    "$ref": "#/definitions/mongo.ShortUserInfo"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "text": {
+                    "type": "string"
+                }
+            }
+        },
+        "pagesRouter.createPageBody": {
+            "type": "object",
+            "required": [
+                "title",
+                "type"
+            ],
+            "properties": {
+                "parentId": {
+                    "type": "string"
+                },
+                "text": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "type": {
+                    "enum": [
+                        "text",
+                        "board",
+                        "group"
+                    ],
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/postgres.PageType"
+                        }
+                    ]
+                }
+            }
+        },
+        "pagesRouter.updatePageBody": {
+            "type": "object",
+            "properties": {
+                "name": {
+                    "type": "string"
+                },
+                "text": {
+                    "type": "string"
+                }
+            }
+        },
+        "postgres.Page": {
+            "type": "object",
+            "properties": {
+                "childPages": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/postgres.Page"
+                    }
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "deletedAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "string"
+                },
+                "owner": {
+                    "$ref": "#/definitions/postgres.User"
+                },
+                "parentPage": {
+                    "$ref": "#/definitions/postgres.Page"
+                },
+                "role": {
+                    "$ref": "#/definitions/postgres.UserRole"
+                },
+                "tasks": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/postgres.Task"
+                    }
+                },
+                "text": {
+                    "type": "string"
+                },
+                "title": {
+                    "type": "string"
+                },
+                "type": {
+                    "$ref": "#/definitions/postgres.PageType"
+                },
+                "updatedAt": {
+                    "type": "string"
+                }
+            }
+        },
+        "postgres.PageType": {
+            "type": "string",
+            "enum": [
+                "board",
+                "text",
+                "group"
+            ],
+            "x-enum-varnames": [
+                "PageTypeBoard",
+                "PageTypeText",
+                "PageTypeGroup"
+            ]
+        },
+        "postgres.Task": {
             "type": "object",
             "properties": {
                 "assignee": {
-                    "$ref": "#/definitions/dbClient.User"
+                    "$ref": "#/definitions/postgres.User"
                 },
                 "createdAt": {
                     "type": "string"
@@ -2465,10 +2541,10 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "page": {
-                    "$ref": "#/definitions/dbClient.Page"
+                    "$ref": "#/definitions/postgres.Page"
                 },
                 "reporter": {
-                    "$ref": "#/definitions/dbClient.User"
+                    "$ref": "#/definitions/postgres.User"
                 },
                 "status": {
                     "type": "string"
@@ -2481,24 +2557,7 @@ const docTemplate = `{
                 }
             }
         },
-        "dbClient.TaskChatMessage": {
-            "type": "object",
-            "properties": {
-                "author": {
-                    "$ref": "#/definitions/dbClient.ShortUserInfo"
-                },
-                "createdAt": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "string"
-                },
-                "text": {
-                    "type": "string"
-                }
-            }
-        },
-        "dbClient.User": {
+        "postgres.User": {
             "type": "object",
             "properties": {
                 "createdAt": {
@@ -2533,7 +2592,7 @@ const docTemplate = `{
                 }
             }
         },
-        "dbClient.UserRole": {
+        "postgres.UserRole": {
             "type": "string",
             "enum": [
                 "owner",
@@ -2550,7 +2609,7 @@ const docTemplate = `{
                 "UserRoleGuest"
             ]
         },
-        "dbClient.Workspace": {
+        "postgres.Workspace": {
             "type": "object",
             "properties": {
                 "createdAt": {
@@ -2566,16 +2625,16 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "owner": {
-                    "$ref": "#/definitions/dbClient.User"
+                    "$ref": "#/definitions/postgres.User"
                 },
                 "pages": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dbClient.Page"
+                        "$ref": "#/definitions/postgres.Page"
                     }
                 },
                 "role": {
-                    "$ref": "#/definitions/dbClient.UserRole"
+                    "$ref": "#/definitions/postgres.UserRole"
                 },
                 "type": {
                     "type": "string"
@@ -2585,7 +2644,7 @@ const docTemplate = `{
                 }
             }
         },
-        "dbClient.WorkspaceAccess": {
+        "postgres.WorkspaceAccess": {
             "type": "object",
             "properties": {
                 "createdAt": {
@@ -2598,72 +2657,13 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "role": {
-                    "$ref": "#/definitions/dbClient.UserRole"
+                    "$ref": "#/definitions/postgres.UserRole"
                 },
                 "updatedAt": {
                     "type": "string"
                 },
                 "user": {
-                    "$ref": "#/definitions/dbClient.User"
-                }
-            }
-        },
-        "errorHandlers.Error": {
-            "type": "object",
-            "properties": {
-                "details": {},
-                "error": {
-                    "type": "string"
-                },
-                "errorCode": {
-                    "type": "string"
-                },
-                "message": {
-                    "type": "string"
-                },
-                "statusCode": {
-                    "type": "integer"
-                }
-            }
-        },
-        "pagesRouter.createPageBody": {
-            "type": "object",
-            "required": [
-                "title",
-                "type"
-            ],
-            "properties": {
-                "parentId": {
-                    "type": "string"
-                },
-                "text": {
-                    "type": "string"
-                },
-                "title": {
-                    "type": "string"
-                },
-                "type": {
-                    "enum": [
-                        "text",
-                        "board",
-                        "group"
-                    ],
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/dbClient.PageType"
-                        }
-                    ]
-                }
-            }
-        },
-        "pagesRouter.updatePageBody": {
-            "type": "object",
-            "properties": {
-                "name": {
-                    "type": "string"
-                },
-                "text": {
-                    "type": "string"
+                    "$ref": "#/definitions/postgres.User"
                 }
             }
         },
@@ -2712,7 +2712,7 @@ const docTemplate = `{
                     "type": "string"
                 },
                 "workspace": {
-                    "$ref": "#/definitions/dbClient.Workspace"
+                    "$ref": "#/definitions/postgres.Workspace"
                 }
             }
         },
@@ -2744,13 +2744,13 @@ const docTemplate = `{
                 }
             }
         },
-        "routerUtils.ResponseWithPagination-dbClient_EntityVersionDocument": {
+        "routerUtils.ResponseWithPagination-mongo_EntityVersionDocument": {
             "type": "object",
             "properties": {
                 "data": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dbClient.EntityVersionDocument"
+                        "$ref": "#/definitions/mongo.EntityVersionDocument"
                     }
                 },
                 "meta": {
@@ -2758,13 +2758,13 @@ const docTemplate = `{
                 }
             }
         },
-        "routerUtils.ResponseWithPagination-dbClient_TaskChatMessage": {
+        "routerUtils.ResponseWithPagination-mongo_TaskChatMessage": {
             "type": "object",
             "properties": {
                 "data": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dbClient.TaskChatMessage"
+                        "$ref": "#/definitions/mongo.TaskChatMessage"
                     }
                 },
                 "meta": {
@@ -2772,13 +2772,13 @@ const docTemplate = `{
                 }
             }
         },
-        "routerUtils.ResponseWithPagination-dbClient_User": {
+        "routerUtils.ResponseWithPagination-postgres_User": {
             "type": "object",
             "properties": {
                 "data": {
                     "type": "array",
                     "items": {
-                        "$ref": "#/definitions/dbClient.User"
+                        "$ref": "#/definitions/postgres.User"
                     }
                 },
                 "meta": {
@@ -2844,7 +2844,7 @@ const docTemplate = `{
             "additionalProperties": {
                 "type": "array",
                 "items": {
-                    "$ref": "#/definitions/dbClient.Task"
+                    "$ref": "#/definitions/postgres.Task"
                 }
             }
         },
@@ -2891,7 +2891,7 @@ const docTemplate = `{
                     ],
                     "allOf": [
                         {
-                            "$ref": "#/definitions/dbClient.UserRole"
+                            "$ref": "#/definitions/postgres.UserRole"
                         }
                     ]
                 },

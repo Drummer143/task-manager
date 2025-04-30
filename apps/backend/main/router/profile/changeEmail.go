@@ -1,7 +1,7 @@
 package profileRouter
 
 import (
-	"main/dbClient"
+	"main/internal/postgres"
 	"main/router/errorHandlers"
 	"main/validation"
 	"net/http"
@@ -24,21 +24,21 @@ type changeEmailBody struct {
 // @Accept			json
 // @Produce			json
 // @Param			email body changeEmailBody true "User email"
-// @Success			200 {object} dbClient.User "User profile data"
+// @Success			200 {object} postgres.User "User profile data"
 // @Failure			400 {object} errorHandlers.Error "Email is invalid or missing"
 // @Failure			401 {object} errorHandlers.Error "Unauthorized if session is missing or invalid"
 // @Failure			404 {object} errorHandlers.Error "User not found in database"
 // @Failure			500 {object} errorHandlers.Error "Internal server error if server fails"
 // @Router			/profile/email [patch]
-func changeEmail(validate *validator.Validate, postgres *gorm.DB) gin.HandlerFunc {
+func changeEmail(validate *validator.Validate) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		session := sessions.Default(ctx)
 
 		userId := session.Get("id").(uuid.UUID)
 
-		var user dbClient.User
+		var user postgres.User
 
-		if err := postgres.First(&user, "id = ?", userId).Error; err != nil {
+		if err := postgres.DB.First(&user, "id = ?", userId).Error; err != nil {
 			if err == gorm.ErrRecordNotFound {
 				errorHandlers.NotFound(ctx, "user not found")
 				return
@@ -68,7 +68,7 @@ func changeEmail(validate *validator.Validate, postgres *gorm.DB) gin.HandlerFun
 		user.Email = body.Email
 		user.UpdatedAt = time.Now()
 
-		if err := postgres.Save(&user).Error; err != nil {
+		if err := postgres.DB.Save(&user).Error; err != nil {
 			errorHandlers.InternalServerError(ctx, "failed to update user")
 			return
 		}

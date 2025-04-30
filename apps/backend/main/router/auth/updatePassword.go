@@ -2,7 +2,7 @@ package authRouter
 
 import (
 	"main/auth"
-	"main/dbClient"
+	"main/internal/postgres"
 	"main/router/errorHandlers"
 	"main/validation"
 	"net/http"
@@ -19,7 +19,7 @@ type updatePasswordBody struct {
 	Token    string `json:"token" validate:"required"`
 }
 
-func updatePassword(validate *validator.Validate, postgres *gorm.DB) gin.HandlerFunc {
+func updatePassword(validate *validator.Validate) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var body updatePasswordBody
 
@@ -35,9 +35,9 @@ func updatePassword(validate *validator.Validate, postgres *gorm.DB) gin.Handler
 			return
 		}
 
-		var userCredentials dbClient.UserCredential
+		var userCredentials postgres.UserCredential
 
-		if err := postgres.Where("password_reset_token = ?", body.Token).First(&userCredentials).Error; err != nil {
+		if err := postgres.DB.Where("password_reset_token = ?", body.Token).First(&userCredentials).Error; err != nil {
 			if err == gorm.ErrRecordNotFound {
 				errorHandlers.BadRequest(ctx, "invalid token", nil)
 				return
@@ -52,9 +52,9 @@ func updatePassword(validate *validator.Validate, postgres *gorm.DB) gin.Handler
 			return
 		}
 
-		var user dbClient.User
+		var user postgres.User
 
-		if err := postgres.Where("id = ?", userCredentials.UserID).First(&user).Error; err != nil {
+		if err := postgres.DB.Where("id = ?", userCredentials.UserID).First(&user).Error; err != nil {
 			errorHandlers.InternalServerError(ctx, "error while updating password")
 			return
 		}
@@ -67,12 +67,12 @@ func updatePassword(validate *validator.Validate, postgres *gorm.DB) gin.Handler
 		userCredentials.UpdatedAt = updatedAt
 		userCredentials.PasswordResetToken = nil
 
-		if err := postgres.Save(&userCredentials).Error; err != nil {
+		if err := postgres.DB.Save(&userCredentials).Error; err != nil {
 			errorHandlers.InternalServerError(ctx, "error while updating password")
 			return
 		}
 
-		postgres.Model(&user).Update("last_password_reset", updatedAt)
+		postgres.DB.Model(&user).Update("last_password_reset", updatedAt)
 
 		ctx.Status(http.StatusNoContent)
 	}

@@ -1,6 +1,7 @@
 package workspacesRouter
 
 import (
+	"main/internal/postgres"
 	"main/router/errorHandlers"
 	routerUtils "main/router/utils"
 	workspacesAccessesRouter "main/router/workspaces/accesses"
@@ -10,45 +11,41 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
-	"go.mongodb.org/mongo-driver/mongo"
-	"gorm.io/gorm"
 )
 
-func hasAccessToWorkspaceMiddleware(postgres *gorm.DB) gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		workspaceId, err := uuid.Parse(ctx.Param("workspace_id"))
+func hasAccessToWorkspaceMiddleware(ctx *gin.Context) {
+	workspaceId, err := uuid.Parse(ctx.Param("workspace_id"))
 
-		if err != nil {
-			errorHandlers.BadRequest(ctx, "invalid workspace id", nil)
-			return
-		}
-
-		userId, _ := routerUtils.GetUserIdFromSession(ctx)
-
-		_, _, ok := routerUtils.CheckWorkspaceAccess(ctx, postgres, postgres, workspaceId, userId)
-
-		if !ok {
-			ctx.Abort()
-			return
-		}
-
-		ctx.Next()
+	if err != nil {
+		errorHandlers.BadRequest(ctx, "invalid workspace id", nil)
+		return
 	}
+
+	userId, _ := routerUtils.GetUserIdFromSession(ctx)
+
+	_, _, ok := routerUtils.CheckWorkspaceAccess(ctx, postgres.DB, postgres.DB, workspaceId, userId)
+
+	if !ok {
+		ctx.Abort()
+		return
+	}
+
+	ctx.Next()
 }
 
-func AddRoutes(group *gin.RouterGroup, postgres *gorm.DB, mongo *mongo.Client, validate *validator.Validate, sockets *socketManager.SocketManager) {
-	group.POST("", createWorkspace(postgres, validate))
+func AddRoutes(group *gin.RouterGroup, validate *validator.Validate, sockets *socketManager.SocketManager) {
+	group.POST("", createWorkspace(validate))
 
-	group.GET("", getWorkspaceList(postgres))
-	group.GET("/:workspace_id", getWorkspace(postgres))
+	group.GET("", getWorkspaceList)
+	group.GET("/:workspace_id", getWorkspace)
 
-	group.PUT("/:workspace_id", updateWorkspace(postgres, validate))
+	group.PUT("/:workspace_id", updateWorkspace(validate))
 
-	group.POST("/:workspace_id/cancel-soft-delete", cancelSoftDeleteWorkspace(postgres))
+	group.POST("/:workspace_id/cancel-soft-delete", cancelSoftDeleteWorkspace)
 
-	group.DELETE("/:workspace_id/soft-delete", softDeleteWorkspace(postgres))
+	group.DELETE("/:workspace_id/soft-delete", softDeleteWorkspace)
 
-	workspacesAccessesRouter.AddRoutes(group.Group("/:workspace_id/accesses"), postgres)
+	workspacesAccessesRouter.AddRoutes(group.Group("/:workspace_id/accesses"))
 
-	pagesRouter.AddRoutes(group.Group("/:workspace_id/pages", hasAccessToWorkspaceMiddleware(postgres)), postgres, mongo, validate, sockets)
+	pagesRouter.AddRoutes(group.Group("/:workspace_id/pages", hasAccessToWorkspaceMiddleware), validate, sockets)
 }

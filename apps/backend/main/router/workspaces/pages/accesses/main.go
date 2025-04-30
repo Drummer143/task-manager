@@ -2,11 +2,10 @@ package accessesRouter
 
 import (
 	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
 
-func AddRoutes(group *gin.RouterGroup, postgres *gorm.DB) {
-	group.GET("", getPageAccesses(postgres))
+func AddRoutes(group *gin.RouterGroup) {
+	group.GET("", getPageAccesses)
 
-	group.PUT("", updateAccess(postgres))
+	group.PUT("", updateAccess)
 }

@@ -1,7 +1,7 @@
 package tasksRouter
 
 import (
-	"main/dbClient"
+	"main/internal/postgres"
 	"main/router/errorHandlers"
 	"main/validation"
 	"net/http"
@@ -11,7 +11,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
-	"gorm.io/gorm"
 )
 
 type createTaskBody struct {
@@ -31,12 +30,12 @@ type createTaskBody struct {
 // @Param			workspace_id path string true "Workspace ID"
 // @Param			page_id path int true "Page ID"
 // @Param 			task body createTaskBody true "Task object that needs to be created"
-// @Success 		201 {object} dbClient.Task
+// @Success 		201 {object} postgres.Task
 // @Failure 		400 {object} errorHandlers.Error
 // @Failure			401 {object} errorHandlers.Error "Unauthorized if session is missing or invalid"
 // @Failure 		500 {object} errorHandlers.Error
 // @Router 			/workspaces/{workspace_id}/pages/{page_id}/tasks [post]
-func createTask(postgres *gorm.DB, validate *validator.Validate) gin.HandlerFunc {
+func createTask(validate *validator.Validate) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var body createTaskBody
 
@@ -59,7 +58,7 @@ func createTask(postgres *gorm.DB, validate *validator.Validate) gin.HandlerFunc
 
 		userId, _ := session.Get("id").(uuid.UUID)
 
-		var task dbClient.Task = dbClient.Task{
+		var task postgres.Task = postgres.Task{
 			Status:      body.Status,
 			Title:       body.Title,
 			Description: body.Description,
@@ -74,7 +73,7 @@ func createTask(postgres *gorm.DB, validate *validator.Validate) gin.HandlerFunc
 			task.DueDate = &time
 		}
 
-		if err := postgres.Create(&task).Error; err != nil {
+		if err := postgres.DB.Create(&task).Error; err != nil {
 			errorHandlers.InternalServerError(ctx, "failed to create task")
 			return
 		}

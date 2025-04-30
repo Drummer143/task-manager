@@ -2,7 +2,7 @@ package authRouter
 
 import (
 	"main/auth"
-	"main/dbClient"
+	"main/internal/postgres"
 	"main/router/errorHandlers"
 	"main/validation"
 	"net/http"
@@ -27,7 +27,7 @@ type confirmEmailBody struct {
 // @Failure			401 {object} errorHandlers.Error "Unauthorized if token is invalid"
 // @Failure			500 {object} errorHandlers.Error "Internal server error if server fails"
 // @Router			/auth/confirm-email [post]
-func confirmEmail(validate *validator.Validate, postgres *gorm.DB) gin.HandlerFunc {
+func confirmEmail(validate *validator.Validate) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var body confirmEmailBody
 
@@ -43,9 +43,9 @@ func confirmEmail(validate *validator.Validate, postgres *gorm.DB) gin.HandlerFu
 			return
 		}
 
-		var userCredentials dbClient.UserCredential
+		var userCredentials postgres.UserCredential
 
-		if err := postgres.Where("email_verification_token = ?", body.Token).First(&userCredentials).Error; err != nil {
+		if err := postgres.DB.Where("email_verification_token = ?", body.Token).First(&userCredentials).Error; err != nil {
 			if err == gorm.ErrRecordNotFound {
 				errorHandlers.BadRequest(ctx, "invalid token", "Invalid token.")
 				return
@@ -60,19 +60,19 @@ func confirmEmail(validate *validator.Validate, postgres *gorm.DB) gin.HandlerFu
 			return
 		}
 
-		var user dbClient.User
+		var user postgres.User
 
-		if err := postgres.First(&user, "id = ?", userCredentials.UserID.String()).Error; err != nil {
+		if err := postgres.DB.First(&user, "id = ?", userCredentials.UserID.String()).Error; err != nil {
 			errorHandlers.InternalServerError(ctx, "Error while confirming email")
 			return
 		}
 
-		if err := postgres.Model(&userCredentials).Update("email_verification_token", nil).Error; err != nil {
+		if err := postgres.DB.Model(&userCredentials).Update("email_verification_token", nil).Error; err != nil {
 			errorHandlers.InternalServerError(ctx, "Error while confirming email")
 			return
 		}
 
-		if err := postgres.Model(&user).Update("email_verified", true).Error; err != nil {
+		if err := postgres.DB.Model(&user).Update("email_verified", true).Error; err != nil {
 			errorHandlers.InternalServerError(ctx, "Error while confirming email")
 			return
 		}

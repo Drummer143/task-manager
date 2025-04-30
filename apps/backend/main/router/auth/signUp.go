@@ -3,7 +3,7 @@ package authRouter
 import (
 	"fmt"
 	"main/auth"
-	"main/dbClient"
+	"main/internal/postgres"
 	"main/router/errorHandlers"
 	"main/validation"
 	"net/http"
@@ -14,7 +14,6 @@ import (
 	"github.com/go-playground/validator/v10"
 	"github.com/go-resty/resty/v2"
 	"golang.org/x/crypto/bcrypt"
-	"gorm.io/gorm"
 )
 
 type signUpBody struct {
@@ -29,11 +28,11 @@ type signUpBody struct {
 // @Accept			json
 // @Produce			json
 // @Param			body body signUpBody true "Sign up object"
-// @Success			201 {object} dbClient.User "User profile data"
+// @Success			201 {object} postgres.User "User profile data"
 // @Failure			400 {object} errorHandlers.Error "Invalid request"
 // @Failure			500 {object} errorHandlers.Error "Internal server error if server fails"
 // @Router			/auth/sign-up [post]
-func signUp(validate *validator.Validate, postgres *gorm.DB) gin.HandlerFunc {
+func signUp(validate *validator.Validate) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var body signUpBody
 
@@ -49,7 +48,7 @@ func signUp(validate *validator.Validate, postgres *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		tx := postgres.Begin()
+		tx := postgres.DB.Begin()
 		defer func() {
 			if r := recover(); r != nil {
 				tx.Rollback()
@@ -58,7 +57,7 @@ func signUp(validate *validator.Validate, postgres *gorm.DB) gin.HandlerFunc {
 			}
 		}()
 
-		if err := tx.Create(&dbClient.User{
+		if err := tx.Create(&postgres.User{
 			Email:     body.Email,
 			Username:  body.Username,
 			LastLogin: time.Now(),
@@ -76,7 +75,7 @@ func signUp(validate *validator.Validate, postgres *gorm.DB) gin.HandlerFunc {
 
 		passwordHash, _ := bcrypt.GenerateFromPassword([]byte(body.Password), bcrypt.DefaultCost)
 
-		var user dbClient.User
+		var user postgres.User
 
 		if err := tx.First(&user, "email = ?", body.Email).Error; err != nil {
 			tx.Rollback()
@@ -86,7 +85,7 @@ func signUp(validate *validator.Validate, postgres *gorm.DB) gin.HandlerFunc {
 
 		emailVerificationToken, _ := auth.GenerateJWT(user.Email, EMAIL_VERIFICATION_TOKEN_LIFETIME)
 
-		if err := postgres.Create(&dbClient.UserCredential{
+		if err := tx.Create(&postgres.UserCredential{
 			UserID:                 user.ID,
 			PasswordHash:           string(passwordHash),
 			EmailVerificationToken: &emailVerificationToken,
@@ -99,7 +98,7 @@ func signUp(validate *validator.Validate, postgres *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		userWorkspace := dbClient.Workspace{
+		userWorkspace := postgres.Workspace{
 			OwnerID: user.ID,
 			Name: fmt.Sprintf(
 				"%s's workspace",
@@ -113,10 +112,10 @@ func signUp(validate *validator.Validate, postgres *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		userWorkspaceAccess := dbClient.WorkspaceAccess{
+		userWorkspaceAccess := postgres.WorkspaceAccess{
 			WorkspaceID: userWorkspace.ID,
 			UserID:      user.ID,
-			Role:        dbClient.UserRoleOwner,
+			Role:        postgres.UserRoleOwner,
 		}
 
 		if err := tx.Create(&userWorkspaceAccess).Error; err != nil {
@@ -125,7 +124,7 @@ func signUp(validate *validator.Validate, postgres *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		userMeta := dbClient.UserMeta{
+		userMeta := postgres.UserMeta{
 			UserID:            user.ID,
 			SelectedWorkspace: &userWorkspace.ID,
 		}

@@ -1,7 +1,7 @@
 package pagesRouter
 
 import (
-	"main/dbClient"
+	"main/internal/postgres"
 	"main/router/errorHandlers"
 	routerUtils "main/router/utils"
 	"main/validation"
@@ -10,12 +10,11 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
-	"gorm.io/gorm"
 )
 
 type createPageBody struct {
 	Title    string            `json:"title" validate:"required"`
-	Type     dbClient.PageType `json:"type" validate:"required,oneof=text board group"`
+	Type     postgres.PageType `json:"type" validate:"required,oneof=text board group"`
 	ParentId *uuid.UUID        `json:"parentId" validate:"omitempty,uuid4"`
 	Text     *string           `json:"text"`
 }
@@ -27,13 +26,13 @@ type createPageBody struct {
 // @Produce			json
 // @Param			workspace_id path string true "Workspace ID"
 // @Param			page body createPageBody true "Page object that needs to be created"
-// @Success			201 {object} dbClient.Page
+// @Success			201 {object} postgres.Page
 // @Failure			400 {object} errorHandlers.Error
 // @Failure			401 {object} errorHandlers.Error "Unauthorized if session is missing or invalid"
 // @Failure			403 {object} errorHandlers.Error "No access to workspace or no access to create page"
 // @Failure			500 {object} errorHandlers.Error
 // @Router			/workspaces/{workspace_id}/pages [post]
-func createPage(postgres *gorm.DB, validate *validator.Validate) gin.HandlerFunc {
+func createPage(validate *validator.Validate) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var body createPageBody
 
@@ -50,12 +49,12 @@ func createPage(postgres *gorm.DB, validate *validator.Validate) gin.HandlerFunc
 			return
 		}
 
-		if body.Type == dbClient.PageTypeGroup && body.ParentId != nil {
+		if body.Type == postgres.PageTypeGroup && body.ParentId != nil {
 			errorHandlers.BadRequest(ctx, "unable to create group page inside group page", nil)
 			return
 		}
 
-		if body.Type != dbClient.PageTypeText && body.Text != nil {
+		if body.Type != postgres.PageTypeText && body.Text != nil {
 			errorHandlers.BadRequest(ctx, "text field is required for non-text pages", nil)
 			return
 		}
@@ -63,24 +62,24 @@ func createPage(postgres *gorm.DB, validate *validator.Validate) gin.HandlerFunc
 		userId, _ := routerUtils.GetUserIdFromSession(ctx)
 
 		if body.ParentId != nil {
-			_, access, ok := routerUtils.CheckPageAccess(ctx, postgres, postgres, *body.ParentId, userId)
+			_, access, ok := routerUtils.CheckPageAccess(ctx, postgres.DB, postgres.DB, *body.ParentId, userId)
 
 			if !ok {
 				return
 			}
 
-			if access.Role != dbClient.UserRoleOwner && access.Role != dbClient.UserRoleAdmin {
+			if access.Role != postgres.UserRoleOwner && access.Role != postgres.UserRoleAdmin {
 				errorHandlers.Forbidden(ctx, "access to parent parentPage is forbidden")
 				return
 			}
 
-			if body.Type == dbClient.PageTypeGroup {
+			if body.Type == postgres.PageTypeGroup {
 				errorHandlers.BadRequest(ctx, "unable to create group page inside group page", nil)
 				return
 			}
 		}
 
-		var page = dbClient.Page{
+		var page = postgres.Page{
 			Title:        body.Title,
 			Type:         body.Type,
 			WorkspaceID:  uuid.MustParse(ctx.Param("workspace_id")),
@@ -89,7 +88,7 @@ func createPage(postgres *gorm.DB, validate *validator.Validate) gin.HandlerFunc
 			Text:         body.Text,
 		}
 
-		tx := postgres.Begin()
+		tx := postgres.DB.Begin()
 		defer func() {
 			if r := recover(); r != nil {
 				tx.Rollback()
@@ -104,8 +103,8 @@ func createPage(postgres *gorm.DB, validate *validator.Validate) gin.HandlerFunc
 			return
 		}
 
-		pageAccess := dbClient.PageAccess{
-			Role:   dbClient.UserRoleOwner,
+		pageAccess := postgres.PageAccess{
+			Role:   postgres.UserRoleOwner,
 			PageID: page.ID,
 			UserID: userId,
 		}

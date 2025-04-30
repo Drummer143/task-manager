@@ -2,7 +2,8 @@ package tasksCharRouter
 
 import (
 	"fmt"
-	"main/dbClient"
+	mongoClient "main/internal/mongo"
+	"main/internal/postgres"
 	"main/router/errorHandlers"
 	routerUtils "main/router/utils"
 	"main/socketManager"
@@ -29,17 +30,17 @@ type chatMessage struct {
 // @Param			page_id path int true "Page ID"
 // @Param			task_id path string true "Task ID"
 // @Param			message body chatMessage true "Message"
-// @Success			200 {object} dbClient.TaskChatMessage
+// @Success			200 {object} mongoClient.TaskChatMessage
 // @Failure			400 {object} errorHandlers.Error
 // @Failure			401 {object} errorHandlers.Error "Unauthorized if session is missing or invalid"
 // @Failure			404 {object} errorHandlers.Error
 // @Failure			500 {object} errorHandlers.Error
 // @Router			/workspaces/{workspace_id}/pages/{page_id}/tasks/{task_id}/chat [post]
-func sendMessage(postgres *gorm.DB, taskChatCollection *mongo.Collection, validate *validator.Validate, sockets *socketManager.SocketManager) gin.HandlerFunc {
+func sendMessage(taskChatCollection *mongo.Collection, validate *validator.Validate, sockets *socketManager.SocketManager) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		var task dbClient.Task
+		var task postgres.Task
 
-		if err := postgres.First(&task, "id = ?", ctx.Param("task_id")).Error; err != nil {
+		if err := postgres.DB.First(&task, "id = ?", ctx.Param("task_id")).Error; err != nil {
 			if err == gorm.ErrRecordNotFound {
 				errorHandlers.NotFound(ctx, "task not found")
 			} else {
@@ -68,9 +69,9 @@ func sendMessage(postgres *gorm.DB, taskChatCollection *mongo.Collection, valida
 
 		user_id, _ := routerUtils.GetUserIdFromSession(ctx)
 
-		var user dbClient.User
+		var user postgres.User
 
-		if err := postgres.First(&user, "id = ?", user_id).Error; err != nil {
+		if err := postgres.DB.First(&user, "id = ?", user_id).Error; err != nil {
 			if err == gorm.ErrRecordNotFound {
 				errorHandlers.NotFound(ctx, "user not found")
 			} else {
@@ -80,8 +81,8 @@ func sendMessage(postgres *gorm.DB, taskChatCollection *mongo.Collection, valida
 			return
 		}
 
-		chatMessage := dbClient.TaskChatMessage{
-			Author:    dbClient.ShortUserInfo{Id: user.ID, Username: user.Username},
+		chatMessage := mongoClient.TaskChatMessage{
+			Author:    mongoClient.ShortUserInfo{Id: user.ID, Username: user.Username},
 			Text:      body.Text,
 			ID:        uuid.New(),
 			TaskID:    task.ID,

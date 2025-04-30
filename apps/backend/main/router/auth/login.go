@@ -2,7 +2,7 @@ package authRouter
 
 import (
 	"main/auth"
-	"main/dbClient"
+	"main/internal/postgres"
 	"main/router/errorHandlers"
 	"main/validation"
 	"net/http"
@@ -26,11 +26,11 @@ type loginBody struct {
 // @Accept			json
 // @Produce			json
 // @Param			body body loginBody true "Login object"
-// @Success			200 {object} dbClient.User "User profile data"
+// @Success			200 {object} postgres.User "User profile data"
 // @Failure			400 {object} errorHandlers.Error "Invalid request"
 // @Failure			500 {object} errorHandlers.Error "Internal server error if server fails"
 // @Router			/auth/login [post]
-func login(validate *validator.Validate, postgres *gorm.DB) gin.HandlerFunc {
+func login(validate *validator.Validate) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var body loginBody
 
@@ -46,9 +46,9 @@ func login(validate *validator.Validate, postgres *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		var user dbClient.User
+		var user postgres.User
 
-		if err := postgres.Where("email = ?", body.Email).First(&user).Error; err != nil {
+		if err := postgres.DB.Where("email = ?", body.Email).First(&user).Error; err != nil {
 			if err == gorm.ErrRecordNotFound {
 				errorHandlers.BadRequest(ctx, "user with that email not found", nil)
 				return
@@ -58,9 +58,9 @@ func login(validate *validator.Validate, postgres *gorm.DB) gin.HandlerFunc {
 			}
 		}
 
-		var credentials dbClient.UserCredential
+		var credentials postgres.UserCredential
 
-		if err := postgres.Where("user_id = ?", user.ID).First(&credentials).Error; err != nil {
+		if err := postgres.DB.Where("user_id = ?", user.ID).First(&credentials).Error; err != nil {
 			if err == gorm.ErrRecordNotFound {
 				errorHandlers.BadRequest(ctx, "user with that email not found", nil)
 				return
@@ -82,16 +82,16 @@ func login(validate *validator.Validate, postgres *gorm.DB) gin.HandlerFunc {
 			return
 		}
 
-		postgres.Model(&user).Update("last_login", time.Now())
+		postgres.DB.Model(&user).Update("last_login", time.Now())
 
 		session := sessions.Default(ctx)
 
 		selectedWorkspaceId := session.Get("selected_workspace")
 
 		if selectedWorkspaceId != nil {
-			var userMeta dbClient.UserMeta
+			var userMeta postgres.UserMeta
 
-			if err := postgres.Where("user_id = ?", user.ID).First(&userMeta).Error; err != nil {
+			if err := postgres.DB.Where("user_id = ?", user.ID).First(&userMeta).Error; err != nil {
 				errorHandlers.InternalServerError(ctx, "failed to get user meta")
 				return
 			}

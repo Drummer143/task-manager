@@ -2,7 +2,8 @@ package tasksRouter
 
 import (
 	"context"
-	"main/dbClient"
+	mongoClient "main/internal/mongo"
+	"main/internal/postgres"
 	"main/router/errorHandlers"
 	routerUtils "main/router/utils"
 	"net/http"
@@ -22,16 +23,16 @@ import (
 // @Param				task_id path string true "Task ID"
 // @Param				limit query int false "If not provided or less than 1, all users will be returned"
 // @Param				offset query int false "Default is 0"
-// @Success				200 {object} routerUtils.ResponseWithPagination[dbClient.EntityVersionDocument]
+// @Success				200 {object} routerUtils.ResponseWithPagination[mongo.EntityVersionDocument]
 // @Failure				401 {object} errorHandlers.Error "Unauthorized if session is missing or invalid"
 // @Failure				404 {object} errorHandlers.Error
 // @Failure				500 {object} errorHandlers.Error
 // @Router				/workspaces/{workspace_id}/pages/{page_id}/tasks/{task_id}/history [get]
-func getHistory(postgres *gorm.DB, tasksVersionCollection *mongo.Collection) gin.HandlerFunc {
+func getHistory(tasksVersionCollection *mongo.Collection) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		var task dbClient.Task
+		var task postgres.Task
 
-		if err := postgres.First(&task, "id = ?", ctx.Param("task_id")).Error; err != nil {
+		if err := postgres.DB.First(&task, "id = ?", ctx.Param("task_id")).Error; err != nil {
 			if err == gorm.ErrRecordNotFound {
 				errorHandlers.NotFound(ctx, "task not found")
 			} else {
@@ -50,7 +51,7 @@ func getHistory(postgres *gorm.DB, tasksVersionCollection *mongo.Collection) gin
 
 		limit, offset := routerUtils.ValidatePaginationParams(ctx, routerUtils.DefaultPaginationLimit, routerUtils.DefaultPaginationOffset)
 
-		var history []dbClient.EntityVersionDocument
+		var history []mongoClient.EntityVersionDocument
 		options := options.Find().SetSort(gin.H{"version": -1}).SetSkip(int64(offset)).SetLimit(int64(limit))
 
 		cursor, err := tasksVersionCollection.Find(context.Background(), gin.H{"id": task.ID}, options)
@@ -66,10 +67,10 @@ func getHistory(postgres *gorm.DB, tasksVersionCollection *mongo.Collection) gin
 		}
 
 		if history == nil {
-			history = []dbClient.EntityVersionDocument{}
+			history = []mongoClient.EntityVersionDocument{}
 		}
 
-		ctx.JSON(http.StatusOK, routerUtils.ResponseWithPagination[dbClient.EntityVersionDocument]{
+		ctx.JSON(http.StatusOK, routerUtils.ResponseWithPagination[mongoClient.EntityVersionDocument]{
 			Data: history,
 			Meta: routerUtils.Meta{
 				Total:   int(total),

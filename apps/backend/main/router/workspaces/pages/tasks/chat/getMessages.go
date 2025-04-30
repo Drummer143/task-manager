@@ -2,7 +2,7 @@ package tasksCharRouter
 
 import (
 	"context"
-	"main/dbClient"
+	mongoClient "main/internal/mongo"
 	"main/router/errorHandlers"
 	routerUtils "main/router/utils"
 	"net/http"
@@ -22,7 +22,7 @@ import (
 // @Param				task_id path string true "Task ID"
 // @Param				limit query int false "Default is 10"
 // @Param				offset query int false "Default is 0"
-// @Success				200 {object} routerUtils.ResponseWithPagination[dbClient.TaskChatMessage]
+// @Success				200 {object} routerUtils.ResponseWithPagination[mongoClient.TaskChatMessage]
 // @Failure				401 {object} errorHandlers.Error "Unauthorized if session is missing or invalid"
 // @Failure				404 {object} errorHandlers.Error
 // @Failure				500 {object} errorHandlers.Error
@@ -49,7 +49,7 @@ func getMessages(taskChatsCollection *mongo.Collection) gin.HandlerFunc {
 			return
 		}
 
-		var messages []dbClient.TaskChatMessage
+		var messages []mongoClient.TaskChatMessage
 
 		if err := cursor.All(context.Background(), &messages); err != nil {
 			errorHandlers.InternalServerError(ctx, "failed to get messages")
@@ -64,10 +64,10 @@ func getMessages(taskChatsCollection *mongo.Collection) gin.HandlerFunc {
 		}
 
 		if messages == nil {
-			messages = []dbClient.TaskChatMessage{}
+			messages = []mongoClient.TaskChatMessage{}
 		}
 
-		ctx.JSON(http.StatusOK, routerUtils.ResponseWithPagination[dbClient.TaskChatMessage]{
+		ctx.JSON(http.StatusOK, routerUtils.ResponseWithPagination[mongoClient.TaskChatMessage]{
 			Data: messages,
 			Meta: routerUtils.Meta{
 				Total:   int(total),
