@@ -7,7 +7,6 @@ import (
 	"main/router/errorHandlers"
 	"main/validation"
 	"net/http"
-	"os"
 	"time"
 
 	"github.com/gin-contrib/sessions"
@@ -34,7 +33,7 @@ type signUpBody struct {
 // @Failure			400 {object} errorHandlers.Error "Invalid request"
 // @Failure			500 {object} errorHandlers.Error "Internal server error if server fails"
 // @Router			/auth/sign-up [post]
-func signUp(auth *auth.Auth, validate *validator.Validate, postgres *gorm.DB) gin.HandlerFunc {
+func signUp(validate *validator.Validate, postgres *gorm.DB) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var body signUpBody
 
@@ -152,7 +151,7 @@ func signUp(auth *auth.Auth, validate *validator.Validate, postgres *gorm.DB) gi
 		session.Set("selected_workspace", userWorkspace.ID)
 		session.Save()
 
-		url := os.Getenv("MAILER_URL") + "/send-email-confirmation"
+		url := mailerUrl + "/send-email-confirmation"
 
 		resty.New().R().SetBody(gin.H{"email": user.Email, "token": emailVerificationToken}).Post(url)
 

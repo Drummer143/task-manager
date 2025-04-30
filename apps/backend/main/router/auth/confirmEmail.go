@@ -27,7 +27,7 @@ type confirmEmailBody struct {
 // @Failure			401 {object} errorHandlers.Error "Unauthorized if token is invalid"
 // @Failure			500 {object} errorHandlers.Error "Internal server error if server fails"
 // @Router			/auth/confirm-email [post]
-func confirmEmail(auth *auth.Auth, validate *validator.Validate, postgres *gorm.DB) gin.HandlerFunc {
+func confirmEmail(validate *validator.Validate, postgres *gorm.DB) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var body confirmEmailBody
 

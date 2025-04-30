@@ -8,32 +8,30 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
-func IsAuthenticated(auth *auth.Auth) gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		session := sessions.Default(ctx)
+func IsAuthenticated(ctx *gin.Context) {
+	session := sessions.Default(ctx)
 
-		token := session.Get("token")
+	token := session.Get("token")
 
-		if token == nil {
-			session.Clear()
-			session.Save()
+	if token == nil {
+		session.Clear()
+		session.Save()
 
-			errorHandlers.Unauthorized(ctx, "Session is missing or invalid")
+		errorHandlers.Unauthorized(ctx, "Session is missing or invalid")
 
-			ctx.Abort()
+		ctx.Abort()
 
-			return
-		}
+		return
+	}
 
-		if _, err := auth.ValidateJWT(token.(string)); err != nil {
-			session.Clear()
-			session.Save()
+	if _, err := auth.ValidateJWT(token.(string)); err != nil {
+		session.Clear()
+		session.Save()
 
-			errorHandlers.Unauthorized(ctx, "Session is missing or invalid")
+		errorHandlers.Unauthorized(ctx, "Session is missing or invalid")
 
-			ctx.Abort()
-		} else {
-			ctx.Next()
-		}
+		ctx.Abort()
+	} else {
+		ctx.Next()
 	}
 }

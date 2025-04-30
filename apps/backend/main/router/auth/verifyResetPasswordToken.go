@@ -20,7 +20,7 @@ import (
 // @Failure			400 {object} errorHandlers.Error "Invalid request"
 // @Failure			500 {object} errorHandlers.Error "Internal server error if server fails"
 // @Router			/auth/verify-reset-password-token [get]
-func verifyResetPasswordToken(auth *auth.Auth, postgres *gorm.DB) gin.HandlerFunc {
+func verifyResetPasswordToken(postgres *gorm.DB) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		token := ctx.Query("token")
 

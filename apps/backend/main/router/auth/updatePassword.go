@@ -19,7 +19,7 @@ type updatePasswordBody struct {
 	Token    string `json:"token" validate:"required"`
 }
 
-func updatePassword(auth *auth.Auth, validate *validator.Validate, postgres *gorm.DB) gin.HandlerFunc {
+func updatePassword(validate *validator.Validate, postgres *gorm.DB) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var body updatePasswordBody
 

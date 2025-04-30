@@ -30,7 +30,7 @@ type loginBody struct {
 // @Failure			400 {object} errorHandlers.Error "Invalid request"
 // @Failure			500 {object} errorHandlers.Error "Internal server error if server fails"
 // @Router			/auth/login [post]
-func login(auth *auth.Auth, validate *validator.Validate, postgres *gorm.DB) gin.HandlerFunc {
+func login(validate *validator.Validate, postgres *gorm.DB) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var body loginBody
 

@@ -5,7 +5,6 @@ import (
 	"net/http"
 	"os"
 
-	"main/auth"
 	"main/dbClient"
 	_ "main/docs"
 	authRouter "main/router/auth"
@@ -75,7 +74,7 @@ func setDefaultWorkspace(postgres *gorm.DB) gin.HandlerFunc {
 	}
 }
 
-func New(auth *auth.Auth, postgres *gorm.DB, mongo *mongo.Client, validate *validator.Validate, sockets *socketManager.SocketManager) *gin.Engine {
+func New(postgres *gorm.DB, mongo *mongo.Client, validate *validator.Validate, sockets *socketManager.SocketManager) *gin.Engine {
 	ginModeEnv := os.Getenv("GIN_MODE")
 
 	if ginModeEnv == "release" {
@@ -100,14 +99,14 @@ func New(auth *auth.Auth, postgres *gorm.DB, mongo *mongo.Client, validate *vali
 	router.GET("/api/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	router.GET("/api", func(ctx *gin.Context) { ctx.Redirect(http.StatusMovedPermanently, "/api/index.html") })
 
-	router.GET("/socket", IsAuthenticated(auth), handleWebSocket(sockets))
+	router.GET("/socket", IsAuthenticated, handleWebSocket(sockets))
 
-	authRouter.AddRoutes(router.Group("auth"), auth, validate, postgres)
+	authRouter.AddRoutes(router.Group("auth"), validate, postgres)
 
-	workspacesRouter.AddRoutes(router.Group("workspaces", IsAuthenticated(auth)), postgres, mongo, validate, sockets)
+	workspacesRouter.AddRoutes(router.Group("workspaces", IsAuthenticated), postgres, mongo, validate, sockets)
 
-	profileRouter.AddRoutes(router.Group("profile", IsAuthenticated(auth), setDefaultWorkspace(postgres)), validate, postgres)
-	usersRouter.AddRoutes(router.Group("users", IsAuthenticated(auth)), postgres)
+	profileRouter.AddRoutes(router.Group("profile", IsAuthenticated, setDefaultWorkspace(postgres)), validate, postgres)
+	usersRouter.AddRoutes(router.Group("users", IsAuthenticated), postgres)
 
 	return router
 }

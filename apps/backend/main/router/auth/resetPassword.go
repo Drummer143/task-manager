@@ -18,6 +18,8 @@ type resetPasswordBody struct {
 	Email string `json:"email" validate:"required,email"`
 }
 
+var mailerUrl string = os.Getenv("MAILER_URL")
+
 // @Summary			Reset password
 // @Description		Reset password
 // @Tags			Auth
@@ -28,7 +30,7 @@ type resetPasswordBody struct {
 // @Failure			400 {object} errorHandlers.Error "Invalid request"
 // @Failure			500 {object} errorHandlers.Error "Internal server error if server fails"
 // @Router			/auth/reset-password [post]
-func resetPassword(auth *auth.Auth, validate *validator.Validate, postgres *gorm.DB) gin.HandlerFunc {
+func resetPassword(validate *validator.Validate, postgres *gorm.DB) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var body resetPasswordBody
 
@@ -66,7 +68,7 @@ func resetPassword(auth *auth.Auth, validate *validator.Validate, postgres *gorm
 			return
 		}
 
-		url := os.Getenv("MAILER_URL") + "/send-reset-password"
+		url := mailerUrl + "/send-reset-password"
 
 		if resp, err := resty.New().R().SetBody(gin.H{"email": user.Email, "token": resetPasswordToken}).Post(url); err != nil || resp.StatusCode() > 299 {
 			errorHandlers.InternalServerError(ctx, "failed to send email")

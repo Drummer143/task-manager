@@ -85,6 +85,8 @@ func validateImageSizes(ctx *gin.Context, imageWidth int, imageHeight int) (int,
 	return x, y, w, h, nil
 }
 
+var storageUrl string = os.Getenv("STORAGE_URL")
+
 // @Summary			Upload user avatar
 // @Description		This endpoint uploads the user avatar image to the image storage service and updates the user profile information in the Auth0 Management API using the user's ID from the session. The ID is obtained from the session and used to query the user data from the external identity provider (Auth0). The user must be authenticated, and a valid session must exist. The request body must contain a valid image file.
 // @Tags			Profile
@@ -118,13 +120,6 @@ func uploadAvatar(postgres *gorm.DB) gin.HandlerFunc {
 				errorHandlers.InternalServerError(ctx, "failed to find user in database")
 				return
 			}
-		}
-
-		storageUrl := os.Getenv("STORAGE_URL")
-
-		if storageUrl == "" {
-			errorHandlers.InternalServerError(ctx, "unable to update user profile picture")
-			return
 		}
 
 		file, err := ctx.FormFile("file")
