@@ -5,13 +5,12 @@ import (
 	mongoClient "main/internal/mongo"
 	"main/internal/postgres"
 	"main/internal/socketManager"
+	"main/internal/validation"
 	"main/router/errorHandlers"
 	routerUtils "main/router/utils"
-	"main/validation"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/mongo"
 	"gorm.io/gorm"
@@ -36,7 +35,7 @@ type chatMessage struct {
 // @Failure			404 {object} errorHandlers.Error
 // @Failure			500 {object} errorHandlers.Error
 // @Router			/workspaces/{workspace_id}/pages/{page_id}/tasks/{task_id}/chat [post]
-func sendMessage(taskChatCollection *mongo.Collection, validate *validator.Validate) gin.HandlerFunc {
+func sendMessage(taskChatCollection *mongo.Collection) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var task postgres.Task
 
@@ -57,7 +56,7 @@ func sendMessage(taskChatCollection *mongo.Collection, validate *validator.Valid
 			return
 		}
 
-		if err := validate.Struct(body); err != nil {
+		if err := validation.Validator.Struct(body); err != nil {
 			if errors, ok := validation.ParseValidationError(err); ok {
 				errorHandlers.BadRequest(ctx, "invalid request body", errors)
 			} else {

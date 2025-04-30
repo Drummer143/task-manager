@@ -5,7 +5,6 @@ import (
 	tasksCharRouter "main/router/workspaces/pages/tasks/chat"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-playground/validator/v10"
 )
 
 type taskStatus = string
@@ -16,20 +15,20 @@ var (
 	Done       taskStatus = "done"
 )
 
-func AddRoutes(group *gin.RouterGroup, validate *validator.Validate) {
+func AddRoutes(group *gin.RouterGroup) {
 	taskVersionsCollection := mongo.DB.Database("versions").Collection("tasks")
 
 	group.GET("", getTaskList)
 	group.GET("/:task_id", getSingleTask)
 	group.GET("/:task_id/history", getHistory(taskVersionsCollection))
 
-	group.POST("", createTask(validate))
+	group.POST("", createTask)
 
-	group.PATCH("/:task_id/status", changeStatus(taskVersionsCollection, validate))
+	group.PATCH("/:task_id/status", changeStatus(taskVersionsCollection))
 
-	group.PUT("/:task_id", updateTask(taskVersionsCollection, validate))
+	group.PUT("/:task_id", updateTask(taskVersionsCollection))
 
 	group.DELETE("/:task_id", deleteTask)
 
-	tasksCharRouter.AddRoutes(group.Group("/:task_id/chat"), validate)
+	tasksCharRouter.AddRoutes(group.Group("/:task_id/chat"))
 }

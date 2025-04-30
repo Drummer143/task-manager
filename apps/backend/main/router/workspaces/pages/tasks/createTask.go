@@ -2,14 +2,13 @@ package tasksRouter
 
 import (
 	"main/internal/postgres"
+	"main/internal/validation"
 	"main/router/errorHandlers"
-	"main/validation"
 	"net/http"
 	"time"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
-	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 )
 
@@ -35,49 +34,47 @@ type createTaskBody struct {
 // @Failure			401 {object} errorHandlers.Error "Unauthorized if session is missing or invalid"
 // @Failure 		500 {object} errorHandlers.Error
 // @Router 			/workspaces/{workspace_id}/pages/{page_id}/tasks [post]
-func createTask(validate *validator.Validate) gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		var body createTaskBody
+func createTask(ctx *gin.Context) {
+	var body createTaskBody
 
-		if err := ctx.BindJSON(&body); err != nil {
-			errorHandlers.BadRequest(ctx, "invalid request body", nil)
-			return
-		}
-
-		if err := validate.Struct(body); err != nil {
-			if errors, ok := validation.ParseValidationError(err); ok {
-				errorHandlers.BadRequest(ctx, "invalid request body", errors)
-				return
-			}
-
-			errorHandlers.BadRequest(ctx, "invalid request body", nil)
-			return
-		}
-
-		session := sessions.Default(ctx)
-
-		userId, _ := session.Get("id").(uuid.UUID)
-
-		var task postgres.Task = postgres.Task{
-			Status:      body.Status,
-			Title:       body.Title,
-			Description: body.Description,
-			AssigneeID:  body.AssigneeID,
-			PageID:      uuid.MustParse(ctx.Param("page_id")),
-			ReporterID:  userId,
-		}
-
-		time, err := time.Parse(time.RFC3339, *body.DueDate)
-
-		if err == nil {
-			task.DueDate = &time
-		}
-
-		if err := postgres.DB.Create(&task).Error; err != nil {
-			errorHandlers.InternalServerError(ctx, "failed to create task")
-			return
-		}
-
-		ctx.JSON(http.StatusCreated, task)
+	if err := ctx.BindJSON(&body); err != nil {
+		errorHandlers.BadRequest(ctx, "invalid request body", nil)
+		return
 	}
+
+	if err := validation.Validator.Struct(body); err != nil {
+		if errors, ok := validation.ParseValidationError(err); ok {
+			errorHandlers.BadRequest(ctx, "invalid request body", errors)
+			return
+		}
+
+		errorHandlers.BadRequest(ctx, "invalid request body", nil)
+		return
+	}
+
+	session := sessions.Default(ctx)
+
+	userId, _ := session.Get("id").(uuid.UUID)
+
+	var task postgres.Task = postgres.Task{
+		Status:      body.Status,
+		Title:       body.Title,
+		Description: body.Description,
+		AssigneeID:  body.AssigneeID,
+		PageID:      uuid.MustParse(ctx.Param("page_id")),
+		ReporterID:  userId,
+	}
+
+	time, err := time.Parse(time.RFC3339, *body.DueDate)
+
+	if err == nil {
+		task.DueDate = &time
+	}
+
+	if err := postgres.DB.Create(&task).Error; err != nil {
+		errorHandlers.InternalServerError(ctx, "failed to create task")
+		return
+	}
+
+	ctx.JSON(http.StatusCreated, task)
 }

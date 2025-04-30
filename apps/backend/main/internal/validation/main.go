@@ -19,11 +19,11 @@ func validateISO8601(fl validator.FieldLevel) bool {
 	return err == nil
 }
 
-func New() *validator.Validate {
-	validate := validator.New()
-	validate.RegisterValidation("iso8601", validateISO8601)
+var Validator *validator.Validate
 
-	return validate
+func init() {
+	Validator = validator.New()
+	Validator.RegisterValidation("iso8601", validateISO8601)
 }
 
 func toCamelCase(str string) string {

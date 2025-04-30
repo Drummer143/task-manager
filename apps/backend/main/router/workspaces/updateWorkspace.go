@@ -2,14 +2,13 @@ package workspacesRouter
 
 import (
 	"main/internal/postgres"
+	"main/internal/validation"
 	"main/router/errorHandlers"
 	routerUtils "main/router/utils"
-	"main/validation"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 )
 
@@ -31,58 +30,56 @@ type updateWorkspaceBody struct {
 // @Failure 			404 {object} errorHandlers.Error
 // @Failure 			500 {object} errorHandlers.Error
 // @Router 				/workspaces/{workspace_id} [put]
-func updateWorkspace(validate *validator.Validate) gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		workspaceId, err := uuid.Parse(ctx.Param("workspace_id"))
+func updateWorkspace(ctx *gin.Context) {
+	workspaceId, err := uuid.Parse(ctx.Param("workspace_id"))
 
-		if err != nil {
-			errorHandlers.BadRequest(ctx, "invalid page id", nil)
-			return
-		}
-
-		userId, _ := routerUtils.GetUserIdFromSession(ctx)
-
-		workspace, workspaceAccess, ok := routerUtils.CheckWorkspaceAccess(ctx, postgres.DB, postgres.DB, workspaceId, userId)
-
-		if !ok {
-			return
-		}
-
-		if workspaceAccess.Role != postgres.UserRoleAdmin && workspaceAccess.Role != postgres.UserRoleOwner {
-			errorHandlers.Forbidden(ctx, "no access to page")
-			return
-		}
-
-		var body updateWorkspaceBody
-
-		if err := ctx.BindJSON(&body); err != nil {
-			errorHandlers.BadRequest(ctx, "invalid request body", nil)
-			return
-		}
-
-		if err := validate.Struct(body); err != nil {
-			if errors, ok := validation.ParseValidationError(err); ok {
-				errorHandlers.BadRequest(ctx, "invalid request body", errors)
-				return
-			}
-
-			errorHandlers.BadRequest(ctx, "invalid request body", nil)
-			return
-		}
-
-		if body.Name == "" {
-			ctx.Status(http.StatusNoContent)
-			return
-		}
-
-		workspace.Name = body.Name
-		workspace.UpdatedAt = time.Now()
-
-		if err := postgres.DB.Save(&workspace).Error; err != nil {
-			errorHandlers.InternalServerError(ctx, "failed to update workspace")
-			return
-		}
-
-		ctx.JSON(200, workspace)
+	if err != nil {
+		errorHandlers.BadRequest(ctx, "invalid page id", nil)
+		return
 	}
+
+	userId, _ := routerUtils.GetUserIdFromSession(ctx)
+
+	workspace, workspaceAccess, ok := routerUtils.CheckWorkspaceAccess(ctx, postgres.DB, postgres.DB, workspaceId, userId)
+
+	if !ok {
+		return
+	}
+
+	if workspaceAccess.Role != postgres.UserRoleAdmin && workspaceAccess.Role != postgres.UserRoleOwner {
+		errorHandlers.Forbidden(ctx, "no access to page")
+		return
+	}
+
+	var body updateWorkspaceBody
+
+	if err := ctx.BindJSON(&body); err != nil {
+		errorHandlers.BadRequest(ctx, "invalid request body", nil)
+		return
+	}
+
+	if err := validation.Validator.Struct(body); err != nil {
+		if errors, ok := validation.ParseValidationError(err); ok {
+			errorHandlers.BadRequest(ctx, "invalid request body", errors)
+			return
+		}
+
+		errorHandlers.BadRequest(ctx, "invalid request body", nil)
+		return
+	}
+
+	if body.Name == "" {
+		ctx.Status(http.StatusNoContent)
+		return
+	}
+
+	workspace.Name = body.Name
+	workspace.UpdatedAt = time.Now()
+
+	if err := postgres.DB.Save(&workspace).Error; err != nil {
+		errorHandlers.InternalServerError(ctx, "failed to update workspace")
+		return
+	}
+
+	ctx.JSON(200, workspace)
 }

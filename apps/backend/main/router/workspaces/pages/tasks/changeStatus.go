@@ -4,14 +4,13 @@ import (
 	"context"
 	mongoClient "main/internal/mongo"
 	"main/internal/postgres"
+	"main/internal/validation"
 	"main/router/errorHandlers"
 	routerUtils "main/router/utils"
-	"main/validation"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-playground/validator/v10"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
 	"gorm.io/gorm"
@@ -36,7 +35,7 @@ type changeTaskStatusBody struct {
 // @Failure			404 {object} errorHandlers.Error
 // @Failure			500 {object} errorHandlers.Error
 // @Router			/workspaces/{workspace_id}/pages/{page_id}/tasks/{task_id}/status [patch]
-func changeStatus(tasksVersionCollection *mongo.Collection, validate *validator.Validate) gin.HandlerFunc {
+func changeStatus(tasksVersionCollection *mongo.Collection) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var task postgres.Task
 
@@ -55,7 +54,7 @@ func changeStatus(tasksVersionCollection *mongo.Collection, validate *validator.
 			return
 		}
 
-		if err := validate.Var(body, "required,oneof=not_done in_progress done"); err != nil {
+		if err := validation.Validator.Var(body, "required,oneof=not_done in_progress done"); err != nil {
 			if errors, ok := validation.ParseValidationError(err); ok {
 				errorHandlers.BadRequest(ctx, "invalid status", errors)
 				return

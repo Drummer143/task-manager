@@ -20,7 +20,6 @@ import (
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-contrib/sessions/cookie"
 	"github.com/gin-gonic/gin"
-	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -69,7 +68,7 @@ func setDefaultWorkspace(ctx *gin.Context) {
 	session.Save()
 }
 
-func New(validate *validator.Validate) *gin.Engine {
+func New() *gin.Engine {
 	ginModeEnv := os.Getenv("GIN_MODE")
 
 	if ginModeEnv == "release" {
@@ -96,11 +95,11 @@ func New(validate *validator.Validate) *gin.Engine {
 
 	router.GET("/socket", IsAuthenticated, handleWebSocket)
 
-	authRouter.AddRoutes(router.Group("auth"), validate)
+	authRouter.AddRoutes(router.Group("auth"))
 
-	workspacesRouter.AddRoutes(router.Group("workspaces", IsAuthenticated), validate)
+	workspacesRouter.AddRoutes(router.Group("workspaces", IsAuthenticated))
 
-	profileRouter.AddRoutes(router.Group("profile", IsAuthenticated, setDefaultWorkspace), validate)
+	profileRouter.AddRoutes(router.Group("profile", IsAuthenticated, setDefaultWorkspace))
 	usersRouter.AddRoutes(router.Group("users", IsAuthenticated))
 
 	return router

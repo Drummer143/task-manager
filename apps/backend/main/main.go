@@ -5,7 +5,6 @@ import (
 	_ "main/internal/mongo"
 	"main/internal/postgres"
 	"main/router"
-	"main/validation"
 
 	"github.com/joho/godotenv"
 )
@@ -19,15 +18,15 @@ func init() {
 }
 
 func main() {
-	validate := validation.New()
-
 	if err := postgres.MigratePostgres(); err != nil {
 		panic(err)
 	}
 
-	cleanup.Setup()
+	if err := cleanup.Setup(); err != nil {
+		panic(err)
+	}
 
-	r := router.New(validate)
+	r := router.New()
 
 	r.Run(":8080")
 }

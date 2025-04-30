@@ -8,7 +8,6 @@ import (
 	pagesRouter "main/router/workspaces/pages"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 )
 
@@ -32,13 +31,13 @@ func hasAccessToWorkspaceMiddleware(ctx *gin.Context) {
 	ctx.Next()
 }
 
-func AddRoutes(group *gin.RouterGroup, validate *validator.Validate) {
-	group.POST("", createWorkspace(validate))
+func AddRoutes(group *gin.RouterGroup) {
+	group.POST("", createWorkspace)
 
 	group.GET("", getWorkspaceList)
 	group.GET("/:workspace_id", getWorkspace)
 
-	group.PUT("/:workspace_id", updateWorkspace(validate))
+	group.PUT("/:workspace_id", updateWorkspace)
 
 	group.POST("/:workspace_id/cancel-soft-delete", cancelSoftDeleteWorkspace)
 
@@ -46,5 +45,5 @@ func AddRoutes(group *gin.RouterGroup, validate *validator.Validate) {
 
 	workspacesAccessesRouter.AddRoutes(group.Group("/:workspace_id/accesses"))
 
-	pagesRouter.AddRoutes(group.Group("/:workspace_id/pages", hasAccessToWorkspaceMiddleware), validate)
+	pagesRouter.AddRoutes(group.Group("/:workspace_id/pages", hasAccessToWorkspaceMiddleware))
 }

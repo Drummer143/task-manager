@@ -8,7 +8,6 @@ import (
 	tasksRouter "main/router/workspaces/pages/tasks"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 )
 
@@ -33,18 +32,18 @@ func hasAccessToPageMiddleware(ctx *gin.Context) {
 	ctx.Next()
 }
 
-func AddRoutes(group *gin.RouterGroup, validate *validator.Validate) {
+func AddRoutes(group *gin.RouterGroup) {
 	group.GET("", getPageList)
 
-	group.POST("", createPage(validate))
+	group.POST("", createPage)
 
 	group.GET("/:page_id", getPage)
 
-	group.PUT("/:page_id", updatePage(validate))
+	group.PUT("/:page_id", updatePage)
 
 	group.DELETE("/:page_id", deletePage)
 
 	accessesRouter.AddRoutes(group.Group("/:page_id/accesses"))
 
-	tasksRouter.AddRoutes(group.Group("/:page_id/tasks", hasAccessToPageMiddleware), validate)
+	tasksRouter.AddRoutes(group.Group("/:page_id/tasks", hasAccessToPageMiddleware))
 }

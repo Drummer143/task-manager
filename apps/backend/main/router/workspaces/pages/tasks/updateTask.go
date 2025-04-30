@@ -4,14 +4,13 @@ import (
 	"context"
 	mongoClient "main/internal/mongo"
 	"main/internal/postgres"
+	"main/internal/validation"
 	"main/router/errorHandlers"
 	routerUtils "main/router/utils"
-	"main/validation"
 	"net/http"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
 	"go.mongodb.org/mongo-driver/mongo"
 	"go.mongodb.org/mongo-driver/mongo/options"
@@ -41,7 +40,7 @@ type updateTaskBody struct {
 // @Failure			404 {object} errorHandlers.Error
 // @Failure			500 {object} errorHandlers.Error
 // @Router			/workspaces/{workspace_id}/pages/{page_id}/tasks/{task_id} [put]
-func updateTask(tasksVersionCollection *mongo.Collection, validate *validator.Validate) gin.HandlerFunc {
+func updateTask(tasksVersionCollection *mongo.Collection) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
 		var task postgres.Task
 
@@ -62,7 +61,7 @@ func updateTask(tasksVersionCollection *mongo.Collection, validate *validator.Va
 			return
 		}
 
-		if err := validate.Struct(body); err != nil {
+		if err := validation.Validator.Struct(body); err != nil {
 			if errors, ok := validation.ParseValidationError(err); ok {
 				errorHandlers.BadRequest(ctx, "invalid request body", errors)
 				return
