@@ -3,6 +3,7 @@ package workspacesRouter
 import (
 	"main/internal/postgres"
 	"main/internal/validation"
+	"main/utils/errorCodes"
 	"main/utils/errorHandlers"
 	"main/utils/ginTools"
 	"main/utils/routerUtils"
@@ -35,7 +36,7 @@ func updateWorkspace(ctx *gin.Context) {
 	workspaceId, err := uuid.Parse(ctx.Param("workspace_id"))
 
 	if err != nil {
-		errorHandlers.BadRequest(ctx, "invalid page id", nil)
+		errorHandlers.BadRequest(ctx, errorCodes.BadRequestErrorCodeInvalidParams, []string{"workspace_id"})
 		return
 	}
 
@@ -48,24 +49,24 @@ func updateWorkspace(ctx *gin.Context) {
 	}
 
 	if workspaceAccess.Role != postgres.UserRoleAdmin && workspaceAccess.Role != postgres.UserRoleOwner {
-		errorHandlers.Forbidden(ctx, "no access to page")
+		errorHandlers.Forbidden(ctx, errorCodes.ForbiddenErrorCodeAccessDenied, errorCodes.DetailCodeEntityWorkspace)
 		return
 	}
 
 	var body updateWorkspaceBody
 
 	if err := ctx.BindJSON(&body); err != nil {
-		errorHandlers.BadRequest(ctx, "invalid request body", nil)
+		errorHandlers.BadRequest(ctx, errorCodes.BadRequestErrorCodeInvalidBody, nil)
 		return
 	}
 
 	if err := validation.Validator.Struct(body); err != nil {
 		if errors, ok := validation.ParseValidationError(err); ok {
-			errorHandlers.BadRequest(ctx, "invalid request body", errors)
+			errorHandlers.BadRequest(ctx, errorCodes.BadRequestErrorCodeValidationErrors, errors)
 			return
 		}
 
-		errorHandlers.BadRequest(ctx, "invalid request body", nil)
+		errorHandlers.BadRequest(ctx, errorCodes.BadRequestErrorCodeInvalidBody, nil)
 		return
 	}
 
@@ -78,7 +79,7 @@ func updateWorkspace(ctx *gin.Context) {
 	workspace.UpdatedAt = time.Now()
 
 	if err := postgres.DB.Save(&workspace).Error; err != nil {
-		errorHandlers.InternalServerError(ctx, "failed to update workspace")
+		errorHandlers.InternalServerError(ctx)
 		return
 	}
 

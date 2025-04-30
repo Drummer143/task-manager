@@ -3,6 +3,7 @@ package tasksRouter
 import (
 	"main/internal/postgres"
 	"main/internal/validation"
+	"main/utils/errorCodes"
 	"main/utils/errorHandlers"
 	"net/http"
 	"time"
@@ -38,17 +39,17 @@ func createTask(ctx *gin.Context) {
 	var body createTaskBody
 
 	if err := ctx.BindJSON(&body); err != nil {
-		errorHandlers.BadRequest(ctx, "invalid request body", nil)
+		errorHandlers.BadRequest(ctx, errorCodes.BadRequestErrorCodeInvalidBody, nil)
 		return
 	}
 
 	if err := validation.Validator.Struct(body); err != nil {
 		if errors, ok := validation.ParseValidationError(err); ok {
-			errorHandlers.BadRequest(ctx, "invalid request body", errors)
+			errorHandlers.BadRequest(ctx, errorCodes.BadRequestErrorCodeValidationErrors, errors)
 			return
 		}
 
-		errorHandlers.BadRequest(ctx, "invalid request body", nil)
+		errorHandlers.BadRequest(ctx, errorCodes.BadRequestErrorCodeInvalidBody, nil)
 		return
 	}
 
@@ -72,7 +73,7 @@ func createTask(ctx *gin.Context) {
 	}
 
 	if err := postgres.DB.Create(&task).Error; err != nil {
-		errorHandlers.InternalServerError(ctx, "failed to create task")
+		errorHandlers.InternalServerError(ctx)
 		return
 	}
 

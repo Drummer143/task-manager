@@ -6,6 +6,7 @@ import (
 	"main/internal/postgres"
 	"main/internal/socketManager"
 	"main/internal/validation"
+	"main/utils/errorCodes"
 	"main/utils/errorHandlers"
 	"main/utils/ginTools"
 	"time"
@@ -41,9 +42,9 @@ func sendMessage(taskChatCollection *mongo.Collection) gin.HandlerFunc {
 
 		if err := postgres.DB.First(&task, "id = ?", ctx.Param("task_id")).Error; err != nil {
 			if err == gorm.ErrRecordNotFound {
-				errorHandlers.NotFound(ctx, "task not found")
+				errorHandlers.NotFound(ctx, errorCodes.NotFoundErrorCodeNotFound, errorCodes.DetailCodeEntityTask)
 			} else {
-				errorHandlers.InternalServerError(ctx, "failed to get task")
+				errorHandlers.InternalServerError(ctx)
 			}
 
 			return
@@ -52,15 +53,15 @@ func sendMessage(taskChatCollection *mongo.Collection) gin.HandlerFunc {
 		var body chatMessage
 
 		if err := ctx.BindJSON(&body); err != nil {
-			errorHandlers.BadRequest(ctx, "invalid request body", nil)
+			errorHandlers.BadRequest(ctx, errorCodes.BadRequestErrorCodeInvalidBody, nil)
 			return
 		}
 
 		if err := validation.Validator.Struct(body); err != nil {
 			if errors, ok := validation.ParseValidationError(err); ok {
-				errorHandlers.BadRequest(ctx, "invalid request body", errors)
+				errorHandlers.BadRequest(ctx, errorCodes.BadRequestErrorCodeValidationErrors, errors)
 			} else {
-				errorHandlers.BadRequest(ctx, "invalid request body", nil)
+				errorHandlers.BadRequest(ctx, errorCodes.BadRequestErrorCodeInvalidBody, nil)
 			}
 
 			return
@@ -72,9 +73,9 @@ func sendMessage(taskChatCollection *mongo.Collection) gin.HandlerFunc {
 
 		if err := postgres.DB.First(&user, "id = ?", userId).Error; err != nil {
 			if err == gorm.ErrRecordNotFound {
-				errorHandlers.NotFound(ctx, "user not found")
+				errorHandlers.NotFound(ctx, errorCodes.NotFoundErrorCodeNotFound, errorCodes.DetailCodeEntityUser)
 			} else {
-				errorHandlers.InternalServerError(ctx, "failed to get user")
+				errorHandlers.InternalServerError(ctx)
 			}
 
 			return
@@ -89,7 +90,7 @@ func sendMessage(taskChatCollection *mongo.Collection) gin.HandlerFunc {
 		}
 
 		if _, err := taskChatCollection.InsertOne(ctx, chatMessage); err != nil {
-			errorHandlers.InternalServerError(ctx, "failed to send message")
+			errorHandlers.InternalServerError(ctx)
 			return
 		}
 

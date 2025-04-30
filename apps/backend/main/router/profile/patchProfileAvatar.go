@@ -9,6 +9,7 @@ import (
 	"image/jpeg"
 	"image/png"
 	"main/internal/postgres"
+	"main/utils/errorCodes"
 	"main/utils/errorHandlers"
 	"mime/multipart"
 	"net/http"
@@ -113,10 +114,10 @@ func uploadAvatar(ctx *gin.Context) {
 
 	if err := postgres.DB.First(&user, "id = ?", userId).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			errorHandlers.NotFound(ctx, "user not found in database")
+			errorHandlers.NotFound(ctx, errorCodes.NotFoundErrorCodeNotFound, errorCodes.DetailCodeEntityUser)
 			return
 		} else {
-			errorHandlers.InternalServerError(ctx, "failed to find user in database")
+			errorHandlers.InternalServerError(ctx)
 			return
 		}
 	}
@@ -124,19 +125,19 @@ func uploadAvatar(ctx *gin.Context) {
 	file, err := ctx.FormFile("file")
 
 	if err != nil {
-		errorHandlers.BadRequest(ctx, "request must contain a file", map[string]string{"file": "file is required"})
+		errorHandlers.BadRequest(ctx, errorCodes.BadRequestErrorCodeValidationErrors, map[string]string{"file": errorCodes.FileErrorMissingFile})
 		return
 	}
 
 	img, ext, err := convertFormDataToImage(file)
 
 	if err != nil {
-		errorHandlers.InternalServerError(ctx, err.Error())
+		errorHandlers.InternalServerError(ctx)
 		return
 	}
 
 	if ext != "jpg" && ext != "jpeg" && ext != "png" {
-		errorHandlers.BadRequest(ctx, "invalid file type", map[string]string{"file": "invalid file type. Only jpg, jpeg, and png are supported."})
+		errorHandlers.BadRequest(ctx, errorCodes.BadRequestErrorCodeValidationErrors, map[string]string{"file": errorCodes.FileErrorInvalidFileType, "supported_types": "jpg, jpeg, png"})
 		return
 	}
 
@@ -146,7 +147,7 @@ func uploadAvatar(ctx *gin.Context) {
 	x, y, width, height, err := validateImageSizes(ctx, imageWidth, imageHeight)
 
 	if err != nil {
-		errorHandlers.BadRequest(ctx, "failed to validate image sizes", map[string]string{"file": err.Error()})
+		errorHandlers.BadRequest(ctx, errorCodes.BadRequestErrorCodeValidationErrors, map[string]string{"file": err.Error()})
 		return
 	}
 
@@ -161,13 +162,10 @@ func uploadAvatar(ctx *gin.Context) {
 		err = jpeg.Encode(&buffer, croppedImage, nil)
 	case "png":
 		err = png.Encode(&buffer, croppedImage)
-	default:
-		errorHandlers.BadRequest(ctx, "invalid file type", map[string]string{"file": "invalid file type"})
-		return
 	}
 
 	if err != nil {
-		errorHandlers.InternalServerError(ctx, "failed to encode image")
+		errorHandlers.InternalServerError(ctx)
 		return
 	}
 
@@ -176,14 +174,14 @@ func uploadAvatar(ctx *gin.Context) {
 	}).Post(storageUrl + "/upload")
 
 	if resp.StatusCode() > 299 || err != nil {
-		errorHandlers.InternalServerError(ctx, "failed to upload file to storage")
+		errorHandlers.InternalServerError(ctx)
 		return
 	}
 
 	var body map[string]interface{}
 
 	if err := json.Unmarshal(resp.Body(), &body); err != nil {
-		errorHandlers.InternalServerError(ctx, "failed to upload file to storage")
+		errorHandlers.InternalServerError(ctx)
 		return
 	}
 
@@ -193,7 +191,7 @@ func uploadAvatar(ctx *gin.Context) {
 	user.UpdatedAt = time.Now()
 
 	if err := postgres.DB.Save(&user).Error; err != nil {
-		errorHandlers.InternalServerError(ctx, "failed to update user in database")
+		errorHandlers.InternalServerError(ctx)
 		return
 	}
 

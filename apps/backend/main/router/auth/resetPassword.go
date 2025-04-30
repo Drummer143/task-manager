@@ -4,6 +4,7 @@ import (
 	"main/internal/postgres"
 	"main/internal/validation"
 	"main/utils/auth"
+	"main/utils/errorCodes"
 	"main/utils/errorHandlers"
 	"net/http"
 	"os"
@@ -36,11 +37,11 @@ func resetPassword(ctx *gin.Context) {
 
 	if err := validation.Validator.Struct(body); err != nil {
 		if errors, ok := validation.ParseValidationError(err); ok {
-			errorHandlers.BadRequest(ctx, errors["email"], nil)
+			errorHandlers.BadRequest(ctx, errorCodes.BadRequestErrorCodeValidationErrors, errors)
 			return
 		}
 
-		errorHandlers.BadRequest(ctx, "invalid request", validation.UnknownError)
+		errorHandlers.BadRequest(ctx, errorCodes.BadRequestErrorCodeInvalidBody, validation.UnknownError)
 		return
 	}
 
@@ -48,11 +49,11 @@ func resetPassword(ctx *gin.Context) {
 
 	if err := postgres.DB.Where("email = ?", body.Email).First(&user).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			errorHandlers.NotFound(ctx, "user with this email does not exists")
+			errorHandlers.NotFound(ctx, errorCodes.NotFoundErrorCodeNotFound, errorCodes.DetailCodeEntityUser)
 			return
 		}
 
-		errorHandlers.InternalServerError(ctx, "failed to find user")
+		errorHandlers.InternalServerError(ctx)
 	}
 
 	var userCredentials postgres.UserCredential
@@ -62,14 +63,14 @@ func resetPassword(ctx *gin.Context) {
 	resetPasswordToken, _ := auth.GenerateJWT(user.Email, EMAIL_VERIFICATION_TOKEN_LIFETIME)
 
 	if err := postgres.DB.Model(&userCredentials).Update("password_reset_token", resetPasswordToken).Error; err != nil {
-		errorHandlers.InternalServerError(ctx, "error while creating reset password token")
+		errorHandlers.InternalServerError(ctx)
 		return
 	}
 
 	url := mailerUrl + "/send-reset-password"
 
 	if resp, err := resty.New().R().SetBody(gin.H{"email": user.Email, "token": resetPasswordToken}).Post(url); err != nil || resp.StatusCode() > 299 {
-		errorHandlers.InternalServerError(ctx, "failed to send email")
+		errorHandlers.InternalServerError(ctx)
 		return
 	}
 

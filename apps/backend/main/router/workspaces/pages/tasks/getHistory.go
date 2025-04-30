@@ -4,6 +4,7 @@ import (
 	"context"
 	mongoClient "main/internal/mongo"
 	"main/internal/postgres"
+	"main/utils/errorCodes"
 	"main/utils/errorHandlers"
 	"main/utils/pagination"
 	"net/http"
@@ -34,9 +35,9 @@ func getHistory(tasksVersionCollection *mongo.Collection) gin.HandlerFunc {
 
 		if err := postgres.DB.First(&task, "id = ?", ctx.Param("task_id")).Error; err != nil {
 			if err == gorm.ErrRecordNotFound {
-				errorHandlers.NotFound(ctx, "task not found")
+				errorHandlers.NotFound(ctx, errorCodes.NotFoundErrorCodeNotFound, errorCodes.DetailCodeEntityTask)
 			} else {
-				errorHandlers.InternalServerError(ctx, "failed to get task")
+				errorHandlers.InternalServerError(ctx)
 			}
 
 			return
@@ -45,7 +46,7 @@ func getHistory(tasksVersionCollection *mongo.Collection) gin.HandlerFunc {
 		total, err := tasksVersionCollection.CountDocuments(context.Background(), gin.H{"id": task.ID})
 
 		if err != nil {
-			errorHandlers.InternalServerError(ctx, "failed to get task history")
+			errorHandlers.InternalServerError(ctx)
 			return
 		}
 
@@ -57,12 +58,12 @@ func getHistory(tasksVersionCollection *mongo.Collection) gin.HandlerFunc {
 		cursor, err := tasksVersionCollection.Find(context.Background(), gin.H{"id": task.ID}, options)
 
 		if err != nil {
-			errorHandlers.InternalServerError(ctx, "failed to get task history")
+			errorHandlers.InternalServerError(ctx)
 			return
 		}
 
 		if err = cursor.All(context.Background(), &history); err != nil {
-			errorHandlers.InternalServerError(ctx, "failed to get task history")
+			errorHandlers.InternalServerError(ctx)
 			return
 		}
 

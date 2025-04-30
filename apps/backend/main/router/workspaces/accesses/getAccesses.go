@@ -33,14 +33,14 @@ func getWorkspaceAccesses(ctx *gin.Context) {
 	// }
 
 	// if access.Role != postgres.UserRoleOwner && access.Role != postgres.UserRoleAdmin {
-	// 	errorHandlers.Forbidden(ctx, "no access to workspace")
+	// 	errorHandlers.Forbidden(ctx, errorCodes.ForbiddenErrorCodeAccessDenied, errorCodes.DetailCodeEntityWorkspace)
 	// 	return
 	// }
 
 	var workspaceAccess []postgres.WorkspaceAccess
 
 	if err := postgres.DB.Preload("User").Where("workspace_id = ?", workspaceId).Find(&workspaceAccess).Error; err != nil {
-		errorHandlers.InternalServerError(ctx, "failed to get workspace accesses")
+		errorHandlers.InternalServerError(ctx)
 		return
 	}
 

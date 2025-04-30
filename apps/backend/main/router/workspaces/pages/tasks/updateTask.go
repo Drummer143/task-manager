@@ -5,6 +5,7 @@ import (
 	mongoClient "main/internal/mongo"
 	"main/internal/postgres"
 	"main/internal/validation"
+	"main/utils/errorCodes"
 	"main/utils/errorHandlers"
 	"main/utils/ginTools"
 	"net/http"
@@ -46,9 +47,9 @@ func updateTask(tasksVersionCollection *mongo.Collection) gin.HandlerFunc {
 
 		if err := postgres.DB.First(&task, "id = ?", ctx.Param("task_id")).Error; err != nil {
 			if err == gorm.ErrRecordNotFound {
-				errorHandlers.NotFound(ctx, "task not found")
+				errorHandlers.NotFound(ctx, errorCodes.NotFoundErrorCodeNotFound, errorCodes.DetailCodeEntityTask)
 			} else {
-				errorHandlers.InternalServerError(ctx, "failed to get task")
+				errorHandlers.InternalServerError(ctx)
 			}
 
 			return
@@ -57,17 +58,17 @@ func updateTask(tasksVersionCollection *mongo.Collection) gin.HandlerFunc {
 		var body updateTaskBody
 
 		if err := ctx.BindJSON(&body); err != nil {
-			errorHandlers.BadRequest(ctx, "invalid request body", nil)
+			errorHandlers.BadRequest(ctx, errorCodes.BadRequestErrorCodeInvalidBody, nil)
 			return
 		}
 
 		if err := validation.Validator.Struct(body); err != nil {
 			if errors, ok := validation.ParseValidationError(err); ok {
-				errorHandlers.BadRequest(ctx, "invalid request body", errors)
+				errorHandlers.BadRequest(ctx, errorCodes.BadRequestErrorCodeValidationErrors, errors)
 				return
 			}
 
-			errorHandlers.BadRequest(ctx, "invalid request body", nil)
+			errorHandlers.BadRequest(ctx, errorCodes.BadRequestErrorCodeInvalidBody, nil)
 			return
 		}
 
@@ -103,7 +104,7 @@ func updateTask(tasksVersionCollection *mongo.Collection) gin.HandlerFunc {
 		var user postgres.User
 
 		if err := postgres.DB.First(&user, "id = ?", currentUserId).Error; err != nil {
-			errorHandlers.InternalServerError(ctx, "failed to get user")
+			errorHandlers.InternalServerError(ctx)
 			return
 		}
 
@@ -118,7 +119,7 @@ func updateTask(tasksVersionCollection *mongo.Collection) gin.HandlerFunc {
 
 		if err := tasksVersionCollection.FindOne(context.Background(), gin.H{"id": task.ID}, options).Decode(&latestChange); err != nil {
 			if err != mongo.ErrNoDocuments {
-				errorHandlers.InternalServerError(ctx, "failed to get task version")
+				errorHandlers.InternalServerError(ctx)
 				return
 			}
 
@@ -128,12 +129,12 @@ func updateTask(tasksVersionCollection *mongo.Collection) gin.HandlerFunc {
 		}
 
 		if _, err := tasksVersionCollection.InsertOne(context.Background(), newChange); err != nil {
-			errorHandlers.InternalServerError(ctx, "failed to insert task version")
+			errorHandlers.InternalServerError(ctx)
 			return
 		}
 
 		if err := postgres.DB.Save(&task).Error; err != nil {
-			errorHandlers.InternalServerError(ctx, "failed to update task")
+			errorHandlers.InternalServerError(ctx)
 			return
 		}
 

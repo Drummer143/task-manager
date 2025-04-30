@@ -52,14 +52,14 @@ func getUserList(ctx *gin.Context) {
 	var users []postgres.User
 
 	if err := dbWithPagination.Find(&users).Error; err != nil {
-		errorHandlers.InternalServerError(ctx, "failed to get user list")
+		errorHandlers.InternalServerError(ctx)
 		return
 	}
 
 	var total int64
 
 	if err := dbWithPagination.Model(&postgres.User{}).Count(&total).Error; err != nil {
-		errorHandlers.InternalServerError(ctx, "failed to get user list")
+		errorHandlers.InternalServerError(ctx)
 		return
 	}
 

@@ -2,9 +2,11 @@ package workspacesAccessesRouter
 
 import (
 	"main/internal/postgres"
+	"main/utils/errorCodes"
 	"main/utils/errorHandlers"
 	"main/utils/ginTools"
 	"main/utils/routerUtils"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -36,7 +38,7 @@ func updateAccess(ctx *gin.Context) {
 
 	var body giveAccessBody
 	if err := ctx.BindJSON(&body); err != nil {
-		errorHandlers.BadRequest(ctx, "invalid request body", nil)
+		errorHandlers.BadRequest(ctx, errorCodes.BadRequestErrorCodeInvalidBody, nil)
 		return
 	}
 
@@ -46,7 +48,7 @@ func updateAccess(ctx *gin.Context) {
 	defer func() {
 		if r := recover(); r != nil {
 			tx.Rollback()
-			errorHandlers.InternalServerError(ctx, "An unexpected error occurred")
+			errorHandlers.InternalServerError(ctx)
 		}
 	}()
 
@@ -59,14 +61,14 @@ func updateAccess(ctx *gin.Context) {
 
 	if err := tx.First(&targetUserAccess, "workspace_id = ? AND user_id = ?", workspaceId, body.UserId).Error; err != nil {
 		if err != gorm.ErrRecordNotFound {
-			errorHandlers.InternalServerError(ctx, "failed to get workspace access")
+			errorHandlers.InternalServerError(ctx)
 			return
 		}
 	}
 
 	if targetUserAccess == (postgres.WorkspaceAccess{}) {
 		if body.Role == nil {
-			errorHandlers.BadRequest(ctx, "Target user has no access to workspace", nil)
+			ctx.String(http.StatusOK, "Success")
 			return
 		}
 
@@ -77,20 +79,20 @@ func updateAccess(ctx *gin.Context) {
 		}
 
 		if err := tx.Create(&targetUserAccess).Error; err != nil {
-			errorHandlers.InternalServerError(ctx, "failed to create workspace access")
+			errorHandlers.InternalServerError(ctx)
 			return
 		}
 	} else {
 		if body.Role == nil {
 			if err := tx.Delete(&targetUserAccess).Error; err != nil {
-				errorHandlers.InternalServerError(ctx, "failed to delete workspace access")
+				errorHandlers.InternalServerError(ctx)
 				return
 			}
 		} else {
 			targetUserAccess.Role = *body.Role
 
 			if err := tx.Save(&targetUserAccess).Error; err != nil {
-				errorHandlers.InternalServerError(ctx, "failed to update workspace access")
+				errorHandlers.InternalServerError(ctx)
 				return
 			}
 		}
@@ -98,7 +100,7 @@ func updateAccess(ctx *gin.Context) {
 
 	if err := tx.Commit().Error; err != nil {
 		tx.Rollback()
-		errorHandlers.InternalServerError(ctx, "failed to commit transaction")
+		errorHandlers.InternalServerError(ctx)
 		return
 	}
 
@@ -117,7 +119,7 @@ func checkAccess(ctx *gin.Context, tx *gorm.DB, workspaceId uuid.UUID, userId uu
 	}
 
 	if workspaceAccess.Role != postgres.UserRoleOwner && workspaceAccess.Role != postgres.UserRoleAdmin {
-		errorHandlers.Forbidden(ctx, "Not enough permissions to change access")
+		errorHandlers.Forbidden(ctx, errorCodes.ForbiddenErrorCodeInsufficientPermissions, map[string]string{"action": errorCodes.DetailCodeActionChangeAccess, "target": errorCodes.DetailCodeEntityWorkspace})
 		return false
 	}
 
@@ -126,7 +128,7 @@ func checkAccess(ctx *gin.Context, tx *gorm.DB, workspaceId uuid.UUID, userId uu
 	}
 
 	if workspaceAccess.Role == postgres.UserRoleAdmin && (*newRole == postgres.UserRoleAdmin || *newRole == postgres.UserRoleOwner) {
-		errorHandlers.Forbidden(ctx, "Cannot change role to admin or owner")
+		errorHandlers.Forbidden(ctx, errorCodes.ForbiddenErrorCodeInsufficientPermissions, map[string]string{"action": errorCodes.DetailCodeActionChangeAccess, "target": errorCodes.DetailCodeEntityWorkspace})
 		return false
 	}
 

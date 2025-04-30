@@ -2,6 +2,7 @@ package workspacesRouter
 
 import (
 	"main/internal/postgres"
+	"main/utils/errorCodes"
 	"main/utils/errorHandlers"
 	"main/utils/ginTools"
 	"main/utils/routerUtils"
@@ -28,7 +29,7 @@ func softDeleteWorkspace(ctx *gin.Context) {
 	workspaceId, err := uuid.Parse(ctx.Param("workspace_id"))
 
 	if err != nil {
-		errorHandlers.BadRequest(ctx, "invalid workspace id", nil)
+		errorHandlers.BadRequest(ctx, errorCodes.BadRequestErrorCodeInvalidParams, []string{"workspace_id"})
 		return
 	}
 
@@ -37,12 +38,12 @@ func softDeleteWorkspace(ctx *gin.Context) {
 	_, workspaceAccess, ok := routerUtils.CheckWorkspaceAccess(ctx, postgres.DB, postgres.DB, workspaceId, userId)
 
 	if !ok {
-		errorHandlers.Forbidden(ctx, "no access to workspace")
+		errorHandlers.Forbidden(ctx, errorCodes.ForbiddenErrorCodeAccessDenied, errorCodes.DetailCodeEntityWorkspace)
 		return
 	}
 
 	if workspaceAccess.Role != postgres.UserRoleOwner {
-		errorHandlers.Forbidden(ctx, "no access to delete workspace")
+		errorHandlers.Forbidden(ctx, errorCodes.ForbiddenErrorCodeInsufficientPermissions, map[string]string{"action": errorCodes.DetailCodeActionDelete, "target": errorCodes.DetailCodeEntityWorkspace})
 		return
 	}
 
@@ -52,7 +53,7 @@ func softDeleteWorkspace(ctx *gin.Context) {
 	deletionTime = deletionTime.AddDate(0, 0, 14)
 
 	if err := postgres.DB.Model(&postgres.Workspace{}).Where("id = ?", workspaceId).Update("deleted_at", &deletionTime).Error; err != nil {
-		errorHandlers.InternalServerError(ctx, "failed to delete workspace")
+		errorHandlers.InternalServerError(ctx)
 		return
 	}
 

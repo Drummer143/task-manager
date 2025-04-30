@@ -3,6 +3,7 @@ package authRouter
 import (
 	"main/internal/postgres"
 	"main/utils/auth"
+	"main/utils/errorCodes"
 	"main/utils/errorHandlers"
 	"net/http"
 
@@ -24,7 +25,7 @@ func verifyResetPasswordToken(ctx *gin.Context) {
 	token := ctx.Query("token")
 
 	if token == "" {
-		errorHandlers.BadRequest(ctx, "invalid token", nil)
+		errorHandlers.BadRequest(ctx, errorCodes.BadRequestErrorCodeInvalidToken, nil)
 		return
 	}
 
@@ -32,16 +33,16 @@ func verifyResetPasswordToken(ctx *gin.Context) {
 
 	if err := postgres.DB.Where("password_reset_token = ?", token).First(&userCredentials).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			errorHandlers.BadRequest(ctx, "invalid token", nil)
+			errorHandlers.BadRequest(ctx, errorCodes.BadRequestErrorCodeInvalidToken, nil)
 			return
 		}
 
-		errorHandlers.InternalServerError(ctx, "failed to get user credentials")
+		errorHandlers.InternalServerError(ctx)
 		return
 	}
 
 	if _, err := auth.ValidateJWT(token); err != nil {
-		errorHandlers.BadRequest(ctx, "invalid token", nil)
+		errorHandlers.BadRequest(ctx, errorCodes.BadRequestErrorCodeInvalidToken, nil)
 		return
 	}
 

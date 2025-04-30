@@ -2,6 +2,7 @@ package pagesRouter
 
 import (
 	"main/internal/postgres"
+	"main/utils/errorCodes"
 	"main/utils/errorHandlers"
 	"main/utils/ginTools"
 	"main/utils/routerUtils"
@@ -30,7 +31,7 @@ func getPage(ctx *gin.Context) {
 	pageId, err := uuid.Parse(ctx.Param("page_id"))
 
 	if err != nil {
-		errorHandlers.BadRequest(ctx, "invalid page id", nil)
+		errorHandlers.BadRequest(ctx, errorCodes.BadRequestErrorCodeInvalidParams, []string{"page_id"})
 		return
 	}
 
@@ -39,7 +40,7 @@ func getPage(ctx *gin.Context) {
 	include := ctx.Query("include")
 
 	if strings.Contains(include, "parentPage") && strings.Contains(include, "childPages") {
-		errorHandlers.BadRequest(ctx, "cannot include both parentPage and childPages", nil)
+		errorHandlers.BadRequest(ctx, errorCodes.BadRequestErrorIncludeParamConflictOneOf, []string{"parentPage", "childPages"})
 		return
 	}
 

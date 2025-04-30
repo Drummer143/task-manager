@@ -5,6 +5,7 @@ import (
 	"main/internal/postgres"
 	"main/internal/validation"
 	"main/utils/auth"
+	"main/utils/errorCodes"
 	"main/utils/errorHandlers"
 	"net/http"
 	"time"
@@ -38,11 +39,11 @@ func signUp(ctx *gin.Context) {
 
 	if err := validation.Validator.Struct(body); err != nil {
 		if errors, ok := validation.ParseValidationError(err); ok {
-			errorHandlers.BadRequest(ctx, "invalid request", errors)
+			errorHandlers.BadRequest(ctx, errorCodes.BadRequestErrorCodeValidationErrors, errors)
 			return
 		}
 
-		errorHandlers.BadRequest(ctx, "invalid request", validation.UnknownError)
+		errorHandlers.BadRequest(ctx, errorCodes.BadRequestErrorCodeInvalidBody, validation.UnknownError)
 		return
 	}
 
@@ -50,7 +51,7 @@ func signUp(ctx *gin.Context) {
 	defer func() {
 		if r := recover(); r != nil {
 			tx.Rollback()
-			errorHandlers.InternalServerError(ctx, "An unexpected error occurred")
+			errorHandlers.InternalServerError(ctx)
 			return
 		}
 	}()
@@ -63,11 +64,11 @@ func signUp(ctx *gin.Context) {
 		tx.Rollback()
 
 		if err.Error() == "ERROR: duplicate key value violates unique constraint \"users_email_key\" (SQLSTATE 23505)" {
-			errorHandlers.BadRequest(ctx, "user with this email already exists", nil)
+			errorHandlers.BadRequest(ctx, errorCodes.BadRequestErrorCodeEmailTaken, nil)
 			return
 		}
 
-		errorHandlers.InternalServerError(ctx, "failed to create user")
+		errorHandlers.InternalServerError(ctx)
 		return
 	}
 
@@ -77,7 +78,7 @@ func signUp(ctx *gin.Context) {
 
 	if err := tx.First(&user, "email = ?", body.Email).Error; err != nil {
 		tx.Rollback()
-		errorHandlers.InternalServerError(ctx, "failed to get user")
+		errorHandlers.InternalServerError(ctx)
 		return
 	}
 
@@ -88,7 +89,7 @@ func signUp(ctx *gin.Context) {
 		PasswordHash:           string(passwordHash),
 		EmailVerificationToken: &emailVerificationToken,
 	}).Error; err != nil {
-		errorHandlers.InternalServerError(ctx, "failed to create user")
+		errorHandlers.InternalServerError(ctx)
 
 		tx.Delete(&user)
 		tx.Rollback()
@@ -106,7 +107,7 @@ func signUp(ctx *gin.Context) {
 
 	if err := tx.Create(&userWorkspace).Error; err != nil {
 		tx.Rollback()
-		errorHandlers.InternalServerError(ctx, "failed to create user")
+		errorHandlers.InternalServerError(ctx)
 		return
 	}
 
@@ -118,7 +119,7 @@ func signUp(ctx *gin.Context) {
 
 	if err := tx.Create(&userWorkspaceAccess).Error; err != nil {
 		tx.Rollback()
-		errorHandlers.InternalServerError(ctx, "failed to create user")
+		errorHandlers.InternalServerError(ctx)
 		return
 	}
 
@@ -129,13 +130,13 @@ func signUp(ctx *gin.Context) {
 
 	if err := tx.Create(&userMeta).Error; err != nil {
 		tx.Rollback()
-		errorHandlers.InternalServerError(ctx, "failed to create user")
+		errorHandlers.InternalServerError(ctx)
 		return
 	}
 
 	if err := tx.Commit().Error; err != nil {
 		tx.Rollback()
-		errorHandlers.InternalServerError(ctx, "failed to create user")
+		errorHandlers.InternalServerError(ctx)
 		return
 	}
 

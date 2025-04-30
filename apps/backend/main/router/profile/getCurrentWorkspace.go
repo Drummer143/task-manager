@@ -2,6 +2,7 @@ package profileRouter
 
 import (
 	"main/internal/postgres"
+	"main/utils/errorCodes"
 	"main/utils/errorHandlers"
 
 	"github.com/gin-contrib/sessions"
@@ -17,19 +18,19 @@ func getUserCurrentWorkspace(ctx *gin.Context) (*postgres.Workspace, bool) {
 
 	if selectedWorkspaceFromSession == nil {
 		if userId == nil {
-			errorHandlers.Unauthorized(ctx, "Unauthorized")
+			errorHandlers.Unauthorized(ctx, errorCodes.UnauthorizedErrorCodeUnauthorized)
 			return nil, false
 		}
 
 		var userMeta postgres.UserMeta
 
 		if err := postgres.DB.Where("user_id = ?", userId).First(&userMeta).Error; err != nil {
-			errorHandlers.InternalServerError(ctx, "Internal server error")
+			errorHandlers.InternalServerError(ctx)
 			return nil, false
 		}
 
 		if userMeta.SelectedWorkspace == nil {
-			errorHandlers.Unauthorized(ctx, "Unauthorized")
+			errorHandlers.Unauthorized(ctx, errorCodes.UnauthorizedErrorCodeUnauthorized)
 			return nil, false
 		}
 
@@ -47,11 +48,11 @@ func getUserCurrentWorkspace(ctx *gin.Context) (*postgres.Workspace, bool) {
 
 			postgres.DB.Model(&postgres.UserMeta{}).Where("user_id = ?", userId).Update("selected_workspace", nil)
 
-			errorHandlers.NotFound(ctx, "Workspace not found")
+			errorHandlers.NotFound(ctx, errorCodes.NotFoundErrorCodeNotFound, errorCodes.DetailCodeEntityWorkspace)
 			return nil, false
 		}
 
-		errorHandlers.InternalServerError(ctx, "Internal server error")
+		errorHandlers.InternalServerError(ctx)
 		return nil, false
 	}
 

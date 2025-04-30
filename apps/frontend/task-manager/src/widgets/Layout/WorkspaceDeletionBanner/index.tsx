@@ -2,7 +2,7 @@ import React, { memo, useMemo } from "react";
 
 import { useQuery } from "@tanstack/react-query";
 import { getWorkspace } from "@task-manager/api";
-import { useStorage } from "@task-manager/utils";
+import { useStorage } from "@task-manager/react-utils";
 import { Alert } from "antd";
 import { useLocation } from "react-router-dom";
 

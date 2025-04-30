@@ -2,6 +2,7 @@ package workspacesRouter
 
 import (
 	"main/internal/postgres"
+	"main/utils/errorCodes"
 	"main/utils/errorHandlers"
 	"main/utils/ginTools"
 	"main/utils/routerUtils"
@@ -28,7 +29,7 @@ func getWorkspace(ctx *gin.Context) {
 	workspaceId, err := uuid.Parse(ctx.Param("workspace_id"))
 
 	if err != nil {
-		errorHandlers.BadRequest(ctx, "invalid workspace id", nil)
+		errorHandlers.BadRequest(ctx, errorCodes.BadRequestErrorCodeInvalidParams, []string{"workspace_id"})
 		return
 	}
 

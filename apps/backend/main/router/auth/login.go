@@ -4,6 +4,7 @@ import (
 	"main/internal/postgres"
 	"main/internal/validation"
 	"main/utils/auth"
+	"main/utils/errorCodes"
 	"main/utils/errorHandlers"
 	"net/http"
 	"time"
@@ -36,11 +37,11 @@ func login(ctx *gin.Context) {
 
 	if err := validation.Validator.Struct(body); err != nil {
 		if errors, ok := validation.ParseValidationError(err); ok {
-			errorHandlers.BadRequest(ctx, "invalid request", errors)
+			errorHandlers.BadRequest(ctx, errorCodes.BadRequestErrorCodeValidationErrors, errors)
 			return
 		}
 
-		errorHandlers.BadRequest(ctx, "invalid request", validation.UnknownError)
+		errorHandlers.BadRequest(ctx, errorCodes.BadRequestErrorCodeInvalidBody, validation.UnknownError)
 		return
 	}
 
@@ -48,10 +49,10 @@ func login(ctx *gin.Context) {
 
 	if err := postgres.DB.Where("email = ?", body.Email).First(&user).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			errorHandlers.BadRequest(ctx, "user with that email not found", nil)
+			errorHandlers.BadRequest(ctx, errorCodes.BadRequestErrorCodeInvalidCredentials, nil)
 			return
 		} else {
-			errorHandlers.InternalServerError(ctx, "failed to get credentials")
+			errorHandlers.InternalServerError(ctx)
 			return
 		}
 	}
@@ -60,23 +61,23 @@ func login(ctx *gin.Context) {
 
 	if err := postgres.DB.Where("user_id = ?", user.ID).First(&credentials).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			errorHandlers.BadRequest(ctx, "user with that email not found", nil)
+			errorHandlers.BadRequest(ctx, errorCodes.BadRequestErrorCodeInvalidCredentials, nil)
 			return
 		} else {
-			errorHandlers.InternalServerError(ctx, "failed to get credentials")
+			errorHandlers.InternalServerError(ctx)
 			return
 		}
 	}
 
 	if err := bcrypt.CompareHashAndPassword([]byte(credentials.PasswordHash), []byte(body.Password)); err != nil {
-		errorHandlers.BadRequest(ctx, "invalid password", nil)
+		errorHandlers.BadRequest(ctx, errorCodes.BadRequestErrorCodeInvalidCredentials, nil)
 		return
 	}
 
 	token, err := auth.GenerateJWT(user.Email, SESSION_TOKEN_LIFETIME)
 
 	if err != nil {
-		errorHandlers.InternalServerError(ctx, "failed to generate token")
+		errorHandlers.InternalServerError(ctx)
 		return
 	}
 
@@ -90,7 +91,7 @@ func login(ctx *gin.Context) {
 		var userMeta postgres.UserMeta
 
 		if err := postgres.DB.Where("user_id = ?", user.ID).First(&userMeta).Error; err != nil {
-			errorHandlers.InternalServerError(ctx, "failed to get user meta")
+			errorHandlers.InternalServerError(ctx)
 			return
 		}
 
@@ -103,7 +104,7 @@ func login(ctx *gin.Context) {
 	session.Set("token", token)
 
 	if err := session.Save(); err != nil {
-		errorHandlers.InternalServerError(ctx, "failed to save session")
+		errorHandlers.InternalServerError(ctx)
 		return
 	}
 

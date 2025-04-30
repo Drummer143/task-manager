@@ -3,6 +3,7 @@ package pagesRouter
 import (
 	"main/internal/postgres"
 	"main/internal/validation"
+	"main/utils/errorCodes"
 	"main/utils/errorHandlers"
 	"main/utils/ginTools"
 	"main/utils/routerUtils"
@@ -36,25 +37,20 @@ func createPage(ctx *gin.Context) {
 	var body createPageBody
 
 	if err := ctx.BindJSON(&body); err != nil {
-		errorHandlers.BadRequest(ctx, "invalid request body", nil)
+		errorHandlers.BadRequest(ctx, errorCodes.BadRequestErrorCodeInvalidBody, nil)
 		return
 	}
 
 	if err := validation.Validator.Struct(body); err != nil {
 		errors, _ := validation.ParseValidationError(err)
 
-		errorHandlers.BadRequest(ctx, "invalid request body", errors)
+		errorHandlers.BadRequest(ctx, errorCodes.BadRequestErrorCodeValidationErrors, errors)
 
-		return
-	}
-
-	if body.Type == postgres.PageTypeGroup && body.ParentId != nil {
-		errorHandlers.BadRequest(ctx, "unable to create group page inside group page", nil)
 		return
 	}
 
 	if body.Type != postgres.PageTypeText && body.Text != nil {
-		errorHandlers.BadRequest(ctx, "text field is required for non-text pages", nil)
+		errorHandlers.BadRequest(ctx, errorCodes.BadRequestErrorCodeValidationErrors, map[string]string{"text": errorCodes.FieldErrorMissingField})
 		return
 	}
 
@@ -68,12 +64,12 @@ func createPage(ctx *gin.Context) {
 		}
 
 		if access.Role != postgres.UserRoleOwner && access.Role != postgres.UserRoleAdmin {
-			errorHandlers.Forbidden(ctx, "access to parent parentPage is forbidden")
+			errorHandlers.Forbidden(ctx, errorCodes.ForbiddenErrorCodeAccessDenied, errorCodes.DetailCodeEntityParentPage)
 			return
 		}
 
 		if body.Type == postgres.PageTypeGroup {
-			errorHandlers.BadRequest(ctx, "unable to create group page inside group page", nil)
+			errorHandlers.BadRequest(ctx, errorCodes.BadRequestErrorNestedPage, nil)
 			return
 		}
 	}
@@ -91,14 +87,14 @@ func createPage(ctx *gin.Context) {
 	defer func() {
 		if r := recover(); r != nil {
 			tx.Rollback()
-			errorHandlers.InternalServerError(ctx, "internal server error")
+			errorHandlers.InternalServerError(ctx)
 			return
 		}
 	}()
 
 	if err := tx.Create(&page).Error; err != nil {
 		tx.Rollback()
-		errorHandlers.InternalServerError(ctx, "failed to create page")
+		errorHandlers.InternalServerError(ctx)
 		return
 	}
 
@@ -110,26 +106,26 @@ func createPage(ctx *gin.Context) {
 
 	if err := tx.Create(&pageAccess).Error; err != nil {
 		tx.Rollback()
-		errorHandlers.InternalServerError(ctx, "failed to create page access")
+		errorHandlers.InternalServerError(ctx)
 		return
 	}
 
 	if err := routerUtils.GiveAccessToWorkspaceAdmins(tx, page.ID, page.WorkspaceID); err != nil {
 		tx.Rollback()
-		errorHandlers.InternalServerError(ctx, "failed to give workspace admins access to page")
+		errorHandlers.InternalServerError(ctx)
 		return
 	}
 
 	if body.ParentId != nil {
 		if err := routerUtils.GiveAccessToParentPageAdmins(tx, *body.ParentId, page.WorkspaceID); err != nil {
 			tx.Rollback()
-			errorHandlers.InternalServerError(ctx, "failed to give parent page admins access")
+			errorHandlers.InternalServerError(ctx)
 			return
 		}
 	}
 
 	if err := tx.Commit().Error; err != nil {
-		errorHandlers.InternalServerError(ctx, "failed to commit transaction")
+		errorHandlers.InternalServerError(ctx)
 		return
 	}
 

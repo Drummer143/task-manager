@@ -1,76 +1,73 @@
 package errorHandlers
 
 import (
+	"main/utils/errorCodes"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
 )
 
 type Error struct {
-	Error      string `json:"error"`
-	ErrorCode  string `json:"errorCode,omitempty"`
-	Message    string `json:"message"`
-	StatusCode int    `json:"statusCode"`
-	Details    *any   `json:"details,omitempty"`
+	Error      string  `json:"error"`
+	ErrorCode  *string `json:"errorCode,omitempty"`
+	StatusCode int     `json:"statusCode"`
+	Details    *any    `json:"details,omitempty"`
 }
 
 // 304
-func NotModified(ctx *gin.Context, message string) {
+func NotModified(ctx *gin.Context) {
 	ctx.JSON(http.StatusNotModified, Error{
 		Error:      "Not modified",
-		Message:    message,
 		StatusCode: http.StatusNotModified,
-		ErrorCode:  "not_modified",
 	})
 }
 
 // 400
-func BadRequest(ctx *gin.Context, message string, details any) {
+func BadRequest(ctx *gin.Context, errorCode string, details any) {
 	ctx.JSON(http.StatusBadRequest, Error{
 		Error:      "Bad request",
-		Message:    message,
 		StatusCode: http.StatusBadRequest,
-		ErrorCode:  "bad_request",
+		ErrorCode:  &errorCode,
 		Details:    &details,
 	})
 }
 
 // 401
-func Unauthorized(ctx *gin.Context, message string) {
+func Unauthorized(ctx *gin.Context, errorCode string) {
 	ctx.JSON(http.StatusUnauthorized, Error{
 		Error:      "Unauthorized",
-		Message:    message,
 		StatusCode: http.StatusUnauthorized,
-		ErrorCode:  "unauthorized",
+		ErrorCode:  &errorCode,
 	})
 }
 
 // 403
-func Forbidden(ctx *gin.Context, message string) {
+func Forbidden(ctx *gin.Context, errorCode string, details any) {
 	ctx.JSON(http.StatusForbidden, Error{
 		Error:      "Forbidden",
-		Message:    message,
 		StatusCode: http.StatusForbidden,
-		ErrorCode:  "forbidden",
+		ErrorCode:  &errorCode,
+		Details:    &details,
 	})
 }
 
 // 404
-func NotFound(ctx *gin.Context, message string) {
+func NotFound(ctx *gin.Context, errorCode string, details any) {
 	ctx.JSON(http.StatusNotFound, Error{
 		Error:      "Not found",
-		Message:    message,
 		StatusCode: http.StatusNotFound,
-		ErrorCode:  "not_found",
+		ErrorCode:  &errorCode,
+		Details:    &details,
 	})
 }
 
+var internalServerErrorCodeInternalServer = errorCodes.InternalServerErrorCodeInternalServer
+
 // 500
-func InternalServerError(ctx *gin.Context, message string) {
+func InternalServerError(ctx *gin.Context) {
 	ctx.JSON(http.StatusInternalServerError, Error{
 		Error:      "Internal server error",
-		Message:    message,
 		StatusCode: http.StatusInternalServerError,
-		ErrorCode:  "internal_server_error",
+		ErrorCode:  &internalServerErrorCodeInternalServer,
 	})
 }

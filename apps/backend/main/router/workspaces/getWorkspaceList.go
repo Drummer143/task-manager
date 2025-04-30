@@ -41,7 +41,7 @@ func getWorkspaceList(ctx *gin.Context) {
 		Scan(&workspaces).Error
 
 	if err != nil {
-		errorHandlers.InternalServerError(ctx, "failed to get workspace list")
+		errorHandlers.InternalServerError(ctx)
 		return
 	}
 

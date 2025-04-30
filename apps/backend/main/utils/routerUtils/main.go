@@ -2,6 +2,7 @@ package routerUtils
 
 import (
 	"main/internal/postgres"
+	"main/utils/errorCodes"
 	"main/utils/errorHandlers"
 	"time"
 
@@ -13,20 +14,20 @@ import (
 func CheckPageAccess(ctx *gin.Context, dbWithIncludes *gorm.DB, postgres *gorm.DB, pageId uuid.UUID, userId uuid.UUID) (page postgres.Page, pageAccess postgres.PageAccess, ok bool) {
 	if err := dbWithIncludes.First(&page, "id = ?", pageId).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			errorHandlers.NotFound(ctx, "page not found")
+			errorHandlers.NotFound(ctx, errorCodes.NotFoundErrorCodeNotFound, errorCodes.DetailCodeEntityPage)
 			return page, pageAccess, false
 		} else {
-			errorHandlers.InternalServerError(ctx, "failed to get page")
+			errorHandlers.InternalServerError(ctx)
 			return page, pageAccess, false
 		}
 	}
 
 	if err := postgres.First(&pageAccess, "page_id = ? AND user_id = ?", pageId, userId).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			errorHandlers.Forbidden(ctx, "page access not found")
+			errorHandlers.Forbidden(ctx, errorCodes.ForbiddenErrorCodeAccessDenied, errorCodes.DetailCodeEntityPage)
 			return page, pageAccess, false
 		} else {
-			errorHandlers.InternalServerError(ctx, "failed to get page access")
+			errorHandlers.InternalServerError(ctx)
 			return page, pageAccess, false
 		}
 	}
@@ -37,20 +38,20 @@ func CheckPageAccess(ctx *gin.Context, dbWithIncludes *gorm.DB, postgres *gorm.D
 func CheckWorkspaceAccess(ctx *gin.Context, dbWithIncludes *gorm.DB, postgres *gorm.DB, workspaceId uuid.UUID, userId uuid.UUID) (workspace postgres.Workspace, workspaceAccess postgres.WorkspaceAccess, ok bool) {
 	if err := dbWithIncludes.First(&workspace, "id = ?", workspaceId).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			errorHandlers.NotFound(ctx, "workspace not found")
+			errorHandlers.NotFound(ctx, errorCodes.NotFoundErrorCodeNotFound, errorCodes.DetailCodeEntityWorkspace)
 			return workspace, workspaceAccess, false
 		} else {
-			errorHandlers.InternalServerError(ctx, "failed to get workspace")
+			errorHandlers.InternalServerError(ctx)
 			return workspace, workspaceAccess, false
 		}
 	}
 
 	if err := postgres.First(&workspaceAccess, "workspace_id = ? AND user_id = ?", workspaceId, userId).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			errorHandlers.Forbidden(ctx, "no access to workspace")
+			errorHandlers.Forbidden(ctx, errorCodes.ForbiddenErrorCodeAccessDenied, errorCodes.DetailCodeEntityWorkspace)
 			return workspace, workspaceAccess, false
 		} else {
-			errorHandlers.InternalServerError(ctx, "failed to get workspace access")
+			errorHandlers.InternalServerError(ctx)
 			return workspace, workspaceAccess, false
 		}
 	}

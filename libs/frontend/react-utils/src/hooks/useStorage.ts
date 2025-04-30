@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useState } from "react";
+import { Dispatch, SetStateAction, useCallback, useEffect, useState } from "react";
 
 const tryParse = <Value>(value: string | null): Value | null => {
 	if (value === null) return null;
@@ -22,7 +22,7 @@ export const useStorage = <Value>(
 		return tryParse(jsonValue) ?? initialValue ?? null;
 	});
 
-	const setStorageValue: React.Dispatch<React.SetStateAction<Value | null>> = useCallback(
+	const setStorageValue: Dispatch<SetStateAction<Value | null>> = useCallback(
 		value => {
 			setValue(prev => {
 				const realValue =
@@ -58,3 +58,4 @@ export const useStorage = <Value>(
 
 	return [value, setStorageValue, clear] as const;
 };
+

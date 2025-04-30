@@ -4,6 +4,7 @@ import (
 	"main/internal/postgres"
 	"main/internal/validation"
 	"main/utils/auth"
+	"main/utils/errorCodes"
 	"main/utils/errorHandlers"
 	"net/http"
 
@@ -33,11 +34,11 @@ func confirmEmail(ctx *gin.Context) {
 
 	if err := validation.Validator.Struct(body); err != nil {
 		if errors, ok := validation.ParseValidationError(err); ok {
-			errorHandlers.BadRequest(ctx, "invalid request", errors)
+			errorHandlers.BadRequest(ctx, errorCodes.BadRequestErrorCodeValidationErrors, errors)
 			return
 		}
 
-		errorHandlers.BadRequest(ctx, "invalid request", "Invalid request body")
+		errorHandlers.BadRequest(ctx, errorCodes.BadRequestErrorCodeInvalidBody, nil)
 		return
 	}
 
@@ -45,33 +46,33 @@ func confirmEmail(ctx *gin.Context) {
 
 	if err := postgres.DB.Where("email_verification_token = ?", body.Token).First(&userCredentials).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			errorHandlers.BadRequest(ctx, "invalid token", "Invalid token.")
+			errorHandlers.BadRequest(ctx, errorCodes.BadRequestErrorCodeInvalidToken, nil)
 			return
 		}
 
-		errorHandlers.InternalServerError(ctx, "Error while confirming email")
+		errorHandlers.InternalServerError(ctx)
 		return
 	}
 
 	if _, err := auth.ValidateJWT(body.Token); err != nil {
-		errorHandlers.Unauthorized(ctx, "Invalid token.")
+		errorHandlers.Unauthorized(ctx, errorCodes.UnauthorizedErrorCodeUnauthorized)
 		return
 	}
 
 	var user postgres.User
 
 	if err := postgres.DB.First(&user, "id = ?", userCredentials.UserID.String()).Error; err != nil {
-		errorHandlers.InternalServerError(ctx, "Error while confirming email")
+		errorHandlers.InternalServerError(ctx)
 		return
 	}
 
 	if err := postgres.DB.Model(&userCredentials).Update("email_verification_token", nil).Error; err != nil {
-		errorHandlers.InternalServerError(ctx, "Error while confirming email")
+		errorHandlers.InternalServerError(ctx)
 		return
 	}
 
 	if err := postgres.DB.Model(&user).Update("email_verified", true).Error; err != nil {
-		errorHandlers.InternalServerError(ctx, "Error while confirming email")
+		errorHandlers.InternalServerError(ctx)
 		return
 	}
 

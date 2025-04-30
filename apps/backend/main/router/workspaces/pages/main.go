@@ -4,6 +4,7 @@ import (
 	"main/internal/postgres"
 	accessesRouter "main/router/workspaces/pages/accesses"
 	tasksRouter "main/router/workspaces/pages/tasks"
+	"main/utils/errorCodes"
 	"main/utils/errorHandlers"
 	"main/utils/ginTools"
 	"main/utils/routerUtils"
@@ -16,7 +17,7 @@ func hasAccessToPageMiddleware(ctx *gin.Context) {
 	pageId, err := uuid.Parse(ctx.Param("page_id"))
 
 	if err != nil {
-		errorHandlers.BadRequest(ctx, "invalid workspace id", nil)
+		errorHandlers.BadRequest(ctx, errorCodes.BadRequestErrorCodeInvalidParams, []string{"page_id"})
 		return
 	}
 
@@ -25,7 +26,7 @@ func hasAccessToPageMiddleware(ctx *gin.Context) {
 	_, _, ok := routerUtils.CheckPageAccess(ctx, postgres.DB, postgres.DB, pageId, userId)
 
 	if !ok {
-		errorHandlers.Forbidden(ctx, "no access to workspace")
+		errorHandlers.Forbidden(ctx, errorCodes.ForbiddenErrorCodeAccessDenied, errorCodes.DetailCodeEntityPage)
 		ctx.Abort()
 		return
 	}

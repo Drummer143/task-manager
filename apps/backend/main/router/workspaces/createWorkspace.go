@@ -3,6 +3,7 @@ package workspacesRouter
 import (
 	"main/internal/postgres"
 	"main/internal/validation"
+	"main/utils/errorCodes"
 	"main/utils/errorHandlers"
 
 	"github.com/gin-contrib/sessions"
@@ -29,17 +30,17 @@ func createWorkspace(ctx *gin.Context) {
 	var body createWorkspaceBody
 
 	if err := ctx.BindJSON(&body); err != nil {
-		errorHandlers.BadRequest(ctx, "invalid request body", nil)
+		errorHandlers.BadRequest(ctx, errorCodes.BadRequestErrorCodeInvalidBody, nil)
 		return
 	}
 
 	if err := validation.Validator.Struct(body); err != nil {
 		if errors, ok := validation.ParseValidationError(err); ok {
-			errorHandlers.BadRequest(ctx, "invalid request body", errors)
+			errorHandlers.BadRequest(ctx, errorCodes.BadRequestErrorCodeValidationErrors, errors)
 			return
 		}
 
-		errorHandlers.BadRequest(ctx, "invalid request body", nil)
+		errorHandlers.BadRequest(ctx, errorCodes.BadRequestErrorCodeInvalidBody, nil)
 		return
 	}
 
@@ -53,7 +54,7 @@ func createWorkspace(ctx *gin.Context) {
 	}
 
 	if err := postgres.DB.Create(&workspace).Error; err != nil {
-		errorHandlers.InternalServerError(ctx, "failed to create workspace")
+		errorHandlers.InternalServerError(ctx)
 		return
 	}
 
@@ -64,7 +65,7 @@ func createWorkspace(ctx *gin.Context) {
 	}
 
 	if err := postgres.DB.Create(&workspaceAccess).Error; err != nil {
-		errorHandlers.InternalServerError(ctx, "failed to create workspace access")
+		errorHandlers.InternalServerError(ctx)
 		return
 	}
 

@@ -2,6 +2,7 @@ package accessesRouter
 
 import (
 	"main/internal/postgres"
+	"main/utils/errorCodes"
 	"main/utils/errorHandlers"
 	"main/utils/ginTools"
 	"main/utils/routerUtils"
@@ -42,21 +43,21 @@ func getPageAccesses(ctx *gin.Context) {
 	}
 
 	if access.Role != postgres.UserRoleOwner && access.Role != postgres.UserRoleAdmin {
-		errorHandlers.Forbidden(ctx, "no access to page")
+		errorHandlers.Forbidden(ctx, errorCodes.ForbiddenErrorCodeAccessDenied, errorCodes.DetailCodeEntityPage)
 		return
 	}
 
 	var pageAccesses []postgres.PageAccess
 
 	if err := postgres.DB.Preload("User").Where("page_id = ?", pageId).Find(&pageAccesses).Error; err != nil {
-		errorHandlers.InternalServerError(ctx, "failed to get page accesses")
+		errorHandlers.InternalServerError(ctx)
 		return
 	}
 
 	var workspaceOwnersAndAdmins []postgres.WorkspaceAccess
 
 	if err := postgres.DB.Where("workspace_id = ? AND (role = ? OR role = ?)", uuid.MustParse(ctx.Param("workspace_id")), postgres.UserRoleOwner, postgres.UserRoleAdmin).Find(&workspaceOwnersAndAdmins).Error; err != nil {
-		errorHandlers.InternalServerError(ctx, "failed to get workspace owners and admins")
+		errorHandlers.InternalServerError(ctx)
 		return
 	}
 

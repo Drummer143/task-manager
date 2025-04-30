@@ -1,4 +1,4 @@
-import { lazySuspense } from "@task-manager/utils";
+import { lazySuspense } from "@task-manager/react-utils";
 import { createBrowserRouter, Navigate } from "react-router-dom";
 
 import FullSizeLoader from "../shared/ui/FullSizeLoader";

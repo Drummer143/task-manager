@@ -4,6 +4,7 @@ import (
 	"main/internal/postgres"
 	workspacesAccessesRouter "main/router/workspaces/accesses"
 	pagesRouter "main/router/workspaces/pages"
+	"main/utils/errorCodes"
 	"main/utils/errorHandlers"
 	"main/utils/ginTools"
 	"main/utils/routerUtils"
@@ -16,7 +17,7 @@ func hasAccessToWorkspaceMiddleware(ctx *gin.Context) {
 	workspaceId, err := uuid.Parse(ctx.Param("workspace_id"))
 
 	if err != nil {
-		errorHandlers.BadRequest(ctx, "invalid workspace id", nil)
+		errorHandlers.BadRequest(ctx, errorCodes.BadRequestErrorCodeInvalidParams, []string{"workspace_id"})
 		return
 	}
 

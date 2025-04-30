@@ -2,6 +2,7 @@ package tasksRouter
 
 import (
 	"main/internal/postgres"
+	"main/utils/errorCodes"
 	"main/utils/errorHandlers"
 	"net/http"
 
@@ -26,9 +27,9 @@ func getSingleTask(ctx *gin.Context) {
 
 	if err := postgres.DB.First(&task, "id = ?", ctx.Param("task_id")).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			errorHandlers.NotFound(ctx, "task not found")
+			errorHandlers.NotFound(ctx, errorCodes.NotFoundErrorCodeNotFound, errorCodes.DetailCodeEntityTask)
 		} else {
-			errorHandlers.InternalServerError(ctx, "failed to get task")
+			errorHandlers.InternalServerError(ctx)
 		}
 
 		return

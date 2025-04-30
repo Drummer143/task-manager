@@ -3,6 +3,7 @@ package tasksCharRouter
 import (
 	"context"
 	mongoClient "main/internal/mongo"
+	"main/utils/errorCodes"
 	"main/utils/errorHandlers"
 	"main/utils/pagination"
 	"net/http"
@@ -32,7 +33,7 @@ func getMessages(taskChatsCollection *mongo.Collection) gin.HandlerFunc {
 		taskId, err := uuid.Parse(ctx.Param("task_id"))
 
 		if err != nil {
-			errorHandlers.BadRequest(ctx, "invalid task id", nil)
+			errorHandlers.BadRequest(ctx, errorCodes.BadRequestErrorCodeInvalidParams, []string{"task_id"})
 			return
 		}
 
@@ -45,21 +46,21 @@ func getMessages(taskChatsCollection *mongo.Collection) gin.HandlerFunc {
 		cursor, err := taskChatsCollection.Find(ctx, filter, options)
 
 		if err != nil {
-			errorHandlers.InternalServerError(ctx, "failed to get messages")
+			errorHandlers.InternalServerError(ctx)
 			return
 		}
 
 		var messages []mongoClient.TaskChatMessage
 
 		if err := cursor.All(context.Background(), &messages); err != nil {
-			errorHandlers.InternalServerError(ctx, "failed to get messages")
+			errorHandlers.InternalServerError(ctx)
 			return
 		}
 
 		total, err := taskChatsCollection.CountDocuments(context.Background(), filter)
 
 		if err != nil {
-			errorHandlers.InternalServerError(ctx, "failed to get messages")
+			errorHandlers.InternalServerError(ctx)
 			return
 		}
 

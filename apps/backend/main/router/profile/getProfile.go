@@ -2,6 +2,7 @@ package profileRouter
 
 import (
 	"main/internal/postgres"
+	"main/utils/errorCodes"
 	"main/utils/errorHandlers"
 	"net/http"
 	"strings"
@@ -37,10 +38,10 @@ func getProfile(ctx *gin.Context) {
 
 	if err := postgres.DB.First(&dbUser, "id = ?", userId).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			errorHandlers.NotFound(ctx, "user not found")
+			errorHandlers.NotFound(ctx, errorCodes.NotFoundErrorCodeNotFound, errorCodes.DetailCodeEntityUser)
 			return
 		} else {
-			errorHandlers.InternalServerError(ctx, "failed to get user")
+			errorHandlers.InternalServerError(ctx)
 			return
 		}
 	}

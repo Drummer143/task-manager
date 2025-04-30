@@ -2,6 +2,7 @@ package workspacesRouter
 
 import (
 	"main/internal/postgres"
+	"main/utils/errorCodes"
 	"main/utils/errorHandlers"
 	"main/utils/ginTools"
 	"main/utils/routerUtils"
@@ -26,7 +27,7 @@ func cancelSoftDeleteWorkspace(ctx *gin.Context) {
 	workspaceId, err := uuid.Parse(ctx.Param("workspace_id"))
 
 	if err != nil {
-		errorHandlers.BadRequest(ctx, "invalid workspace id", nil)
+		errorHandlers.BadRequest(ctx, errorCodes.BadRequestErrorCodeInvalidParams, []string{"workspace_id"})
 		return
 	}
 
@@ -35,17 +36,17 @@ func cancelSoftDeleteWorkspace(ctx *gin.Context) {
 	_, workspaceAccess, ok := routerUtils.CheckWorkspaceAccess(ctx, postgres.DB, postgres.DB, workspaceId, userId)
 
 	if !ok {
-		errorHandlers.Forbidden(ctx, "no access to workspace")
+		errorHandlers.Forbidden(ctx, errorCodes.ForbiddenErrorCodeAccessDenied, errorCodes.DetailCodeEntityWorkspace)
 		return
 	}
 
 	if workspaceAccess.Role != postgres.UserRoleOwner {
-		errorHandlers.Forbidden(ctx, "Not enough permissions to cancel deletion of workspace")
+		errorHandlers.Forbidden(ctx, errorCodes.ForbiddenErrorCodeInsufficientPermissions, map[string]string{"action": errorCodes.DetailCodeActionCancelDeletion, "target": errorCodes.DetailCodeEntityWorkspace})
 		return
 	}
 
 	if err := postgres.DB.Model(&postgres.Workspace{}).Where("id = ?", workspaceId).Update("deleted_at", nil).Error; err != nil {
-		errorHandlers.InternalServerError(ctx, "failed to cancel deletion of workspace")
+		errorHandlers.InternalServerError(ctx)
 		return
 	}
 

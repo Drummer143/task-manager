@@ -3,6 +3,7 @@ package pagesRouter
 import (
 	"main/internal/postgres"
 	"main/internal/validation"
+	"main/utils/errorCodes"
 	"main/utils/errorHandlers"
 	"main/utils/ginTools"
 	"main/utils/routerUtils"
@@ -35,7 +36,7 @@ func updatePage(ctx *gin.Context) {
 	pageId, err := uuid.Parse(ctx.Param("page_id"))
 
 	if err != nil {
-		errorHandlers.BadRequest(ctx, "invalid page id", nil)
+		errorHandlers.BadRequest(ctx, errorCodes.BadRequestErrorCodeInvalidParams, []string{"page_id"})
 		return
 	}
 
@@ -48,31 +49,31 @@ func updatePage(ctx *gin.Context) {
 	}
 
 	if pageAccess.Role != postgres.UserRoleGuest || pageAccess.Role != postgres.UserRoleCommentator {
-		errorHandlers.Forbidden(ctx, "no access to page")
+		errorHandlers.Forbidden(ctx, errorCodes.ForbiddenErrorCodeAccessDenied, errorCodes.DetailCodeEntityPage)
 		return
 	}
 
 	var body updatePageBody
 
 	if err := ctx.BindJSON(&body); err != nil {
-		errorHandlers.BadRequest(ctx, "invalid request body", nil)
+		errorHandlers.BadRequest(ctx, errorCodes.BadRequestErrorCodeInvalidBody, nil)
 		return
 	}
 
 	if err := validation.Validator.Struct(body); err != nil {
 		errors, _ := validation.ParseValidationError(err)
 
-		errorHandlers.BadRequest(ctx, "invalid request body", errors)
+		errorHandlers.BadRequest(ctx, errorCodes.BadRequestErrorCodeValidationErrors, errors)
 		return
 	}
 
 	if page.Type != postgres.PageTypeText && body.Text != nil {
-		errorHandlers.BadRequest(ctx, "only text pages can have text", nil)
+		errorHandlers.BadRequest(ctx, errorCodes.BadRequestErrorCodeValidationErrors, map[string]string{"text": errorCodes.FieldErrorFieldNotAllowed})
 		return
 	}
 
 	if err := postgres.DB.Model(&page).Updates(map[string]interface{}{"name": body.Name}).Error; err != nil {
-		errorHandlers.InternalServerError(ctx, "failed to update page")
+		errorHandlers.InternalServerError(ctx)
 	}
 
 	ctx.JSON(200, page)

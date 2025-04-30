@@ -2,7 +2,7 @@ import React, { useCallback, useMemo } from "react";
 
 import { HistoryOutlined } from "@ant-design/icons";
 import { getTaskHistory, TaskStatus } from "@task-manager/api";
-import { useDisclosure } from "@task-manager/utils";
+import { useDisclosure } from "@task-manager/react-utils";
 import { Button, Drawer, Tag, Typography } from "antd";
 
 import { useAuthStore } from "../../../../../app/store/auth";

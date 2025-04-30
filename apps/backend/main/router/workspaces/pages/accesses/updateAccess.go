@@ -2,6 +2,7 @@ package accessesRouter
 
 import (
 	"main/internal/postgres"
+	"main/utils/errorCodes"
 	"main/utils/errorHandlers"
 	"main/utils/ginTools"
 	"main/utils/routerUtils"
@@ -34,7 +35,7 @@ type giveAccessBody struct {
 func updateAccess(ctx *gin.Context) {
 	var body giveAccessBody
 	if err := ctx.BindJSON(&body); err != nil {
-		errorHandlers.BadRequest(ctx, "invalid request body", nil)
+		errorHandlers.BadRequest(ctx, errorCodes.BadRequestErrorCodeInvalidBody, nil)
 		return
 	}
 
@@ -42,7 +43,7 @@ func updateAccess(ctx *gin.Context) {
 	defer func() {
 		if r := recover(); r != nil {
 			tx.Rollback()
-			errorHandlers.InternalServerError(ctx, "An unexpected error occurred")
+			errorHandlers.InternalServerError(ctx)
 		}
 	}()
 
@@ -75,7 +76,7 @@ func checkAccess(ctx *gin.Context, tx *gorm.DB, pageId uuid.UUID, userId uuid.UU
 	}
 
 	if pageAccess.Role != postgres.UserRoleOwner && pageAccess.Role != postgres.UserRoleAdmin {
-		errorHandlers.Forbidden(ctx, "Not enough permissions to change access")
+		errorHandlers.Forbidden(ctx, errorCodes.ForbiddenErrorCodeInsufficientPermissions, map[string]string{"action": errorCodes.DetailCodeActionChangeAccess, "target": errorCodes.DetailCodeEntityPage})
 		return false
 	}
 
@@ -86,12 +87,12 @@ func checkAccess(ctx *gin.Context, tx *gorm.DB, pageId uuid.UUID, userId uuid.UU
 	}
 
 	if userId == workspace.OwnerID {
-		errorHandlers.Forbidden(ctx, "Cannot change role to workspace owner")
+		errorHandlers.Forbidden(ctx, errorCodes.ForbiddenErrorCodeInsufficientPermissions, map[string]string{"action": errorCodes.DetailCodeActionChangeAccess, "target": errorCodes.DetailCodeEntityPage})
 		return false
 	}
 
 	if pageAccess.Role == postgres.UserRoleAdmin && (*newRole == postgres.UserRoleAdmin || *newRole == postgres.UserRoleOwner) {
-		errorHandlers.Forbidden(ctx, "Cannot change role to admin or owner")
+		errorHandlers.Forbidden(ctx, errorCodes.ForbiddenErrorCodeInsufficientPermissions, map[string]string{"action": errorCodes.DetailCodeActionChangeAccess, "target": errorCodes.DetailCodeEntityPage})
 		return false
 	}
 

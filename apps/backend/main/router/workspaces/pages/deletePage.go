@@ -2,6 +2,7 @@ package pagesRouter
 
 import (
 	"main/internal/postgres"
+	"main/utils/errorCodes"
 	"main/utils/errorHandlers"
 	"main/utils/routerUtils"
 	"net/http"
@@ -25,10 +26,10 @@ import (
 // @Failure 		500 {object} errorHandlers.Error
 // @Router 			/workspaces/{workspace_id}/pages/{page_id} [delete]
 func deletePage(ctx *gin.Context) {
-	pageId, err := uuid.Parse(ctx.Param("id"))
+	pageId, err := uuid.Parse(ctx.Param("page_id"))
 
 	if err != nil {
-		errorHandlers.BadRequest(ctx, "invalid page id", nil)
+		errorHandlers.BadRequest(ctx, errorCodes.BadRequestErrorCodeInvalidParams, []string{"page_id"})
 		return
 	}
 
@@ -43,12 +44,12 @@ func deletePage(ctx *gin.Context) {
 	}
 
 	if pageAccess.Role != postgres.UserRoleOwner {
-		errorHandlers.Forbidden(ctx, "no access to delete page")
+		errorHandlers.Forbidden(ctx, errorCodes.ForbiddenErrorCodeAccessDenied, errorCodes.DetailCodeEntityPage)
 		return
 	}
 
 	if err := postgres.DB.Delete(&page).Error; err != nil {
-		errorHandlers.InternalServerError(ctx, "failed to delete page")
+		errorHandlers.InternalServerError(ctx)
 		return
 	}
 

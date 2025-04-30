@@ -3,7 +3,7 @@ import React, { useMemo } from "react";
 import { DeleteOutlined, UndoOutlined } from "@ant-design/icons";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { cancelSoftDeleteWorkspace, softDeleteWorkspace } from "@task-manager/api";
-import { useFunctionWithFeedback } from "@task-manager/utils";
+import { useFunctionWithFeedback } from "@task-manager/react-utils";
 import { Button, Flex, Typography } from "antd";
 import { createStyles } from "antd-style";
 import dayjs from "dayjs";

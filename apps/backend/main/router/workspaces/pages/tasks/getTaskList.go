@@ -36,7 +36,7 @@ func getTaskList(ctx *gin.Context) {
 	}
 
 	if err := postgres.DB.Find(&tasks, "page_id = ?", ctx.Query("page_id")).Error; err != nil {
-		errorHandlers.InternalServerError(ctx, "failed to get tasks")
+		errorHandlers.InternalServerError(ctx)
 		return
 	}
 

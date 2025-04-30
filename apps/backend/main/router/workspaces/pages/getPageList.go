@@ -36,7 +36,7 @@ func getPageList(ctx *gin.Context) {
 		Scan(&pages).Error
 
 	if err != nil {
-		errorHandlers.InternalServerError(ctx, "failed to get page list")
+		errorHandlers.InternalServerError(ctx)
 		return
 	}
 

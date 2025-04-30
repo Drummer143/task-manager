@@ -3,6 +3,7 @@ package router
 import (
 	"main/internal/postgres"
 	"main/utils/auth"
+	"main/utils/errorCodes"
 	"main/utils/errorHandlers"
 	"main/utils/ginTools"
 
@@ -19,7 +20,7 @@ func IsAuthenticated(ctx *gin.Context) {
 		session.Clear()
 		session.Save()
 
-		errorHandlers.Unauthorized(ctx, "Session is missing or invalid")
+		errorHandlers.Unauthorized(ctx, errorCodes.UnauthorizedErrorCodeUnauthorized)
 
 		ctx.Abort()
 
@@ -30,7 +31,7 @@ func IsAuthenticated(ctx *gin.Context) {
 		session.Clear()
 		session.Save()
 
-		errorHandlers.Unauthorized(ctx, "Session is missing or invalid")
+		errorHandlers.Unauthorized(ctx, errorCodes.UnauthorizedErrorCodeUnauthorized)
 
 		ctx.Abort()
 	} else {
@@ -66,14 +67,14 @@ func setDefaultWorkspace(ctx *gin.Context) {
 	if err := postgres.DB.Joins("JOIN workspace_accesses ON workspace_accesses.workspace_id = workspaces.id").
 		Where("workspace_accesses.user_id = ? AND workspace_accesses.deleted_at IS NULL", userId).
 		First(&workspace).Error; err != nil {
-		errorHandlers.InternalServerError(ctx, "Internal server error")
+		errorHandlers.InternalServerError(ctx)
 		return
 	}
 
 	userMeta.SelectedWorkspace = &workspace.ID
 
 	if err := postgres.DB.Save(&userMeta).Error; err != nil {
-		errorHandlers.InternalServerError(ctx, "Internal server error")
+		errorHandlers.InternalServerError(ctx)
 		return
 	}
 

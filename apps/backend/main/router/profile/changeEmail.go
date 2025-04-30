@@ -3,6 +3,7 @@ package profileRouter
 import (
 	"main/internal/postgres"
 	"main/internal/validation"
+	"main/utils/errorCodes"
 	"main/utils/errorHandlers"
 	"net/http"
 	"time"
@@ -38,10 +39,10 @@ func changeEmail(ctx *gin.Context) {
 
 	if err := postgres.DB.First(&user, "id = ?", userId).Error; err != nil {
 		if err == gorm.ErrRecordNotFound {
-			errorHandlers.NotFound(ctx, "user not found")
+			errorHandlers.NotFound(ctx, errorCodes.NotFoundErrorCodeNotFound, errorCodes.DetailCodeEntityUser)
 			return
 		} else {
-			errorHandlers.InternalServerError(ctx, "failed to get user")
+			errorHandlers.InternalServerError(ctx)
 			return
 		}
 	}
@@ -49,17 +50,17 @@ func changeEmail(ctx *gin.Context) {
 	var body changeEmailBody
 
 	if err := ctx.BindJSON(&body); err != nil {
-		errorHandlers.InternalServerError(ctx, "failed to read request body")
+		errorHandlers.InternalServerError(ctx)
 		return
 	}
 
 	if err := validation.Validator.Struct(body); err != nil {
 		if errors, ok := validation.ParseValidationError(err); ok {
-			errorHandlers.BadRequest(ctx, "validation error", errors)
+			errorHandlers.BadRequest(ctx, errorCodes.BadRequestErrorCodeValidationErrors, errors)
 			return
 		}
 
-		errorHandlers.BadRequest(ctx, "invalid request", map[string]string{"email": "invalid email"})
+		errorHandlers.BadRequest(ctx, errorCodes.BadRequestErrorCodeInvalidBody, nil)
 		return
 	}
 
@@ -67,7 +68,7 @@ func changeEmail(ctx *gin.Context) {
 	user.UpdatedAt = time.Now()
 
 	if err := postgres.DB.Save(&user).Error; err != nil {
-		errorHandlers.InternalServerError(ctx, "failed to update user")
+		errorHandlers.InternalServerError(ctx)
 		return
 	}
 
