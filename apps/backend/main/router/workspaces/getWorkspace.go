@@ -3,8 +3,8 @@ package workspacesRouter
 import (
 	"main/internal/postgres"
 	"main/utils/errorHandlers"
+	"main/utils/ginTools"
 	"main/utils/routerUtils"
-	"main/utils/sessionTools"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -32,7 +32,7 @@ func getWorkspace(ctx *gin.Context) {
 		return
 	}
 
-	userId := sessionTools.MustGetUserIdFromSession(ctx)
+	userId := ginTools.MustGetUserIdFromSession(ctx)
 
 	include := ctx.Query("include")
 

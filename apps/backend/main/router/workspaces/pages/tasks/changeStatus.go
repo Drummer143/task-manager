@@ -6,7 +6,7 @@ import (
 	"main/internal/postgres"
 	"main/internal/validation"
 	"main/utils/errorHandlers"
-	"main/utils/sessionTools"
+	"main/utils/ginTools"
 	"net/http"
 	"time"
 
@@ -69,7 +69,7 @@ func changeStatus(tasksVersionCollection *mongo.Collection) gin.HandlerFunc {
 			return
 		}
 
-		currentUserId := sessionTools.MustGetUserIdFromSession(ctx)
+		currentUserId := ginTools.MustGetUserIdFromSession(ctx)
 		var user postgres.User
 
 		if err := postgres.DB.First(&user, "id = ?", currentUserId).Error; err != nil {

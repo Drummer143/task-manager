@@ -4,7 +4,7 @@ import (
 	"main/internal/postgres"
 	"main/utils/auth"
 	"main/utils/errorHandlers"
-	"main/utils/sessionTools"
+	"main/utils/ginTools"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -39,7 +39,7 @@ func IsAuthenticated(ctx *gin.Context) {
 }
 
 func setDefaultWorkspace(ctx *gin.Context) {
-	userId := sessionTools.MustGetUserIdFromSession(ctx)
+	userId := ginTools.MustGetUserIdFromSession(ctx)
 
 	session := sessions.Default(ctx)
 

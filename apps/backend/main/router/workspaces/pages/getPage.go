@@ -3,8 +3,8 @@ package pagesRouter
 import (
 	"main/internal/postgres"
 	"main/utils/errorHandlers"
+	"main/utils/ginTools"
 	"main/utils/routerUtils"
-	"main/utils/sessionTools"
 	"net/http"
 	"strings"
 
@@ -34,7 +34,7 @@ func getPage(ctx *gin.Context) {
 		return
 	}
 
-	userId := sessionTools.MustGetUserIdFromSession(ctx)
+	userId := ginTools.MustGetUserIdFromSession(ctx)
 
 	include := ctx.Query("include")
 

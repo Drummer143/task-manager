@@ -4,8 +4,8 @@ import (
 	"main/internal/postgres"
 	"main/internal/validation"
 	"main/utils/errorHandlers"
+	"main/utils/ginTools"
 	"main/utils/routerUtils"
-	"main/utils/sessionTools"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -58,7 +58,7 @@ func createPage(ctx *gin.Context) {
 		return
 	}
 
-	userId := sessionTools.MustGetUserIdFromSession(ctx)
+	userId := ginTools.MustGetUserIdFromSession(ctx)
 
 	if body.ParentId != nil {
 		_, access, ok := routerUtils.CheckPageAccess(ctx, postgres.DB, postgres.DB, *body.ParentId, userId)

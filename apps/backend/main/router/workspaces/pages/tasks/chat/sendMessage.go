@@ -7,7 +7,7 @@ import (
 	"main/internal/socketManager"
 	"main/internal/validation"
 	"main/utils/errorHandlers"
-	"main/utils/sessionTools"
+	"main/utils/ginTools"
 	"time"
 
 	"github.com/gin-gonic/gin"
@@ -66,7 +66,7 @@ func sendMessage(taskChatCollection *mongo.Collection) gin.HandlerFunc {
 			return
 		}
 
-		userId := sessionTools.MustGetUserIdFromSession(ctx)
+		userId := ginTools.MustGetUserIdFromSession(ctx)
 
 		var user postgres.User
 

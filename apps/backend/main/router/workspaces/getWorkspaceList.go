@@ -3,7 +3,7 @@ package workspacesRouter
 import (
 	"main/internal/postgres"
 	"main/utils/errorHandlers"
-	"main/utils/sessionTools"
+	"main/utils/ginTools"
 	"net/http"
 	"strings"
 
@@ -20,7 +20,7 @@ import (
 // @Failure			500 {object} errorHandlers.Error
 // @Router			/workspaces [get]
 func getWorkspaceList(ctx *gin.Context) {
-	userId := sessionTools.MustGetUserIdFromSession(ctx)
+	userId := ginTools.MustGetUserIdFromSession(ctx)
 
 	var workspaces []postgres.Workspace
 

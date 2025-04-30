@@ -3,8 +3,8 @@ package accessesRouter
 import (
 	"main/internal/postgres"
 	"main/utils/errorHandlers"
+	"main/utils/ginTools"
 	"main/utils/routerUtils"
-	"main/utils/sessionTools"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -47,7 +47,7 @@ func updateAccess(ctx *gin.Context) {
 	}()
 
 	pageId := uuid.MustParse(ctx.Param("page_id"))
-	currentUserId := sessionTools.MustGetUserIdFromSession(ctx)
+	currentUserId := ginTools.MustGetUserIdFromSession(ctx)
 
 	if !checkAccess(ctx, tx, pageId, currentUserId, body.Role) {
 		tx.Rollback()

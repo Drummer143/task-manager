@@ -5,8 +5,8 @@ import (
 	accessesRouter "main/router/workspaces/pages/accesses"
 	tasksRouter "main/router/workspaces/pages/tasks"
 	"main/utils/errorHandlers"
+	"main/utils/ginTools"
 	"main/utils/routerUtils"
-	"main/utils/sessionTools"
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
@@ -20,7 +20,7 @@ func hasAccessToPageMiddleware(ctx *gin.Context) {
 		return
 	}
 
-	userId := sessionTools.MustGetUserIdFromSession(ctx)
+	userId := ginTools.MustGetUserIdFromSession(ctx)
 
 	_, _, ok := routerUtils.CheckPageAccess(ctx, postgres.DB, postgres.DB, pageId, userId)
 

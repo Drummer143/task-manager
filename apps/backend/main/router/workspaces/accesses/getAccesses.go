@@ -24,7 +24,7 @@ import (
 func getWorkspaceAccesses(ctx *gin.Context) {
 	workspaceId := uuid.MustParse(ctx.Param("workspace_id"))
 
-	// userId := sessionTools.MustGetUserIdFromSession(ctx)
+	// userId := ginTools.MustGetUserIdFromSession(ctx)
 
 	// _, access, ok := routerUtils.CheckWorkspaceAccess(ctx, postgres.DB, postgres.DB, workspaceId, userId)
 

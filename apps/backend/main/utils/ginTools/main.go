@@ -1,4 +1,4 @@
-package sessionTools
+package ginTools
 
 import (
 	"github.com/gin-contrib/sessions"
