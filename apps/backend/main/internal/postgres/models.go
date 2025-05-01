@@ -7,13 +7,15 @@ import (
 )
 
 type User struct {
-	ID                uuid.UUID  `gorm:"primaryKey;default:uuid_generate_v4()" json:"id"`
-	Email             string     `gorm:"unique;not null" json:"email"`
-	Username          string     `gorm:"not null" json:"username"`
-	EmailVerified     bool       `gorm:"not null;default:false" json:"emailVerified"`
-	Picture           *string    `json:"picture"`
-	LastPasswordReset *time.Time `json:"lastPasswordReset"`
-	LastLogin         time.Time  `json:"lastLogin"`
+	ID            uuid.UUID `gorm:"primaryKey;default:uuid_generate_v4()" json:"id"`
+	Email         string    `gorm:"unique;not null" json:"email"`
+	Username      string    `gorm:"not null" json:"username"`
+	EmailVerified bool      `gorm:"not null;default:false" json:"emailVerified"`
+	Picture       *string   `json:"picture"`
+	// LastPasswordReset *time.Time `json:"lastPasswordReset"`
+	// LastLogin         time.Time  `json:"lastLogin"`
+
+	ZitadelUserId string `gorm:"unique;not null" json:"-"`
 
 	CreatedAt time.Time  `gorm:"default:current_timestamp" json:"createdAt"`
 	UpdatedAt time.Time  `gorm:"default:current_timestamp" json:"updatedAt"`

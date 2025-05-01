@@ -5,10 +5,10 @@ import (
 	"libs/backend/errorHandlers/libs/errorHandlers"
 	"main/internal/postgres"
 	"main/internal/validation"
+	"main/utils/ginTools"
 	"net/http"
 	"time"
 
-	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
@@ -53,9 +53,7 @@ func createTask(ctx *gin.Context) {
 		return
 	}
 
-	session := sessions.Default(ctx)
-
-	userId, _ := session.Get("id").(uuid.UUID)
+	user := ginTools.MustGetUser(ctx)
 
 	var task postgres.Task = postgres.Task{
 		Status:      body.Status,
@@ -63,7 +61,7 @@ func createTask(ctx *gin.Context) {
 		Description: body.Description,
 		AssigneeID:  body.AssigneeID,
 		PageID:      uuid.MustParse(ctx.Param("page_id")),
-		ReporterID:  userId,
+		ReporterID:  user.ID,
 	}
 
 	time, err := time.Parse(time.RFC3339, *body.DueDate)

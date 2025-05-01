@@ -14,11 +14,11 @@ export interface User extends Timestamps {
 	id: string;
 	email: string;
 	username: string;
-	lastLogin: string;
+	// lastLogin: string;
 	emailVerified: boolean;
 
 	picture?: string;
-	lastPasswordReset?: string;
+	// lastPasswordReset?: string;
 }
 
 export interface UserCredential extends Timestamps {

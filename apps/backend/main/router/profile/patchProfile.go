@@ -5,13 +5,11 @@ import (
 	"libs/backend/errorHandlers/libs/errorHandlers"
 	"main/internal/postgres"
 	"main/internal/validation"
+	"main/utils/ginTools"
 	"net/http"
 	"time"
 
-	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
-	"gorm.io/gorm"
 )
 
 type patchProfileBody struct {
@@ -32,22 +30,6 @@ type patchProfileBody struct {
 // @Failure			500 {object} errorHandlers.Error "Internal server error if request to Auth0 fails"
 // @Router			/profile [patch]
 func patchProfile(ctx *gin.Context) {
-	session := sessions.Default(ctx)
-
-	userId := session.Get("id").(uuid.UUID)
-
-	var user postgres.User
-
-	if err := postgres.DB.First(&user, "id = ?", userId).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			errorHandlers.NotFound(ctx, errorCodes.NotFoundErrorCodeNotFound, errorCodes.DetailCodeEntityUser)
-			return
-		} else {
-			errorHandlers.InternalServerError(ctx)
-			return
-		}
-	}
-
 	var body patchProfileBody
 
 	if err := ctx.BindJSON(&body); err != nil {
@@ -64,6 +46,8 @@ func patchProfile(ctx *gin.Context) {
 		errorHandlers.BadRequest(ctx, errorCodes.BadRequestErrorCodeInvalidBody, nil)
 		return
 	}
+
+	user := ginTools.MustGetUser(ctx)
 
 	user.Username = body.Username
 	user.UpdatedAt = time.Now()

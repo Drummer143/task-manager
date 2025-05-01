@@ -33,7 +33,7 @@ func getWorkspace(ctx *gin.Context) {
 		return
 	}
 
-	userId := ginTools.MustGetUserIdFromSession(ctx)
+	user := ginTools.MustGetUser(ctx)
 
 	include := ctx.Query("include")
 
@@ -48,7 +48,7 @@ func getWorkspace(ctx *gin.Context) {
 		}
 	}
 
-	workspace, _, ok := routerUtils.CheckWorkspaceAccess(ctx, dbWithIncludes, postgres.DB, workspaceId, userId)
+	workspace, _, ok := routerUtils.CheckWorkspaceAccess(ctx, dbWithIncludes, postgres.DB, workspaceId, user.ID)
 
 	if !ok {
 		return

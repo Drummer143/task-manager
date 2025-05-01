@@ -24,7 +24,7 @@ import (
 // @Router				/workspaces/{workspace_id}/pages [get]
 func getPageList(ctx *gin.Context) {
 	workspaceId := uuid.MustParse(ctx.Param("workspace_id"))
-	userId := ginTools.MustGetUserIdFromSession(ctx)
+	user := ginTools.MustGetUser(ctx)
 
 	var pages []postgres.Page
 
@@ -32,7 +32,7 @@ func getPageList(ctx *gin.Context) {
 		Table("pages").
 		Select("pages.*, page_accesses.role AS role").
 		Joins("INNER JOIN page_accesses ON page_accesses.page_id = pages.id").
-		Where("pages.workspace_id = ? AND page_accesses.user_id = ?", workspaceId, userId).
+		Where("pages.workspace_id = ? AND page_accesses.user_id = ?", workspaceId, user.ID).
 		Scan(&pages).Error
 
 	if err != nil {

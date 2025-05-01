@@ -1,19 +1,23 @@
 package ginTools
 
 import (
-	"github.com/gin-contrib/sessions"
+	"main/internal/postgres"
+
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 )
 
-func MustGetUserIdFromSession(ctx *gin.Context) uuid.UUID {
-	session := sessions.Default(ctx)
-
-	userId, ok := session.Get("id").(uuid.UUID)
+func MustGetUser(ctx *gin.Context) postgres.User {
+	rawUser, ok := ctx.Get("user")
 
 	if !ok {
 		panic("Session is missing or invalid")
 	}
 
-	return userId
+	user, ok := rawUser.(postgres.User)
+
+	if !ok {
+		panic("User is missing or invalid")
+	}
+
+	return user
 }

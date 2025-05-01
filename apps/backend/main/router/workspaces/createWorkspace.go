@@ -5,10 +5,9 @@ import (
 	"libs/backend/errorHandlers/libs/errorHandlers"
 	"main/internal/postgres"
 	"main/internal/validation"
+	"main/utils/ginTools"
 
-	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
 )
 
 type createWorkspaceBody struct {
@@ -44,13 +43,11 @@ func createWorkspace(ctx *gin.Context) {
 		return
 	}
 
-	session := sessions.Default(ctx)
-
-	userId := session.Get("id").(uuid.UUID)
+	user := ginTools.MustGetUser(ctx)
 
 	workspace := postgres.Workspace{
 		Name:    body.Name,
-		OwnerID: userId,
+		OwnerID: user.ID,
 	}
 
 	if err := postgres.DB.Create(&workspace).Error; err != nil {
@@ -60,7 +57,7 @@ func createWorkspace(ctx *gin.Context) {
 
 	workspaceAccess := postgres.WorkspaceAccess{
 		WorkspaceID: workspace.ID,
-		UserID:      userId,
+		UserID:      user.ID,
 		Role:        postgres.UserRoleOwner,
 	}
 

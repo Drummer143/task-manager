@@ -40,9 +40,9 @@ func updatePage(ctx *gin.Context) {
 		return
 	}
 
-	userId := ginTools.MustGetUserIdFromSession(ctx)
+	user := ginTools.MustGetUser(ctx)
 
-	page, pageAccess, ok := routerUtils.CheckPageAccess(ctx, postgres.DB, postgres.DB, pageId, userId)
+	page, pageAccess, ok := routerUtils.CheckPageAccess(ctx, postgres.DB, postgres.DB, pageId, user.ID)
 
 	if !ok {
 		return

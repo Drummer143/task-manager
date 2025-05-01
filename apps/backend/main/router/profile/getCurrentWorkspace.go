@@ -7,21 +7,16 @@ import (
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
+	"github.com/google/uuid"
 	"gorm.io/gorm"
 )
 
-func getUserCurrentWorkspace(ctx *gin.Context) (*postgres.Workspace, bool) {
+func getUserCurrentWorkspace(ctx *gin.Context, userId uuid.UUID) (*postgres.Workspace, bool) {
 	session := sessions.Default(ctx)
 
 	selectedWorkspaceFromSession := session.Get("selected_workspace")
-	userId := session.Get("id")
 
 	if selectedWorkspaceFromSession == nil {
-		if userId == nil {
-			errorHandlers.Unauthorized(ctx, errorCodes.UnauthorizedErrorCodeUnauthorized)
-			return nil, false
-		}
-
 		var userMeta postgres.UserMeta
 
 		if err := postgres.DB.Where("user_id = ?", userId).First(&userMeta).Error; err != nil {
@@ -71,7 +66,16 @@ func getUserCurrentWorkspace(ctx *gin.Context) (*postgres.Workspace, bool) {
 // @Failure			500 {object} errorHandlers.Error "Internal server error if server fails"
 // @Router			/profile/current-workspace [get]
 func getCurrentWorkspace(ctx *gin.Context) {
-	workspace, ok := getUserCurrentWorkspace(ctx)
+	user, ok := ctx.Get("user")
+
+	if !ok {
+		errorHandlers.Unauthorized(ctx, errorCodes.UnauthorizedErrorCodeUnauthorized)
+		return
+	}
+
+	dbUser := user.(postgres.User)
+
+	workspace, ok := getUserCurrentWorkspace(ctx, dbUser.ID)
 
 	if !ok {
 		return

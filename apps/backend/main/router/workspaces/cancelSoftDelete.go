@@ -31,9 +31,9 @@ func cancelSoftDeleteWorkspace(ctx *gin.Context) {
 		return
 	}
 
-	userId := ginTools.MustGetUserIdFromSession(ctx)
+	user := ginTools.MustGetUser(ctx)
 
-	_, workspaceAccess, ok := routerUtils.CheckWorkspaceAccess(ctx, postgres.DB, postgres.DB, workspaceId, userId)
+	_, workspaceAccess, ok := routerUtils.CheckWorkspaceAccess(ctx, postgres.DB, postgres.DB, workspaceId, user.ID)
 
 	if !ok {
 		errorHandlers.Forbidden(ctx, errorCodes.ForbiddenErrorCodeAccessDenied, errorCodes.DetailCodeEntityWorkspace)

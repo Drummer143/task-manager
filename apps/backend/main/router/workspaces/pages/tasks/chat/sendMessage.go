@@ -67,19 +67,7 @@ func sendMessage(taskChatCollection *mongo.Collection) gin.HandlerFunc {
 			return
 		}
 
-		userId := ginTools.MustGetUserIdFromSession(ctx)
-
-		var user postgres.User
-
-		if err := postgres.DB.First(&user, "id = ?", userId).Error; err != nil {
-			if err == gorm.ErrRecordNotFound {
-				errorHandlers.NotFound(ctx, errorCodes.NotFoundErrorCodeNotFound, errorCodes.DetailCodeEntityUser)
-			} else {
-				errorHandlers.InternalServerError(ctx)
-			}
-
-			return
-		}
+		user := ginTools.MustGetUser(ctx)
 
 		chatMessage := mongoClient.TaskChatMessage{
 			Author:    mongoClient.ShortUserInfo{Id: user.ID, Username: user.Username},
