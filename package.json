@@ -9,6 +9,8 @@
 		"lint": "nx run-many --target=lint --all --verbose",
 		"lint:fix": "nx run-many --target=lint:fix --all --verbose",
 		"build": "nx run-many --target=build --all",
+		"build:frontend": "nx run-many --target=build --projects=task-manager",
+		"build:backend": "nx run-many --target=build --projects=main,mailer,storage",
 		"swagger": "nx run-many --target=swagger --all",
 		"tidy": "nx run-many --target=tidy --all",
 		"typecheck": "nx run-many --target=typecheck --all",
@@ -27,6 +29,7 @@
 		"axios": "^1.7.7",
 		"dayjs": "1.11.13",
 		"marked": "^15.0.4",
+		"oidc-client-ts": "^3.2.0",
 		"react": "^18.3.1",
 		"react-dom": "^18.3.1",
 		"react-easy-crop": "^5.1.0",
@@ -96,3 +99,4 @@
 		"node": "^22.0.0"
 	}
 }
+

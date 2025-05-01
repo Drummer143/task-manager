@@ -4,10 +4,10 @@ import (
 	"libs/backend/errorHandlers/libs/errorCodes"
 	"libs/backend/errorHandlers/libs/errorHandlers"
 	"main/internal/postgres"
+	"main/utils/ginTools"
 	"main/utils/routerUtils"
 	"net/http"
 
-	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
 )
@@ -33,11 +33,9 @@ func deletePage(ctx *gin.Context) {
 		return
 	}
 
-	session := sessions.Default(ctx)
+	user := ginTools.MustGetUser(ctx)
 
-	userId := session.Get("id").(uuid.UUID)
-
-	page, pageAccess, ok := routerUtils.CheckPageAccess(ctx, postgres.DB, postgres.DB, pageId, userId)
+	page, pageAccess, ok := routerUtils.CheckPageAccess(ctx, postgres.DB, postgres.DB, pageId, user.ID)
 
 	if !ok {
 		return

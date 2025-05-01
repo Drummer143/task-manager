@@ -1,112 +1,153 @@
 services:
-  postgres:
-    image: postgres:latest
-    environment:
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_DB: ${POSTGRES_DB_NAME}
-    ports:
-      - 5432:5432
-    volumes:
-      - pgdata:/var/lib/postgresql/data
-    networks:
-      - net
+    postgres:
+        image: postgres:latest
+        restart: always
+        container_name: postgres
+        environment:
+            POSTGRES_USER: ${POSTGRES_USER}
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+            POSTGRES_DB: ${POSTGRES_DB_NAME}
+            POSTGRES_SSL_MODE: disable
+        ports:
+            - 5432:5432
+        volumes:
+            - pgdata:/var/lib/postgresql/data
+        networks:
+            - net
 
-  mongo:
-    image: mongo:latest
-    ports:
-      - 27017:27017
-    volumes:
-      - mongo_data:/data/db
-    networks:
-      - net
+    zitadel:
+        image: ghcr.io/zitadel/zitadel:latest
+        container_name: zitadel
+        # restart: unless-stopped
+        ports:
+              - 6088:8080
+        volumes:
+          - zitadel_data:/zitadel
+        networks:
+          - net
+        environment:
+            ZITADEL_DATABASE_POSTGRES_HOST: postgres
+            ZITADEL_DATABASE_POSTGRES_PORT: 5432
+            ZITADEL_DATABASE_POSTGRES_DATABASE: ${ZITADEL_POSTGRES_DB_NAME}
+            ZITADEL_DATABASE_POSTGRES_USER_USERNAME: ${POSTGRES_USER}
+            ZITADEL_DATABASE_POSTGRES_USER_PASSWORD: ${POSTGRES_PASSWORD}
+            ZITADEL_DATABASE_POSTGRES_USER_SSL_MODE: disable
+            ZITADEL_DATABASE_POSTGRES_ADMIN_USERNAME: ${POSTGRES_USER}
+            ZITADEL_DATABASE_POSTGRES_ADMIN_PASSWORD: ${POSTGRES_PASSWORD}
+            ZITADEL_DATABASE_POSTGRES_ADMIN_SSL_MODE: disable
+        command: 'start-from-init --masterkey "MasterkeyNeedsToHave32Characters" --tlsMode disabled'
 
-  # rmq:
-  #   image: rabbitmq:management-alpine
-  #   ports:
-  #     - 5672:5672
-  #     - 15672:15672
-  #   depends_on:
-  #     - postgres
-  #   environment:
-  #     RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
-  #     RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
-  #   networks:
-  #     - net
-  #   volumes:
-  #     - rmqdata:/var/lib/rabbitmq
+    mongo:
+        image: mongo:latest
+        restart: always
+        container_name: mongo
+        ports:
+            - 27017:27017
+        volumes:
+            - mongo_data:/data/db
+        networks:
+            - net
 
-  main-service:
-    image: main-service:latest
-    ports:
-      - 8080:8080
-    networks:
-      - net
-    depends_on:
-      - postgres
-      - mongo
-    build:
-      context: ./apps/backend/main
-    environment:
-      GIN_MODE: release
-      SELF_PORT: 8080
-      MAILER_URL: http://mailer-service:8081
-      STORAGE_URL: http://storage-service:8082
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PORT: 5432
-      POSTGRES_HOST: postgres
-      JWT_SECRET_KEY: ${JWT_SECRET_KEY}
-      POSTGRES_DB_NAME: ${POSTGRES_DB_NAME}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
-      POSTGRES_SSL_MODE: disable
-      MONGO_URL: ${MONGO_URL}
+    # rmq:
+    #   image: rabbitmq:management-alpine
+    #   ports:
+    #     - 5672:5672
+    #     - 15672:15672
+    #   depends_on:
+    #     - postgres
+    #   environment:
+    #     RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+    #     RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+    #   networks:
+    #     - net
+    #   volumes:
+    #     - rmqdata:/var/lib/rabbitmq
 
-  mailer-service:
-    image: mailer-service:latest
-    ports:
-      - 8081:8081
-    depends_on:
-      - postgres
-    build:
-      context: ./apps/backend/mailer
-    environment:
-      GIN_MODE: release
-      SELF_PORT: 8081
-      EMAIL_ADDRESS: ${EMAIL_ADDRESS}
-      EMAIL_PASSWORD: ${EMAIL_PASSWORD}
-      CONFIRM_EMAIL_URL: ${CONFIRM_EMAIL_URL}
-      RESET_PASSWORD_EMAIL_URL: ${RESET_PASSWORD_EMAIL_URL}
-    networks:
-      - net
+    main-service:
+        restart: always
+        container_name: main-service
+        image: main-service:latest
+        ports:
+            - 8080:8080
+        networks:
+            - net
+        depends_on:
+            - postgres
+            - mongo
+        build:
+            context: ./apps/backend/main
+        environment:
+            GIN_MODE: release
+            SELF_PORT: 8080
+            MAILER_URL: http://mailer-service:8081
+            STORAGE_URL: http://storage-service:8082
+            POSTGRES_USER: ${POSTGRES_USER}
+            POSTGRES_PORT: 5432
+            POSTGRES_HOST: postgres
+            JWT_SECRET_KEY: ${JWT_SECRET_KEY}
+            POSTGRES_DB_NAME: ${POSTGRES_DB_NAME}
+            POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+            POSTGRES_SSL_MODE: disable
+            MONGO_URL: ${MONGO_URL}
+            ZITADEL_CLIENT_ID: ${ZITADEL_CLIENT_ID}
+            ZITADEL_ISSUER_URL: ${ZITADEL_ISSUER_URL}
+            ZITADEL_OAUTH_PATH: ${ZITADEL_OAUTH_PATH}
 
-  storage-service:
-    image: storage-service:latest
-    ports:
-      - 8082:8082
-    depends_on:
-      - postgres
-    build:
-      context: ./apps/backend/storage
-    environment:
-      GIN_MODE: release
-      SELF_PORT: 8082
-      SELF_HOST: localhost
-    networks:
-      - net
-    volumes:
-      - storage:/static
+    mailer-service:
+        restart: always
+        container_name: mailer-service
+        image: mailer-service:latest
+        ports:
+            - 8081:8081
+        depends_on:
+            - postgres
+        build:
+            context: ./apps/backend/mailer
+        environment:
+            GIN_MODE: release
+            SELF_PORT: 8081
+            EMAIL_ADDRESS: ${EMAIL_ADDRESS}
+            EMAIL_PASSWORD: ${EMAIL_PASSWORD}
+            CONFIRM_EMAIL_URL: ${CONFIRM_EMAIL_URL}
+            RESET_PASSWORD_EMAIL_URL: ${RESET_PASSWORD_EMAIL_URL}
+        networks:
+            - net
 
-  frontend:
-    image: frontend:latest
-    ports:
-      - 1346:80
-    networks:
-      - net
+    storage-service:
+        restart: always
+        container_name: storage-service
+        image: storage-service:latest
+        ports:
+            - 8082:8082
+        depends_on:
+            - postgres
+        build:
+            context: ./apps/backend/storage
+        environment:
+            GIN_MODE: release
+            SELF_PORT: 8082
+            SELF_HOST: localhost
+        networks:
+            - net
+        volumes:
+            - storage:/static
+
+    frontend:
+        restart: always
+        container_name: frontend
+        image: frontend:latest
+        environment:
+            VITE_ZITADEL_CLIENT_ID: ${ZITADEL_CLIENT_ID}
+        ports:
+            - 1346:80
+        networks:
+            - net
 
 networks:
-  net:
+    net:
 
 volumes:
-  pgdata:
-  mongo_data:
-  storage:
+    pgdata:
+    mongo_data:
+    storage:
+    zitadel_data:

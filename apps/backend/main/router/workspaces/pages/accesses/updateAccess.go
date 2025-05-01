@@ -48,9 +48,9 @@ func updateAccess(ctx *gin.Context) {
 	}()
 
 	pageId := uuid.MustParse(ctx.Param("page_id"))
-	currentUserId := ginTools.MustGetUserIdFromSession(ctx)
+	currentUser := ginTools.MustGetUser(ctx)
 
-	if !checkAccess(ctx, tx, pageId, currentUserId, body.Role) {
+	if !checkAccess(ctx, tx, pageId, currentUser.ID, body.Role) {
 		tx.Rollback()
 		return
 	}

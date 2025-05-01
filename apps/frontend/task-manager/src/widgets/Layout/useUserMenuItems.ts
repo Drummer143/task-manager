@@ -1,28 +1,21 @@
 import { useMemo } from "react";
 
-import { useMutation, useQuery } from "@tanstack/react-query";
-import { getWorkspaceList, logout } from "@task-manager/api";
-import { App, MenuProps } from "antd";
+import { useQuery } from "@tanstack/react-query";
+import { getWorkspaceList } from "@task-manager/api";
+import { MenuProps } from "antd";
 import { useNavigate } from "react-router-dom";
 
+import { userManager } from "../../app/auth";
 import { useAuthStore } from "../../app/store/auth";
 
 export const useUserMenuItems = () => {
-	const { user, clear: clearAuthStore } = useAuthStore();
+	const { user } = useAuthStore();
 
 	const navigate = useNavigate();
-
-	const message = App.useApp().message;
 
 	const { data, isLoading } = useQuery({
 		queryKey: ["workspaces"],
 		queryFn: () => getWorkspaceList()
-	});
-
-	const { mutateAsync } = useMutation({
-		mutationFn: () => logout().then(clearAuthStore),
-		onSuccess: () => navigate("/login", { replace: true }),
-		onError: error => message.error(error.message ?? "Failed to log out")
 	});
 
 	const menu = useMemo<MenuProps>(
@@ -64,11 +57,11 @@ export const useUserMenuItems = () => {
 				{
 					key: "logout",
 					label: "Log out",
-					onClick: () => mutateAsync()
+					onClick: () => userManager.signoutRedirect({})
 				}
 			]
 		}),
-		[data, isLoading, mutateAsync, navigate, user?.workspace.id]
+		[data, isLoading, navigate, user?.workspace.id]
 	);
 
 	return menu;

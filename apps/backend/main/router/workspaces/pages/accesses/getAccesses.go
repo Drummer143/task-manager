@@ -34,9 +34,9 @@ type getPageAccessesResponse struct {
 func getPageAccesses(ctx *gin.Context) {
 	pageId := uuid.MustParse(ctx.Param("page_id"))
 
-	userId := ginTools.MustGetUserIdFromSession(ctx)
+	user := ginTools.MustGetUser(ctx)
 
-	_, access, ok := routerUtils.CheckPageAccess(ctx, postgres.DB, postgres.DB, pageId, userId)
+	_, access, ok := routerUtils.CheckPageAccess(ctx, postgres.DB, postgres.DB, pageId, user.ID)
 
 	if !ok {
 		return

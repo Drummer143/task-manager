@@ -7,10 +7,7 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
-	"gorm.io/gorm"
 )
 
 type getProfileResponse struct {
@@ -30,21 +27,14 @@ type getProfileResponse struct {
 // @Failure			500 {object} errorHandlers.Error "Internal server error if server fails"
 // @Router			/profile [get]
 func getProfile(ctx *gin.Context) {
-	session := sessions.Default(ctx)
+	user, ok := ctx.Get("user")
 
-	var dbUser postgres.User
-
-	userId := session.Get("id").(uuid.UUID)
-
-	if err := postgres.DB.First(&dbUser, "id = ?", userId).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			errorHandlers.NotFound(ctx, errorCodes.NotFoundErrorCodeNotFound, errorCodes.DetailCodeEntityUser)
-			return
-		} else {
-			errorHandlers.InternalServerError(ctx)
-			return
-		}
+	if !ok {
+		errorHandlers.Unauthorized(ctx, errorCodes.UnauthorizedErrorCodeUnauthorized)
+		return
 	}
+
+	dbUser := user.(postgres.User)
 
 	includes := ctx.Query("includes")
 
@@ -54,7 +44,7 @@ func getProfile(ctx *gin.Context) {
 	}
 
 	if strings.Contains(includes, "workspace") {
-		workspace, ok := getUserCurrentWorkspace(ctx)
+		workspace, ok := getUserCurrentWorkspace(ctx, dbUser.ID)
 
 		if !ok {
 			return

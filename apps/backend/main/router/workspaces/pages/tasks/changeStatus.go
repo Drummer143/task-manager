@@ -70,13 +70,7 @@ func changeStatus(tasksVersionCollection *mongo.Collection) gin.HandlerFunc {
 			return
 		}
 
-		currentUserId := ginTools.MustGetUserIdFromSession(ctx)
-		var user postgres.User
-
-		if err := postgres.DB.First(&user, "id = ?", currentUserId).Error; err != nil {
-			errorHandlers.InternalServerError(ctx)
-			return
-		}
+		user := ginTools.MustGetUser(ctx)
 
 		var latestChange mongoClient.EntityVersionDocument
 		options := options.FindOne().SetSort(gin.H{"version": -1})

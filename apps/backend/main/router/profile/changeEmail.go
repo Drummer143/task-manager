@@ -5,13 +5,11 @@ import (
 	"libs/backend/errorHandlers/libs/errorHandlers"
 	"main/internal/postgres"
 	"main/internal/validation"
+	"main/utils/ginTools"
 	"net/http"
 	"time"
 
-	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
-	"github.com/google/uuid"
-	"gorm.io/gorm"
 )
 
 type changeEmailBody struct {
@@ -31,21 +29,7 @@ type changeEmailBody struct {
 // @Failure			500 {object} errorHandlers.Error "Internal server error if server fails"
 // @Router			/profile/email [patch]
 func changeEmail(ctx *gin.Context) {
-	session := sessions.Default(ctx)
-
-	userId := session.Get("id").(uuid.UUID)
-
-	var user postgres.User
-
-	if err := postgres.DB.First(&user, "id = ?", userId).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			errorHandlers.NotFound(ctx, errorCodes.NotFoundErrorCodeNotFound, errorCodes.DetailCodeEntityUser)
-			return
-		} else {
-			errorHandlers.InternalServerError(ctx)
-			return
-		}
-	}
+	user := ginTools.MustGetUser(ctx)
 
 	var body changeEmailBody
 

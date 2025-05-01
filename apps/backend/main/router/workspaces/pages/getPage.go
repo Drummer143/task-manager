@@ -35,7 +35,7 @@ func getPage(ctx *gin.Context) {
 		return
 	}
 
-	userId := ginTools.MustGetUserIdFromSession(ctx)
+	user := ginTools.MustGetUser(ctx)
 
 	include := ctx.Query("include")
 
@@ -62,7 +62,7 @@ func getPage(ctx *gin.Context) {
 		dbWithIncludes = dbWithIncludes.Preload("Tasks")
 	}
 
-	page, access, ok := routerUtils.CheckPageAccess(ctx, dbWithIncludes, postgres.DB, pageId, userId)
+	page, access, ok := routerUtils.CheckPageAccess(ctx, dbWithIncludes, postgres.DB, pageId, user.ID)
 
 	if !ok {
 		return

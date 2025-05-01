@@ -8,7 +8,6 @@ import (
 	"main/internal/validation"
 	"main/utils/auth"
 	"net/http"
-	"time"
 
 	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
@@ -57,9 +56,9 @@ func signUp(ctx *gin.Context) {
 	}()
 
 	if err := tx.Create(&postgres.User{
-		Email:     body.Email,
-		Username:  body.Username,
-		LastLogin: time.Now(),
+		Email:    body.Email,
+		Username: body.Username,
+		// LastLogin: time.Now(),
 	}).Error; err != nil {
 		tx.Rollback()
 

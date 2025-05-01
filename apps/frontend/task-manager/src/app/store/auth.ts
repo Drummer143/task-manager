@@ -44,13 +44,15 @@ export const useAuthStore = create<authState>()(
 					if (document.cookie) {
 						user = await getProfile({ includes: ["workspace"] });
 					}
+
+					set({ user });
 				} catch {
-					/* empty */
+					throw new Error("Failed to get user profile");
+				} finally {
+					set({ loading: false });
+
+					promise = undefined;
 				}
-
-				set({ user, loading: false });
-
-				promise = undefined;
 
 				return user;
 			}

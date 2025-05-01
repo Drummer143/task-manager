@@ -42,7 +42,7 @@ func updateAccess(ctx *gin.Context) {
 		return
 	}
 
-	currentUserId := ginTools.MustGetUserIdFromSession(ctx)
+	currentUser := ginTools.MustGetUser(ctx)
 
 	tx := postgres.DB.Begin()
 	defer func() {
@@ -52,7 +52,7 @@ func updateAccess(ctx *gin.Context) {
 		}
 	}()
 
-	if !checkAccess(ctx, tx, workspaceId, currentUserId, body.Role) {
+	if !checkAccess(ctx, tx, workspaceId, currentUser.ID, body.Role) {
 		tx.Rollback()
 		return
 	}

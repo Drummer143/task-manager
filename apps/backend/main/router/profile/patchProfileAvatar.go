@@ -11,17 +11,15 @@ import (
 	"libs/backend/errorHandlers/libs/errorCodes"
 	"libs/backend/errorHandlers/libs/errorHandlers"
 	"main/internal/postgres"
+	"main/utils/ginTools"
 	"mime/multipart"
 	"net/http"
 	"os"
 	"strconv"
 	"time"
 
-	"github.com/gin-contrib/sessions"
 	"github.com/gin-gonic/gin"
 	"github.com/go-resty/resty/v2"
-	"github.com/google/uuid"
-	"gorm.io/gorm"
 )
 
 func convertFormDataToImage(file *multipart.FileHeader) (image.Image, string, error) {
@@ -106,22 +104,6 @@ var storageUrl string = os.Getenv("STORAGE_URL")
 // @Failure			500 {object} errorHandlers.Error "Internal server error if request to Auth0 fails"
 // @Router			/profile/avatar [patch]
 func uploadAvatar(ctx *gin.Context) {
-	session := sessions.Default(ctx)
-
-	userId := session.Get("id").(uuid.UUID)
-
-	var user postgres.User
-
-	if err := postgres.DB.First(&user, "id = ?", userId).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
-			errorHandlers.NotFound(ctx, errorCodes.NotFoundErrorCodeNotFound, errorCodes.DetailCodeEntityUser)
-			return
-		} else {
-			errorHandlers.InternalServerError(ctx)
-			return
-		}
-	}
-
 	file, err := ctx.FormFile("file")
 
 	if err != nil {
@@ -186,6 +168,8 @@ func uploadAvatar(ctx *gin.Context) {
 	}
 
 	link := body["link"].(string)
+
+	user := ginTools.MustGetUser(ctx)
 
 	user.Picture = &link
 	user.UpdatedAt = time.Now()

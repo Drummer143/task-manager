@@ -6,6 +6,7 @@ import (
 	"os"
 
 	_ "main/docs"
+	"main/internal/zitadel"
 	authRouter "main/router/auth"
 	profileRouter "main/router/profile"
 	usersRouter "main/router/users"
@@ -21,6 +22,10 @@ import (
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
+
+// @securityDefinitions.apikey BearerAuth
+// @in header
+// @name Authorization
 
 func New() *gin.Engine {
 	ginModeEnv := os.Getenv("GIN_MODE")
@@ -39,7 +44,7 @@ func New() *gin.Engine {
 	router.Use(cors.New(cors.Config{
 		AllowOrigins:     []string{"http://localhost:1346", "http://localhost:1246"},
 		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
-		AllowHeaders:     []string{"Content-Type", "Origin", "Accept"},
+		AllowHeaders:     []string{"Content-Type", "Origin", "Accept", "Authorization"},
 		MaxAge:           3600,
 		AllowCredentials: true,
 	}))
@@ -47,14 +52,14 @@ func New() *gin.Engine {
 	router.GET("/api/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	router.GET("/api", func(ctx *gin.Context) { ctx.Redirect(http.StatusMovedPermanently, "/api/index.html") })
 
-	router.GET("/socket", IsAuthenticated, handleWebSocket)
+	router.GET("/socket", zitadel.AuthMiddleware, handleWebSocket)
 
 	authRouter.AddRoutes(router.Group("auth"))
 
-	workspacesRouter.AddRoutes(router.Group("workspaces", IsAuthenticated))
+	workspacesRouter.AddRoutes(router.Group("workspaces", zitadel.AuthMiddleware))
 
-	profileRouter.AddRoutes(router.Group("profile", IsAuthenticated, setDefaultWorkspace))
-	usersRouter.AddRoutes(router.Group("users", IsAuthenticated))
+	profileRouter.AddRoutes(router.Group("profile", zitadel.AuthMiddleware /* , setDefaultWorkspace */))
+	usersRouter.AddRoutes(router.Group("users", zitadel.AuthMiddleware))
 
 	return router
 }

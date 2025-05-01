@@ -54,10 +54,10 @@ func createPage(ctx *gin.Context) {
 		return
 	}
 
-	userId := ginTools.MustGetUserIdFromSession(ctx)
+	user := ginTools.MustGetUser(ctx)
 
 	if body.ParentId != nil {
-		_, access, ok := routerUtils.CheckPageAccess(ctx, postgres.DB, postgres.DB, *body.ParentId, userId)
+		_, access, ok := routerUtils.CheckPageAccess(ctx, postgres.DB, postgres.DB, *body.ParentId, user.ID)
 
 		if !ok {
 			return
@@ -78,7 +78,7 @@ func createPage(ctx *gin.Context) {
 		Title:        body.Title,
 		Type:         body.Type,
 		WorkspaceID:  uuid.MustParse(ctx.Param("workspace_id")),
-		OwnerID:      userId,
+		OwnerID:      user.ID,
 		ParentPageID: body.ParentId,
 		Text:         body.Text,
 	}
@@ -101,7 +101,7 @@ func createPage(ctx *gin.Context) {
 	pageAccess := postgres.PageAccess{
 		Role:   postgres.UserRoleOwner,
 		PageID: page.ID,
-		UserID: userId,
+		UserID: user.ID,
 	}
 
 	if err := tx.Create(&pageAccess).Error; err != nil {

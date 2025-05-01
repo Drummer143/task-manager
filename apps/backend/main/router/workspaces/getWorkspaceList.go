@@ -20,7 +20,7 @@ import (
 // @Failure			500 {object} errorHandlers.Error
 // @Router			/workspaces [get]
 func getWorkspaceList(ctx *gin.Context) {
-	userId := ginTools.MustGetUserIdFromSession(ctx)
+	user := ginTools.MustGetUser(ctx)
 
 	var workspaces []postgres.Workspace
 
@@ -37,7 +37,7 @@ func getWorkspaceList(ctx *gin.Context) {
 		Table("workspaces").
 		Select("workspaces.*, workspace_accesses.role AS role").
 		Joins("INNER JOIN workspace_accesses ON workspace_accesses.workspace_id = workspaces.id").
-		Where("workspace_accesses.user_id = ?", userId).
+		Where("workspace_accesses.user_id = ?", user.ID).
 		Scan(&workspaces).Error
 
 	if err != nil {
