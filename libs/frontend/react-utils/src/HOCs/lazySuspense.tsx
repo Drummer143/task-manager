@@ -1,16 +1,16 @@
-import { ComponentProps, ComponentType, lazy, ReactNode, Suspense } from "react";
+import * as React from "react";
 
 // eslint-disable-next-line @typescript-eslint/no-explicit-any
-export const lazySuspense = <T extends ComponentType<any>>(
+export const lazySuspense = <T extends React.ComponentType<any>>(
 	load: () => Promise<{ default: T }>,
-	fallback?: ReactNode
+	fallback?: React.ReactNode
 ) => {
-	const Lazy = lazy(load);
+	const Lazy = React.lazy(load);
 
-	const LazySuspended = (props: ComponentProps<T>) => (
-		<Suspense fallback={fallback}>
+	const LazySuspended = (props: React.ComponentProps<T>) => (
+		<React.Suspense fallback={fallback}>
 			<Lazy {...props} />
-		</Suspense>
+		</React.Suspense>
 	);
 
 	return LazySuspended;

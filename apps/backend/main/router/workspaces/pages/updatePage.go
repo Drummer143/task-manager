@@ -48,7 +48,7 @@ func updatePage(ctx *gin.Context) {
 		return
 	}
 
-	if pageAccess.Role != postgres.UserRoleGuest || pageAccess.Role != postgres.UserRoleCommentator {
+	if pageAccess.Role == postgres.UserRoleGuest || pageAccess.Role == postgres.UserRoleCommentator {
 		errorHandlers.Forbidden(ctx, errorCodes.ForbiddenErrorCodeAccessDenied, errorCodes.DetailCodeEntityPage)
 		return
 	}

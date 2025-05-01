@@ -7,6 +7,5 @@ export const useDebouncedEffect = <T>(value: T, callback?: (value: T) => void, d
 
 	useEffect(() => {
 		callback?.(debouncedValue);
-		 
 	}, [debouncedValue]);
 };
