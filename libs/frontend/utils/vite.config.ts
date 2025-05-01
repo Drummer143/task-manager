@@ -7,7 +7,7 @@ import dts from "vite-plugin-dts";
 
 export default defineConfig(() => ({
 	root: __dirname,
-	cacheDir: "../../../node_modules/.vite/libs/frontend/test",
+	cacheDir: "../../../node_modules/.vite/libs/frontend/utils",
 	plugins: [
 		nxViteTsPaths(),
 		nxCopyAssetsPlugin(["*.md"]),
@@ -20,7 +20,7 @@ export default defineConfig(() => ({
 	// Configuration for building your library.
 	// See: https://vitejs.dev/guide/build.html#library-mode
 	build: {
-		outDir: "../../../dist/libs/frontend/react-utils",
+		outDir: "../../../dist/libs/frontend/utils",
 		emptyOutDir: true,
 		reportCompressedSize: true,
 		commonjsOptions: {
@@ -47,7 +47,7 @@ export default defineConfig(() => ({
 		include: ["src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],
 		reporters: ["default"],
 		coverage: {
-			reportsDirectory: "../../../coverage/libs/frontend/test",
+			reportsDirectory: "../../../coverage/libs/frontend/utils",
 			provider: "v8" as const,
 			ignoreEmptyLines: true,
 			clean: true

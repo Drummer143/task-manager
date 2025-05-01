@@ -1,5 +1,4 @@
 import { lazySuspense } from ".";
-// eslint-disable-next-line @nx/enforce-module-boundaries
 import { render, screen, waitFor } from "../../../../../scripts/setupTests";
 
 const loadingText = "Loading...";
