@@ -4,6 +4,7 @@ import _import from "eslint-plugin-import";
 import react from "eslint-plugin-react";
 import reactHooks from "eslint-plugin-react-hooks";
 
+/** @type {import('eslint').Linter.Config[]} */
 export default [
 	...nx.configs["flat/base"],
 	...nx.configs["flat/typescript"],
@@ -160,5 +161,12 @@ export default [
 				}
 			]
 		}
+	},
+	{
+		files: ["**/*.test.ts", "**/*.test.tsx"],
+		rules: {
+			"@nx/enforce-module-boundaries": "off"
+		}
 	}
 ];
+

@@ -1,13 +1,14 @@
 /// <reference types='vitest' />
+import { nxCopyAssetsPlugin } from "@nx/vite/plugins/nx-copy-assets.plugin";
+import { nxViteTsPaths } from "@nx/vite/plugins/nx-tsconfig-paths.plugin";
+import * as path from "path";
 import { defineConfig } from "vite";
 import dts from "vite-plugin-dts";
-import * as path from "path";
-import { nxViteTsPaths } from "@nx/vite/plugins/nx-tsconfig-paths.plugin";
-import { nxCopyAssetsPlugin } from "@nx/vite/plugins/nx-copy-assets.plugin";
+import { configDefaults } from "vitest/config";
 
 export default defineConfig(() => ({
 	root: __dirname,
-	cacheDir: "../../../node_modules/.vite/libs/frontend/react-utils",
+	cacheDir: "../../../node_modules/.vite/libs/frontend/test",
 	plugins: [
 		nxViteTsPaths(),
 		nxCopyAssetsPlugin(["*.md"]),
@@ -39,5 +40,21 @@ export default defineConfig(() => ({
 			// External packages that should not be bundled into your library.
 			external: []
 		}
+	},
+	test: {
+		watch: false,
+		globals: true,
+		environment: "jsdom",
+		include: ["src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],
+		reporters: ["default"],
+		exclude: [...configDefaults.exclude, "src/HOCs/index.ts"],
+		coverage: {
+			reportsDirectory: "../../../coverage/libs/frontend/test",
+			provider: "v8" as const,
+			ignoreEmptyLines: true,
+			clean: true,
+			exclude: [...(configDefaults.coverage.exclude || []), "src/HOCs/index.ts"]
+		}
 	}
 }));
+

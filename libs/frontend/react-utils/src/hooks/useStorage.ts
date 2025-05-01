@@ -45,7 +45,6 @@ export const useStorage = <Value>(
 		if (!listenChanges) return;
 
 		const listenStorage = (e: StorageEvent) => {
-			console.debug(e);
 			if (e.key === key) {
 				setValue(tryParse(e.newValue));
 			}

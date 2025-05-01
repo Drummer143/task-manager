@@ -12,6 +12,8 @@
 		"swagger": "nx run-many --target=swagger --all",
 		"tidy": "nx run-many --target=tidy --all",
 		"typecheck": "nx run-many --target=typecheck --all",
+		"test": "nx run-many --target=test --all",
+		"coverage": "nx run-many --target=coverage --all",
 		"start-db": "docker compose up -d postgres mongo"
 	},
 	"private": true,
@@ -50,6 +52,7 @@
 		"@swc/core": "~1.5.7",
 		"@swc/helpers": "~0.5.11",
 		"@testing-library/dom": "10.4.0",
+		"@testing-library/jest-dom": "^6.6.3",
 		"@testing-library/react": "16.1.0",
 		"@types/node": "^22.7.5",
 		"@types/react": "^18.3.10",
