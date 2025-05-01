@@ -14,6 +14,7 @@
 		"typecheck": "nx run-many --target=typecheck --all",
 		"test": "nx run-many --target=test --all",
 		"coverage": "nx run-many --target=coverage --all",
+		"coverage:report": "nx run-many --target=coverage:report --all",
 		"start-db": "docker compose up -d postgres mongo"
 	},
 	"private": true,

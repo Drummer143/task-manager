@@ -13,6 +13,12 @@
 		},
 		"tidy": {
 			"executor": "@nx-go/nx-go:tidy"
+		},
+		"coverage": {
+			"command": "go test -coverprofile={projectRoot}/coverage.out -cover {projectRoot}/..."
+		},
+		"coverage:report": {
+			"command": "go tool cover -func={projectRoot}/coverage.out | grep total:"
 		}
 	}
 }
