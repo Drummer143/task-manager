@@ -1,7 +1,6 @@
 package router
 
 import (
-	"mailer/mail"
 	"net/http"
 	"os"
 
@@ -12,7 +11,7 @@ import (
 	ginSwagger "github.com/swaggo/gin-swagger"
 )
 
-func New(mailer *mail.Mailer) *gin.Engine {
+func New() *gin.Engine {
 	ginModeEnv := os.Getenv("GIN_MODE")
 
 	if ginModeEnv == "release" {
@@ -24,8 +23,8 @@ func New(mailer *mail.Mailer) *gin.Engine {
 	router.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 	router.GET("/api", func(ctx *gin.Context) { ctx.Redirect(http.StatusFound, "/swagger/index.html") })
 
-	router.POST("/send-email-confirmation", emailConfirmation(mailer))
-	router.POST("/send-reset-password", resetPassword(mailer))
+	router.POST("/send-email-confirmation", emailConfirmation)
+	router.POST("/send-reset-password", resetPassword)
 
 	return router
 }

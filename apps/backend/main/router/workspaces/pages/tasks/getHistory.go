@@ -2,9 +2,11 @@ package tasksRouter
 
 import (
 	"context"
-	"main/dbClient"
-	"main/router/errorHandlers"
-	routerUtils "main/router/utils"
+	"libs/backend/errorHandlers/libs/errorCodes"
+	"libs/backend/errorHandlers/libs/errorHandlers"
+	mongoClient "main/internal/mongo"
+	"main/internal/postgres"
+	"main/utils/pagination"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
@@ -22,20 +24,20 @@ import (
 // @Param				task_id path string true "Task ID"
 // @Param				limit query int false "If not provided or less than 1, all users will be returned"
 // @Param				offset query int false "Default is 0"
-// @Success				200 {object} routerUtils.ResponseWithPagination[dbClient.EntityVersionDocument]
+// @Success				200 {object} pagination.ResponseWithPagination[mongo.EntityVersionDocument]
 // @Failure				401 {object} errorHandlers.Error "Unauthorized if session is missing or invalid"
 // @Failure				404 {object} errorHandlers.Error
 // @Failure				500 {object} errorHandlers.Error
 // @Router				/workspaces/{workspace_id}/pages/{page_id}/tasks/{task_id}/history [get]
-func getHistory(postgres *gorm.DB, tasksVersionCollection *mongo.Collection) gin.HandlerFunc {
+func getHistory(tasksVersionCollection *mongo.Collection) gin.HandlerFunc {
 	return func(ctx *gin.Context) {
-		var task dbClient.Task
+		var task postgres.Task
 
-		if err := postgres.First(&task, "id = ?", ctx.Param("task_id")).Error; err != nil {
+		if err := postgres.DB.First(&task, "id = ?", ctx.Param("task_id")).Error; err != nil {
 			if err == gorm.ErrRecordNotFound {
-				errorHandlers.NotFound(ctx, "task not found")
+				errorHandlers.NotFound(ctx, errorCodes.NotFoundErrorCodeNotFound, errorCodes.DetailCodeEntityTask)
 			} else {
-				errorHandlers.InternalServerError(ctx, "failed to get task")
+				errorHandlers.InternalServerError(ctx)
 			}
 
 			return
@@ -44,39 +46,31 @@ func getHistory(postgres *gorm.DB, tasksVersionCollection *mongo.Collection) gin
 		total, err := tasksVersionCollection.CountDocuments(context.Background(), gin.H{"id": task.ID})
 
 		if err != nil {
-			errorHandlers.InternalServerError(ctx, "failed to get task history")
+			errorHandlers.InternalServerError(ctx)
 			return
 		}
 
-		limit, offset := routerUtils.ValidatePaginationParams(ctx, routerUtils.DefaultPaginationLimit, routerUtils.DefaultPaginationOffset)
+		limit, offset := pagination.ValidatePaginationParams(ctx, pagination.DefaultPaginationLimit, pagination.DefaultPaginationOffset)
 
-		var history []dbClient.EntityVersionDocument
+		var history []mongoClient.EntityVersionDocument
 		options := options.Find().SetSort(gin.H{"version": -1}).SetSkip(int64(offset)).SetLimit(int64(limit))
 
 		cursor, err := tasksVersionCollection.Find(context.Background(), gin.H{"id": task.ID}, options)
 
 		if err != nil {
-			errorHandlers.InternalServerError(ctx, "failed to get task history")
+			errorHandlers.InternalServerError(ctx)
 			return
 		}
 
 		if err = cursor.All(context.Background(), &history); err != nil {
-			errorHandlers.InternalServerError(ctx, "failed to get task history")
+			errorHandlers.InternalServerError(ctx)
 			return
 		}
 
 		if history == nil {
-			history = []dbClient.EntityVersionDocument{}
+			history = []mongoClient.EntityVersionDocument{}
 		}
 
-		ctx.JSON(http.StatusOK, routerUtils.ResponseWithPagination[dbClient.EntityVersionDocument]{
-			Data: history,
-			Meta: routerUtils.Meta{
-				Total:   int(total),
-				Offset:  offset,
-				Limit:   limit,
-				HasMore: offset+limit < int(total),
-			},
-		})
+		ctx.JSON(http.StatusOK, pagination.NewResponseWithPagination(history, limit, offset, int(total)))
 	}
 }

@@ -3,7 +3,7 @@ import React from "react";
 import { MessageOutlined, SendOutlined } from "@ant-design/icons";
 import { useMutation } from "@tanstack/react-query";
 import { sendMessage } from "@task-manager/api";
-import { useDisclosure, useFunctionWithFeedback } from "@task-manager/utils";
+import { useDisclosure, useFunctionWithFeedback } from "@task-manager/react-utils";
 import { Button, Flex, Form, Input } from "antd";
 import { createStyles } from "antd-style";
 import { useParams, useSearchParams } from "react-router-dom";

@@ -1,6 +1,6 @@
 import React from "react";
 
-import { lazySuspense } from "@task-manager/utils";
+import { lazySuspense } from "@task-manager/react-utils";
 
 import FullSizeLoader from "../../shared/ui/FullSizeLoader";
 

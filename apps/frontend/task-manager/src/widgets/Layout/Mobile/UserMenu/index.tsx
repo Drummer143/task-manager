@@ -1,6 +1,6 @@
 import React, { memo } from "react";
 
-import { useDisclosure } from "@task-manager/utils";
+import { useDisclosure } from "@task-manager/react-utils";
 import { Flex, Menu, Spin } from "antd";
 import { createStyles } from "antd-style";
 

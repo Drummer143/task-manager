@@ -1,0 +1,26 @@
+{
+	"name": "react-utils",
+	"$schema": "../../../node_modules/nx/schemas/project-schema.json",
+	"sourceRoot": "libs/frontend/react-utils/src",
+	"projectType": "library",
+	"tags": [],
+	"// targets": "to see all targets run: nx show project react-utils --web",
+	"targets": {
+		"lint:fix": {
+			"executor": "nx:run-commands",
+			"options": {
+				"commands": [
+					"eslint --fix {projectRoot}/**/*.{ts,tsx,js,jsx}"
+				]
+			}
+		},
+		"coverage": {
+			"executor": "nx:run-commands",
+			"options": {
+				"commands": [
+					"vitest run --coverage"
+				]
+			}
+		}
+	}
+}

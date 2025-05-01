@@ -8,8 +8,9 @@ import (
 	"image/draw"
 	"image/jpeg"
 	"image/png"
-	"main/dbClient"
-	"main/router/errorHandlers"
+	"libs/backend/errorHandlers/libs/errorCodes"
+	"libs/backend/errorHandlers/libs/errorHandlers"
+	"main/internal/postgres"
 	"mime/multipart"
 	"net/http"
 	"os"
@@ -85,6 +86,8 @@ func validateImageSizes(ctx *gin.Context, imageWidth int, imageHeight int) (int,
 	return x, y, w, h, nil
 }
 
+var storageUrl string = os.Getenv("STORAGE_URL")
+
 // @Summary			Upload user avatar
 // @Description		This endpoint uploads the user avatar image to the image storage service and updates the user profile information in the Auth0 Management API using the user's ID from the session. The ID is obtained from the session and used to query the user data from the external identity provider (Auth0). The user must be authenticated, and a valid session must exist. The request body must contain a valid image file.
 // @Tags			Profile
@@ -95,114 +98,102 @@ func validateImageSizes(ctx *gin.Context, imageWidth int, imageHeight int) (int,
 // @Param			y formData string true "Y coordinate of the crop area"
 // @Param			width formData string true "Width of the crop area"
 // @Param			height formData string true "Height of the crop area"
-// @Success			200 {object} dbClient.User "User profile data"
+// @Success			200 {object} postgres.User "User profile data"
 // @Failure			400 {object} errorHandlers.Error "Invalid request"
 // @Failure			401 {object} errorHandlers.Error "Unauthorized if session is missing or invalid"
 // @Failure			404 {object} errorHandlers.Error "User not found in Auth0 database"
 // @Failure			429 {object} errorHandlers.Error "Rate limit exceeded"
 // @Failure			500 {object} errorHandlers.Error "Internal server error if request to Auth0 fails"
 // @Router			/profile/avatar [patch]
-func uploadAvatar(postgres *gorm.DB) gin.HandlerFunc {
-	return func(ctx *gin.Context) {
-		session := sessions.Default(ctx)
+func uploadAvatar(ctx *gin.Context) {
+	session := sessions.Default(ctx)
 
-		userId := session.Get("id").(uuid.UUID)
+	userId := session.Get("id").(uuid.UUID)
 
-		var user dbClient.User
+	var user postgres.User
 
-		if err := postgres.First(&user, "id = ?", userId).Error; err != nil {
-			if err == gorm.ErrRecordNotFound {
-				errorHandlers.NotFound(ctx, "user not found in database")
-				return
-			} else {
-				errorHandlers.InternalServerError(ctx, "failed to find user in database")
-				return
-			}
-		}
-
-		storageUrl := os.Getenv("STORAGE_URL")
-
-		if storageUrl == "" {
-			errorHandlers.InternalServerError(ctx, "unable to update user profile picture")
+	if err := postgres.DB.First(&user, "id = ?", userId).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			errorHandlers.NotFound(ctx, errorCodes.NotFoundErrorCodeNotFound, errorCodes.DetailCodeEntityUser)
+			return
+		} else {
+			errorHandlers.InternalServerError(ctx)
 			return
 		}
-
-		file, err := ctx.FormFile("file")
-
-		if err != nil {
-			errorHandlers.BadRequest(ctx, "request must contain a file", map[string]string{"file": "file is required"})
-			return
-		}
-
-		img, ext, err := convertFormDataToImage(file)
-
-		if err != nil {
-			errorHandlers.InternalServerError(ctx, err.Error())
-			return
-		}
-
-		if ext != "jpg" && ext != "jpeg" && ext != "png" {
-			errorHandlers.BadRequest(ctx, "invalid file type", map[string]string{"file": "invalid file type. Only jpg, jpeg, and png are supported."})
-			return
-		}
-
-		imageWidth := img.Bounds().Dx()
-		imageHeight := img.Bounds().Dy()
-
-		x, y, width, height, err := validateImageSizes(ctx, imageWidth, imageHeight)
-
-		if err != nil {
-			errorHandlers.BadRequest(ctx, "failed to validate image sizes", map[string]string{"file": err.Error()})
-			return
-		}
-
-		croppedImage := image.NewRGBA(image.Rect(x, y, x+width, y+height))
-
-		draw.Draw(croppedImage, croppedImage.Bounds(), img, image.Point{x, y}, draw.Src)
-
-		var buffer bytes.Buffer
-
-		switch ext {
-		case "jpg", "jpeg":
-			err = jpeg.Encode(&buffer, croppedImage, nil)
-		case "png":
-			err = png.Encode(&buffer, croppedImage)
-		default:
-			errorHandlers.BadRequest(ctx, "invalid file type", map[string]string{"file": "invalid file type"})
-			return
-		}
-
-		if err != nil {
-			errorHandlers.InternalServerError(ctx, "failed to encode image")
-			return
-		}
-
-		resp, err := resty.New().R().SetHeader("Content-Type", "multipart/form-data").SetFileReader("file", file.Filename, &buffer).SetFormData(map[string]string{
-			"folder": "avatars",
-		}).Post(storageUrl + "/upload")
-
-		if resp.StatusCode() > 299 || err != nil {
-			errorHandlers.InternalServerError(ctx, "failed to upload file to storage")
-			return
-		}
-
-		var body map[string]interface{}
-
-		if err := json.Unmarshal(resp.Body(), &body); err != nil {
-			errorHandlers.InternalServerError(ctx, "failed to upload file to storage")
-			return
-		}
-
-		link := body["link"].(string)
-
-		user.Picture = &link
-		user.UpdatedAt = time.Now()
-
-		if err := postgres.Save(&user).Error; err != nil {
-			errorHandlers.InternalServerError(ctx, "failed to update user in database")
-			return
-		}
-
-		ctx.JSON(http.StatusOK, user)
 	}
+
+	file, err := ctx.FormFile("file")
+
+	if err != nil {
+		errorHandlers.BadRequest(ctx, errorCodes.BadRequestErrorCodeValidationErrors, map[string]string{"file": errorCodes.FileErrorMissingFile})
+		return
+	}
+
+	img, ext, err := convertFormDataToImage(file)
+
+	if err != nil {
+		errorHandlers.InternalServerError(ctx)
+		return
+	}
+
+	if ext != "jpg" && ext != "jpeg" && ext != "png" {
+		errorHandlers.BadRequest(ctx, errorCodes.BadRequestErrorCodeValidationErrors, map[string]string{"file": errorCodes.FileErrorInvalidFileType, "supported_types": "jpg, jpeg, png"})
+		return
+	}
+
+	imageWidth := img.Bounds().Dx()
+	imageHeight := img.Bounds().Dy()
+
+	x, y, width, height, err := validateImageSizes(ctx, imageWidth, imageHeight)
+
+	if err != nil {
+		errorHandlers.BadRequest(ctx, errorCodes.BadRequestErrorCodeValidationErrors, map[string]string{"file": err.Error()})
+		return
+	}
+
+	croppedImage := image.NewRGBA(image.Rect(x, y, x+width, y+height))
+
+	draw.Draw(croppedImage, croppedImage.Bounds(), img, image.Point{x, y}, draw.Src)
+
+	var buffer bytes.Buffer
+
+	switch ext {
+	case "jpg", "jpeg":
+		err = jpeg.Encode(&buffer, croppedImage, nil)
+	case "png":
+		err = png.Encode(&buffer, croppedImage)
+	}
+
+	if err != nil {
+		errorHandlers.InternalServerError(ctx)
+		return
+	}
+
+	resp, err := resty.New().R().SetHeader("Content-Type", "multipart/form-data").SetFileReader("file", file.Filename, &buffer).SetFormData(map[string]string{
+		"folder": "avatars",
+	}).Post(storageUrl + "/upload")
+
+	if resp.StatusCode() > 299 || err != nil {
+		errorHandlers.InternalServerError(ctx)
+		return
+	}
+
+	var body map[string]interface{}
+
+	if err := json.Unmarshal(resp.Body(), &body); err != nil {
+		errorHandlers.InternalServerError(ctx)
+		return
+	}
+
+	link := body["link"].(string)
+
+	user.Picture = &link
+	user.UpdatedAt = time.Now()
+
+	if err := postgres.DB.Save(&user).Error; err != nil {
+		errorHandlers.InternalServerError(ctx)
+		return
+	}
+
+	ctx.JSON(http.StatusOK, user)
 }

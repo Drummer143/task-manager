@@ -1,7 +1,7 @@
 import React from "react";
 
 import { MenuOutlined } from "@ant-design/icons";
-import { useDisclosure } from "@task-manager/utils";
+import { useDisclosure } from "@task-manager/react-utils";
 import { Button, Divider, Layout } from "antd";
 import { createStyles } from "antd-style";
 import { Outlet } from "react-router-dom";
