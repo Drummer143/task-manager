@@ -4,7 +4,6 @@ import { nxViteTsPaths } from "@nx/vite/plugins/nx-tsconfig-paths.plugin";
 import * as path from "path";
 import { defineConfig } from "vite";
 import dts from "vite-plugin-dts";
-import { configDefaults } from "vitest/config";
 
 export default defineConfig(() => ({
 	root: __dirname,
@@ -47,13 +46,11 @@ export default defineConfig(() => ({
 		environment: "jsdom",
 		include: ["src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],
 		reporters: ["default"],
-		exclude: [...configDefaults.exclude, "src/HOCs/index.ts"],
 		coverage: {
 			reportsDirectory: "../../../coverage/libs/frontend/test",
 			provider: "v8" as const,
 			ignoreEmptyLines: true,
-			clean: true,
-			exclude: [...(configDefaults.coverage.exclude || []), "src/HOCs/index.ts"]
+			clean: true
 		}
 	}
 }));
