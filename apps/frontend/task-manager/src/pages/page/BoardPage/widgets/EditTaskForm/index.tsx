@@ -4,7 +4,7 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getTask, updateTask } from "@task-manager/api";
 import { App, Flex } from "antd";
 import dayjs from "dayjs";
-import { useNavigate, useParams, useSearchParams } from "react-router-dom";
+import { useNavigate, useParams, useSearchParams } from "react-router";
 
 import { useAuthStore } from "../../../../../app/store/auth";
 import TaskChat from "../TaskChat";

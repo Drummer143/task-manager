@@ -6,7 +6,7 @@ import { sendMessage } from "@task-manager/api";
 import { useDisclosure, useFunctionWithFeedback } from "@task-manager/react-utils";
 import { Button, Flex, Form, Input } from "antd";
 import { createStyles } from "antd-style";
-import { useParams, useSearchParams } from "react-router-dom";
+import { useParams, useSearchParams } from "react-router";
 
 import { useAuthStore } from "../../../../../app/store/auth";
 import Drawer from "../../../../../widgets/Drawer";

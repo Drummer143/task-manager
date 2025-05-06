@@ -3,7 +3,7 @@ import React, { memo, useCallback, useEffect, useMemo, useState } from "react";
 import { DownOutlined, PlusOutlined } from "@ant-design/icons";
 import { Page } from "@task-manager/api";
 import { Button, Flex, theme } from "antd";
-import { NavLink } from "react-router-dom";
+import { NavLink } from "react-router";
 
 import { useStyles } from "./styles";
 

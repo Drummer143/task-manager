@@ -1,7 +1,7 @@
 import React, { useState } from "react";
 
 import { Layout } from "antd";
-import { Outlet } from "react-router-dom";
+import { Outlet } from "react-router";
 
 import * as s from "./styles";
 import UserMenu from "./UserMenu";

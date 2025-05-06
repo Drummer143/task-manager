@@ -1,6 +1,6 @@
 import React, { useEffect } from "react";
 
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 
 import { userManager } from "../../app/auth";
 import FullSizeLoader from "../../shared/ui/FullSizeLoader";

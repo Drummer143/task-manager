@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getWorkspace } from "@task-manager/api";
 import { Menu, Spin } from "antd";
 import { ItemType, MenuItemType } from "antd/es/menu/interface";
-import { useLocation, useNavigate } from "react-router-dom";
+import { useLocation, useNavigate } from "react-router";
 
 import { useAuthStore } from "../../../app/store/auth";
 

@@ -3,7 +3,7 @@ import React from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getPage } from "@task-manager/api";
 import { lazySuspense } from "@task-manager/react-utils";
-import { Navigate, useNavigate, useParams } from "react-router-dom";
+import { Navigate, useNavigate, useParams } from "react-router";
 
 import { useStyles } from "./styles";
 import PageHeader from "./widgets/PageHeader";

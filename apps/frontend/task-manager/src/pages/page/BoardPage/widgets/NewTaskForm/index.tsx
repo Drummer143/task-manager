@@ -4,7 +4,7 @@ import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { createTask } from "@task-manager/api";
 import { useDisclosure } from "@task-manager/react-utils";
 import { Form } from "antd";
-import { useParams } from "react-router-dom";
+import { useParams } from "react-router";
 
 import { useAuthStore } from "../../../../../app/store/auth";
 import TaskForm from "../TaskForm";

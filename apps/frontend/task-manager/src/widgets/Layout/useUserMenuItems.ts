@@ -3,7 +3,7 @@ import { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import { getWorkspaceList } from "@task-manager/api";
 import { MenuProps } from "antd";
-import { useNavigate } from "react-router-dom";
+import { useNavigate } from "react-router";
 
 import { userManager } from "../../app/auth";
 import { useAuthStore } from "../../app/store/auth";

@@ -1,7 +1,7 @@
 import React, { memo } from "react";
 
 import { Page } from "@task-manager/api";
-import { NavLink } from "react-router-dom";
+import { NavLink } from "react-router";
 
 import ItemWithSubmenu from "./ItemWithSubmenu";
 import { useStyles } from "./styles";

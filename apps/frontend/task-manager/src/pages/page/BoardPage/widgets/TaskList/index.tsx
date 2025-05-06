@@ -3,7 +3,7 @@ import React, { memo, useCallback } from "react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { changeStatus, Task, TaskStatus } from "@task-manager/api";
 import { App } from "antd";
-import { useNavigate, useParams } from "react-router-dom";
+import { useNavigate, useParams } from "react-router";
 
 import { useStyles } from "./styles";
 import { drawTaskDragImage } from "./utils";
