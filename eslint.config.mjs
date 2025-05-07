@@ -31,7 +31,16 @@ export default [
 		}
 	},
 	{
-		files: ["**/*.ts", "**/*.tsx", "**/*.cts", "**/*.mts", "**/*.js", "**/*.jsx", "**/*.cjs", "**/*.mjs"],
+		files: [
+			"**/*.ts",
+			"**/*.tsx",
+			"**/*.cts",
+			"**/*.mts",
+			"**/*.js",
+			"**/*.jsx",
+			"**/*.cjs",
+			"**/*.mjs"
+		],
 		plugins: {
 			react,
 			import: _import,
@@ -65,7 +74,7 @@ export default [
 			"max-len": [
 				"warn",
 				{
-					code: 80,
+					code: 100,
 					tabWidth: 4,
 					ignoreUrls: true,
 					ignoreStrings: true,
@@ -101,7 +110,12 @@ export default [
 			"import/order": [
 				"error",
 				{
-					groups: [["builtin", "external"], "internal", ["parent", "sibling", "index"], "unknown"],
+					groups: [
+						["builtin", "external"],
+						"internal",
+						["parent", "sibling", "index"],
+						"unknown"
+					],
 
 					pathGroups: [
 						{
