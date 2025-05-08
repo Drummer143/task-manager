@@ -1,19 +1,15 @@
 import React, { useEffect, useState } from "react";
 
-import { useQuery } from "@tanstack/react-query";
 import { modifyAxiosInstance } from "@task-manager/api";
 import { lazySuspense } from "@task-manager/react-utils";
+import axios from "axios";
 
 import { userManager } from "../../app/auth";
 import { useAuthStore } from "../../app/store/auth";
 import { useSocketStore } from "../../app/store/socket";
 import FullSizeLoader from "../../shared/ui/FullSizeLoader";
-import axios from "axios";
 
-const DesktopLayout = lazySuspense(
-	() => import("./Desktop"),
-	<FullSizeLoader />
-);
+const DesktopLayout = lazySuspense(() => import("./Desktop"), <FullSizeLoader />);
 // const MobileLayout = lazySuspense(() => import("./Mobile"), <FullSizeLoader />);
 
 const Layout: React.FC = () => {

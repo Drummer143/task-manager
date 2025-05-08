@@ -1,6 +1,7 @@
 package postgres
 
 import (
+	"main/internal/mongo"
 	"time"
 
 	"github.com/google/uuid"
@@ -80,10 +81,10 @@ type WorkspaceAccess struct {
 }
 
 type Page struct {
-	ID    uuid.UUID `gorm:"primaryKey;default:uuid_generate_v4()" json:"id"`
-	Type  PageType  `gorm:"not null" json:"type"`
-	Title string    `gorm:"not null" json:"title"`
-	Text  *string   `json:"text,omitempty"`
+	ID    uuid.UUID            `gorm:"primaryKey;default:uuid_generate_v4()" json:"id"`
+	Type  PageType             `gorm:"not null" json:"type"`
+	Title string               `gorm:"not null" json:"title"`
+	Text  *mongo.EditorContent `gorm:"-" json:"text,omitempty"`
 
 	Role *UserRole `gorm:"-" json:"role,omitempty"`
 
@@ -116,11 +117,11 @@ type PageAccess struct {
 }
 
 type Task struct {
-	ID          uuid.UUID  `gorm:"primaryKey;default:uuid_generate_v4()" json:"id"`
-	Title       string     `gorm:"not null" json:"title"`
-	Status      string     `gorm:"not null" json:"status"`
-	Description *string    `json:"description,omitempty"`
-	DueDate     *time.Time `json:"dueDate,omitempty"`
+	ID          uuid.UUID            `gorm:"primaryKey;default:uuid_generate_v4()" json:"id"`
+	Title       string               `gorm:"not null" json:"title"`
+	Status      string               `gorm:"not null" json:"status"`
+	Description *mongo.EditorContent `gorm:"-" json:"description,omitempty"`
+	DueDate     *time.Time           `json:"dueDate,omitempty"`
 
 	PageID     uuid.UUID  `gorm:"not null" json:"-"`
 	AssigneeID *uuid.UUID `json:"-"`

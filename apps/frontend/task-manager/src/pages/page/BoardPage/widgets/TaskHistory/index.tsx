@@ -1,61 +1,79 @@
-import React, { useCallback, useMemo } from "react";
+// import React, { useCallback, useMemo } from "react";
 
-import { HistoryOutlined } from "@ant-design/icons";
-import { getTaskHistory, TaskStatus } from "@task-manager/api";
-import { useDisclosure } from "@task-manager/react-utils";
-import { Button, Drawer, Tag, Typography } from "antd";
+// import { HistoryOutlined } from "@ant-design/icons";
+// import { getTaskHistory, TaskStatus } from "@task-manager/api";
+// import { useDisclosure } from "@task-manager/react-utils";
+// import { JSONContent } from "@tiptap/core";
+// import { Button, Drawer, Tag, Typography } from "antd";
 
-import { useAuthStore } from "../../../../../app/store/auth";
-import { statusColors, taskStatusLocale } from "../../../../../shared/constants";
-import MDEditor from "../../../../../widgets/MDEditor";
-import VersionHistoryList, { FetchLog, VersionHistoryEntryRenders } from "../../../../../widgets/VersionHistoryList";
+// import { useAuthStore } from "../../../../../app/store/auth";
+// import { statusColors, taskStatusLocale } from "../../../../../shared/constants";
+// import MDEditor from "../../../../../widgets/MDEditor";
+// import VersionHistoryList, {
+// 	FetchLog,
+// 	VersionHistoryEntryRenders
+// } from "../../../../../widgets/VersionHistoryList";
 
-interface TaskHistoryProps {
-	taskId: string;
-	pageId: string;
-}
+// interface TaskHistoryProps {
+// 	taskId: string;
+// 	pageId: string;
+// }
 
-type ChangeKeys = keyof Awaited<ReturnType<typeof getTaskHistory>>["data"][number]["changes"];
+// type ChangeKeys = keyof Awaited<ReturnType<typeof getTaskHistory>>["data"][number]["changes"];
 
-const TaskHistory: React.FC<TaskHistoryProps> = props => {
-	const { open, onOpen, onClose } = useDisclosure();
+// const TaskHistory: React.FC<TaskHistoryProps> = props => {
+// 	const { open, onOpen, onClose } = useDisclosure();
 
-	const versionHistoryRenderers: VersionHistoryEntryRenders<ChangeKeys> = useMemo(
-		() => ({
-			status: (info: TaskStatus) => <Tag color={`var(${statusColors[info]})`}>{taskStatusLocale[info]}</Tag>,
-			description: (info: string) =>
-				info ? (
-					<MDEditor value={info} editing={false} />
-				) : (
-					<Typography.Text type="secondary" italic>
-						Empty description
-					</Typography.Text>
-				)
-		}),
-		[]
-	);
+// 	const versionHistoryRenderers: VersionHistoryEntryRenders<ChangeKeys> = useMemo(
+// 		() => ({
+// 			status: (info: TaskStatus) => (
+// 				<Tag color={`var(${statusColors[info]})`}>{taskStatusLocale[info]}</Tag>
+// 			),
+// 			description: (info: JSONContent) => {
+// 				console.log(info);
 
-	const fieldsOrder = useMemo<ChangeKeys[]>(() => ["title", "status", "assigneeId", "dueDate", "description"], []);
+// 				return info ? (
+// 					<MDEditor value={info} editable={false} />
+// 				) : (
+// 					<Typography.Text type="secondary" italic>
+// 						Empty description
+// 					</Typography.Text>
+// 				);
+// 			}
+// 		}),
+// 		[]
+// 	);
 
-	const fetchLog = useCallback<FetchLog<ChangeKeys>>(
-		query => getTaskHistory({ ...props, ...query, workspaceId: useAuthStore.getState().user.workspace.id }),
-		[props]
-	);
+// 	const fieldsOrder = useMemo<ChangeKeys[]>(
+// 		() => ["title", "status", "assigneeId", "dueDate", "description"],
+// 		[]
+// 	);
 
-	return (
-		<>
-			<Button icon={<HistoryOutlined />} type="text" onClick={onOpen} />
+// 	const fetchLog = useCallback<FetchLog<ChangeKeys>>(
+// 		query =>
+// 			getTaskHistory({
+// 				...props,
+// 				...query,
+// 				workspaceId: useAuthStore.getState().user.workspace.id
+// 			}),
+// 		[props]
+// 	);
 
-			<Drawer open={open} onClose={onClose} title="Task history">
-				<VersionHistoryList
-					enabled={open}
-					changeOrder={fieldsOrder}
-					entryRenders={versionHistoryRenderers}
-					fetchLog={fetchLog}
-				/>
-			</Drawer>
-		</>
-	);
-};
+// 	return (
+// 		<>
+// 			<Button icon={<HistoryOutlined />} type="text" onClick={onOpen} />
 
-export default TaskHistory;
+// 			<Drawer open={open} onClose={onClose} title="Task history">
+// 				<VersionHistoryList
+// 					enabled={open}
+// 					changeOrder={fieldsOrder}
+// 					entryRenders={versionHistoryRenderers}
+// 					fetchLog={fetchLog}
+// 				/>
+// 			</Drawer>
+// 		</>
+// 	);
+// };
+
+// export default TaskHistory;
+

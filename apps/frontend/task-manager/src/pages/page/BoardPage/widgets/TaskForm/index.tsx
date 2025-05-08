@@ -84,7 +84,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
 				</Form.Item>
 
 				<Form.Item layout="vertical" label="Description" name="description">
-					<MDEditor editing minHeight="200px" />
+					<MDEditor editable />
 				</Form.Item>
 			</>
 		)}

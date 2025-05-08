@@ -1,12 +1,16 @@
 package tasksRouter
 
 import (
+	"context"
 	"libs/backend/errorHandlers/libs/errorCodes"
 	"libs/backend/errorHandlers/libs/errorHandlers"
+	mongoClient "main/internal/mongo"
 	"main/internal/postgres"
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 	"gorm.io/gorm"
 )
 
@@ -33,6 +37,23 @@ func getSingleTask(ctx *gin.Context) {
 		}
 
 		return
+	}
+
+	taskDescriptionCollection := mongoClient.DB.Database("task").Collection("description")
+
+	options := options.FindOne().SetSort(gin.H{"version": -1})
+
+	var taskDescription mongoClient.EditorContent
+
+	if err := taskDescriptionCollection.FindOne(context.Background(), gin.H{"pageid": task.ID}, options).Decode(&taskDescription); err != nil {
+		if err == mongo.ErrNoDocuments {
+			task.Description = nil
+		} else {
+			errorHandlers.InternalServerError(ctx)
+			return
+		}
+	} else {
+		task.Description = &taskDescription
 	}
 
 	ctx.JSON(http.StatusOK, task)

@@ -24,6 +24,10 @@
 		"@ant-design/icons": "^5.5.1",
 		"@mdxeditor/editor": "^3.32.1",
 		"@tanstack/react-query": "^5.75.4",
+		"@tiptap/core": "2.11.9",
+		"@tiptap/extension-placeholder": "2.11.9",
+		"@tiptap/react": "2.11.9",
+		"@tiptap/starter-kit": "2.11.9",
 		"antd": "^5.24.9",
 		"antd-style": "^3.7.1",
 		"axios": "^1.9.0",
@@ -99,4 +103,3 @@
 		"node": "^22.0.0"
 	}
 }
-

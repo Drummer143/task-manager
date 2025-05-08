@@ -8,15 +8,15 @@ import (
 )
 
 func validateISO8601(fl validator.FieldLevel) bool {
-	value := fl.Field().String()
-	layout := time.RFC3339
+	t, ok := fl.Field().Interface().(time.Time)
 
-	if value == "" {
-		return true
+	if !ok {
+		return false
 	}
 
-	_, err := time.Parse(layout, value)
-	return err == nil
+	formatted := t.Format(time.RFC3339Nano)
+
+	return formatted != ""
 }
 
 var Validator *validator.Validate

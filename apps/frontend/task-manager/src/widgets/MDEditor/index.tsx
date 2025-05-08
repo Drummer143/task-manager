@@ -1,83 +1,142 @@
-import React, { forwardRef, memo, useCallback, useRef } from "react";
+import React, {
+	forwardRef,
+	memo,
+	useCallback,
+	useEffect,
+	useImperativeHandle,
+	useState
+} from "react";
 
+import Placeholder from "@tiptap/extension-placeholder";
 import {
-	headingsPlugin,
-	listsPlugin,
-	markdownShortcutPlugin,
-	MDXEditor,
-	MDXEditorMethods,
-	MDXEditorProps,
-	quotePlugin,
-	thematicBreakPlugin
-} from "@mdxeditor/editor";
+	Editor,
+	EditorContent,
+	EditorContentProps,
+	EditorEvents,
+	JSONContent,
+	useEditor
+} from "@tiptap/react";
+import StarterKit from "@tiptap/starter-kit";
 
-import { useStyles } from "./styled";
+import { useStyles } from "./styles";
+import BubbleMenu from "./widgets/BubbleMenu";
 
-interface MDEditorProps {
-	value?: string;
-	editing?: boolean;
-	minHeight?: string;
-	autoFocus?: boolean;
-	horizontalPadding?: boolean;
+interface MDEditorProps
+	extends Omit<
+		EditorContentProps,
+		| "editor"
+		| "innerRef"
+		| "ref"
+		| "onChange"
+		| "value"
+		| "contentEditable"
+		| "children"
+		| "placeholder"
+	> {
+	value?: JSONContent;
+	editable?: boolean;
 
-	onChange?: NonNullable<MDXEditorProps["onChange"]>;
+	onChange?: (value: JSONContent) => void;
 }
 
-const plugins = [headingsPlugin(), listsPlugin(), quotePlugin(), thematicBreakPlugin(), markdownShortcutPlugin()];
+const EMPTY_NODE_CLASS = "is-empty";
 
-const MDEditor: React.ForwardRefRenderFunction<MDXEditorMethods, MDEditorProps> = (
-	{ onChange, value = "", horizontalPadding, editing, minHeight, autoFocus },
+const extensions = [
+	StarterKit,
+	Placeholder.configure({
+		emptyNodeClass: EMPTY_NODE_CLASS,
+		showOnlyWhenEditable: false,
+		placeholder: placeholderProps => {
+			if (placeholderProps.editor.isEditable) {
+				return "Type something...";
+			}
+
+			return "No content";
+		}
+	})
+];
+
+const MDEditor: React.ForwardRefRenderFunction<Editor | null, MDEditorProps> = (
+	{ editable = true, value, onChange, className, ...props },
 	ref
 ) => {
-	const { bg, editor, editorScroll, placeholder } = useStyles({
-		contentEditableClassName: "editable-row",
-		editing,
-		horizontalPadding,
-		minHeight
-	}).styles;
-	const editorRef = useRef<MDXEditorMethods | null>(null);
+	const { styles, cx } = useStyles({ emptyNodeClass: EMPTY_NODE_CLASS });
 
-	const handleBgClick: React.MouseEventHandler<HTMLDivElement> = useCallback(
-		e => {
-			e.stopPropagation();
+	const [selectionParams, setSelectionParams] = useState({
+		Bold: false,
+		Italic: false,
+		Strike: false,
+		Code: false
+	});
 
-			if (editing) {
-				editorRef.current?.focus();
+	const handleSelectionUpdate = useCallback(
+		({ transaction, editor }: EditorEvents["selectionUpdate"]) => {
+			if (transaction.selection.empty) {
+				return;
 			}
+
+			setSelectionParams({
+				Bold: editor.isActive("bold"),
+				Code: editor.isActive("code"),
+				Italic: editor.isActive("italic"),
+				Strike: editor.isActive("strike")
+			});
 		},
-		[editing]
+		[]
 	);
 
-	const handleRef = useCallback(
-		(r: MDXEditorMethods | null) => {
-			editorRef.current = r;
+	const editor = useEditor({
+		extensions,
+		content: value,
+		editable,
+		onSelectionUpdate: handleSelectionUpdate,
+		onUpdate: ({ transaction, editor }) => {
+			onChange?.(transaction.doc.toJSON());
 
-			if (typeof ref === "function") {
-				ref(r);
-			} else if (ref) {
-				ref.current = r;
+			if (!transaction.selection.empty) {
+				setSelectionParams({
+					Code: editor.isActive("code"),
+					Bold: editor.isActive("bold"),
+					Italic: editor.isActive("italic"),
+					Strike: editor.isActive("strike")
+				});
 			}
+		}
+	});
+
+	useImperativeHandle(ref, () => editor as Editor, [editor]);
+
+	const onBubbleMenuItemClick = useCallback(
+		(action: "Bold" | "Italic" | "Strike" | "Code") => {
+			if (!editor) {
+				return;
+			}
+
+			let chain = editor.chain().focus();
+
+			chain = chain[`toggle${action}`]();
+
+			chain.run();
 		},
-		[ref]
+		[editor]
 	);
+
+	useEffect(() => {
+		editor?.setEditable(editable);
+	}, [editable, editor]);
 
 	return (
-		<div className={editorScroll}>
-			<div className={bg} onClick={handleBgClick}>
-				<MDXEditor
-					className={editor}
-					placeholder={<p className={placeholder}>Write something...</p>}
-					ref={handleRef}
-					readOnly={!editing}
-					contentEditableClassName="editable-row"
-					autoFocus={autoFocus}
-					markdown={value}
-					onChange={onChange}
-					plugins={plugins}
-				/>
-			</div>
-		</div>
+		<>
+			<EditorContent {...props} editor={editor} className={cx(styles.editor, className)} />
+
+			<BubbleMenu
+				editor={editor}
+				selectionParams={selectionParams}
+				onItemClick={onBubbleMenuItemClick}
+			/>
+		</>
 	);
 };
 
 export default memo(forwardRef(MDEditor));
+

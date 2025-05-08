@@ -1,7 +1,6 @@
 package tasksRouter
 
 import (
-	"main/internal/mongo"
 	tasksCharRouter "main/router/workspaces/pages/tasks/chat"
 
 	"github.com/gin-gonic/gin"
@@ -16,17 +15,15 @@ var (
 )
 
 func AddRoutes(group *gin.RouterGroup) {
-	taskVersionsCollection := mongo.DB.Database("versions").Collection("tasks")
-
 	group.GET("", getTaskList)
 	group.GET("/:task_id", getSingleTask)
-	group.GET("/:task_id/history", getHistory(taskVersionsCollection))
+	// group.GET("/:task_id/history", getHistory(taskVersionsCollection))
 
 	group.POST("", createTask)
 
-	group.PATCH("/:task_id/status", changeStatus(taskVersionsCollection))
+	group.PATCH("/:task_id/status", changeStatus)
 
-	group.PUT("/:task_id", updateTask(taskVersionsCollection))
+	group.PUT("/:task_id", updateTask)
 
 	group.DELETE("/:task_id", deleteTask)
 

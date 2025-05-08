@@ -1,3 +1,5 @@
+import { JSONContent } from "@tiptap/react";
+
 import { axiosInstance } from "./base";
 
 import { Page, PageType } from "../types";
@@ -18,7 +20,7 @@ interface CreatePageArgs extends Ids {
 		type: PageType;
 		title: string;
 
-		text?: string;
+		text?: JSONContent;
 		parentId?: string;
 	};
 }
@@ -37,9 +39,12 @@ export const getPage = async <T extends GetPageIncludes | undefined = undefined>
 	include
 }: GetSinglePageArgs<T>) =>
 	(
-		await axiosInstance.get<ResponseWithIncludeFilter<T>>(`workspaces/${workspaceId}/pages/${pageId}`, {
-			params: { include: include?.join(",") }
-		})
+		await axiosInstance.get<ResponseWithIncludeFilter<T>>(
+			`workspaces/${workspaceId}/pages/${pageId}`,
+			{
+				params: { include: include?.join(",") }
+			}
+		)
 	).data;
 
 type ListFormat = "list" | "tree";
@@ -48,10 +53,15 @@ interface GetPageListArgs<T extends ListFormat = "list"> extends Ids {
 	format?: T;
 }
 
-export const getPageList = async <T extends ListFormat = "list">({ workspaceId, format }: GetPageListArgs<T>) =>
+export const getPageList = async <T extends ListFormat = "list">({
+	workspaceId,
+	format
+}: GetPageListArgs<T>) =>
 	(
 		await axiosInstance.get<
-			T extends "list" ? ResponseWithIncludeFilter[] : ResponseWithIncludeFilter<"childPages">[]
+			T extends "list"
+				? ResponseWithIncludeFilter[]
+				: ResponseWithIncludeFilter<"childPages">[]
 		>(`workspaces/${workspaceId}/pages`, {
 			params: { format }
 		})

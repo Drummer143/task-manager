@@ -1,8 +1,10 @@
 package pagesRouter
 
 import (
+	"context"
 	"libs/backend/errorHandlers/libs/errorCodes"
 	"libs/backend/errorHandlers/libs/errorHandlers"
+	mongoClient "main/internal/mongo"
 	"main/internal/postgres"
 	"main/utils/ginTools"
 	"main/utils/routerUtils"
@@ -11,6 +13,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 // @Summary 		Get page by id
@@ -63,6 +67,23 @@ func getPage(ctx *gin.Context) {
 	}
 
 	page, access, ok := routerUtils.CheckPageAccess(ctx, dbWithIncludes, postgres.DB, pageId, user.ID)
+
+	if page.Type == postgres.PageTypeText {
+		textPageContentCollection := mongoClient.DB.Database("page").Collection("edit_content")
+
+		var content mongoClient.EditorContent
+
+		options := options.FindOne().SetSort(gin.H{"version": -1})
+
+		if err := textPageContentCollection.FindOne(context.Background(), gin.H{"pageid": page.ID}, options).Decode(&content); err != nil {
+			if err != mongo.ErrNoDocuments {
+				errorHandlers.InternalServerError(ctx)
+				return
+			}
+		} else {
+			page.Text = &content
+		}
+	}
 
 	if !ok {
 		return
