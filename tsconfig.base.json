@@ -18,6 +18,12 @@
 			"@task-manager/ant-config": ["libs/frontend/ant-config/src/index.ts"],
 			"@task-manager/api": ["libs/frontend/api/src/index.ts"],
 			"@task-manager/react-utils": ["libs/frontend/react-utils/src/index.ts"],
+			"@task-manager/tiptap-file-upload-plugin": [
+				"libs/frontend/tiptap-file-upload-plugin/src/index.ts"
+			],
+			"@task-manager/tiptap-plugin-file-renderer": [
+				"libs/frontend/tiptap-plugin-file-renderer/src/index.ts"
+			],
 			"@task-manager/utils": ["libs/frontend/utils/src/index.ts"]
 		}
 	},

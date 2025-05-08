@@ -1,0 +1,9 @@
+{
+	"name": "tiptap-file-upload-plugin",
+	"$schema": "../../../node_modules/nx/schemas/project-schema.json",
+	"sourceRoot": "libs/frontend/tiptap-file-upload-plugin/src",
+	"projectType": "library",
+	"tags": [],
+	"// targets": "to see all targets run: nx show project tiptap-file-upload-plugin --web",
+	"targets": {}
+}

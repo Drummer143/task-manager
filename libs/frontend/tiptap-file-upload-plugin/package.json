@@ -1,0 +1,12 @@
+{
+	"name": "@task-manager/tiptap-file-upload-plugin",
+	"version": "0.0.1",
+	"private": true,
+	"type": "module",
+	"main": "./index.js",
+	"types": "./index.d.ts",
+	"dependencies": {
+		"@tiptap/core": "2.11.9",
+		"@tiptap/pm": "2.11.9"
+	}
+}
