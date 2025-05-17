@@ -7,9 +7,9 @@ import React, {
 	useState
 } from "react";
 
-import { DeleteOutlined, DownloadOutlined } from "@ant-design/icons";
+import { uploadAvatar, uploadFile } from "@task-manager/api";
 import { FileUploadPlugin } from "@task-manager/tiptap-file-upload-plugin";
-import { FileRenderer, ReactNodeRenderer } from "@task-manager/tiptap-plugin-file-renderer";
+import { FileRenderer as FileRendererPlugin } from "@task-manager/tiptap-plugin-file-renderer";
 import Placeholder from "@tiptap/extension-placeholder";
 import {
 	Editor,
@@ -17,15 +17,14 @@ import {
 	EditorContentProps,
 	EditorEvents,
 	JSONContent,
-	NodeViewWrapper,
 	useEditor
 } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
-import { Button, Flex } from "antd";
-import { Link } from "react-router";
 
-import { useFileRendererStylets, useStyles } from "./styles";
+import { useStyles } from "./styles";
 import BubbleMenu from "./widgets/BubbleMenu";
+import FileRenderer from "./widgets/FileRenderer";
+import ImageRender from "./widgets/ImageRender";
 
 interface MDEditorProps
 	extends Omit<
@@ -47,68 +46,30 @@ interface MDEditorProps
 
 const EMPTY_NODE_CLASS = "is-empty";
 
-const FileRenderRenderer: ReactNodeRenderer = info => {
-	const { styles } = useFileRendererStylets();
-
-	const handleDeleteSelf = () => {
-		if (!info.editor.isEditable) {
-			return;
-		}
-
-		const pos = info.getPos();
-
-		info.editor
-			.chain()
-			.focus()
-			.deleteRange({ from: pos, to: pos + info.node.nodeSize })
-			.run();
-	};
-
-	return (
-		<NodeViewWrapper as="div">
-			<Flex className={styles.wrapper} justify="space-between" align="center">
-				<Link
-					to={info.node.attrs["src"]}
-					target="_blank"
-					download={info.node.attrs["title"]}
-				>
-					{info.node.attrs["title"]}
-				</Link>
-
-				<Flex className={styles.buttonsContainer} gap="var(--ant-margin-xs)">
-					<Button
-						size="small"
-						icon={<DownloadOutlined />}
-						type="text"
-						target="_blank"
-						href={info.node.attrs["src"]}
-						download={info.node.attrs["title"]}
-					/>
-
-					{info.editor.isEditable && (
-						<Button
-							size="small"
-							type="text"
-							danger
-							icon={<DeleteOutlined />}
-							onClick={handleDeleteSelf}
-						/>
-					)}
-				</Flex>
-			</Flex>
-		</NodeViewWrapper>
-	);
-};
-
 const extensions = [
 	StarterKit,
-	FileUploadPlugin,
-	FileRenderer.configure({
+	FileUploadPlugin.configure({
+		uploadFn: {
+			"image/*": async file => {
+				const { link } = await uploadFile({ file });
+
+				return {
+					name: file.name,
+					url: link,
+					size: file.size,
+					type: file.type
+				};
+			}
+		}
+	}),
+	FileRendererPlugin.configure({
 		filesRules: {
-			"image/*": {},
+			"image/*": {
+				render: ImageRender
+			},
 			"video/*": {},
 			"!image/*": {
-				render: memo(FileRenderRenderer)
+				render: FileRenderer
 			}
 		}
 	}),

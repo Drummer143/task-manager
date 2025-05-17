@@ -2,7 +2,13 @@ import { Extension } from "@tiptap/core";
 import { Plugin } from "@tiptap/pm/state";
 
 import { FileUploadPluginOptions } from "./types";
-import { defaultUploadFn, getInsertPos, uploadFiles, validateFile } from "./utils";
+import {
+	defaultFileUploadFn,
+	defaultImageUploadFn,
+	getInsertPos,
+	uploadFiles,
+	validateFile
+} from "./utils";
 
 declare module "@tiptap/core" {
 	interface Commands<ReturnType> {
@@ -10,7 +16,8 @@ declare module "@tiptap/core" {
 			uploadFile: (
 				files: ArrayLike<File>,
 				throwOnInvalidFiles?: boolean,
-				insertPos?: number
+				insertPos?: number,
+				onError?: (error: unknown) => void
 			) => ReturnType;
 		};
 	}
@@ -21,7 +28,10 @@ export const FileUploadPlugin = Extension.create<FileUploadPluginOptions>({
 
 	addOptions() {
 		return {
-			uploadFn: defaultUploadFn,
+			uploadFn: {
+				"image/*": defaultImageUploadFn,
+				"!image/*": defaultFileUploadFn
+			},
 			accept: "**",
 			maxFileSize: 0
 		};
@@ -29,7 +39,7 @@ export const FileUploadPlugin = Extension.create<FileUploadPluginOptions>({
 
 	addCommands() {
 		return {
-			uploadFile: (files, throwOnInvalidFiles, startPos) => () => {
+			uploadFile: (files, throwOnInvalidFiles, startPos, onError) => () => {
 				const validFiles = Array.from(files).filter(file => {
 					const isValid = validateFile(file, this.options);
 
@@ -46,14 +56,9 @@ export const FileUploadPlugin = Extension.create<FileUploadPluginOptions>({
 
 				const insertPos = getInsertPos(startPos, this.editor.view);
 
-				const tr = uploadFiles(
-					validFiles,
-					insertPos,
-					this.editor.view,
-					this.options.uploadFn
-				);
-
-				this.editor.view.dispatch(tr);
+				uploadFiles(validFiles, insertPos, this.editor.view, this.options.uploadFn)
+					.then(tr => this.editor.view.dispatch(tr))
+					.catch(onError);
 
 				return true;
 			}
@@ -83,9 +88,9 @@ export const FileUploadPlugin = Extension.create<FileUploadPluginOptions>({
 
 						const insertPos = getInsertPos(pos.pos, view);
 
-						const tr = uploadFiles(files, insertPos, view, this.options.uploadFn);
-
-						view.dispatch(tr);
+						uploadFiles(files, insertPos, view, this.options.uploadFn).then(tr =>
+							view.dispatch(tr)
+						);
 
 						return true;
 					},
@@ -113,9 +118,9 @@ export const FileUploadPlugin = Extension.create<FileUploadPluginOptions>({
 
 						const insertPos = getInsertPos(pos, view);
 
-						const tr = uploadFiles(files, insertPos, view, this.options.uploadFn);
-
-						view.dispatch(tr);
+						uploadFiles(files, insertPos, view, this.options.uploadFn).then(tr =>
+							view.dispatch(tr)
+						);
 
 						return true;
 					}
