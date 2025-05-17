@@ -3,7 +3,7 @@
 	"version": "0.0.0",
 	"license": "MIT",
 	"scripts": {
-		"dev": "nx run-many --target=dev --projects=main,task-manager",
+		"dev": "nx run-many --target=dev --projects=storage,main,task-manager",
 		"dev:all": "nx run-many --target=dev --all",
 		"dev:custom": "nx run-many --target=dev",
 		"lint": "nx run-many --target=lint --all --verbose",
@@ -49,6 +49,7 @@
 	"devDependencies": {
 		"@eslint/compat": "^1.2.9",
 		"@eslint/js": "^9.26.0",
+		"@monodon/rust": "^2.3.0",
 		"@nx-go/nx-go": "^3.3.1",
 		"@nx/eslint": "20.5.0",
 		"@nx/eslint-plugin": "20.5.0",
