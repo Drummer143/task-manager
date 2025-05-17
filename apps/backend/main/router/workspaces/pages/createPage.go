@@ -1,8 +1,10 @@
 package pagesRouter
 
 import (
+	"context"
 	"libs/backend/errorHandlers/libs/errorCodes"
 	"libs/backend/errorHandlers/libs/errorHandlers"
+	"main/internal/mongo"
 	"main/internal/postgres"
 	"main/internal/validation"
 	"main/utils/ginTools"
@@ -14,10 +16,10 @@ import (
 )
 
 type createPageBody struct {
-	Title    string            `json:"title" validate:"required"`
-	Type     postgres.PageType `json:"type" validate:"required,oneof=text board group"`
-	ParentId *uuid.UUID        `json:"parentId" validate:"omitempty,uuid4"`
-	Text     *string           `json:"text"`
+	Title    string               `json:"title" validate:"required"`
+	Type     postgres.PageType    `json:"type" validate:"required,oneof=text board group"`
+	ParentId *uuid.UUID           `json:"parentId" validate:"omitempty,uuid4"`
+	Text     *mongo.EditorContent `json:"text"`
 }
 
 // @Summary			Create a new page
@@ -80,7 +82,6 @@ func createPage(ctx *gin.Context) {
 		WorkspaceID:  uuid.MustParse(ctx.Param("workspace_id")),
 		OwnerID:      user.ID,
 		ParentPageID: body.ParentId,
-		Text:         body.Text,
 	}
 
 	tx := postgres.DB.Begin()
@@ -118,6 +119,20 @@ func createPage(ctx *gin.Context) {
 
 	if body.ParentId != nil {
 		if err := routerUtils.GiveAccessToParentPageAdmins(tx, *body.ParentId, page.WorkspaceID); err != nil {
+			tx.Rollback()
+			errorHandlers.InternalServerError(ctx)
+			return
+		}
+	}
+
+	textPageContentCollection := mongo.DB.Database("page").Collection("edit_content")
+
+	if body.Type == postgres.PageTypeText && body.Text != nil {
+		body.Text.PageID = &page.ID
+		version := 1
+		body.Text.Version = &version
+
+		if _, err := textPageContentCollection.InsertOne(context.Background(), body.Text); err != nil {
 			tx.Rollback()
 			errorHandlers.InternalServerError(ctx)
 			return

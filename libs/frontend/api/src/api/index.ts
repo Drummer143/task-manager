@@ -13,3 +13,4 @@ export * from "./taskChat";
 
 export * from "./users";
 
+export * from "./files";

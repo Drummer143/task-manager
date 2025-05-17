@@ -10,7 +10,7 @@ import { useAuthStore } from "../../../../../app/store/auth";
 import TaskChat from "../TaskChat";
 import TaskForm from "../TaskForm";
 import { FormValues } from "../TaskForm/types";
-import TaskHistory from "../TaskHistory";
+// import TaskHistory from "../TaskHistory";
 
 const EditTaskForm: React.FC = () => {
 	// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -57,8 +57,10 @@ const EditTaskForm: React.FC = () => {
 	});
 
 	const handleSubmit = useCallback(
-		async (values: FormValues) =>
-			mutateAsync({
+		async (values: FormValues) => {
+			console.log(values);
+
+			return mutateAsync({
 				taskId: taskId!,
 				pageId,
 				workspaceId: useAuthStore.getState().user.workspace.id,
@@ -66,7 +68,8 @@ const EditTaskForm: React.FC = () => {
 					...values,
 					dueDate: values.dueDate?.toISOString()
 				}
-			}),
+			});
+		},
 		[mutateAsync, taskId, pageId]
 	);
 
@@ -83,7 +86,7 @@ const EditTaskForm: React.FC = () => {
 			extraHeader={
 				<Flex gap={"var(--ant-margin-xxs)"}>
 					<TaskChat />
-					<TaskHistory taskId={taskId!} pageId={pageId} />
+					{/* <TaskHistory taskId={taskId!} pageId={pageId} /> */}
 				</Flex>
 			}
 		/>
@@ -91,3 +94,4 @@ const EditTaskForm: React.FC = () => {
 };
 
 export default EditTaskForm;
+

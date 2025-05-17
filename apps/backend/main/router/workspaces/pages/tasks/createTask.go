@@ -1,8 +1,10 @@
 package tasksRouter
 
 import (
+	"context"
 	"libs/backend/errorHandlers/libs/errorCodes"
 	"libs/backend/errorHandlers/libs/errorHandlers"
+	mongoClient "main/internal/mongo"
 	"main/internal/postgres"
 	"main/internal/validation"
 	"main/utils/ginTools"
@@ -14,11 +16,11 @@ import (
 )
 
 type createTaskBody struct {
-	Status      taskStatus `json:"status" validate:"required"`
-	Title       string     `json:"title" validate:"required,max=63"`
-	Description *string    `json:"description,omitempty" validate:"omitempty,max=255"`
-	DueDate     *string    `json:"dueDate,omitempty" validate:"omitempty,iso8601"`
-	AssigneeID  *uuid.UUID `json:"assigneeID,omitempty" validate:"omitempty,uuid4"`
+	Status      taskStatus                 `json:"status" validate:"required"`
+	Title       string                     `json:"title" validate:"required,max=63"`
+	Description *mongoClient.EditorContent `json:"description,omitempty" validate:"omitempty"`
+	DueDate     *string                    `json:"dueDate,omitempty" validate:"omitempty,iso8601"`
+	AssigneeID  *uuid.UUID                 `json:"assigneeID,omitempty" validate:"omitempty,uuid4"`
 }
 
 // CreateTask 		creates a new task
@@ -64,13 +66,48 @@ func createTask(ctx *gin.Context) {
 		ReporterID:  user.ID,
 	}
 
-	time, err := time.Parse(time.RFC3339, *body.DueDate)
+	if body.DueDate != nil {
+		time, err := time.Parse(time.RFC3339, *body.DueDate)
 
-	if err == nil {
-		task.DueDate = &time
+		if err == nil {
+			task.DueDate = &time
+		}
 	}
 
-	if err := postgres.DB.Create(&task).Error; err != nil {
+	tx := postgres.DB.Begin()
+
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+			err := tx.Rollback()
+			if err != nil {
+				errorHandlers.InternalServerError(ctx)
+			}
+		}
+	}()
+
+	if err := tx.Create(&task).Error; err != nil {
+		tx.Rollback()
+		errorHandlers.InternalServerError(ctx)
+		return
+	}
+
+	if body.Description != nil {
+		taskDescriptionCollection := mongoClient.DB.Database("task").Collection("description")
+
+		body.Description.PageID = &task.ID
+		version := 1
+		body.Description.Version = &version
+
+		if _, err := taskDescriptionCollection.InsertOne(context.Background(), body.Description); err != nil {
+			tx.Rollback()
+			errorHandlers.InternalServerError(ctx)
+			return
+		}
+	}
+
+	if err := tx.Commit().Error; err != nil {
+		tx.Rollback()
 		errorHandlers.InternalServerError(ctx)
 		return
 	}

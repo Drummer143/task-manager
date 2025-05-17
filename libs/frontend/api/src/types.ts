@@ -1,3 +1,5 @@
+import { JSONContent } from "@tiptap/react";
+
 export type UserRole = "owner" | "admin" | "member" | "commentator" | "guest";
 
 export type PageType = "board" | "text" | "group";
@@ -46,7 +48,7 @@ export interface Workspace extends Timestamps {
 	pages: Page[];
 }
 
-export type WorkspaceAccess = EntityAccess
+export type WorkspaceAccess = EntityAccess;
 
 export interface Page extends Timestamps {
 	id: string;
@@ -54,7 +56,7 @@ export interface Page extends Timestamps {
 	title: string;
 	role: UserRole;
 
-	text?: string;
+	text?: JSONContent;
 
 	owner: User;
 	parentPage: Page;
@@ -63,7 +65,7 @@ export interface Page extends Timestamps {
 	workspace: Workspace;
 }
 
-export type PageAccess = EntityAccess
+export type PageAccess = EntityAccess;
 
 export interface Task extends Timestamps {
 	id: string;
@@ -113,13 +115,13 @@ export type ChangeList<Keys extends string = string> = Partial<Record<Keys, Chan
 
 export type ShortUserInfo = Pick<User, "id" | "picture" | "username">;
 
-export interface VersionHistoryLog<Keys extends string = string> {
-	id: string;
-	author: ShortUserInfo;
-	version: number;
-	changes: ChangeList<Keys>;
-	createdAt: string;
-}
+// export interface VersionHistoryLog<Keys extends string = string> {
+// 	id: string;
+// 	author: ShortUserInfo;
+// 	version: number;
+// 	changes: ChangeList<Keys>;
+// 	createdAt: string;
+// }
 
 export interface TaskChatMessage {
 	id: string;

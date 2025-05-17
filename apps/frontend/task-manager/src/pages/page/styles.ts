@@ -10,6 +10,6 @@ export const useStyles = createStyles(({ css }) => ({
 
 		padding: var(--ant-padding);
 
-		overflow: hidden;
+		overflow: hidden auto;
 	`
 }));

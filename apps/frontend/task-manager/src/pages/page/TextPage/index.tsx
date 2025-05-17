@@ -1,8 +1,8 @@
 import React, { useCallback, useRef, useState } from "react";
 
-import { MDXEditorMethods } from "@mdxeditor/editor";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Page, updatePage } from "@task-manager/api";
+import { Editor } from "@tiptap/react";
 import { App, Button } from "antd";
 
 import { useStyles } from "./styled";
@@ -15,15 +15,13 @@ interface TextPageProps {
 }
 
 const TextPage: React.FC<TextPageProps> = ({ page }) => {
-	const [text, setText] = useState(page.text || "");
 	const [editing, setEditing] = useState(false);
 
 	const { controlsWrapper } = useStyles().styles;
 
 	const message = App.useApp().message;
 
-	const editorRef = useRef<MDXEditorMethods | null>(null);
-	const initialValue = useRef(page.text || "");
+	const editorRef = useRef<Editor | null>(null);
 
 	const queryClient = useQueryClient();
 
@@ -40,24 +38,26 @@ const TextPage: React.FC<TextPageProps> = ({ page }) => {
 	const handleEditButtonClick = useCallback(() => {
 		setEditing(true);
 
-		setTimeout(() => editorRef.current?.focus(), 25);
+		setTimeout(() => editorRef.current?.commands.focus(), 25);
 	}, []);
 
 	const handleReset = useCallback(() => {
-		editorRef.current?.setMarkdown(initialValue.current);
+		editorRef.current?.commands.setContent(page.text || "");
 
 		setEditing(false);
-	}, []);
+	}, [page.text]);
 
 	const handleSave = async () => {
-		initialValue.current = text;
-
-		mutateAsync({ pageId: page.id, page: { text }, workspaceId: useAuthStore.getState().user.workspace.id });
+		mutateAsync({
+			pageId: page.id,
+			page: { text: editorRef.current?.getJSON() },
+			workspaceId: useAuthStore.getState().user.workspace.id
+		});
 	};
 
 	return (
 		<>
-			<MDEditor autoFocus horizontalPadding onChange={setText} ref={editorRef} editing={editing} value={text} />
+			<MDEditor ref={editorRef} editable={editing} value={page.text} />
 
 			<div className={controlsWrapper}>
 				{editing ? (
@@ -77,3 +77,4 @@ const TextPage: React.FC<TextPageProps> = ({ page }) => {
 };
 
 export default TextPage;
+

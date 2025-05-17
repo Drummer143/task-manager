@@ -1,8 +1,10 @@
 package pagesRouter
 
 import (
+	"context"
 	"libs/backend/errorHandlers/libs/errorCodes"
 	"libs/backend/errorHandlers/libs/errorHandlers"
+	mongoClient "main/internal/mongo"
 	"main/internal/postgres"
 	"main/internal/validation"
 	"main/utils/ginTools"
@@ -10,11 +12,13 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/google/uuid"
+	"go.mongodb.org/mongo-driver/mongo"
+	"go.mongodb.org/mongo-driver/mongo/options"
 )
 
 type updatePageBody struct {
-	Name *string `json:"name"`
-	Text *string `json:"text"`
+	Name *string                    `json:"name"`
+	Text *mongoClient.EditorContent `json:"text"`
 }
 
 // @Summary 		Update page by id
@@ -72,8 +76,58 @@ func updatePage(ctx *gin.Context) {
 		return
 	}
 
-	if err := postgres.DB.Model(&page).Updates(map[string]interface{}{"name": body.Name}).Error; err != nil {
+	tx := postgres.DB.Begin()
+	defer func() {
+		if r := recover(); r != nil {
+			tx.Rollback()
+			errorHandlers.InternalServerError(ctx)
+			return
+		}
+	}()
+
+	if body.Name != nil {
+		if err := tx.Model(&page).Updates(map[string]interface{}{"title": body.Name}).Error; err != nil {
+			tx.Rollback()
+			errorHandlers.InternalServerError(ctx)
+			return
+		}
+	}
+
+	if body.Text != nil {
+		textPageContentCollection := mongoClient.DB.Database("page").Collection("edit_content")
+
+		var previousContent mongoClient.EditorContent
+		var version int
+
+		options := options.FindOne().SetSort(gin.H{"version": -1})
+
+		if err := textPageContentCollection.FindOne(context.Background(), gin.H{"pageid": page.ID}, options).Decode(&previousContent); err != nil {
+			if err == mongo.ErrNoDocuments {
+				version = 1
+			} else {
+				tx.Rollback()
+				errorHandlers.InternalServerError(ctx)
+				return
+			}
+		} else {
+			version = *previousContent.Version + 1
+		}
+
+		body.Text.PageID = &page.ID
+		body.Text.Version = &version
+
+		if _, err := textPageContentCollection.InsertOne(context.Background(), body.Text); err != nil {
+			tx.Rollback()
+			errorHandlers.InternalServerError(ctx)
+			return
+		}
+
+		page.Text = body.Text
+	}
+
+	if err := tx.Commit().Error; err != nil {
 		errorHandlers.InternalServerError(ctx)
+		return
 	}
 
 	ctx.JSON(200, page)

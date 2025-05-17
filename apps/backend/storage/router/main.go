@@ -5,6 +5,7 @@ import (
 	"os"
 	_ "storage/docs"
 
+	"github.com/gin-contrib/cors"
 	"github.com/gin-gonic/gin"
 	swaggerFiles "github.com/swaggo/files"
 	ginSwagger "github.com/swaggo/gin-swagger"
@@ -18,6 +19,14 @@ func New() *gin.Engine {
 	}
 
 	router := gin.Default()
+
+	router.Use(cors.New(cors.Config{
+		AllowOrigins:     []string{"http://localhost:1346", "http://localhost:1246"},
+		AllowMethods:     []string{"GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"},
+		AllowHeaders:     []string{"Content-Type", "Origin", "Accept", "Authorization"},
+		MaxAge:           3600,
+		AllowCredentials: true,
+	}))
 
 	router.Static("/files", "./static")
 

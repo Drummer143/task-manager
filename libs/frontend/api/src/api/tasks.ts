@@ -1,6 +1,10 @@
 import { axiosInstance } from "./base";
 
-import { PaginationQuery, ResponseWithPagination, Task, TaskStatus, VersionHistoryLog } from "../types";
+import {
+	Task,
+	TaskStatus
+	// VersionHistoryLog
+} from "../types";
 
 interface Ids {
 	workspaceId: string;
@@ -68,14 +72,20 @@ interface UpdateTaskArgs extends Ids {
 }
 
 export const updateTask = async ({ taskId, pageId, workspaceId, body }: UpdateTaskArgs) =>
-	(await axiosInstance.put<Task>(`/workspaces/${workspaceId}/pages/${pageId}/tasks/${taskId}`, body)).data;
+	(
+		await axiosInstance.put<Task>(
+			`/workspaces/${workspaceId}/pages/${pageId}/tasks/${taskId}`,
+			body
+		)
+	).data;
 
 interface DeleteTaskArgs extends Ids {
 	taskId: string;
 }
 
 export const deleteTask = async ({ pageId, taskId, workspaceId }: DeleteTaskArgs) =>
-	(await axiosInstance.delete<Task>(`/workspaces/${workspaceId}/pages/${pageId}/tasks/${taskId}`)).data;
+	(await axiosInstance.delete<Task>(`/workspaces/${workspaceId}/pages/${pageId}/tasks/${taskId}`))
+		.data;
 
 interface ChangeStatusArgs extends Ids {
 	taskId: string;
@@ -83,20 +93,27 @@ interface ChangeStatusArgs extends Ids {
 }
 
 export const changeStatus = async ({ taskId, pageId, workspaceId, status }: ChangeStatusArgs) =>
-	(await axiosInstance.patch<Task>(`/workspaces/${workspaceId}/pages/${pageId}/tasks/${taskId}/status`, { status }))
-		.data;
-
-export const getTaskHistory = async ({
-	pageId,
-	workspaceId,
-	taskId,
-	limit,
-	offset
-}: Ids & { taskId: string } & PaginationQuery) =>
 	(
-		await axiosInstance.get<
-			ResponseWithPagination<VersionHistoryLog<"title" | "description" | "status" | "dueDate" | "assigneeId">>
-		>(`/workspaces/${workspaceId}/pages/${pageId}/tasks/${taskId}/history`, {
-			params: { limit, offset }
-		})
+		await axiosInstance.patch<Task>(
+			`/workspaces/${workspaceId}/pages/${pageId}/tasks/${taskId}/status`,
+			{ status }
+		)
 	).data;
+
+// export const getTaskHistory = async ({
+// 	pageId,
+// 	workspaceId,
+// 	taskId,
+// 	limit,
+// 	offset
+// }: Ids & { taskId: string } & PaginationQuery) =>
+// 	(
+// 		await axiosInstance.get<
+// 			ResponseWithPagination<
+// 				VersionHistoryLog<"title" | "description" | "status" | "dueDate" | "assigneeId">
+// 			>
+// 		>(`/workspaces/${workspaceId}/pages/${pageId}/tasks/${taskId}/history`, {
+// 			params: { limit, offset }
+// 		})
+// 	).data;
+
