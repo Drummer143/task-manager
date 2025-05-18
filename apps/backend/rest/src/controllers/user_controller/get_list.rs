@@ -1,11 +1,8 @@
 use axum::{extract::State, response::IntoResponse};
-use uuid::Uuid;
 
 use crate::{
     shared::{
-        error_handlers::handlers::ErrorResponse,
-        extractors::{path::ValidatedPath, query::ValidatedQuery},
-        traits::IsValid,
+        error_handlers::handlers::ErrorResponse, extractors::query::ValidatedQuery, traits::IsValid,
     },
     types::app_state::AppState,
 };
@@ -69,27 +66,5 @@ pub async fn get_list(
             query.sort_by,
             query.sort_order,
         )
-        .await
-}
-
-#[utoipa::path(
-    get,
-    path = "/users/{id}",
-    params(
-        ("id", Path, description = "ID of user to get"),
-    ),
-    responses(
-        (status = 200, description = "User", body = crate::models::user::User),
-        (status = 404, description = "User not found", body = ErrorResponse),
-        (status = 500, description = "Internal server error", body = ErrorResponse),
-    ),
-    tags = ["Users"]
-)]
-pub async fn get_by_id(
-    State(state): State<AppState>,
-    ValidatedPath(id): ValidatedPath<Uuid>,
-) -> impl IntoResponse {
-    crate::services::user_service::UserService::new(&state.db)
-        .find_by_id(id)
         .await
 }

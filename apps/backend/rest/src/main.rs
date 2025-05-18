@@ -13,8 +13,8 @@ mod types;
 #[derive(utoipa::OpenApi)]
 #[openapi(
     paths(
-        controllers::user_controller::get_list,
-        controllers::user_controller::get_by_id,
+        controllers::user_controller::get_list::get_list,
+        controllers::user_controller::get_by_id::get_by_id,
     ),
     components(schemas(
         models::user::User,
@@ -41,8 +41,14 @@ async fn main() {
         .expect("Failed to connect to database");
 
     let app = axum::Router::new()
-        .route("/users/{id}", get(controllers::user_controller::get_by_id))
-        .route("/users", get(controllers::user_controller::get_list))
+        .route(
+            "/users/{id}",
+            get(controllers::user_controller::get_by_id::get_by_id),
+        )
+        .route(
+            "/users",
+            get(controllers::user_controller::get_list::get_list),
+        )
         .merge(
             utoipa_swagger_ui::SwaggerUi::new("/api").url("/api/openapi.json", ApiDoc::openapi()),
         )
