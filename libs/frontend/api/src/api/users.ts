@@ -3,8 +3,14 @@ import { axiosInstance } from "./base";
 import { PaginationQuery, ResponseWithPagination, User } from "../types";
 
 interface GetUsersFilters {
-	name_or_email?: string;
-	exclude?: string;
+	query?: string;
+	exclude?: string[];
+	sort_by?: string;
+	sort_order?: string;
+	limit?: string;
+	offset?: string;
+	email?: string;
+	username?: string;
 }
 
 export const getUserList = async (query?: PaginationQuery<GetUsersFilters>) =>

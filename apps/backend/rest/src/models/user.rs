@@ -33,11 +33,12 @@ pub struct UserFilterBy {
     pub email: Option<String>,
     pub username: Option<String>,
     pub query: Option<String>,
+    pub exclude: Option<Vec<Uuid>>,
 }
 
 impl crate::shared::traits::IsEmpty for UserFilterBy {
     fn is_empty(&self) -> bool {
-        self.email.is_none() && self.username.is_none() && self.query.is_none()
+        self.email.is_none() && self.username.is_none() && self.query.is_none() && self.exclude.is_none()
     }
 }
 

@@ -1,4 +1,5 @@
 use axum::{extract::State, response::IntoResponse};
+use uuid::Uuid;
 
 use crate::{
     shared::{
@@ -14,6 +15,8 @@ pub struct GetListQuery {
     email: Option<String>,
     username: Option<String>,
     query: Option<String>,
+    #[serde(default, deserialize_with = "crate::shared::deserialization::deserialize_comma_separated_query_param")]
+    exclude: Option<Vec<Uuid>>,
     sort_by: Option<crate::models::user::UserSortBy>,
     sort_order: Option<crate::types::pagination::SortOrder>,
 }
@@ -27,6 +30,7 @@ pub struct GetListQuery {
         ("email" = Option<String>, Query, description = "Filter by email. Can't be used with query"),
         ("username" = Option<String>, Query, description = "Filter by username. Can't be used with query"),
         ("query" = Option<String>, Query, description = "Search by username or email. Can't be used with email or username"),
+        ("exclude" = Option<Vec<Uuid>>, Query, explode = false, description = "Array of ids to exclude separated by comma"),
         ("sort_by" = Option<crate::models::user::UserSortBy>, Query, description = "Sort by field. Default: createdAt"),
         ("sort_order" = Option<crate::types::pagination::SortOrder>, Query, description = "Sort order. Default: asc"),
     ),
@@ -45,6 +49,7 @@ pub async fn get_list(
         email: query.email,
         username: query.username,
         query: query.query,
+        exclude: query.exclude,
     };
 
     if !filters.is_valid() {

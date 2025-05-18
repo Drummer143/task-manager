@@ -14,28 +14,56 @@ fn apply_filter<'a>(
     mut builder: sqlx::QueryBuilder<'a, Postgres>,
     filter: &'a UserFilterBy,
 ) -> sqlx::QueryBuilder<'a, Postgres> {
+    let mut where_started = false;
+
     builder.push(" WHERE ");
 
     if let Some(query) = &filter.query {
         builder
+            .push("(")
             .push("email ILIKE ")
             .push_bind(format!("%{}%", query))
             .push(" OR username ILIKE ")
-            .push_bind(format!("%{}%", query));
+            .push_bind(format!("%{}%", query))
+            .push(")");
+        where_started = true;
     } else {
-        let mut is_first = true;
+        if filter.email.is_some() || filter.username.is_some() {
+            builder.push(" (");
 
-        if let Some(email) = &filter.email {
-            builder.push("(email ILIKE ").push_bind(format!("%{}%", email));
-            is_first = false;
+            if let Some(email) = &filter.email {
+                builder
+                    .push("email ILIKE ")
+                    .push_bind(format!("%{}%", email));
+                where_started = true;
+            }
+
+            if let Some(username) = &filter.username {
+                builder.push(" AND ");
+                where_started = true;
+                builder
+                    .push("username ILIKE ")
+                    .push_bind(format!("%{}%", username));
+            }
+
+            builder.push(")");
         }
+    }
 
-        if let Some(username) = &filter.username {
-            builder.push(if is_first { "(" } else { " AND " });
-            builder.push("username ILIKE ").push_bind(format!("%{}%", username));
+    if let Some(exclude) = &filter.exclude {
+        if !exclude.is_empty() {
+            if where_started {
+                builder.push(" AND ");
+            }
+            builder.push("id NOT IN (");
+
+            let mut separated = builder.separated(", ");
+            for id in exclude {
+                separated.push_bind(id);
+            }
+
+            builder.push(")");
         }
-
-        builder.push(")");
     }
 
     builder
@@ -72,7 +100,6 @@ impl<'a> UserRepository<'a> {
                 total_builder = apply_filter(total_builder, filter);
             }
         }
-
         query_builder.push(format!(
             " ORDER BY {} {} LIMIT {} OFFSET {}",
             sort_by.unwrap_or(&UserSortBy::CreatedAt),
