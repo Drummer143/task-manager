@@ -34,7 +34,8 @@
 				"watchDepsTargetName": "watch-deps"
 			}
 		},
-		"@nx-go/nx-go"
+		"@nx-go/nx-go",
+		"@monodon/rust"
 	],
 	"generators": {
 		"@nx/react": {
