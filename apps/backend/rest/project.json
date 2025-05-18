@@ -38,7 +38,7 @@
 				"target-dir": "dist/target/rest"
 			}
 		},
-		"run": {
+		"dev": {
 			"executor": "@monodon/rust:run",
 			"outputs": ["{options.target-dir}"],
 			"options": {

@@ -36,7 +36,7 @@ impl ErrorResponse {
         }
     }
 
-    pub fn unauthorized(error_code: &str) -> ErrorResponse {
+    pub fn unauthorized(error_code: codes::UnauthorizedErrorCode) -> ErrorResponse {
         ErrorResponse {
             error: "Unauthorized".into(),
             error_code: Some(error_code.to_string()),

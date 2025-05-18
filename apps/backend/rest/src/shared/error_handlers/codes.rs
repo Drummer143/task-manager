@@ -120,6 +120,14 @@ pub enum UnauthorizedErrorCode {
     Unauthorized,
 }
 
+impl std::fmt::Display for UnauthorizedErrorCode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            UnauthorizedErrorCode::Unauthorized => write!(f, "unauthorized"),
+        }
+    }
+}
+
 /// Forbidden Errors
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]

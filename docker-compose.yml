@@ -35,6 +35,7 @@ services:
             ZITADEL_DATABASE_POSTGRES_ADMIN_USERNAME: ${POSTGRES_USER}
             ZITADEL_DATABASE_POSTGRES_ADMIN_PASSWORD: ${POSTGRES_PASSWORD}
             ZITADEL_DATABASE_POSTGRES_ADMIN_SSL_MODE: disable
+            ZITADEL_AUTH_IDP_OIDC_DEFAULTACCESSTOKENSIGNINGALG: RS256
         command: 'start-from-init --masterkey "MasterkeyNeedsToHave32Characters" --tlsMode disabled'
 
     mongo:
