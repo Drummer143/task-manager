@@ -1,6 +1,6 @@
 use uuid::Uuid;
 
-use crate::models::user::User;
+use crate::{models::user::User, shared::error_handlers::handlers::ErrorResponse};
 
 pub struct UserService<'a> {
     user_repo: crate::repositories::user_repo::UserRepository<'a>,
@@ -8,23 +8,33 @@ pub struct UserService<'a> {
 
 impl<'a> UserService<'a> {
     pub fn new(db: &'a sqlx::postgres::PgPool) -> Self {
-        Self { user_repo: crate::repositories::user_repo::UserRepository::new(db) }
+        Self {
+            user_repo: crate::repositories::user_repo::UserRepository::new(db),
+        }
     }
 
-    pub async fn find_by_id(&self, id: Uuid) -> Result<User, crate::shared::error_handlers::handlers::ErrorResponse> {
+    pub async fn find_by_id(&self, id: Uuid) -> Result<User, ErrorResponse> {
         let result = self.user_repo.find_by_id(id).await;
 
         if let Ok(user) = result {
             tracing::info!("/users/{id} 200");
             return Ok(user);
         }
-        
+
         let error = result.unwrap_err();
-        
+
         if matches!(error, sqlx::Error::RowNotFound) {
             tracing::info!("/users/{id} 404");
-            let details = Some(std::collections::HashMap::from([("user_id".to_string(), id.to_string())]));
-            return Err(crate::shared::error_handlers::handlers::ErrorResponse::not_found("user_not_found", details));
+            let details = std::collections::HashMap::from([(
+                "user_id".to_string(),
+                id.to_string(),
+            )]);
+            return Err(
+                crate::shared::error_handlers::handlers::ErrorResponse::not_found(
+                    "user_not_found",
+                    Some(details),
+                ),
+            );
         }
 
         tracing::error!("/users/{id} error 500: {error}");
@@ -39,21 +49,32 @@ impl<'a> UserService<'a> {
         filter: Option<crate::models::user::UserFilterBy>,
         sort_by: Option<crate::models::user::UserSortBy>,
         sort_order: Option<crate::types::pagination::SortOrder>,
-    ) -> Result<crate::types::pagination::Pagination<User>, sqlx::Error> {
+    ) -> Result<crate::types::pagination::Pagination<User>, ErrorResponse> {
         let limit = limit.unwrap_or(crate::types::pagination::DEFAULT_LIMIT);
         let offset = offset.unwrap_or(crate::types::pagination::DEFAULT_OFFSET);
 
-        let (users, total) = self
+        let result = self
             .user_repo
-            .get_list(limit, offset, filter, sort_by, sort_order)
-            .await?;
+            .get_list(
+                limit,
+                offset,
+                filter.as_ref(),
+                sort_by.as_ref(),
+                sort_order.as_ref(),
+            )
+            .await;
 
-        Ok(crate::types::pagination::Pagination::new(
-            users,
-            total,
-            limit,
-            offset,
-        ))
+        if let Ok((users, total)) = result {
+            return Ok(crate::types::pagination::Pagination::new(
+                users, total, limit, offset,
+            ));
+        }
+
+        let error = result.unwrap_err();
+
+        tracing::error!("/users error 500: {error}. Params: limit: {limit}, offset: {offset}, filter: {filter:?}, sort_by: {sort_by:?}, sort_order: {sort_order:?}");
+
+        Err(crate::shared::error_handlers::handlers::ErrorResponse::internal_server_error())
     }
 
     pub async fn create(

@@ -40,6 +40,7 @@ impl std::fmt::Display for BadRequestErrorCode {
 #[serde(rename_all = "snake_case")]
 pub enum FieldErrorCode {
     MissingField,
+    InvalidType,
     InvalidFormat,
     FieldTooShort,
     FieldTooLong,
@@ -51,6 +52,50 @@ pub enum FieldErrorCode {
     InvalidEmail,
     InvalidPhone,
     InvalidDate,
+}
+
+impl std::fmt::Display for FieldErrorCode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            FieldErrorCode::MissingField => write!(f, "missing_field"),
+            FieldErrorCode::InvalidType => write!(f, "invalid_type"),
+            FieldErrorCode::InvalidFormat => write!(f, "invalid_format"),
+            FieldErrorCode::FieldTooShort => write!(f, "field_too_short"),
+            FieldErrorCode::FieldTooLong => write!(f, "field_too_long"),
+            FieldErrorCode::FieldOutOfRange => write!(f, "field_out_of_range"),
+            FieldErrorCode::InvalidEnumValue => write!(f, "invalid_enum_value"),
+            FieldErrorCode::FieldRequired => write!(f, "field_required"),
+            FieldErrorCode::FieldNotAllowed => write!(f, "field_not_allowed"),
+            FieldErrorCode::FieldMismatch => write!(f, "field_mismatch"),
+            FieldErrorCode::InvalidEmail => write!(f, "invalid_email"),
+            FieldErrorCode::InvalidPhone => write!(f, "invalid_phone"),
+            FieldErrorCode::InvalidDate => write!(f, "invalid_date"),
+        }
+    }
+}
+
+/// Types
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum TypeMap {
+    Integer,
+}
+
+impl std::fmt::Display for TypeMap {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            TypeMap::Integer => write!(f, "integer"),
+        }
+    }
+}
+
+impl TypeMap {
+    pub fn from_str(s: &str) -> Result<Self, &'static str> {
+        match s {
+            "integer" | "int" | "digit" | "number" => Ok(TypeMap::Integer),
+            _ => Err("Invalid type"),
+        }
+    }
 }
 
 /// File Error Codes

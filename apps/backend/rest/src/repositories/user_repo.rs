@@ -26,13 +26,13 @@ fn apply_filter<'a>(
         let mut is_first = true;
 
         if let Some(email) = &filter.email {
-            builder.push("(email = ").push_bind(email);
+            builder.push("(email ILIKE ").push_bind(format!("%{}%", email));
             is_first = false;
         }
 
         if let Some(username) = &filter.username {
             builder.push(if is_first { "(" } else { " AND " });
-            builder.push("username = ").push_bind(username);
+            builder.push("username ILIKE ").push_bind(format!("%{}%", username));
         }
 
         builder.push(")");
@@ -59,9 +59,9 @@ impl<'a> UserRepository<'a> {
         &self,
         limit: i64,
         offset: i64,
-        filter: Option<UserFilterBy>,
-        sort_by: Option<UserSortBy>,
-        sort_order: Option<SortOrder>,
+        filter: Option<&UserFilterBy>,
+        sort_by: Option<&UserSortBy>,
+        sort_order: Option<&SortOrder>,
     ) -> Result<(Vec<User>, i64), sqlx::Error> {
         let mut query_builder = sqlx::QueryBuilder::<Postgres>::new("SELECT * FROM users");
         let mut total_builder = sqlx::QueryBuilder::<Postgres>::new("SELECT COUNT(*) FROM users");
@@ -75,8 +75,8 @@ impl<'a> UserRepository<'a> {
 
         query_builder.push(format!(
             " ORDER BY {} {} LIMIT {} OFFSET {}",
-            sort_by.unwrap_or(UserSortBy::CreatedAt),
-            sort_order.unwrap_or(SortOrder::Asc),
+            sort_by.unwrap_or(&UserSortBy::CreatedAt),
+            sort_order.unwrap_or(&SortOrder::Asc),
             limit,
             offset
         ));

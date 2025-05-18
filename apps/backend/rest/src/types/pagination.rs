@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 pub const DEFAULT_LIMIT: i64 = 10;
 pub const DEFAULT_OFFSET: i64 = 0;
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, utoipa::ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct Meta {
     pub total: i64,
@@ -14,13 +14,13 @@ pub struct Meta {
     pub has_more: bool,
 }
 
-#[derive(Debug, Serialize, Deserialize)]
-pub struct Pagination<T> {
+#[derive(Debug, Serialize, Deserialize, utoipa::ToSchema)]
+pub struct Pagination<T: Serialize> {
     pub data: Vec<T>,
     pub meta: Meta,
 }
 
-impl<T> Pagination<T> {
+impl<T: Serialize> Pagination<T> {
     pub fn new(data: Vec<T>, total: i64, limit: i64, offset: i64) -> Self {
         let has_more = offset + limit < total;
         Self {
@@ -35,7 +35,13 @@ impl<T> Pagination<T> {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+impl<T: Serialize> axum::response::IntoResponse for Pagination<T> {
+    fn into_response(self) -> axum::response::Response {
+        (axum::http::StatusCode::OK, axum::Json(self)).into_response()
+    }
+}
+
+#[derive(Debug, Serialize, Deserialize, utoipa::ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub enum SortOrder {
     Asc,

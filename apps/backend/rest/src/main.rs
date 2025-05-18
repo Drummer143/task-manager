@@ -1,5 +1,6 @@
 use axum::routing::get;
 use sqlx::postgres::PgPoolOptions;
+use utoipa::OpenApi;
 
 mod controllers;
 mod dto;
@@ -8,6 +9,22 @@ mod repositories;
 mod services;
 mod shared;
 mod types;
+
+#[derive(utoipa::OpenApi)]
+#[openapi(
+    paths(
+        controllers::user_controller::get_list,
+        controllers::user_controller::get_by_id,
+    ),
+    components(schemas(
+        models::user::User,
+        shared::error_handlers::handlers::ErrorResponse,
+        models::user::UserSortBy,
+        types::pagination::SortOrder,
+        types::pagination::Meta,
+    ))
+)]
+struct ApiDoc;
 
 #[tokio::main]
 async fn main() {
@@ -25,6 +42,10 @@ async fn main() {
 
     let app = axum::Router::new()
         .route("/users/{id}", get(controllers::user_controller::get_by_id))
+        .route("/users", get(controllers::user_controller::get_list))
+        .merge(
+            utoipa_swagger_ui::SwaggerUi::new("/api").url("/api/openapi.json", ApiDoc::openapi()),
+        )
         .with_state(types::app_state::AppState { db });
 
     let addr = "0.0.0.0:3000";

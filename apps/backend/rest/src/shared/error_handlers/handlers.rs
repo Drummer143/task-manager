@@ -3,12 +3,12 @@ use axum::{
     response::{IntoResponse, Response},
     Json,
 };
-use serde::Serialize;
+use serde::{Serialize};
 use std::{borrow::Cow, collections::HashMap};
 
 use super::codes;
 
-#[derive(Debug, Serialize)]
+#[derive(Debug, Serialize, utoipa::ToSchema)]
 pub struct ErrorResponse {
     error: Cow<'static, str>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -27,15 +27,6 @@ impl IntoResponse for ErrorResponse {
 }
 
 impl ErrorResponse {
-    pub fn from_query_rejection(e: axum::extract::rejection::QueryRejection) -> ErrorResponse {
-        Self {
-            error: e.body_text().to_string().into(),
-            error_code: None,
-            status_code: e.status().as_u16(),
-            details: None,
-        }
-    }
-
     pub fn bad_request(error_code: codes::BadRequestErrorCode, details: Option<HashMap<String, String>>) -> ErrorResponse {
         ErrorResponse {
             error: "Bad request".into(),

@@ -5,7 +5,7 @@ use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 use uuid::Uuid;
 
-#[derive(Debug, Serialize, Deserialize, FromRow)]
+#[derive(Debug, Serialize, Deserialize, FromRow, utoipa::ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct User {
     pub id: Uuid,
@@ -28,7 +28,7 @@ impl axum::response::IntoResponse for User {
 }
 
 /// The `query` field should be empty if there is an `email` or `username` field
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, utoipa::ToSchema)]
 pub struct UserFilterBy {
     pub email: Option<String>,
     pub username: Option<String>,
@@ -51,7 +51,7 @@ impl crate::shared::traits::IsValid for UserFilterBy {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize)]
+#[derive(Debug, Serialize, Deserialize, utoipa::ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub enum UserSortBy {
     Email,
