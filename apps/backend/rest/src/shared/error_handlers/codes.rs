@@ -136,11 +136,28 @@ pub enum ForbiddenErrorCode {
     InsufficientPermissions,
 }
 
+impl std::fmt::Display for ForbiddenErrorCode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ForbiddenErrorCode::AccessDenied => write!(f, "access_denied"),
+            ForbiddenErrorCode::InsufficientPermissions => write!(f, "insufficient_permissions"),
+        }
+    }
+}
+
 /// Not Found Errors
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum NotFoundErrorCode {
     NotFound,
+}
+
+impl std::fmt::Display for NotFoundErrorCode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            NotFoundErrorCode::NotFound => write!(f, "not_found"),
+        }
+    }
 }
 
 /// Internal Server Errors

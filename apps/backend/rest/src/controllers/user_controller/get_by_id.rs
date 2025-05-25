@@ -19,7 +19,5 @@ pub async fn get_by_id(
     State(state): State<crate::types::app_state::AppState>,
     ValidatedPath(id): ValidatedPath<uuid::Uuid>,
 ) -> impl axum::response::IntoResponse {
-    crate::services::user_service::UserService::new(&state.db)
-        .find_by_id(id)
-        .await
+    crate::services::user_service::find_by_id(&state.db, id).await
 }

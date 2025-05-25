@@ -14,8 +14,6 @@ pub struct User {
     pub email_verified: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub picture: Option<String>,
-    #[serde(skip)]
-    pub zitadel_user_id: Option<String>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
     pub deleted_at: Option<DateTime<Utc>>,

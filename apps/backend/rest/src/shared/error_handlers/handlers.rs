@@ -3,7 +3,7 @@ use axum::{
     response::{IntoResponse, Response},
     Json,
 };
-use serde::{Serialize};
+use serde::Serialize;
 use std::{borrow::Cow, collections::HashMap};
 
 use super::codes;
@@ -27,7 +27,10 @@ impl IntoResponse for ErrorResponse {
 }
 
 impl ErrorResponse {
-    pub fn bad_request(error_code: codes::BadRequestErrorCode, details: Option<HashMap<String, String>>) -> ErrorResponse {
+    pub fn bad_request(
+        error_code: codes::BadRequestErrorCode,
+        details: Option<HashMap<String, String>>,
+    ) -> ErrorResponse {
         ErrorResponse {
             error: "Bad request".into(),
             error_code: Some(error_code.to_string()),
@@ -45,7 +48,7 @@ impl ErrorResponse {
         }
     }
 
-    pub fn forbidden(error_code: &str, details: Option<HashMap<String, String>>) -> ErrorResponse {
+    pub fn forbidden(error_code: codes::ForbiddenErrorCode, details: Option<HashMap<String, String>>) -> ErrorResponse {
         ErrorResponse {
             error: "Forbidden".into(),
             error_code: Some(error_code.to_string()),
@@ -54,7 +57,10 @@ impl ErrorResponse {
         }
     }
 
-    pub fn not_found(error_code: &str, details: Option<HashMap<String, String>>) -> ErrorResponse {
+    pub fn not_found(
+        error_code: codes::NotFoundErrorCode,
+        details: Option<HashMap<String, String>>,
+    ) -> ErrorResponse {
         ErrorResponse {
             error: "Not found".into(),
             error_code: Some(error_code.to_string()),

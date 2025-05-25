@@ -3,7 +3,7 @@
 	"version": "0.0.0",
 	"license": "MIT",
 	"scripts": {
-		"dev": "nx run-many --target=dev --projects=storage,main,task-manager,rest",
+		"dev": "nx run-many --target=dev --projects=task-manager,rest",
 		"dev:all": "nx run-many --target=dev --all",
 		"dev:custom": "nx run-many --target=dev",
 		"lint": "nx run-many --target=lint --all --verbose",
@@ -16,8 +16,7 @@
 		"typecheck": "nx run-many --target=typecheck --all",
 		"test": "nx run-many --target=test --all",
 		"coverage": "nx run-many --target=coverage --all",
-		"coverage:report": "nx run-many --target=coverage:report --all",
-		"start-db": "docker compose up -d postgres mongo"
+		"coverage:report": "nx run-many --target=coverage:report --all"
 	},
 	"private": true,
 	"dependencies": {
@@ -35,7 +34,6 @@
 		"dayjs": "1.11.13",
 		"marked": "^15.0.11",
 		"minimatch": "^10.0.1",
-		"oidc-client-ts": "^3.2.1",
 		"react": "^18.3.1",
 		"react-dom": "^18.3.1",
 		"react-easy-crop": "^5.1.0",
@@ -75,6 +73,7 @@
 		"@vitest/ui": "^3.1.3",
 		"@welldone-software/why-did-you-render": "^10.0.1",
 		"eslint": "^9.26.0",
+		"eslint-config-next": "14.2.16",
 		"eslint-config-prettier": "^9.0.0",
 		"eslint-plugin-import": "2.31.0",
 		"eslint-plugin-jsx-a11y": "6.10.2",
@@ -96,6 +95,7 @@
 	},
 	"pnpm": {
 		"onlyBuiltDependencies": [
+			"@parcel/watcher",
 			"@swc/core",
 			"es5-ext",
 			"esbuild",

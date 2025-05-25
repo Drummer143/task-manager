@@ -1,25 +1,29 @@
-use axum::routing::get;
+use axum::http;
 use sqlx::postgres::PgPoolOptions;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use utoipa::OpenApi;
 
 mod controllers;
 mod dto;
+mod middleware;
 mod models;
 mod repositories;
+mod routes;
 mod services;
 mod shared;
 mod types;
-mod middleware;
 
 #[derive(utoipa::OpenApi)]
 #[openapi(
     paths(
         controllers::user_controller::get_list::get_list,
         controllers::user_controller::get_by_id::get_by_id,
+        controllers::auth_controller::login::login,
+        controllers::auth_controller::register::register,
     ),
     components(schemas(
         models::user::User,
+        models::user_credentials::UserCredentials,
         shared::error_handlers::handlers::ErrorResponse,
         models::user::UserSortBy,
         types::pagination::SortOrder,
@@ -37,6 +41,7 @@ async fn main() {
         .init();
 
     let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL not found");
+    let jwt_secret = std::env::var("JWT_SECRET").expect("JWT_SECRET not found");
 
     let db = PgPoolOptions::new()
         .max_connections(5)
@@ -44,20 +49,38 @@ async fn main() {
         .await
         .expect("Failed to connect to database");
 
+    let cors = tower_http::cors::CorsLayer::new()
+        .allow_origin(tower_http::cors::AllowOrigin::exact(
+            "http://localhost:1346".parse().unwrap(),
+        ))
+        .allow_methods([
+            http::Method::GET,
+            http::Method::POST,
+            http::Method::OPTIONS,
+            http::Method::PUT,
+            http::Method::DELETE,
+            http::Method::PATCH,
+            http::Method::OPTIONS,
+        ])
+        .allow_headers([
+            http::header::CONTENT_TYPE,
+            http::header::AUTHORIZATION,
+            http::header::ACCEPT,
+        ])
+        .allow_credentials(true);
+
     let app = axum::Router::new()
-        .route(
-            "/users/{id}",
-            get(controllers::user_controller::get_by_id::get_by_id),
-        )
-        .route(
-            "/users",
-            get(controllers::user_controller::get_list::get_list),
-        )
+        .merge(routes::users::init_routes())
+        .merge(routes::auth::init_routes())
+        .merge(routes::workspace::init_routes())
         .merge(
             utoipa_swagger_ui::SwaggerUi::new("/api").url("/api/openapi.json", ApiDoc::openapi()),
         )
-        .with_state(types::app_state::AppState { db })
-        .layer(axum::middleware::from_fn(crate::middleware::auth::auth_middleware))
+        .with_state(types::app_state::AppState {
+            db,
+            jwt_secret: jwt_secret.as_bytes().to_vec(),
+        })
+        .layer(cors)
         .layer(tower_http::trace::TraceLayer::new_for_http());
 
     let port = std::env::var("PORT").unwrap_or("3000".to_string());

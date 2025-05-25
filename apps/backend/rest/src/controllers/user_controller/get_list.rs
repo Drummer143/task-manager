@@ -15,7 +15,10 @@ pub struct GetListQuery {
     email: Option<String>,
     username: Option<String>,
     query: Option<String>,
-    #[serde(default, deserialize_with = "crate::shared::deserialization::deserialize_comma_separated_query_param")]
+    #[serde(
+        default,
+        deserialize_with = "crate::shared::deserialization::deserialize_comma_separated_query_param"
+    )]
     exclude: Option<Vec<Uuid>>,
     sort_by: Option<crate::models::user::UserSortBy>,
     sort_order: Option<crate::types::pagination::SortOrder>,
@@ -63,13 +66,24 @@ pub async fn get_list(
         ));
     }
 
-    crate::services::user_service::UserService::new(&state.db)
-        .get_list(
-            query.limit,
-            query.offset,
-            Some(filters),
-            query.sort_by,
-            query.sort_order,
-        )
-        .await
+    let (users, total) = crate::services::user_service::get_list(
+        &state.db,
+        query.limit,
+        query.offset,
+        Some(filters),
+        query.sort_by,
+        query.sort_order,
+    )
+    .await?;
+
+    Ok(crate::types::pagination::Pagination::new(
+        users,
+        total,
+        query
+            .limit
+            .unwrap_or(crate::types::pagination::DEFAULT_LIMIT),
+        query
+            .offset
+            .unwrap_or(crate::types::pagination::DEFAULT_OFFSET),
+    ))
 }

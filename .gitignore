@@ -47,3 +47,7 @@ vitest.config.*.timestamp*
 .env
 
 *.pem
+
+# Next.js
+.next
+out

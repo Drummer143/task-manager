@@ -3,7 +3,6 @@ CREATE TABLE
         "id" UUID PRIMARY KEY DEFAULT (uuid_generate_v4 ()),
         "email" VARCHAR(255) UNIQUE NOT NULL,
         "username" VARCHAR(50) NOT NULL,
-        "zitadel_user_id" INT,
         "email_verified" BOOL NOT NULL DEFAULT false,
         "picture" VARCHAR(255),
         "created_at" TIMESTAMPTZ NOT NULL DEFAULT (CURRENT_TIMESTAMP),
