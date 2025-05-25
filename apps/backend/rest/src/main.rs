@@ -3,29 +3,24 @@ use sqlx::postgres::PgPoolOptions;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use utoipa::OpenApi;
 
-mod controllers;
-mod dto;
+mod entities;
 mod middleware;
-mod models;
-mod repositories;
-mod routes;
-mod services;
 mod shared;
 mod types;
 
 #[derive(utoipa::OpenApi)]
 #[openapi(
     paths(
-        controllers::user_controller::get_list::get_list,
-        controllers::user_controller::get_by_id::get_by_id,
-        controllers::auth_controller::login::login,
-        controllers::auth_controller::register::register,
+        entities::user::controller::get_list::get_list,
+        entities::user::controller::get_by_id::get_by_id,
+        entities::auth::controller::login::login,
+        entities::auth::controller::register::register,
     ),
     components(schemas(
-        models::user::User,
-        models::user_credentials::UserCredentials,
+        entities::user::model::User,
+        entities::user_credentials::model::UserCredentials,
         shared::error_handlers::handlers::ErrorResponse,
-        models::user::UserSortBy,
+        entities::user::dto::UserSortBy,
         types::pagination::SortOrder,
         types::pagination::Meta,
     ))
@@ -70,9 +65,9 @@ async fn main() {
         .allow_credentials(true);
 
     let app = axum::Router::new()
-        .merge(routes::users::init_routes())
-        .merge(routes::auth::init_routes())
-        .merge(routes::workspace::init_routes())
+        .merge(entities::user::router::init())
+        .merge(entities::auth::router::init())
+        .merge(entities::workspace::router::init())
         .merge(
             utoipa_swagger_ui::SwaggerUi::new("/api").url("/api/openapi.json", ApiDoc::openapi()),
         )
