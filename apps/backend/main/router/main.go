@@ -9,7 +9,6 @@ import (
 	"main/internal/zitadel"
 	authRouter "main/router/auth"
 	profileRouter "main/router/profile"
-	usersRouter "main/router/users"
 	workspacesRouter "main/router/workspaces"
 
 	// authRouter "main/router/auth"
@@ -59,7 +58,6 @@ func New() *gin.Engine {
 	workspacesRouter.AddRoutes(router.Group("workspaces", zitadel.AuthMiddleware))
 
 	profileRouter.AddRoutes(router.Group("profile", zitadel.AuthMiddleware /* , setDefaultWorkspace */))
-	usersRouter.AddRoutes(router.Group("users", zitadel.AuthMiddleware))
 
 	return router
 }

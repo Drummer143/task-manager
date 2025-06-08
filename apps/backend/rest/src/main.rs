@@ -15,6 +15,16 @@ mod types;
         entities::user::controller::get_by_id::get_by_id,
         entities::auth::controller::login::login,
         entities::auth::controller::register::register,
+        entities::workspace::controller::get_list::get_list,
+        entities::workspace::controller::get_by_id::get_by_id,
+        entities::workspace::controller::create_workspace::create_workspace,
+        entities::workspace::controller::update_workspace::update_workspace,
+        entities::workspace::controller::soft_delete::soft_delete,
+        entities::workspace::controller::cancel_soft_delete::cancel_soft_delete,
+        entities::workspace_access::controller::get_workspace_access_list::get_workspace_access_list,
+        entities::workspace_access::controller::create_workspace_access::create_workspace_access,
+        entities::workspace_access::controller::update_workspace_access::update_workspace_access,
+        entities::profile::controller::get_profile::get_profile,
     ),
     components(schemas(
         entities::user::model::User,
@@ -23,6 +33,10 @@ mod types;
         entities::user::dto::UserSortBy,
         types::pagination::SortOrder,
         types::pagination::Meta,
+        entities::workspace::dto::WorkspaceSortBy,
+        entities::workspace::dto::WorkspaceInfo,
+        entities::workspace::dto::Include,
+        entities::workspace_access::model::Role,
     ))
 )]
 struct ApiDoc;
@@ -64,17 +78,21 @@ async fn main() {
         ])
         .allow_credentials(true);
 
+    let app_state = types::app_state::AppState {
+        db,
+        jwt_secret: jwt_secret.as_bytes().to_vec(),
+    };
+
     let app = axum::Router::new()
-        .merge(entities::user::router::init())
+        .merge(entities::user::router::init(app_state.clone()))
         .merge(entities::auth::router::init())
-        .merge(entities::workspace::router::init())
+        .merge(entities::workspace::router::init(app_state.clone()))
+        .merge(entities::workspace_access::router::init(app_state.clone()))
+        .merge(entities::profile::router::init(app_state.clone()))
         .merge(
             utoipa_swagger_ui::SwaggerUi::new("/api").url("/api/openapi.json", ApiDoc::openapi()),
         )
-        .with_state(types::app_state::AppState {
-            db,
-            jwt_secret: jwt_secret.as_bytes().to_vec(),
-        })
+        .with_state(app_state)
         .layer(cors)
         .layer(tower_http::trace::TraceLayer::new_for_http());
 

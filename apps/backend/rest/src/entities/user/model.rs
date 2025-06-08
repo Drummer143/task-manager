@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 use sqlx::FromRow;
 use uuid::Uuid;
 
-#[derive(Debug, Serialize, Deserialize, FromRow, utoipa::ToSchema)]
+#[derive(Debug, Serialize, Deserialize, FromRow, utoipa::ToSchema, Clone)]
 #[serde(rename_all = "camelCase")]
 pub struct User {
     pub id: Uuid,

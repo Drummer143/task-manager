@@ -1,5 +1,8 @@
+use axum::http::HeaderValue;
 use chrono::Utc;
-use jsonwebtoken::{encode, errors::Result, Algorithm, DecodingKey, EncodingKey, Header, Validation};
+use jsonwebtoken::{
+    encode, errors::Result, Algorithm, DecodingKey, EncodingKey, Header, TokenData, Validation
+};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -29,12 +32,18 @@ pub fn create_jwt(user_id: &Uuid, secret: &[u8]) -> Result<String> {
     Ok(token)
 }
 
-pub fn decode_jwt(token: &str, secret: &[u8]) -> Result<Uuid> {
+pub fn decode_jwt(token: &str, secret: &[u8]) -> Result<TokenData<Claims>> {
     let decoded = jsonwebtoken::decode::<Claims>(
         token,
         &DecodingKey::from_secret(secret),
         &Validation::new(Algorithm::HS256),
     )?;
-    Ok(decoded.claims.sub.parse().unwrap())
+
+    Ok(decoded)
 }
 
+pub fn get_user_id_from_cookie(token: &str, secret: &[u8]) -> Result<Uuid> {
+    let decoded = crate::shared::utils::jwt::decode_jwt(token, secret)?;
+
+    Ok(decoded.claims.sub.parse().unwrap())
+}

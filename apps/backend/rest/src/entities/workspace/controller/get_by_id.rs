@@ -1,38 +1,40 @@
 use axum::{
-    extract::{Path, State},
+    extract::{Extension, Path, State},
     response::IntoResponse,
 };
 
-use crate::shared::extractors::query::ValidatedQuery;
+use crate::{
+    entities::{user::model::User, workspace::dto::{Include, WorkspaceResponse}},
+    shared::{error_handlers::handlers::ErrorResponse, extractors::query::ValidatedQuery},
+};
 
-#[derive(PartialEq, serde::Deserialize)]
-enum Include {
-    Owner,
-    Pages,
-}
-
-#[derive(serde::Deserialize)]
-pub struct GetWorkspaceQuery {
-    include: Option<Vec<Include>>,
-}
-
-#[axum_macros::debug_handler]
+#[utoipa::path(
+    get,
+    path = "/workspaces/{workspace_id}",
+    operation_id = "get_workspace_by_id",
+    params(
+        ("workspace_id", Path, description = "Workspace ID"),
+        ("include" = Option<Vec<Include>>, Query, description = "Include related entities"),
+    ),
+    responses(
+        (status = 200, description = "Workspace found", body = WorkspaceResponse),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 500, description = "Internal server error", body = ErrorResponse),
+    ),
+    tags = ["Workspace"]
+)]
 pub async fn get_by_id(
     State(state): State<crate::types::app_state::AppState>,
+    Extension(user): Extension<User>,
     Path(workspace_id): Path<uuid::Uuid>,
-    ValidatedQuery(query): ValidatedQuery<GetWorkspaceQuery>,
-    headers: axum::http::header::HeaderMap,
+    ValidatedQuery(query): ValidatedQuery<crate::entities::workspace::dto::GetWorkspaceQuery>,
 ) -> impl IntoResponse {
-    let token = headers.get("token").unwrap().to_str().unwrap();
-
-    let user_id = crate::shared::utils::jwt::decode_jwt(&token, &state.jwt_secret).unwrap();
-
     let include = query.include.unwrap_or_default();
 
     crate::entities::workspace::service::get_by_id(
         &state.db,
         workspace_id,
-        user_id,
+        user.id,
         include.contains(&Include::Owner),
         include.contains(&Include::Pages),
     )

@@ -13,8 +13,6 @@ func AddRoutes(group *gin.RouterGroup) {
 	group.GET("/logout", logout)
 	group.GET("/verify-reset-password-token", verifyResetPasswordToken)
 
-	group.POST("/login", login)
-	group.POST("/sign-up", signUp)
 	group.POST("/confirm-email", confirmEmail)
 	group.POST("/reset-password", resetPassword)
 	group.POST("/update-password", updatePassword)

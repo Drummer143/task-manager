@@ -1,3 +1,5 @@
+import React from "react";
+
 import { mergeAttributes, Node, nodeInputRule, NodeViewProps } from "@tiptap/core";
 import { NodeViewWrapper, ReactNodeViewRenderer } from "@tiptap/react";
 import { minimatch } from "minimatch";

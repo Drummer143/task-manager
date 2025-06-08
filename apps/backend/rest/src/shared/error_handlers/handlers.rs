@@ -10,12 +10,12 @@ use super::codes;
 
 #[derive(Debug, Serialize, utoipa::ToSchema)]
 pub struct ErrorResponse {
-    error: Cow<'static, str>,
+    pub error: Cow<'static, str>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    error_code: Option<String>,
-    status_code: u16,
+    pub error_code: Option<String>,
+    pub status_code: u16,
     #[serde(skip_serializing_if = "Option::is_none")]
-    details: Option<HashMap<String, String>>,
+    pub details: Option<HashMap<String, String>>,
 }
 
 impl IntoResponse for ErrorResponse {

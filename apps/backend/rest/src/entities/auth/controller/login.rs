@@ -15,10 +15,11 @@ use axum::extract::{Json, State};
 )]
 pub async fn login(
     State(state): State<crate::types::app_state::AppState>,
+    cookie_jar: axum_extra::extract::cookie::CookieJar,
     Json(body): Json<crate::entities::auth::dto::LoginDto>,
 ) -> impl axum::response::IntoResponse {
-    let user = crate::entities::auth::service::login(&state.db, &body.email, &body.password)
-        .await?;
+    let user =
+        crate::entities::auth::service::login(&state.db, &body.email, &body.password).await?;
 
     let token = crate::shared::utils::jwt::create_jwt(&user.id, &state.jwt_secret);
 
@@ -28,17 +29,13 @@ pub async fn login(
         );
     }
 
-    let token = token.unwrap();
+    let mut token_cookie = axum_extra::extract::cookie::Cookie::new("token", token.unwrap());
+    token_cookie.set_http_only(true);
+    token_cookie.set_path("/");
+    token_cookie.set_secure(true);
+    token_cookie.set_same_site(axum_extra::extract::cookie::SameSite::Lax);
 
-    let mut headers = axum::http::header::HeaderMap::new();
-    headers.insert(
-        axum::http::header::SET_COOKIE,
-        axum::http::header::HeaderValue::from_str(&format!(
-            "token={}; Path=/; HttpOnly; Secure; SameSite=Lax",
-            token
-        ))
-        .unwrap(),
-    );
+    let cookie_jar = cookie_jar.add(token_cookie);
 
-    Ok((axum::http::StatusCode::OK, headers, axum::Json(user)))
+    Ok((axum::http::StatusCode::OK, cookie_jar, axum::Json(user)))
 }

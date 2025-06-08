@@ -3,7 +3,7 @@ use uuid::Uuid;
 use crate::shared::error_handlers::handlers::ErrorResponse;
 
 pub async fn find_by_id(
-    db: &sqlx::postgres::PgPool,
+    db: impl sqlx::Executor<'_, Database = sqlx::Postgres>,
     id: Uuid,
 ) -> Result<super::model::User, ErrorResponse> {
     let result = super::repository::find_by_id(db, id).await;
@@ -32,7 +32,7 @@ pub async fn find_by_id(
 }
 
 pub async fn get_list(
-    db: &sqlx::postgres::PgPool,
+    db: impl sqlx::Executor<'_, Database = sqlx::Postgres> + Clone,
     limit: Option<i64>,
     offset: Option<i64>,
     filter: Option<super::dto::UserFilterBy>,

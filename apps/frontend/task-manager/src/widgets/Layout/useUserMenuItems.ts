@@ -5,7 +5,6 @@ import { getWorkspaceList } from "@task-manager/api";
 import { MenuProps } from "antd";
 import { useNavigate } from "react-router";
 
-import { userManager } from "../../app/auth";
 import { useAuthStore } from "../../app/store/auth";
 
 export const useUserMenuItems = () => {
@@ -57,7 +56,9 @@ export const useUserMenuItems = () => {
 				{
 					key: "logout",
 					label: "Log out",
-					onClick: () => userManager.signoutRedirect({})
+					onClick: () => {
+						
+					}
 				}
 			]
 		}),

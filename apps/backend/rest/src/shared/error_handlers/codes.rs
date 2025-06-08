@@ -14,6 +14,7 @@ pub enum BadRequestErrorCode {
     InvalidQueryParams,
     NestedPage,
     IncludeParamConflictOneOf,
+    AccessAlreadyGiven
 }
 
 impl std::fmt::Display for BadRequestErrorCode {
@@ -30,7 +31,8 @@ impl std::fmt::Display for BadRequestErrorCode {
             BadRequestErrorCode::NestedPage => write!(f, "nested_page"),
             BadRequestErrorCode::IncludeParamConflictOneOf => {
                 write!(f, "include_param_conflict_one_of")
-            }
+            },
+            BadRequestErrorCode::AccessAlreadyGiven => write!(f, "access_already_given")
         }
     }
 }
@@ -72,45 +74,6 @@ impl std::fmt::Display for FieldErrorCode {
             FieldErrorCode::InvalidDate => write!(f, "invalid_date"),
         }
     }
-}
-
-/// Types
-#[derive(Debug, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-pub enum TypeMap {
-    Integer,
-}
-
-impl std::fmt::Display for TypeMap {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            TypeMap::Integer => write!(f, "integer"),
-        }
-    }
-}
-
-impl TypeMap {
-    pub fn from_str(s: &str) -> Result<Self, &'static str> {
-        match s {
-            "integer" | "int" | "digit" | "number" => Ok(TypeMap::Integer),
-            _ => Err("Invalid type"),
-        }
-    }
-}
-
-/// File Error Codes
-#[derive(Debug, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-pub enum FileErrorCode {
-    MissingFile,
-    InvalidFileType,
-    FileTooLarge,
-    FileTooSmall,
-    InvalidFileFormat,
-    FileUploadFailed,
-    UnsupportedFileType,
-    FileCorrupted,
-    FileNotReadable,
 }
 
 /// Unauthorized Errors
@@ -165,24 +128,4 @@ impl std::fmt::Display for NotFoundErrorCode {
 #[serde(rename_all = "snake_case")]
 pub enum InternalServerErrorCode {
     InternalServerError,
-}
-
-/// Detail Codes for Entity
-#[derive(Debug, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-pub enum DetailCodeEntity {
-    User,
-    Workspace,
-    Page,
-    Task,
-    ParentPage,
-}
-
-/// Detail Codes for Actions
-#[derive(Debug, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-pub enum DetailCodeAction {
-    CancelDeletion,
-    Delete,
-    ChangeAccess,
 }

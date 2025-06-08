@@ -10,11 +10,11 @@ use crate::{
 
 #[derive(serde::Deserialize)]
 pub struct GetListQuery {
-    limit: Option<i64>,
-    offset: Option<i64>,
-    email: Option<String>,
-    username: Option<String>,
-    query: Option<String>,
+    pub limit: Option<i64>,
+    pub offset: Option<i64>,
+    pub email: Option<String>,
+    pub username: Option<String>,
+    pub query: Option<String>,
     #[serde(
         default,
         deserialize_with = "crate::shared::deserialization::deserialize_comma_separated_query_param"
@@ -27,6 +27,7 @@ pub struct GetListQuery {
 #[utoipa::path(
     get,
     path = "/users",
+    operation_id = "get_users_list",
     params(
         ("limit" = Option<i64>, Query, description = "Count of items to return. Default: 10"),
         ("offset" = Option<i64>, Query, description = "Start position. Default: 0"),
@@ -40,9 +41,10 @@ pub struct GetListQuery {
     responses(
         (status = 200, description = "List of users", body = crate::types::pagination::Pagination<crate::entities::user::model::User>),
         (status = 400, description = "Invalid query parameters", body = ErrorResponse),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
         (status = 500, description = "Internal server error", body = ErrorResponse),
     ),
-    tags = ["Users"]
+    tags = ["User"]
 )]
 pub async fn get_list(
     State(state): State<AppState>,
