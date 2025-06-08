@@ -2,6 +2,8 @@ use std::str::FromStr;
 
 use axum::{extract::{Path, State}, Json};
 
+use crate::entities::workspace_access::dto::WorkspaceAccessResponse;
+
 #[utoipa::path(
     put,
     path = "/workspaces/{workspace_id}/access",
@@ -57,11 +59,20 @@ pub async fn update_workspace_access(
     
     // TODO: complete access checks
 
-    crate::entities::workspace_access::service::update_workspace_access(
+    let workspace_access = crate::entities::workspace_access::service::update_workspace_access(
         &state.db,
         dto.user_id,
         workspace_id,
         dto.role,
     )
-    .await
+    .await?;
+
+    Ok(WorkspaceAccessResponse {
+        id: workspace_access.id,
+        user: user_workspace_access.user,
+        role: workspace_access.role,
+        created_at: workspace_access.created_at,
+        updated_at: workspace_access.updated_at,
+        deleted_at: workspace_access.deleted_at,
+    })
 }

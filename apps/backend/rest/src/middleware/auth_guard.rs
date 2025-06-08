@@ -6,7 +6,7 @@ use crate::{
     types::app_state::AppState,
 };
 
-pub async fn with_auth(
+pub async fn auth_guard(
     State(state): State<AppState>,
     mut req: axum::http::Request<axum::body::Body>,
     next: axum::middleware::Next,
@@ -45,23 +45,7 @@ pub async fn with_auth(
 
     let user_id = user_id.unwrap();
 
-    let user = crate::entities::user::service::find_by_id(&state.db, user_id).await;
-
-    if user.is_err() {
-        let body = serde_json::to_string(&ErrorResponse::unauthorized(
-            codes::UnauthorizedErrorCode::Unauthorized,
-        ))
-        .unwrap();
-
-        return axum::response::Response::builder()
-            .status(axum::http::StatusCode::UNAUTHORIZED)
-            .body(axum::body::Body::from(body))
-            .unwrap();
-    }
-
-    let user = user.unwrap();
-
-    req.extensions_mut().insert(user);
+    req.extensions_mut().insert(user_id);
 
     next.run(req).await
 }

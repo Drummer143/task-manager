@@ -16,7 +16,7 @@ pub struct UpdateWorkspaceAccessDto {
     pub role: Option<Role>,
 }
 
-#[derive(Debug, serde::Serialize, utoipa::ToSchema)]
+#[derive(Debug, serde::Serialize, utoipa::ToSchema, Clone)]
 pub struct WorkspaceAccessResponse {
     pub id: Uuid,
     pub user: crate::entities::user::model::User,
@@ -29,6 +29,6 @@ pub struct WorkspaceAccessResponse {
 
 impl axum::response::IntoResponse for WorkspaceAccessResponse {
     fn into_response(self) -> axum::response::Response {
-        (axum::http::StatusCode::OK, self).into_response()
+        (axum::http::StatusCode::OK, axum::Json(self)).into_response()
     }
 }

@@ -20,15 +20,15 @@ use crate::shared::error_handlers::handlers::ErrorResponse;
 #[axum_macros::debug_handler]
 pub async fn update_workspace(
     State(state): State<crate::types::app_state::AppState>,
-    Extension(user): Extension<crate::entities::user::model::User>,
+    Extension(user_id): Extension<uuid::Uuid>,
     Json(dto): Json<crate::entities::workspace::dto::WorkspaceRequestDto>,
 ) -> Result<crate::entities::workspace::dto::WorkspaceResponse, ErrorResponse> {
     crate::entities::workspace::service::update_workspace(
         &state.db,
-        user.id,
+        user_id,
         crate::entities::workspace::dto::WorkspaceDto {
             name: dto.name,
-            owner_id: user.id,
+            owner_id: user_id,
         },
     )
     .await

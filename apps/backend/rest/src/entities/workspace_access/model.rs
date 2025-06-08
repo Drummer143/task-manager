@@ -76,9 +76,3 @@ pub struct WorkspaceAccess {
     pub updated_at: DateTime<Utc>,
     pub deleted_at: Option<DateTime<Utc>>,
 }
-
-impl axum::response::IntoResponse for WorkspaceAccess {
-    fn into_response(self) -> axum::response::Response {
-        (axum::http::StatusCode::OK, self).into_response()
-    }
-}

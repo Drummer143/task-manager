@@ -28,14 +28,14 @@ use crate::{
 )]
 pub async fn get_list(
     State(state): State<crate::types::app_state::AppState>,
-    Extension(user): Extension<crate::entities::user::model::User>,
+    Extension(user_id): Extension<uuid::Uuid>,
     ValidatedQuery(query): ValidatedQuery<crate::entities::workspace::dto::GetListQueryDto>,
 ) -> Result<Pagination<WorkspaceResponse>, ErrorResponse> {
     let include = query.include.unwrap_or_default();
 
     let (result, count) = crate::entities::workspace::service::get_list(
         &state.db,
-        user.id,
+        user_id,
         query.limit,
         query.offset,
         query.search,

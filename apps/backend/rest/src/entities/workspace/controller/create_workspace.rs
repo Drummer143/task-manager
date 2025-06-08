@@ -20,7 +20,7 @@ use crate::{
 )]
 pub async fn create_workspace(
     State(state): State<crate::types::app_state::AppState>,
-    Extension(user): Extension<crate::entities::user::model::User>,
+    Extension(user_id): Extension<uuid::Uuid>,
     Json(json): Json<crate::entities::workspace::dto::WorkspaceRequestDto>,
 ) -> Result<WorkspaceResponse, ErrorResponse> {
 
@@ -28,7 +28,7 @@ pub async fn create_workspace(
         &state.db,
         crate::entities::workspace::dto::WorkspaceDto {
             name: json.name,
-            owner_id: user.id,
+            owner_id: user_id,
         },
     )
     .await

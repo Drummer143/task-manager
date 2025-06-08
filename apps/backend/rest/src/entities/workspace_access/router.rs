@@ -22,6 +22,6 @@ pub fn init(
         )
         .layer(axum::middleware::from_fn_with_state(
             state,
-            crate::middleware::with_auth::with_auth,
+            crate::middleware::auth_guard::auth_guard,
         ))
 }

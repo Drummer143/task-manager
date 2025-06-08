@@ -52,6 +52,20 @@ impl From<Page> for PageResponseWithoutInclude {
     }
 }
 
+impl From<&Page> for PageResponseWithoutInclude {
+    fn from(page: &Page) -> Self {
+        Self {
+            id: page.id,
+            r#type: page.r#type.clone(),
+            title: page.title.clone(),
+            text: page.text.clone(),
+            created_at: page.created_at,
+            updated_at: page.updated_at,
+            deleted_at: page.deleted_at,
+        }
+    }
+}
+
 #[derive(Debug, serde::Serialize, Clone, utoipa::ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct ChildPageResponse {
@@ -122,7 +136,7 @@ pub struct PageResponse {
 
 impl axum::response::IntoResponse for PageResponse {
     fn into_response(self) -> axum::response::Response {
-        (axum::http::StatusCode::OK, self).into_response()
+        (axum::http::StatusCode::OK, axum::Json(self)).into_response()
     }
 }
 

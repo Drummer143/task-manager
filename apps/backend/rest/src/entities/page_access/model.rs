@@ -76,9 +76,3 @@ pub struct PageAccess {
     pub updated_at: DateTime<Utc>,
     pub deleted_at: Option<DateTime<Utc>>,
 }
-
-impl axum::response::IntoResponse for PageAccess {
-    fn into_response(self) -> axum::response::Response {
-        (axum::http::StatusCode::OK, self).into_response()
-    }
-}

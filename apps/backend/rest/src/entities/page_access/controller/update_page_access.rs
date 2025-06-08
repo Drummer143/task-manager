@@ -1,6 +1,11 @@
 use std::str::FromStr;
 
-use axum::{extract::{Path, State}, Json};
+use axum::{
+    extract::{Path, State},
+    Json,
+};
+
+use crate::entities::page_access::dto::PageAccessResponse;
 
 #[utoipa::path(
     put,
@@ -31,22 +36,19 @@ pub async fn update_page_access(
 
     let user_id = uuid::Uuid::from_str(user_id).unwrap();
 
-    let user_page_access = crate::entities::page_access::service::get_page_access(
-        &state.db,
-        user_id,
-        page_id,
-    )
-    .await
-    .map_err(|e| {
-        if e.status_code == 404 {
-            return crate::shared::error_handlers::handlers::ErrorResponse::forbidden(
+    let user_page_access =
+        crate::entities::page_access::service::get_page_access(&state.db, user_id, page_id)
+            .await
+            .map_err(|e| {
+                if e.status_code == 404 {
+                    return crate::shared::error_handlers::handlers::ErrorResponse::forbidden(
                 crate::shared::error_handlers::codes::ForbiddenErrorCode::InsufficientPermissions,
                 None,
             );
-        }
+                }
 
-        e
-    })?;
+                e
+            })?;
 
     if user_page_access.role < crate::entities::page_access::model::Role::Admin {
         return Err(
@@ -56,14 +58,23 @@ pub async fn update_page_access(
             ),
         );
     }
-    
+
     // TODO: complete access checks
 
-    crate::entities::page_access::service::update_page_access(
+    let page_access = crate::entities::page_access::service::update_page_access(
         &state.db,
         dto.user_id,
         page_id,
         dto.role,
     )
-    .await
+    .await?;
+
+    Ok(PageAccessResponse {
+        id: page_access.id,
+        user: user_page_access.user,
+        role: page_access.role,
+        created_at: page_access.created_at,
+        updated_at: page_access.updated_at,
+        deleted_at: page_access.deleted_at,
+    })
 }

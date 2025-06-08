@@ -29,6 +29,6 @@ pub struct PageAccessResponse {
 
 impl axum::response::IntoResponse for PageAccessResponse {
     fn into_response(self) -> axum::response::Response {
-        (axum::http::StatusCode::OK, self).into_response()
+        (axum::http::StatusCode::OK, axum::Json(self)).into_response()
     }
 }

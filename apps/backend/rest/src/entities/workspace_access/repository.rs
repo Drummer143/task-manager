@@ -7,7 +7,7 @@ pub async fn get_workspace_access<'a>(
 ) -> Result<super::model::WorkspaceAccess, sqlx::Error> {
     sqlx::query_as::<_, super::model::WorkspaceAccess>(
         r#"
-        SELECT * FROM workspace_access
+        SELECT * FROM workspace_accesses
         WHERE user_id = $1 AND workspace_id = $2
         "#,
     )
@@ -23,7 +23,7 @@ pub async fn get_workspace_access_list<'a>(
 ) -> Result<Vec<super::model::WorkspaceAccess>, sqlx::Error> {
     sqlx::query_as::<_, super::model::WorkspaceAccess>(
         r#"
-        SELECT * FROM workspace_access
+        SELECT * FROM workspace_accesses
         WHERE workspace_id = $1
         "#,
     )
@@ -40,7 +40,7 @@ pub async fn create_workspace_access<'a>(
 ) -> Result<super::model::WorkspaceAccess, sqlx::Error> {
     sqlx::query_as::<_, super::model::WorkspaceAccess>(
         r#"
-        INSERT INTO workspace_access (user_id, workspace_id, role)
+        INSERT INTO workspace_accesses (user_id, workspace_id, role)
         VALUES ($1, $2, $3)
         RETURNING *
         "#,
@@ -61,7 +61,7 @@ pub async fn update_workspace_access<'a>(
     if role.is_none() {
         return sqlx::query_as::<_, super::model::WorkspaceAccess>(
             r#"
-            DELETE FROM workspace_access
+            DELETE FROM workspace_accesses
             WHERE user_id = $1 AND workspace_id = $2
             RETURNING *
             "#,
@@ -74,7 +74,7 @@ pub async fn update_workspace_access<'a>(
 
     sqlx::query_as::<_, super::model::WorkspaceAccess>(
         r#"
-            UPDATE workspace_access
+            UPDATE workspace_accesses
             SET role = $3
             WHERE user_id = $1 AND workspace_id = $2
             RETURNING *

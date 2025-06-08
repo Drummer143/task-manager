@@ -7,7 +7,7 @@ pub async fn get_page_access<'a>(
 ) -> Result<super::model::PageAccess, sqlx::Error> {
     sqlx::query_as::<_, super::model::PageAccess>(
         r#"
-        SELECT * FROM page_access
+        SELECT * FROM page_accesses
         WHERE user_id = $1 AND page_id = $2
         "#,
     )
@@ -23,7 +23,7 @@ pub async fn get_page_access_list<'a>(
 ) -> Result<Vec<super::model::PageAccess>, sqlx::Error> {
     sqlx::query_as::<_, super::model::PageAccess>(
         r#"
-        SELECT * FROM page_access
+        SELECT * FROM page_accesses
         WHERE page_id = $1
         "#,
     )
@@ -40,7 +40,7 @@ pub async fn create_page_access<'a>(
 ) -> Result<super::model::PageAccess, sqlx::Error> {
     sqlx::query_as::<_, super::model::PageAccess>(
         r#"
-        INSERT INTO page_access (user_id, page_id, role)
+        INSERT INTO page_accesses (user_id, page_id, role)
         VALUES ($1, $2, $3)
         RETURNING *
         "#,
@@ -61,7 +61,7 @@ pub async fn update_page_access<'a>(
     if role.is_none() {
         return sqlx::query_as::<_, super::model::PageAccess>(
             r#"
-            DELETE FROM page_access
+            DELETE FROM page_accesses
             WHERE user_id = $1 AND page_id = $2
             RETURNING *
             "#,
@@ -74,7 +74,7 @@ pub async fn update_page_access<'a>(
 
     sqlx::query_as::<_, super::model::PageAccess>(
         r#"
-            UPDATE page_access
+            UPDATE page_accesses
             SET role = $3
             WHERE user_id = $1 AND page_id = $2
             RETURNING *
