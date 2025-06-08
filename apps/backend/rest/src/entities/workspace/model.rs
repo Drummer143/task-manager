@@ -1,6 +1,6 @@
 use uuid::Uuid;
 
-#[derive(Debug, sqlx::FromRow, utoipa::ToSchema)]
+#[derive(Debug, sqlx::FromRow, serde::Serialize, Clone, utoipa::ToSchema)]
 pub struct Workspace {
     pub id: Uuid,
     pub name: String,

@@ -7,20 +7,9 @@ pub async fn login(
     email: &str,
     password: &str,
 ) -> Result<User, ErrorResponse> {
-    let user = crate::entities::user::repository::find_by_email(db, email).await;
-
-    if let Err(error) = user {
-        if matches!(error, sqlx::Error::RowNotFound) {
-            return Err(ErrorResponse::bad_request(
-                codes::BadRequestErrorCode::InvalidCredentials,
-                None,
-            ));
-        }
-
-        return Err(ErrorResponse::internal_server_error());
-    }
-
-    let user = user.unwrap();
+    let user = crate::entities::user::repository::find_by_email(db, email)
+        .await
+        .map_err(ErrorResponse::from)?;
 
     let is_valid =
         crate::entities::user_credentials::repository::verify_credentials(db, user.id, password)
@@ -66,7 +55,7 @@ pub async fn register(
     .await;
 
     if user.is_err() {
-        tx.rollback().await;
+        tx.rollback().await.map_err(|_| ErrorResponse::internal_server_error())?;
         return Err(ErrorResponse::internal_server_error());
     }
 
@@ -80,7 +69,7 @@ pub async fn register(
     .await;
 
     if user_credentials.is_err() {
-        tx.rollback().await;
+        tx.rollback().await.map_err(|_| ErrorResponse::internal_server_error())?;
         return Err(ErrorResponse::internal_server_error());
     }
 

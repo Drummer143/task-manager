@@ -13,6 +13,7 @@ mod types;
     paths(
         entities::user::controller::get_list::get_list,
         entities::user::controller::get_by_id::get_by_id,
+        entities::profile::controller::get_profile::get_profile,
         entities::auth::controller::login::login,
         entities::auth::controller::register::register,
         entities::workspace::controller::get_list::get_list,
@@ -24,7 +25,14 @@ mod types;
         entities::workspace_access::controller::get_workspace_access_list::get_workspace_access_list,
         entities::workspace_access::controller::create_workspace_access::create_workspace_access,
         entities::workspace_access::controller::update_workspace_access::update_workspace_access,
-        entities::profile::controller::get_profile::get_profile,
+        entities::page::controller::get_list_in_workspace::get_list_in_workspace,
+        entities::page::controller::get_page::get_page,
+        entities::page::controller::create_page::create_page,
+        entities::page::controller::update_page::update_page,
+        entities::page::controller::delete_page::delete_page,
+        entities::page_access::controller::get_page_access_list::get_page_access_list,
+        entities::page_access::controller::create_page_access::create_page_access,
+        entities::page_access::controller::update_page_access::update_page_access,
     ),
     components(schemas(
         entities::user::model::User,
@@ -37,6 +45,9 @@ mod types;
         entities::workspace::dto::WorkspaceInfo,
         entities::workspace::dto::Include,
         entities::workspace_access::model::Role,
+        entities::page::dto::PageInclude,
+        entities::page::dto::PageListFormat,
+        entities::page::dto::PageListInclude,
     ))
 )]
 struct ApiDoc;
@@ -85,10 +96,12 @@ async fn main() {
 
     let app = axum::Router::new()
         .merge(entities::user::router::init(app_state.clone()))
+        .merge(entities::profile::router::init(app_state.clone()))
         .merge(entities::auth::router::init())
         .merge(entities::workspace::router::init(app_state.clone()))
         .merge(entities::workspace_access::router::init(app_state.clone()))
-        .merge(entities::profile::router::init(app_state.clone()))
+        .merge(entities::page::router::init())
+        .merge(entities::page_access::router::init(app_state.clone()))
         .merge(
             utoipa_swagger_ui::SwaggerUi::new("/api").url("/api/openapi.json", ApiDoc::openapi()),
         )

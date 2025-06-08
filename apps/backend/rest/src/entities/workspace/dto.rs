@@ -2,9 +2,13 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use crate::entities::{page::model::Page, user::model::User, workspace_access::model::Role};
+use crate::entities::{
+    page::dto::PageResponseWithoutInclude, user::model::User, workspace::model::Workspace,
+    workspace_access::model::Role,
+};
 
 #[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct WorkspaceDto {
     pub name: String,
     pub owner_id: Uuid,
@@ -20,10 +24,36 @@ pub struct WorkspaceInfo {
     pub workspace: super::model::Workspace,
     pub role: Option<Role>,
     pub owner: Option<User>,
-    pub pages: Option<Vec<Page>>,
+    pub pages: Option<Vec<PageResponseWithoutInclude>>,
 }
 
-#[derive(Debug, Serialize, utoipa::ToSchema)]
+#[derive(Debug, Serialize, utoipa::ToSchema, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct WorkspaceResponseWithoutInclude {
+    pub id: Uuid,
+    pub name: String,
+    pub role: Option<Role>,
+
+    pub updated_at: DateTime<Utc>,
+    pub created_at: DateTime<Utc>,
+    pub deleted_at: Option<DateTime<Utc>>,
+}
+
+impl From<Workspace> for WorkspaceResponseWithoutInclude {
+    fn from(value: Workspace) -> Self {
+        Self {
+            id: value.id,
+            name: value.name,
+            role: None,
+            updated_at: value.updated_at,
+            created_at: value.created_at,
+            deleted_at: value.deleted_at,
+        }
+    }
+}
+
+#[derive(Debug, Serialize, utoipa::ToSchema, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct WorkspaceResponse {
     pub id: Uuid,
     pub name: String,
@@ -31,7 +61,7 @@ pub struct WorkspaceResponse {
     pub role: Option<Role>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub pages: Option<Vec<Page>>,
+    pub pages: Option<Vec<PageResponseWithoutInclude>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub owner: Option<User>,
 
@@ -67,6 +97,21 @@ impl From<&WorkspaceInfo> for WorkspaceResponse {
             updated_at: value.workspace.updated_at,
             created_at: value.workspace.created_at,
             deleted_at: value.workspace.deleted_at,
+        }
+    }
+}
+
+impl From<Workspace> for WorkspaceResponse {
+    fn from(value: Workspace) -> Self {
+        Self {
+            id: value.id,
+            name: value.name,
+            role: None,
+            pages: None,
+            owner: None,
+            updated_at: value.updated_at,
+            created_at: value.created_at,
+            deleted_at: value.deleted_at,
         }
     }
 }
@@ -116,6 +161,10 @@ impl std::str::FromStr for Include {
 
 #[derive(serde::Deserialize)]
 pub struct GetWorkspaceQuery {
+    #[serde(
+        default,
+        deserialize_with = "crate::shared::deserialization::deserialize_comma_separated_query_param"
+    )]
     pub include: Option<Vec<Include>>,
 }
 

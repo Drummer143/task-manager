@@ -1,10 +1,9 @@
-use axum::{
-    extract::{Extension, Path, State},
-    response::IntoResponse,
-};
+use axum::extract::{Path, State};
 
 use crate::{
-    entities::{user::model::User, workspace::dto::{Include, WorkspaceResponse}},
+    entities::{
+        workspace::dto::{Include, WorkspaceResponse},
+    },
     shared::{error_handlers::handlers::ErrorResponse, extractors::query::ValidatedQuery},
 };
 
@@ -25,19 +24,33 @@ use crate::{
 )]
 pub async fn get_by_id(
     State(state): State<crate::types::app_state::AppState>,
-    Extension(user): Extension<User>,
     Path(workspace_id): Path<uuid::Uuid>,
     ValidatedQuery(query): ValidatedQuery<crate::entities::workspace::dto::GetWorkspaceQuery>,
-) -> impl IntoResponse {
+) -> Result<WorkspaceResponse, ErrorResponse> {
     let include = query.include.unwrap_or_default();
 
-    crate::entities::workspace::service::get_by_id(
-        &state.db,
-        workspace_id,
-        user.id,
-        include.contains(&Include::Owner),
-        include.contains(&Include::Pages),
-    )
-    .await
-    .map(|workspace| crate::entities::workspace::dto::WorkspaceResponse::from(workspace))
+    let workspace = crate::entities::workspace::service::get_by_id(&state.db, workspace_id).await?;
+
+    let mut workspace_response = WorkspaceResponse::from(workspace.clone());
+
+    if include.contains(&Include::Owner) {
+        workspace_response.owner = Some(
+            crate::entities::user::repository::find_by_id(&state.db, workspace.owner_id)
+                .await
+                .map_err(ErrorResponse::from)?,
+        );
+    }
+
+    // if include.contains(&Include::Pages) {
+    //     workspace_response.pages = Some(
+    //         crate::entities::page::service::get_all_in_workspace(&state.db, workspace_id)
+    //             .await
+    //             .map_err(ErrorResponse::from)?
+    //             .iter()
+    //             .map(|page| page.clone().into())
+    //             .collect(),
+    //     );
+    // }
+
+    Ok(workspace_response)
 }

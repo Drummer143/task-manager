@@ -9,9 +9,9 @@ use crate::shared::error_handlers::handlers::ErrorResponse;
 
 #[utoipa::path(
     post,
-    path = "/workspaces/{workspace_id}/access",
+    path = "/workspaces/{workspace_id}/pages/{page_id}/access",
     responses(
-        (status = 200, description = "Workspace access created successfully", body = crate::entities::workspace_access::dto::WorkspaceAccessResponse),
+        (status = 200, description = "Page access created successfully", body = crate::entities::page_access::dto::PageAccessResponse),
         (status = 400, description = "Invalid request", body = ErrorResponse),
         (status = 401, description = "Unauthorized", body = ErrorResponse),
         (status = 403, description = "Forbidden", body = ErrorResponse),
@@ -20,24 +20,26 @@ use crate::shared::error_handlers::handlers::ErrorResponse;
     ),
     params(
         ("workspace_id" = Uuid, Path, description = "Workspace ID"),
+        ("page_id" = Uuid, Path, description = "Page ID"),
     ),
-    request_body = crate::entities::workspace_access::dto::CreateWorkspaceAccessDto,
-    tags = ["Workspace Access"],
+    request_body = crate::entities::page_access::dto::CreatePageAccessDto,
+    tags = ["Page Access"],
 )]
-pub async fn create_workspace_access(
+pub async fn create_page_access(
     State(state): State<crate::types::app_state::AppState>,
-    Path(workspace_id): Path<uuid::Uuid>,
+    // Path(workspace_id): Path<uuid::Uuid>,
+    Path(page_id): Path<uuid::Uuid>,
     cookies: axum_extra::extract::CookieJar,
-    Json(dto): Json<crate::entities::workspace_access::dto::CreateWorkspaceAccessDto>,
+    Json(dto): Json<crate::entities::page_access::dto::CreatePageAccessDto>,
 ) -> impl axum::response::IntoResponse {
     let user_id = cookies.get("user_id").unwrap().value();
 
     let user_id = uuid::Uuid::from_str(user_id).unwrap();
 
-    let user_workspace_access = crate::entities::workspace_access::service::get_workspace_access(
+    let user_page_access = crate::entities::page_access::service::get_page_access(
         &state.db,
         user_id,
-        workspace_id,
+        page_id,
     )
     .await
     .map_err(|e| {
@@ -51,7 +53,7 @@ pub async fn create_workspace_access(
         e
     })?;
 
-    if user_workspace_access.role < crate::entities::workspace_access::model::Role::Admin {
+    if user_page_access.role < crate::entities::page_access::model::Role::Admin {
         return Err(
             crate::shared::error_handlers::handlers::ErrorResponse::forbidden(
                 crate::shared::error_handlers::codes::ForbiddenErrorCode::InsufficientPermissions,
@@ -60,8 +62,8 @@ pub async fn create_workspace_access(
         );
     }
 
-    if dto.role > crate::entities::workspace_access::model::Role::Admin
-        && user_workspace_access.role < crate::entities::workspace_access::model::Role::Owner
+    if dto.role > crate::entities::page_access::model::Role::Admin
+        && user_page_access.role < crate::entities::page_access::model::Role::Owner
     {
         return Err(
             crate::shared::error_handlers::handlers::ErrorResponse::forbidden(
@@ -84,22 +86,22 @@ pub async fn create_workspace_access(
             e
         })?;
 
-    let workspace_access = crate::entities::workspace_access::service::create_workspace_access(
+    let page_access = crate::entities::page_access::service::create_page_access(
         &state.db,
         target_user.id,
-        workspace_id,
+        page_id,
         dto.role,
     )
     .await?;
 
     Ok(
-        crate::entities::workspace_access::dto::WorkspaceAccessResponse {
-            id: workspace_access.id,
+        crate::entities::page_access::dto::PageAccessResponse {
+            id: page_access.id,
             user: target_user,
-            role: workspace_access.role,
-            created_at: workspace_access.created_at,
-            updated_at: workspace_access.updated_at,
-            deleted_at: workspace_access.deleted_at,
+            role: page_access.role,
+            created_at: page_access.created_at,
+            updated_at: page_access.updated_at,
+            deleted_at: page_access.deleted_at,
         },
     )
 }

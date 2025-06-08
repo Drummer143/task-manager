@@ -22,7 +22,11 @@ pub async fn verify_credentials<'a>(
 
     let is_valid = bcrypt::verify(password, &credentials.password_hash);
 
-    is_valid.is_ok()
+    if is_valid.is_err() {
+        return false;
+    }
+
+    is_valid.unwrap()
 }
 
 pub async fn create_credentials<'a>(

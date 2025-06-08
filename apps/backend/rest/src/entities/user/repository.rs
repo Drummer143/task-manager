@@ -94,7 +94,7 @@ pub async fn find_by_email<'a>(
 }
 
 pub async fn get_list<'a>(
-    executor: impl sqlx::Executor<'a, Database = Postgres> + Clone,
+    executor: impl sqlx::Executor<'a, Database = Postgres> + Copy,
     limit: i64,
     offset: i64,
     filter: Option<&UserFilterBy>,
@@ -120,7 +120,7 @@ pub async fn get_list<'a>(
 
     let users = query_builder
         .build_query_as::<User>()
-        .fetch_all(executor.clone())
+        .fetch_all(executor)
         .await?;
 
     let total = total_builder

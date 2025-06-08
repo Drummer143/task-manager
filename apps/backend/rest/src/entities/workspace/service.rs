@@ -1,69 +1,19 @@
 use uuid::Uuid;
 
-use crate::shared::error_handlers::{codes, handlers::ErrorResponse};
+use crate::{
+    entities::{page::dto::PageResponseWithoutInclude, workspace::model::Workspace},
+    shared::error_handlers::handlers::ErrorResponse,
+};
 
 use super::dto::WorkspaceInfo;
 
 pub async fn get_by_id(
     db: &sqlx::postgres::PgPool,
     workspace_id: Uuid,
-    user_id: Uuid,
-    include_owner: bool,
-    include_pages: bool,
-) -> Result<WorkspaceInfo, ErrorResponse> {
-    let workspace_access =
-        crate::entities::workspace_access::service::get_workspace_access(db, user_id, workspace_id)
-            .await
-            .map_err(|_| ErrorResponse::internal_server_error());
-
-    if workspace_access.is_err() {
-        return Err(ErrorResponse::forbidden(
-            codes::ForbiddenErrorCode::InsufficientPermissions,
-            None,
-        ));
-    }
-
-    let workspace_with_role = super::repository::get_by_id(db, workspace_id, user_id)
+) -> Result<Workspace, ErrorResponse> {
+    super::repository::get_by_id(db, workspace_id)
         .await
-        .map_err(|_| ErrorResponse::internal_server_error())?;
-
-    let owner = if include_owner {
-        Some(
-            crate::entities::user::repository::find_by_id(db, workspace_with_role.owner_id)
-                .await
-                .map_err(|_| ErrorResponse::internal_server_error())?,
-        )
-    } else {
-        None
-    };
-
-    let pages = if include_pages {
-        Some(
-            sqlx::query_as::<_, crate::entities::page::model::Page>(
-                "SELECT * FROM pages WHERE workspace_id = $1",
-            )
-            .bind(workspace_with_role.id)
-            .fetch_all(db)
-            .await
-            .map_err(|_| ErrorResponse::internal_server_error())?,
-        )
-    } else {
-        None
-    };
-
-    Ok(WorkspaceInfo {
-        workspace: super::model::Workspace {
-            id: workspace_with_role.id,
-            name: workspace_with_role.name,
-            owner_id: workspace_with_role.owner_id,
-            created_at: workspace_with_role.created_at,
-            updated_at: workspace_with_role.updated_at,
-            deleted_at: workspace_with_role.deleted_at,
-        },
-        role: Some(workspace_with_role.role),
-        owner,
-        pages,
-    })
+        .map_err(ErrorResponse::from)
 }
 
 pub async fn get_list(
@@ -80,7 +30,7 @@ pub async fn get_list(
     let (rows, count) =
         super::repository::get_list(db, user_id, limit, offset, search, sort_by, sort_order)
             .await
-            .map_err(|_| ErrorResponse::internal_server_error())?;
+            .map_err(ErrorResponse::from)?;
 
     let mut workspace_info_arr: Vec<WorkspaceInfo> = Vec::with_capacity(rows.len());
 
@@ -99,7 +49,7 @@ pub async fn get_list(
                 Some(
                     crate::entities::user::repository::find_by_id(db, row.owner_id)
                         .await
-                        .map_err(|_| ErrorResponse::internal_server_error())?,
+                        .map_err(ErrorResponse::from)?,
                 )
             } else {
                 None
@@ -112,7 +62,13 @@ pub async fn get_list(
                     .bind(row.id)
                     .fetch_all(db)
                     .await
-                    .map_err(|_| ErrorResponse::internal_server_error())?,
+                    .map(|pages| {
+                        pages
+                            .into_iter()
+                            .map(|page| PageResponseWithoutInclude::from(page))
+                            .collect()
+                    })
+                    .map_err(ErrorResponse::from)?,
                 )
             } else {
                 None
@@ -127,17 +83,12 @@ pub async fn create_workspace(
     db: &sqlx::postgres::PgPool,
     dto: super::dto::WorkspaceDto,
 ) -> Result<WorkspaceInfo, ErrorResponse> {
-    let mut tx = db
-        .begin()
-        .await
-        .map_err(|_| ErrorResponse::internal_server_error())?;
+    let mut tx = db.begin().await.map_err(ErrorResponse::from)?;
 
     let workspace = super::repository::create(&mut *tx, dto).await;
 
     if workspace.is_err() {
-        tx.rollback()
-            .await
-            .map_err(|_| ErrorResponse::internal_server_error())?;
+        tx.rollback().await.map_err(ErrorResponse::from)?;
         return Err(ErrorResponse::internal_server_error());
     }
 
@@ -152,15 +103,11 @@ pub async fn create_workspace(
     .await;
 
     if workspace_access.is_err() {
-        tx.rollback()
-            .await
-            .map_err(|_| ErrorResponse::internal_server_error())?;
+        tx.rollback().await.map_err(ErrorResponse::from)?;
         return Err(ErrorResponse::internal_server_error());
     }
 
-    tx.commit()
-        .await
-        .map_err(|_| ErrorResponse::internal_server_error())?;
+    tx.commit().await.map_err(ErrorResponse::from)?;
 
     Ok(WorkspaceInfo {
         workspace,
@@ -175,18 +122,9 @@ pub async fn update_workspace(
     workspace_id: Uuid,
     dto: super::dto::WorkspaceDto,
 ) -> Result<WorkspaceInfo, ErrorResponse> {
-    let mut tx = db
-        .begin()
+    let workspace = super::repository::update(db, workspace_id, dto)
         .await
-        .map_err(|_| ErrorResponse::internal_server_error())?;
-
-    let workspace = super::repository::update(&mut *tx, workspace_id, dto)
-        .await
-        .map_err(|_| ErrorResponse::internal_server_error())?;
-
-    tx.commit()
-        .await
-        .map_err(|_| ErrorResponse::internal_server_error())?;
+        .map_err(ErrorResponse::from)?;
 
     Ok(WorkspaceInfo {
         workspace,
@@ -200,29 +138,16 @@ pub async fn soft_delete(
     db: &sqlx::postgres::PgPool,
     workspace_id: Uuid,
 ) -> Result<(), ErrorResponse> {
-    let mut tx = db
-        .begin()
+    super::repository::soft_delete(db, workspace_id)
         .await
-        .map_err(|_| ErrorResponse::internal_server_error())?;
-
-    let workspace = super::repository::soft_delete(&mut *tx, workspace_id)
-        .await
-        .map_err(|_| ErrorResponse::internal_server_error())?;
-
-    tx.commit()
-        .await
-        .map_err(|_| ErrorResponse::internal_server_error())?;
-
-    Ok(workspace)
+        .map_err(ErrorResponse::from)
 }
 
 pub async fn cancel_soft_delete(
     db: &sqlx::postgres::PgPool,
     workspace_id: Uuid,
 ) -> Result<(), ErrorResponse> {
-    let workspace = super::repository::cancel_soft_delete(db, workspace_id)
+    super::repository::cancel_soft_delete(db, workspace_id)
         .await
-        .map_err(|_| ErrorResponse::internal_server_error())?;
-
-    Ok(workspace)
+        .map_err(ErrorResponse::from)
 }

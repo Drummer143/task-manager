@@ -5,12 +5,12 @@ use crate::{entities::{workspace_access::dto::WorkspaceAccessResponse}, shared::
 use super::model::WorkspaceAccess;
 
 pub async fn get_workspace_access<'a>(
-    executor: impl sqlx::Executor<'a, Database = sqlx::Postgres> + Clone,
+    executor: impl sqlx::Executor<'a, Database = sqlx::Postgres> + Copy,
     user_id: Uuid,
     workspace_id: Uuid,
 ) -> Result<WorkspaceAccessResponse, ErrorResponse> {
     let workspace_access = crate::entities::workspace_access::repository::get_workspace_access(
-        executor.clone(),
+        executor,
         user_id,
         workspace_id,
     )
@@ -35,10 +35,10 @@ pub async fn get_workspace_access<'a>(
 }
 
 pub async fn get_workspace_access_list<'a>(
-    executor: impl sqlx::Executor<'a, Database = sqlx::Postgres> + Clone,
+    executor: impl sqlx::Executor<'a, Database = sqlx::Postgres> + Copy,
     workspace_id: Uuid,
 ) -> Result<Vec<WorkspaceAccessResponse>, ErrorResponse> {
-    let workspace_access_list = crate::entities::workspace_access::repository::get_workspace_access_list(executor.clone(), workspace_id)
+    let workspace_access_list = crate::entities::workspace_access::repository::get_workspace_access_list(executor, workspace_id)
         .await
         .map_err(|e| match e {
             sqlx::Error::RowNotFound => {
@@ -50,7 +50,7 @@ pub async fn get_workspace_access_list<'a>(
     let mut workspace_access_list_response = Vec::new();
 
     for workspace_access in workspace_access_list {
-        let user = crate::entities::user::service::find_by_id(executor.clone(), workspace_access.user_id).await?;
+        let user = crate::entities::user::service::find_by_id(executor, workspace_access.user_id).await?;
         workspace_access_list_response.push(WorkspaceAccessResponse {
             created_at: workspace_access.created_at,
             updated_at: workspace_access.updated_at,

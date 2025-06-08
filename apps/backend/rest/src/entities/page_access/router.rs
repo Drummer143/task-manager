@@ -5,20 +5,20 @@ pub fn init(
 ) -> Router<crate::types::app_state::AppState> {
     Router::new()
         .route(
-            "/workspaces/{workspace_id}/access",
+            "/workspaces/{workspace_id}/pages/{page_id}/access",
             axum::routing::get(
-                super::controller::get_workspace_access_list::get_workspace_access_list,
+                super::controller::get_page_access_list::get_page_access_list,
             ),
         )
         .route(
-            "/workspaces/{workspace_id}/access",
+            "/workspaces/{workspace_id}/pages/{page_id}/access",
             axum::routing::post(
-                super::controller::create_workspace_access::create_workspace_access,
+                super::controller::create_page_access::create_page_access,
             ),
         )
         .route(
-            "/workspaces/{workspace_id}/access",
-            axum::routing::put(super::controller::update_workspace_access::update_workspace_access),
+            "/workspaces/{workspace_id}/pages/{page_id}/access",
+            axum::routing::put(super::controller::update_page_access::update_page_access),
         )
         .layer(axum::middleware::from_fn_with_state(
             state,

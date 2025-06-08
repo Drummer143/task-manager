@@ -4,7 +4,6 @@ import (
 	"libs/backend/errorHandlers/libs/errorCodes"
 	"libs/backend/errorHandlers/libs/errorHandlers"
 	"main/internal/postgres"
-	accessesRouter "main/router/workspaces/pages/accesses"
 	tasksRouter "main/router/workspaces/pages/tasks"
 	"main/utils/ginTools"
 	"main/utils/routerUtils"
@@ -35,17 +34,5 @@ func hasAccessToPageMiddleware(ctx *gin.Context) {
 }
 
 func AddRoutes(group *gin.RouterGroup) {
-	group.GET("", getPageList)
-
-	group.POST("", createPage)
-
-	group.GET("/:page_id", getPage)
-
-	group.PUT("/:page_id", updatePage)
-
-	group.DELETE("/:page_id", deletePage)
-
-	accessesRouter.AddRoutes(group.Group("/:page_id/accesses"))
-
 	tasksRouter.AddRoutes(group.Group("/:page_id/tasks", hasAccessToPageMiddleware))
 }

@@ -23,38 +23,27 @@ pub async fn update<'a>(
     workspace_id: Uuid,
     dto: super::dto::WorkspaceDto,
 ) -> Result<Workspace, sqlx::Error> {
-    sqlx::query_as::<_, Workspace>(
-        "UPDATE workspaces SET name = $1 WHERE id = $2 RETURNING *",
-    )
-    .bind(dto.name)
-    .bind(workspace_id)
-    .fetch_one(executor)
-    .await
+    sqlx::query_as::<_, Workspace>("UPDATE workspaces SET name = $1 WHERE id = $2 RETURNING *")
+        .bind(dto.name)
+        .bind(workspace_id)
+        .fetch_one(executor)
+        .await
 }
 
 pub async fn get_by_id<'a>(
     executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
     workspace_id: Uuid,
-    user_id: Uuid,
-) -> Result<WorkspaceWithRole, sqlx::Error> {
-    let row = sqlx::query_as::<_, WorkspaceWithRole>(
-        r#"
-        SELECT w.*, wa.role
-        FROM workspaces w
-        INNER JOIN workspace_accesses wa ON w.id = wa.workspace_id
-        WHERE w.id = $1 AND wa.user_id = $2
-        "#,
-    )
-    .bind(workspace_id)
-    .bind(user_id)
-    .fetch_one(executor)
-    .await?;
+) -> Result<Workspace, sqlx::Error> {
+    let row: Workspace = sqlx::query_as::<_, Workspace>("SELECT * FROM workspaces WHERE id = $1")
+        .bind(workspace_id)
+        .fetch_one(executor)
+        .await?;
 
     Ok(row)
 }
 
 pub async fn get_list<'a>(
-    executor: impl sqlx::Executor<'a, Database = sqlx::Postgres> + Clone,
+    executor: impl sqlx::Executor<'a, Database = sqlx::Postgres> + Copy,
     user_id: Uuid,
     limit: Option<i64>,
     offset: Option<i64>,
@@ -111,7 +100,7 @@ pub async fn get_list<'a>(
 
     let rows = builder
         .build_query_as::<WorkspaceWithRole>()
-        .fetch_all(executor.clone())
+        .fetch_all(executor)
         .await?;
     let count = count_builder
         .build_query_scalar::<i64>()
@@ -125,13 +114,11 @@ pub async fn soft_delete<'a>(
     executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
     workspace_id: Uuid,
 ) -> Result<(), sqlx::Error> {
-    sqlx::query(
-        "UPDATE workspaces SET deleted_at = $1 WHERE id = $2",
-    )
-    .bind((chrono::Utc::now() + Duration::days(14)).to_string())
-    .bind(workspace_id)
-    .execute(executor)
-    .await?;
+    sqlx::query("UPDATE workspaces SET deleted_at = $1 WHERE id = $2")
+        .bind((chrono::Utc::now() + Duration::days(14)).to_string())
+        .bind(workspace_id)
+        .execute(executor)
+        .await?;
 
     Ok(())
 }
@@ -140,12 +127,10 @@ pub async fn cancel_soft_delete<'a>(
     executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
     workspace_id: Uuid,
 ) -> Result<(), sqlx::Error> {
-    sqlx::query(
-        "UPDATE workspaces SET deleted_at = NULL WHERE id = $1",
-    )
-    .bind(workspace_id)
-    .execute(executor)
-    .await?;
+    sqlx::query("UPDATE workspaces SET deleted_at = NULL WHERE id = $1")
+        .bind(workspace_id)
+        .execute(executor)
+        .await?;
 
     Ok(())
 }

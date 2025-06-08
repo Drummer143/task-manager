@@ -78,3 +78,12 @@ impl ErrorResponse {
         }
     }
 }
+
+impl From<sqlx::Error> for ErrorResponse {
+    fn from(error: sqlx::Error) -> Self {
+        match error {
+            sqlx::Error::RowNotFound => ErrorResponse::not_found(codes::NotFoundErrorCode::NotFound, None),
+            _ => ErrorResponse::internal_server_error(),
+        }
+    }
+}
