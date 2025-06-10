@@ -27,6 +27,10 @@ pub fn init(
             axum::routing::patch(super::controller::cancel_soft_delete::cancel_soft_delete),
         )
         .layer(axum::middleware::from_fn_with_state(
+            state.clone(),
+            crate::middleware::workspace_access_guard::workspace_access_guard,
+        ))
+        .layer(axum::middleware::from_fn_with_state(
             state,
             crate::middleware::auth_guard::auth_guard,
         ))

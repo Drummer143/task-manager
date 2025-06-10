@@ -33,6 +33,12 @@ mod types;
         entities::page_access::controller::get_page_access_list::get_page_access_list,
         entities::page_access::controller::create_page_access::create_page_access,
         entities::page_access::controller::update_page_access::update_page_access,
+        entities::task::controller::get_task::get_task,
+        entities::task::controller::get_tasks_in_page::get_tasks_in_page,
+        entities::task::controller::create_task::create_task,
+        entities::task::controller::update_task::update_task,
+        entities::task::controller::delete_task::delete_task,
+        entities::task::controller::change_status::change_status,
     ),
     components(schemas(
         entities::user::model::User,
@@ -102,6 +108,7 @@ async fn main() {
         .merge(entities::workspace_access::router::init(app_state.clone()))
         .merge(entities::page::router::init())
         .merge(entities::page_access::router::init(app_state.clone()))
+        .merge(entities::task::router::init())
         .merge(
             utoipa_swagger_ui::SwaggerUi::new("/api").url("/api/openapi.json", ApiDoc::openapi()),
         )
