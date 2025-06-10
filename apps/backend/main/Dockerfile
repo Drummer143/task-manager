@@ -1,29 +1,26 @@
-FROM golang:1.23.1 AS builder
+FROM rust:1.86 AS builder
 
 WORKDIR /app
 
-COPY go.mod go.sum ./
+COPY Cargo.toml Cargo.lock ./
 
-RUN go mod download
+RUN cargo fetch
 
 COPY . .
 
-RUN go install github.com/swaggo/swag/cmd/swag@latest
+RUN cargo build --release
 
-RUN swag init
+FROM debian:bullseye-slim
 
-RUN CGO_ENABLED=0 GOOS=linux go build -o main
-
-FROM alpine:latest
+RUN apt-get update && apt-get install -y \
+    libc6 \
+    libssl1.1 \
+    && rm -rf /var/lib/apt/lists/*
 
 WORKDIR /root/
 
-COPY --from=builder /app/main ./
-
-COPY --from=builder /app/docs ./docs
-
+COPY --from=builder /app/target/release/main ./
 COPY --from=builder /app/.env.docker ./.env
-
 COPY --from=builder /app/migrations ./migrations
 
 EXPOSE 8080

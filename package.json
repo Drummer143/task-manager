@@ -3,7 +3,7 @@
 	"version": "0.0.0",
 	"license": "MIT",
 	"scripts": {
-		"dev": "nx run-many --target=dev --projects=task-manager,rest",
+		"dev": "nx run-many --target=dev --projects=task-manager,main",
 		"dev:all": "nx run-many --target=dev --all",
 		"dev:custom": "nx run-many --target=dev",
 		"lint": "nx run-many --target=lint --all --verbose",

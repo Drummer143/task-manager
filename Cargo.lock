@@ -1144,6 +1144,35 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "112b39cec0b298b6c1999fee3e31427f74f676e4cb9879ed1a121b43661a4154"
 
 [[package]]
+name = "main"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "axum-extra",
+ "axum-macros",
+ "bcrypt",
+ "chrono",
+ "dotenvy",
+ "form_urlencoded",
+ "jsonwebtoken",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "serde_path_to_error",
+ "serde_urlencoded",
+ "sqlx",
+ "tokio",
+ "tower",
+ "tower-http",
+ "tracing",
+ "tracing-subscriber",
+ "utoipa",
+ "utoipa-axum",
+ "utoipa-swagger-ui",
+ "uuid",
+]
+
+[[package]]
 name = "matchit"
 version = "0.8.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1702,35 +1731,6 @@ dependencies = [
  "web-sys",
  "webpki-roots 0.26.11",
  "windows-registry",
-]
-
-[[package]]
-name = "rest"
-version = "0.1.0"
-dependencies = [
- "axum",
- "axum-extra",
- "axum-macros",
- "bcrypt",
- "chrono",
- "dotenvy",
- "form_urlencoded",
- "jsonwebtoken",
- "reqwest",
- "serde",
- "serde_json",
- "serde_path_to_error",
- "serde_urlencoded",
- "sqlx",
- "tokio",
- "tower",
- "tower-http",
- "tracing",
- "tracing-subscriber",
- "utoipa",
- "utoipa-axum",
- "utoipa-swagger-ui",
- "uuid",
 ]
 
 [[package]]
