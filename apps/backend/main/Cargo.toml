@@ -1,0 +1,36 @@
+[package]
+name = "main"
+version = "0.1.0"
+edition = "2021"
+
+
+[dependencies]
+axum = "0.8"
+axum-extra = {version = "0.10", features = ["cookie"]}
+axum-macros = "0.5"
+bcrypt = "0.17"
+tokio = { version = "1", features = ["full"] }
+tower = "0.5"
+tower-http = { version = "0.6", features = ["trace", "cors"] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+serde_urlencoded = "0.7"
+serde_path_to_error = "0.1"
+jsonwebtoken = "9.3"
+reqwest = { version = "0.12", features = ["json", "rustls-tls"] }
+form_urlencoded = "1.2"
+tracing = "0.1"
+tracing-subscriber = { version = "0.3", features = ["fmt"] }
+chrono = { version = "0.4", features = ["serde"] }
+dotenvy = "0.15"
+utoipa = { version = "5.3", features = ["uuid", "chrono"] }
+utoipa-axum = "0.2"
+utoipa-swagger-ui = { version = "9.0", features = ["axum"] }
+sqlx = { version = "0.8", features = [
+    "runtime-tokio-rustls",
+    "postgres",
+    "uuid",
+    "macros",
+    "chrono",
+] }
+uuid = { version = "1", features = ["v4", "serde"] }

@@ -2,6 +2,8 @@ export * from "./profile";
 
 export { modifyAxiosInstance } from "./base";
 
+export * from "./auth";
+
 export * from "./workspaces";
 export * from "./workspaceAccesses";
 

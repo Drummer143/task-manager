@@ -15,28 +15,6 @@ services:
         networks:
             - net
 
-    zitadel:
-        image: ghcr.io/zitadel/zitadel:latest
-        container_name: zitadel
-        restart: unless-stopped
-        ports:
-              - 6088:8080
-        volumes:
-          - zitadel_data:/zitadel
-        networks:
-          - net
-        environment:
-            ZITADEL_DATABASE_POSTGRES_HOST: postgres
-            ZITADEL_DATABASE_POSTGRES_PORT: 5432
-            ZITADEL_DATABASE_POSTGRES_DATABASE: ${ZITADEL_POSTGRES_DB_NAME}
-            ZITADEL_DATABASE_POSTGRES_USER_USERNAME: ${POSTGRES_USER}
-            ZITADEL_DATABASE_POSTGRES_USER_PASSWORD: ${POSTGRES_PASSWORD}
-            ZITADEL_DATABASE_POSTGRES_USER_SSL_MODE: disable
-            ZITADEL_DATABASE_POSTGRES_ADMIN_USERNAME: ${POSTGRES_USER}
-            ZITADEL_DATABASE_POSTGRES_ADMIN_PASSWORD: ${POSTGRES_PASSWORD}
-            ZITADEL_DATABASE_POSTGRES_ADMIN_SSL_MODE: disable
-        command: 'start-from-init --masterkey "MasterkeyNeedsToHave32Characters" --tlsMode disabled'
-
     mongo:
         image: mongo:latest
         # restart: always
@@ -89,9 +67,6 @@ services:
             POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
             POSTGRES_SSL_MODE: disable
             MONGO_URL: ${MONGO_URL}
-            ZITADEL_CLIENT_ID: ${ZITADEL_CLIENT_ID}
-            ZITADEL_ISSUER_URL: ${ZITADEL_ISSUER_URL}
-            ZITADEL_OAUTH_PATH: ${ZITADEL_OAUTH_PATH}
 
     mailer-service:
         # restart: always
@@ -136,8 +111,6 @@ services:
         # restart: always
         container_name: frontend
         image: frontend:latest
-        environment:
-            VITE_ZITADEL_CLIENT_ID: ${ZITADEL_CLIENT_ID}
         ports:
             - 1346:80
         networks:
@@ -150,4 +123,4 @@ volumes:
     pgdata:
     mongo_data:
     storage:
-    zitadel_data:
+
