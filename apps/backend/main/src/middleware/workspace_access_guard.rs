@@ -40,7 +40,7 @@ pub async fn workspace_access_guard(
     let workspace_id = workspace_id.unwrap();
 
     let workspace_access = crate::entities::workspace_access::repository::get_workspace_access(
-        &state.db,
+        &state.postgres,
         user_id,
         workspace_id,
     )

@@ -81,7 +81,7 @@ pub async fn get_list_in_workspace(
     ValidatedQuery(query): ValidatedQuery<PageListQuery>,
     Path(workspace_id): Path<Uuid>,
 ) -> Result<Json<Vec<PageResponse>>, ErrorResponse> {
-    let pages = crate::entities::page::service::get_all_in_workspace(&state.db, workspace_id).await;
+    let pages = crate::entities::page::service::get_all_in_workspace(&state.postgres, workspace_id).await;
 
     if let Err(error) = pages {
         return Err(error);
@@ -110,7 +110,7 @@ pub async fn get_list_in_workspace(
                 text: page.text,
                 owner: if include_owner {
                     Some(
-                        crate::entities::user::service::find_by_id(&state.db, page.owner_id)
+                        crate::entities::user::service::find_by_id(&state.postgres, page.owner_id)
                             .await?,
                     )
                 } else {
@@ -118,7 +118,7 @@ pub async fn get_list_in_workspace(
                 },
                 role: Some(
                     crate::entities::page_access::repository::get_page_access(
-                        &state.db,
+                        &state.postgres,
                         page.owner_id,
                         page.id,
                     )
@@ -134,7 +134,7 @@ pub async fn get_list_in_workspace(
                 workspace: if include_workspace {
                     Some(
                         crate::entities::workspace::service::get_by_id(
-                            &state.db,
+                            &state.postgres,
                             page.workspace_id,
                         )
                         .await

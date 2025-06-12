@@ -34,11 +34,11 @@ pub async fn get_by_id(
 ) -> Result<WorkspaceResponse, ErrorResponse> {
     let include = query.include.unwrap_or_default();
 
-    let workspace = crate::entities::workspace::service::get_by_id(&state.db, workspace_id).await?;
+    let workspace = crate::entities::workspace::service::get_by_id(&state.postgres, workspace_id).await?;
 
     let owner = if include.contains(&Include::Owner) {
         Some(
-            crate::entities::user::repository::find_by_id(&state.db, workspace.owner_id)
+            crate::entities::user::repository::find_by_id(&state.postgres, workspace.owner_id)
                 .await
                 .map_err(ErrorResponse::from)?,
         )
@@ -48,7 +48,7 @@ pub async fn get_by_id(
 
     let pages = if include.contains(&Include::Pages) {
         Some(
-            crate::entities::page::service::get_all_in_workspace(&state.db, workspace_id)
+            crate::entities::page::service::get_all_in_workspace(&state.postgres, workspace_id)
                 .await
                 .map_err(ErrorResponse::from)?
                 .iter()
@@ -60,7 +60,7 @@ pub async fn get_by_id(
     };
 
     let role = crate::entities::workspace_access::repository::get_workspace_access(
-        &state.db,
+        &state.postgres,
         user_id,
         workspace_id,
     )

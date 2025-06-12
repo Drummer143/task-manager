@@ -31,7 +31,7 @@ pub async fn create_page(
     Path(workspace_id): Path<Uuid>,
     Json(create_page_dto): Json<CreatePageDto>,
 ) -> Result<PageResponse, ErrorResponse> {
-    crate::entities::page::service::create(&state.db, create_page_dto, workspace_id, user_id)
+    crate::entities::page::service::create(&state.postgres, create_page_dto, workspace_id, user_id)
         .await
         .map(PageResponse::from)
 }

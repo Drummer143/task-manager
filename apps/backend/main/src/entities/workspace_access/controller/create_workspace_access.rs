@@ -48,7 +48,7 @@ pub async fn create_workspace_access(
         );
     }
 
-    let target_user = crate::entities::user::service::find_by_id(&state.db, dto.user_id)
+    let target_user = crate::entities::user::service::find_by_id(&state.postgres, dto.user_id)
         .await
         .map_err(|e| {
             if e.status_code == 404 {
@@ -62,7 +62,7 @@ pub async fn create_workspace_access(
         })?;
 
     let workspace_access = crate::entities::workspace_access::service::create_workspace_access(
-        &state.db,
+        &state.postgres,
         target_user.id,
         workspace_id,
         dto.role,

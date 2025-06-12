@@ -30,7 +30,7 @@ pub async fn update_page_access(
     Json(dto): Json<crate::entities::page_access::dto::UpdatePageAccessDto>,
 ) -> impl axum::response::IntoResponse {
     let user_page_access =
-        crate::entities::page_access::service::get_page_access(&state.db, user_id, page_id)
+        crate::entities::page_access::service::get_page_access(&state.postgres, user_id, page_id)
             .await
             .map_err(|e| {
                 if e.status_code == 404 {
@@ -55,7 +55,7 @@ pub async fn update_page_access(
     // TODO: complete access checks
 
     let page_access = crate::entities::page_access::service::update_page_access(
-        &state.db,
+        &state.postgres,
         dto.user_id,
         page_id,
         dto.role,

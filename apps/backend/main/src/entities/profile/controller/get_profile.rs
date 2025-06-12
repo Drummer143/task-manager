@@ -25,7 +25,7 @@ pub async fn get_profile(
     ValidatedQuery(query): ValidatedQuery<GetProfileQuery>,
     mut cookie_jar: axum_extra::extract::CookieJar,
 ) -> Result<impl axum::response::IntoResponse, ErrorResponse> {
-    let user = crate::entities::user::service::find_by_id(&state.db, user_id).await?;
+    let user = crate::entities::user::service::find_by_id(&state.postgres, user_id).await?;
 
     let mut profile_response = GetProfileDto {
         user,
@@ -46,7 +46,7 @@ pub async fn get_profile(
 
     if workspace_id.is_none() {
         let workspace = crate::entities::workspace::service::get_any_workspace_user_has_access_to(
-            &state.db, user_id,
+            &state.postgres, user_id,
         )
         .await?;
 
@@ -63,7 +63,7 @@ pub async fn get_profile(
         let workspace_id = uuid::Uuid::parse_str(&workspace_id).unwrap();
 
         let workspace =
-            crate::entities::workspace::service::get_by_id(&state.db, workspace_id).await?;
+            crate::entities::workspace::service::get_by_id(&state.postgres, workspace_id).await?;
 
         profile_response.workspace = Some(workspace);
     }

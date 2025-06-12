@@ -36,7 +36,7 @@ pub async fn page_access_guard(
     let user_id = user_id.unwrap().clone();
     let page_id = page_id.unwrap();
 
-    let page_access = crate::entities::page_access::service::get_page_access(&state.db, user_id, page_id).await;
+    let page_access = crate::entities::page_access::service::get_page_access(&state.postgres, user_id, page_id).await;
 
     if let Err(e) = page_access {
         let body = serde_json::to_string(&e)

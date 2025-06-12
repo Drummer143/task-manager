@@ -34,7 +34,7 @@ pub async fn get_list(
     let include = query.include.unwrap_or_default();
 
     let (result, count) = crate::entities::workspace::service::get_list(
-        &state.db,
+        &state.postgres,
         user_id,
         query.limit,
         query.offset,

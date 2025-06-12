@@ -30,7 +30,7 @@ pub async fn create_page_access(
     Json(dto): Json<crate::entities::page_access::dto::CreatePageAccessDto>,
 ) -> impl axum::response::IntoResponse {
     let user_page_access = crate::entities::page_access::service::get_page_access(
-        &state.db,
+        &state.postgres,
         user_id,
         page_id,
     )
@@ -66,7 +66,7 @@ pub async fn create_page_access(
         );
     }
 
-    let target_user = crate::entities::user::service::find_by_id(&state.db, dto.user_id)
+    let target_user = crate::entities::user::service::find_by_id(&state.postgres, dto.user_id)
         .await
         .map_err(|e| {
             if e.status_code == 404 {
@@ -80,7 +80,7 @@ pub async fn create_page_access(
         })?;
 
     let page_access = crate::entities::page_access::service::create_page_access(
-        &state.db,
+        &state.postgres,
         target_user.id,
         page_id,
         dto.role,
