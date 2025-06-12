@@ -26,20 +26,20 @@ services:
         networks:
             - net
 
-    # rmq:
-    #   image: rabbitmq:management-alpine
-    #   ports:
-    #     - 5672:5672
-    #     - 15672:15672
-    #   depends_on:
-    #     - postgres
-    #   environment:
-    #     RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
-    #     RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
-    #   networks:
-    #     - net
-    #   volumes:
-    #     - rmqdata:/var/lib/rabbitmq
+    rmq:
+        image: rabbitmq:management-alpine
+        ports:
+            - 5672:5672
+            - 15672:15672
+        depends_on:
+            - postgres
+        environment:
+            RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
+            RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
+        networks:
+            - net
+        volumes:
+            - rmqdata:/var/lib/rabbitmq
 
     main-service:
         # restart: always
@@ -123,4 +123,5 @@ volumes:
     pgdata:
     mongo_data:
     storage:
+    rmqdata:
 

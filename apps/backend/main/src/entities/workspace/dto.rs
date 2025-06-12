@@ -9,7 +9,13 @@ use crate::entities::{
 
 #[derive(Debug, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct WorkspaceDto {
+pub struct UpdateWorkspaceDto {
+    pub name: String,
+}
+
+#[derive(Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CreateWorkspaceDto {
     pub name: String,
     pub owner_id: Uuid,
 }

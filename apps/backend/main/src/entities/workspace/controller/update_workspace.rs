@@ -1,12 +1,20 @@
-use axum::{extract::State, Extension, Json};
+use std::collections::HashMap;
 
-use crate::shared::error_handlers::handlers::ErrorResponse;
+use axum::{
+    extract::{Path, State},
+    Extension, Json,
+};
+use uuid::Uuid;
+
+use crate::{
+    entities::workspace::dto::WorkspaceResponse, shared::error_handlers::handlers::ErrorResponse,
+};
 
 #[utoipa::path(
     put,
     path = "/workspaces/{workspace_id}",
     responses(
-        (status = 200, description = "Workspace updated successfully", body = crate::entities::workspace::dto::WorkspaceRequestDto),
+        (status = 200, description = "Workspace updated successfully", body = WorkspaceResponse),
         (status = 400, description = "Bad request", body = ErrorResponse),
         (status = 401, description = "Unauthorized", body = ErrorResponse),
         (status = 500, description = "Internal server error", body = ErrorResponse),
@@ -20,18 +28,36 @@ use crate::shared::error_handlers::handlers::ErrorResponse;
 #[axum_macros::debug_handler]
 pub async fn update_workspace(
     State(state): State<crate::types::app_state::AppState>,
-    Extension(user_id): Extension<uuid::Uuid>,
+    Extension(user_id): Extension<Uuid>,
+    Path(workspace_id): Path<Uuid>,
     Json(dto): Json<crate::entities::workspace::dto::WorkspaceRequestDto>,
-) -> Result<crate::entities::workspace::dto::WorkspaceResponse, ErrorResponse> {
-    crate::entities::workspace::service::update_workspace(
+) -> Result<WorkspaceResponse, ErrorResponse> {
+    let workspace = crate::entities::workspace::service::update_workspace(
         &state.postgres,
-        user_id,
-        crate::entities::workspace::dto::WorkspaceDto {
-            name: dto.name,
-            owner_id: user_id,
-        },
+        workspace_id,
+        crate::entities::workspace::dto::UpdateWorkspaceDto { name: dto.name },
     )
     .await
-    .map_err(|_| ErrorResponse::internal_server_error())
-    .map(|w| w.into())
+    .map(WorkspaceResponse::from)?;
+
+    let payload = HashMap::from([
+        ("message", format!("workspace:{}", workspace.id)),
+        ("sender", user_id.to_string()),
+    ]);
+    let payload = serde_json::to_vec(&payload);
+
+    if let Ok(payload) = payload {
+        state
+            .rabbitmq
+            .basic_publish(
+                "",
+                "refresh_signals",
+                lapin::options::BasicPublishOptions::default(),
+                &payload,
+                lapin::BasicProperties::default(),
+            )
+            .await;
+    }
+
+    Ok(workspace)
 }

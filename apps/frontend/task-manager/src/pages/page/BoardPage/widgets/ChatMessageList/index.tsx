@@ -1,13 +1,11 @@
 import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 
-import { InfiniteData, useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
+import { InfiniteData, useInfiniteQuery } from "@tanstack/react-query";
 import { getMessages, ResponseWithPagination, TaskChatMessage } from "@task-manager/api";
 import { Divider } from "antd";
 import { createStyles } from "antd-style";
 import dayjs from "dayjs";
 
-import { useAuthStore } from "../../../../../app/store/auth";
-import { SubscriptionId, useSocketStore, WebSocketEventListenerMap } from "../../../../../app/store/socket";
 import ChatMessage from "../ChatMessage";
 
 interface ChatMessageListProps {
@@ -43,7 +41,12 @@ const useStyles = createStyles(({ css }) => ({
 	`
 }));
 
-const ChatMessageList: React.FC<ChatMessageListProps> = ({ pageId, taskId, workspaceId, enabled }) => {
+const ChatMessageList: React.FC<ChatMessageListProps> = ({
+	pageId,
+	taskId,
+	workspaceId,
+	enabled
+}) => {
 	const [items, setItems] = useState<TaskChatMessage[]>([]);
 
 	const { container, dateDivider, scroll } = useStyles().styles;
@@ -51,10 +54,6 @@ const ChatMessageList: React.FC<ChatMessageListProps> = ({ pageId, taskId, works
 	const scrollRef = useRef<HTMLDivElement>(null);
 	const firstSkipped = useRef(false);
 	const observerTargetRef = useRef<HTMLDivElement>(null);
-
-	const currentUserId = useAuthStore(state => state.user?.id)!;
-
-	const queryClient = useQueryClient();
 
 	const { data, isFetching, hasNextPage, isPlaceholderData, fetchNextPage } = useInfiniteQuery<
 		ResponseWithPagination<TaskChatMessage>,
@@ -66,8 +65,10 @@ const ChatMessageList: React.FC<ChatMessageListProps> = ({ pageId, taskId, works
 		queryKey: ["chat", taskId],
 		initialPageParam: 0,
 		enabled,
-		getNextPageParam: lastPage => (lastPage.meta.hasMore ? lastPage.meta.offset + lastPage.meta.limit : undefined),
-		queryFn: ({ pageParam }) => getMessages({ pageId, taskId, workspaceId, limit: 20, offset: pageParam }),
+		getNextPageParam: lastPage =>
+			lastPage.meta.hasMore ? lastPage.meta.offset + lastPage.meta.limit : undefined,
+		queryFn: ({ pageParam }) =>
+			getMessages({ pageId, taskId, workspaceId, limit: 20, offset: pageParam }),
 		refetchOnWindowFocus: false,
 		refetchInterval: 0,
 		placeholderData: {
@@ -128,7 +129,10 @@ const ChatMessageList: React.FC<ChatMessageListProps> = ({ pageId, taskId, works
 
 		const observer = new IntersectionObserver(
 			entries => {
-				if (!requestMetaRef.current.hasNextPage && !requestMetaRef.current.isPlaceholderData) {
+				if (
+					!requestMetaRef.current.hasNextPage &&
+					!requestMetaRef.current.isPlaceholderData
+				) {
 					return observer.disconnect();
 				}
 
@@ -145,7 +149,10 @@ const ChatMessageList: React.FC<ChatMessageListProps> = ({ pageId, taskId, works
 					requestMetaRef.current.fetchNextPage();
 				} else if (requestMetaRef.current.isFetching || requestMetaRef.current.isFetching) {
 					const interval = setInterval(() => {
-						if (!requestMetaRef.current.isFetching && !requestMetaRef.current.isFetching) {
+						if (
+							!requestMetaRef.current.isFetching &&
+							!requestMetaRef.current.isFetching
+						) {
 							requestMetaRef.current.fetchNextPage();
 							clearInterval(interval);
 						}
@@ -178,34 +185,6 @@ const ChatMessageList: React.FC<ChatMessageListProps> = ({ pageId, taskId, works
 		requestMetaRef.current = { hasNextPage, isFetching, isPlaceholderData, fetchNextPage };
 	}, [fetchNextPage, hasNextPage, isFetching, isPlaceholderData]);
 
-	useEffect(() => {
-		const subId: SubscriptionId = `chat:${taskId}`;
-		const handleNewMessage: WebSocketEventListenerMap["message"] = data => {
-			if (data.sub === subId) {
-				// queryClient.invalidateQueries({ queryKey: ["chat", taskId] });
-
-				setItems(prev => [data.body, ...prev]);
-
-				if (data.body.author.id === currentUserId) {
-					setTimeout(() =>
-						scrollRef.current?.scrollTo({
-							top: scrollRef.current.scrollHeight,
-							behavior: "smooth"
-						})
-					);
-				}
-			}
-		};
-
-		useSocketStore.getState().sendMessage({ type: "sub", body: `chat:${taskId}` });
-		useSocketStore.getState().listen("message", handleNewMessage);
-
-		return () => {
-			useSocketStore.getState().sendMessage({ type: "unsub", body: `chat:${taskId}` });
-			useSocketStore.getState().unlisten("message", handleNewMessage);
-		};
-	}, [currentUserId, queryClient, taskId]);
-
 	return (
 		<div className={container}>
 			<div ref={scrollRef} className={scroll}>
@@ -218,3 +197,4 @@ const ChatMessageList: React.FC<ChatMessageListProps> = ({ pageId, taskId, works
 };
 
 export default ChatMessageList;
+

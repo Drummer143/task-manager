@@ -1,9 +1,9 @@
 import React, { useMemo } from "react";
 
 import { useMutation } from "@tanstack/react-query";
-import { parseApiError, resetPassword } from "@task-manager/api";
+import { parseApiError /* resetPassword */ } from "@task-manager/api";
 import { App, Form, Input, Typography } from "antd";
-import { Link } from "react-router-dom";
+import { Link } from "react-router";
 
 import { withAuthPageCheck } from "../../shared/HOCs/withAuthPageCheck";
 import AuthPageMessageWrapper from "../../shared/ui/AuthPageMessageWrapper";
@@ -16,7 +16,7 @@ const ResetPassword: React.FC = () => {
 	const message = App.useApp().message;
 
 	const { mutateAsync, isSuccess, isPending, error, reset } = useMutation({
-		mutationFn: resetPassword,
+		mutationFn: () => new Promise(resolve => setTimeout(resolve, 1000)),
 		onError: error => message.error(error.message ?? "Failed to reset password")
 	});
 
@@ -28,7 +28,8 @@ const ResetPassword: React.FC = () => {
 				<Typography.Title level={3}>Password reset email sent</Typography.Title>
 
 				<Typography.Paragraph>
-					We have sent you an email with a link to reset your password. Please check your inbox.
+					We have sent you an email with a link to reset your password. Please check your
+					inbox.
 				</Typography.Paragraph>
 
 				<Link to="/login">Back to login</Link>
@@ -47,10 +48,16 @@ const ResetPassword: React.FC = () => {
 			bottomLink={<Link to="/login">Back to login</Link>}
 		>
 			<Form.Item name="email" label="Email" rules={emailRule}>
-				<Input placeholder="email@example.com" type="email" autoComplete="email" name="email" />
+				<Input
+					placeholder="email@example.com"
+					type="email"
+					autoComplete="email"
+					name="email"
+				/>
 			</Form.Item>
 		</AuthForm>
 	);
 };
 
 export default withAuthPageCheck(ResetPassword, false);
+
