@@ -7,13 +7,12 @@ use super::{dto::WorkspaceSortBy, model::WorkspaceWithRole};
 
 pub async fn create<'a>(
     executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
-    dto: super::dto::WorkspaceDto,
+    dto: super::dto::CreateWorkspaceDto,
 ) -> Result<Workspace, sqlx::Error> {
     sqlx::query_as::<_, Workspace>(
         "INSERT INTO workspaces (name, owner_id) VALUES ($1, $2) RETURNING *",
     )
     .bind(dto.name)
-    .bind(dto.owner_id)
     .fetch_one(executor)
     .await
 }
@@ -21,7 +20,7 @@ pub async fn create<'a>(
 pub async fn update<'a>(
     executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
     workspace_id: Uuid,
-    dto: super::dto::WorkspaceDto,
+    dto: super::dto::UpdateWorkspaceDto,
 ) -> Result<Workspace, sqlx::Error> {
     sqlx::query_as::<_, Workspace>("UPDATE workspaces SET name = $1 WHERE id = $2 RETURNING *")
         .bind(dto.name)

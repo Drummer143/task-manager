@@ -81,7 +81,7 @@ pub async fn get_list(
 
 pub async fn create_workspace(
     db: &sqlx::postgres::PgPool,
-    dto: super::dto::WorkspaceDto,
+    dto: super::dto::CreateWorkspaceDto,
 ) -> Result<WorkspaceInfo, ErrorResponse> {
     let mut tx = db.begin().await.map_err(ErrorResponse::from)?;
 
@@ -120,7 +120,7 @@ pub async fn create_workspace(
 pub async fn update_workspace(
     db: &sqlx::postgres::PgPool,
     workspace_id: Uuid,
-    dto: super::dto::WorkspaceDto,
+    dto: super::dto::UpdateWorkspaceDto,
 ) -> Result<WorkspaceInfo, ErrorResponse> {
     let workspace = super::repository::update(db, workspace_id, dto)
         .await

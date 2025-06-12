@@ -79,7 +79,7 @@ pub async fn register(
 
     crate::entities::workspace::repository::create(
         db,
-        crate::entities::workspace::dto::WorkspaceDto {
+        crate::entities::workspace::dto::CreateWorkspaceDto {
             name: format!("{}'s workspace", user.username),
             owner_id: user.id,
         },

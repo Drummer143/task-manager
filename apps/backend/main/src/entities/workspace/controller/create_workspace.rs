@@ -26,7 +26,7 @@ pub async fn create_workspace(
 
     let workspace = crate::entities::workspace::service::create_workspace(
         &state.postgres,
-        crate::entities::workspace::dto::WorkspaceDto {
+        crate::entities::workspace::dto::CreateWorkspaceDto {
             name: json.name,
             owner_id: user_id,
         },

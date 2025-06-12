@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use axum::http;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use utoipa::OpenApi;
@@ -19,8 +21,9 @@ async fn main() {
     let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL not found");
     let jwt_secret = std::env::var("JWT_SECRET").expect("JWT_SECRET not found");
     let mongo_url = std::env::var("MONGODB_URL").expect("MONGODB_URL not found");
+    let rabbitmq_url = std::env::var("RABBITMQ_URL").expect("RABBITMQ_URL not found");
 
-    let (postgres, mongo) = db_connections::init_databases(&db_url, &mongo_url).await;
+    let (postgres, mongo, rabbitmq) = db_connections::init_databases(&db_url, &mongo_url, &rabbitmq_url).await;
 
     let cors = tower_http::cors::CorsLayer::new()
         .allow_origin(tower_http::cors::AllowOrigin::exact(
@@ -45,6 +48,7 @@ async fn main() {
     let app_state = types::app_state::AppState {
         postgres,
         mongo,
+        rabbitmq: Arc::new(rabbitmq),
         jwt_secret: jwt_secret.as_bytes().to_vec(),
     };
 

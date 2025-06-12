@@ -10,6 +10,7 @@ defmodule SocketServer.Application do
     children = [
       SocketServerWeb.Telemetry,
       SocketServer.Repo,
+      SocketServer.Consumer,
       {DNSCluster, query: Application.get_env(:socket_server, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: SocketServer.PubSub},
       # Start the Finch HTTP client for sending emails
