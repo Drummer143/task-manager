@@ -26,7 +26,7 @@ pub async fn update_workspace_access(
     Json(dto): Json<crate::entities::workspace_access::dto::UpdateWorkspaceAccessDto>,
 ) -> impl axum::response::IntoResponse {
     let user_workspace_access = crate::entities::workspace_access::service::get_workspace_access(
-        &state.db,
+        &state.postgres,
         user_id,
         workspace_id,
     )
@@ -54,7 +54,7 @@ pub async fn update_workspace_access(
     // TODO: complete access checks
 
     let workspace_access = crate::entities::workspace_access::service::update_workspace_access(
-        &state.db,
+        &state.postgres,
         dto.user_id,
         workspace_id,
         dto.role,

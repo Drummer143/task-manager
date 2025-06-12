@@ -27,7 +27,7 @@ pub async fn change_status(
     Path((_, _, task_id)): Path<(Uuid, Uuid, Uuid)>,
     Json(dto): Json<ChangeStatusDto>,
 ) -> Result<TaskResponse, ErrorResponse> {
-    crate::entities::task::service::change_status(&state.db, task_id, dto)
+    crate::entities::task::service::change_status(&state.postgres, task_id, dto)
         .await
         .map(TaskResponse::from)
 }

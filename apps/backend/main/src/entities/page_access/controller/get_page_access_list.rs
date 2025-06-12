@@ -27,7 +27,7 @@ pub async fn get_page_access_list(
     crate::shared::error_handlers::handlers::ErrorResponse,
 > {
     let user_page_access = crate::entities::page_access::service::get_page_access(
-        &state.db,
+        &state.postgres,
         user_id,
         page_id,
     )
@@ -54,7 +54,7 @@ pub async fn get_page_access_list(
 
     let page_access_list =
         crate::entities::page_access::service::get_page_access_list(
-            &state.db,
+            &state.postgres,
             page_id,
         )
         .await

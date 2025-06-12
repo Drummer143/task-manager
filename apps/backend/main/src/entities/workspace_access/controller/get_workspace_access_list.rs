@@ -27,7 +27,7 @@ pub async fn get_workspace_access_list(
     ErrorResponse,
 > {
     let user_workspace_access = crate::entities::workspace_access::service::get_workspace_access(
-        &state.db,
+        &state.postgres,
         user_id,
         workspace_id,
     )
@@ -52,7 +52,7 @@ pub async fn get_workspace_access_list(
 
     let workspace_access_list =
         crate::entities::workspace_access::service::get_workspace_access_list(
-            &state.db,
+            &state.postgres,
             workspace_id,
         )
         .await

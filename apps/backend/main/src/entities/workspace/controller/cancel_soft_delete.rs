@@ -16,7 +16,7 @@ pub async fn cancel_soft_delete(
     State(state): State<crate::types::app_state::AppState>,
     Path(workspace_id): Path<uuid::Uuid>,
 ) -> impl IntoResponse {
-    crate::entities::workspace::service::cancel_soft_delete(&state.db, workspace_id)
+    crate::entities::workspace::service::cancel_soft_delete(&state.postgres, workspace_id)
         .await
         .map_err(|_| ErrorResponse::internal_server_error())
 }

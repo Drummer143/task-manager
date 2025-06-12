@@ -22,5 +22,5 @@ pub async fn register(
     State(state): State<crate::types::app_state::AppState>,
     Json(body): Json<auth::dto::RegisterDto>,
 ) -> impl IntoResponse {
-    auth::service::register(&state.db, &body).await
+    auth::service::register(&state.postgres, &body).await
 }

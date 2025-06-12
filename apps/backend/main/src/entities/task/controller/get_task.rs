@@ -22,11 +22,11 @@ pub async fn get_task<'a>(
     State(state): State<crate::types::app_state::AppState>,
     Path((_, _, task_id)): Path<(Uuid, Uuid, Uuid)>,
 ) -> Result<TaskResponse, ErrorResponse> {
-    let task = crate::entities::task::service::get_task_by_id(&state.db, task_id).await?;
+    let task = crate::entities::task::service::get_task_by_id(&state.postgres, task_id).await?;
 
-    let reporter = crate::entities::user::service::find_by_id(&state.db, task.reporter_id).await?;
+    let reporter = crate::entities::user::service::find_by_id(&state.postgres, task.reporter_id).await?;
     let assignee = if let Some(assignee_id) = task.assignee_id {
-        Some(crate::entities::user::service::find_by_id(&state.db, assignee_id).await?)
+        Some(crate::entities::user::service::find_by_id(&state.postgres, assignee_id).await?)
     } else {
         None
     };

@@ -69,7 +69,7 @@ pub async fn get_list(
     }
 
     let (users, total) = crate::entities::user::service::get_list(
-        &state.db,
+        &state.postgres,
         query.limit,
         query.offset,
         Some(filters),

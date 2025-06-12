@@ -24,7 +24,7 @@ pub async fn update_workspace(
     Json(dto): Json<crate::entities::workspace::dto::WorkspaceRequestDto>,
 ) -> Result<crate::entities::workspace::dto::WorkspaceResponse, ErrorResponse> {
     crate::entities::workspace::service::update_workspace(
-        &state.db,
+        &state.postgres,
         user_id,
         crate::entities::workspace::dto::WorkspaceDto {
             name: dto.name,
