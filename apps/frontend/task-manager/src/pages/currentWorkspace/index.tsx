@@ -1,7 +1,13 @@
 import React, { useMemo } from "react";
 
 import { useQuery } from "@tanstack/react-query";
-import { getWorkspace, getWorkspaceAccess, parseApiError, updateWorkspaceAccess } from "@task-manager/api";
+import {
+	createWorkspaceAccess,
+	getWorkspace,
+	getWorkspaceAccess,
+	parseApiError,
+	updateWorkspaceAccess
+} from "@task-manager/api";
 import { Alert, Divider, Typography } from "antd";
 
 import { useStyles } from "./styles";
@@ -18,7 +24,11 @@ const CurrentWorkspace: React.FC = () => {
 
 	const { container } = useStyles().styles;
 
-	const { data: workspace, isLoading: isLoadingWorkspace, error: errorWorkspace } = useQuery({
+	const {
+		data: workspace,
+		isLoading: isLoadingWorkspace,
+		error: errorWorkspace
+	} = useQuery({
 		queryKey: ["workspace", "owner", workspaceId],
 		queryFn: () => getWorkspace({ workspaceId, include: ["owner"] })
 	});
@@ -27,7 +37,8 @@ const CurrentWorkspace: React.FC = () => {
 		() => ({
 			queryKey: ["access", workspaceId],
 			updateAccess: body => updateWorkspaceAccess({ workspaceId, body }),
-			getAccessList: () => getWorkspaceAccess({ workspaceId })
+			getAccessList: () => getWorkspaceAccess({ workspaceId }),
+			createAccess: body => createWorkspaceAccess({ workspaceId, body })
 		}),
 		[workspaceId]
 	);

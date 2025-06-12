@@ -6,6 +6,7 @@ use sqlx::{encode, postgres, Decode, FromRow, Postgres, Type};
 use uuid::Uuid;
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, utoipa::ToSchema)]
+#[serde(rename_all = "camelCase")]
 pub enum PageType {
     Text,
     Board,

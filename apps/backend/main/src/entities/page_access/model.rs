@@ -8,16 +8,22 @@ use uuid::Uuid;
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq, utoipa::ToSchema, PartialOrd)]
 #[serde(rename_all = "camelCase")]
 pub enum Role {
-    Owner,
-    Admin,
-    Member,
-    Commentator,
     Guest,
+    Commentator,
+    Member,
+    Admin,
+    Owner,
 }
 
 impl std::fmt::Display for Role {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.to_string())
+        match self {
+            Role::Owner => write!(f, "owner"),
+            Role::Admin => write!(f, "admin"),
+            Role::Member => write!(f, "member"),
+            Role::Commentator => write!(f, "commentator"),
+            Role::Guest => write!(f, "guest"),
+        }
     }
 }
 

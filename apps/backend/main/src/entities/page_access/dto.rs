@@ -16,7 +16,7 @@ pub struct UpdatePageAccessDto {
     pub role: Option<Role>,
 }
 
-#[derive(Debug, serde::Serialize, utoipa::ToSchema)]
+#[derive(Debug, serde::Serialize, utoipa::ToSchema, Clone)]
 pub struct PageAccessResponse {
     pub id: Uuid,
     pub user: crate::entities::user::model::User,

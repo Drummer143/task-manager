@@ -1,13 +1,17 @@
-use std::convert::Infallible;
+use std::collections::HashMap;
 
 use chrono::{DateTime, Utc};
 use serde::Deserialize;
 use uuid::Uuid;
 
-use crate::entities::{
-    page::model::{Page, PageType},
-    user::model::User,
-    workspace::dto::WorkspaceResponseWithoutInclude,
+use crate::{
+    entities::{
+        page::model::{Page, PageType},
+        task::dto::TaskResponse,
+        user::model::User,
+        workspace::dto::WorkspaceResponseWithoutInclude,
+    },
+    shared::error_handlers::{codes, handlers::ErrorResponse},
 };
 
 #[derive(Debug, Deserialize, utoipa::ToSchema)]
@@ -119,6 +123,7 @@ pub struct PageResponse {
     pub r#type: PageType,
     pub title: String,
     pub text: Option<String>,
+    pub role: Option<crate::entities::page_access::model::Role>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub owner: Option<User>,
@@ -128,6 +133,8 @@ pub struct PageResponse {
     pub parent_page: Option<ChildPageResponse>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub child_pages: Option<Vec<ChildPageResponse>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub tasks: Option<Vec<TaskResponse>>,
 
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
@@ -147,10 +154,12 @@ impl From<super::model::Page> for PageResponse {
             r#type: page.r#type,
             title: page.title,
             text: page.text,
+            role: None,
             owner: None,
             workspace: None,
             parent_page: None,
             child_pages: None,
+            tasks: None,
             created_at: page.created_at,
             updated_at: page.updated_at,
             deleted_at: page.deleted_at,
@@ -169,21 +178,28 @@ pub enum PageListFormat {
 #[serde(rename_all = "camelCase")]
 pub enum PageInclude {
     Owner,
+    Tasks,
     Workspace,
     ParentPage,
     ChildPages,
 }
 
 impl std::str::FromStr for PageInclude {
-    type Err = Infallible;
+    type Err = ErrorResponse;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
             "owner" => Ok(PageInclude::Owner),
+            "tasks" => Ok(PageInclude::Tasks),
             "workspace" => Ok(PageInclude::Workspace),
             "parentPage" => Ok(PageInclude::ParentPage),
             "childPages" => Ok(PageInclude::ChildPages),
-            _ => unreachable!(),
+            _ => {
+                return Err(ErrorResponse::bad_request(
+                    codes::BadRequestErrorCode::InvalidQueryParams,
+                    Some(HashMap::from([("include".to_string(), s.to_string())])),
+                ));
+            }
         }
     }
 }
@@ -205,13 +221,18 @@ pub enum PageListInclude {
 }
 
 impl std::str::FromStr for PageListInclude {
-    type Err = Infallible;
+    type Err = ErrorResponse;
 
     fn from_str(s: &str) -> Result<Self, Self::Err> {
         match s {
             "owner" => Ok(PageListInclude::Owner),
             "workspace" => Ok(PageListInclude::Workspace),
-            _ => unreachable!(),
+            _ => {
+                return Err(ErrorResponse::bad_request(
+                    codes::BadRequestErrorCode::InvalidQueryParams,
+                    Some(HashMap::from([("include".to_string(), s.to_string())])),
+                ));
+            }
         }
     }
 }

@@ -39,14 +39,22 @@ pub async fn workspace_access_guard(
     let user_id = user_id.unwrap().clone();
     let workspace_id = workspace_id.unwrap();
 
-    let workspace_access = crate::entities::workspace_access::service::get_workspace_access(&state.db, user_id, workspace_id).await;
+    let workspace_access = crate::entities::workspace_access::repository::get_workspace_access(
+        &state.db,
+        user_id,
+        workspace_id,
+    )
+    .await;
 
-    if let Err(e) = workspace_access {
-        let body = serde_json::to_string(&e)
+    if workspace_access.is_err() {
+        let body = serde_json::to_string(&ErrorResponse::forbidden(
+            codes::ForbiddenErrorCode::InsufficientPermissions,
+            None,
+        ))
         .unwrap();
 
         return axum::response::Response::builder()
-            .status(e.status_code)
+            .status(axum::http::StatusCode::FORBIDDEN)
             .body(axum::body::Body::from(body))
             .unwrap();
     }

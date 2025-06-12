@@ -1,6 +1,6 @@
 import { axiosInstance } from "./base";
 
-import { Workspace } from "../types";
+import { PaginationQuery, ResponseWithPagination, Workspace } from "../types";
 
 type GetWorkspaceIncludes = "owner" | "pages";
 
@@ -17,11 +17,18 @@ interface GetWorkspaceArgs<T extends GetWorkspaceIncludes | undefined = undefine
 	include?: T[];
 }
 
-export const getWorkspaceList = async <T extends GetWorkspaceIncludes | undefined = undefined>(include?: T[]) =>
+export const getWorkspaceList = async <T extends GetWorkspaceIncludes | undefined = undefined>(
+	query?: PaginationQuery & {
+		include?: T[];
+	}
+) =>
 	(
-		await axiosInstance.get<ResponseWithIncludeFilter<T>[]>("/workspaces", {
-			params: { include: include?.join(",") }
-		})
+		await axiosInstance.get<ResponseWithPagination<ResponseWithIncludeFilter<T>>>(
+			"/workspaces",
+			{
+				params: query
+			}
+		)
 	).data;
 
 export const getWorkspace = async <T extends GetWorkspaceIncludes | undefined = undefined>({
@@ -55,3 +62,4 @@ interface UpdateWorkspaceArgs extends Ids {
 
 export const updateWorkspace = async ({ workspaceId, body }: UpdateWorkspaceArgs) =>
 	(await axiosInstance.put<Workspace>(`/workspaces/${workspaceId}`, body)).data;
+

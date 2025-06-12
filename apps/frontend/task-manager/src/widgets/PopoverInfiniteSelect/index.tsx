@@ -61,11 +61,16 @@ const PopoverInfiniteSelect = <
 
 	const renderItem = useCallback(
 		(item: ItemValue, index: number, array: ItemValue[]) => {
-			const isSelected = !!valueRef.current && getItemValue(valueRef.current) === getItemValue(item);
+			const isSelected =
+				!!valueRef.current && getItemValue(valueRef.current) === getItemValue(item);
 			const renderedItem = propsRenderItem(item, index, array);
 
 			return (
-				<div key={index} className={itemWrapper} onClick={isSelected ? onClose : () => handleSelectItem(item)}>
+				<div
+					key={index}
+					className={itemWrapper}
+					onClick={isSelected ? onClose : () => handleSelectItem(item)}
+				>
 					{renderedItem}
 				</div>
 			);

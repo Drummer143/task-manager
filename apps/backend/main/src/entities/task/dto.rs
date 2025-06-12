@@ -28,7 +28,7 @@ pub struct ChangeStatusDto {
     pub status: String,
 }
 
-#[derive(Debug, Serialize, utoipa::ToSchema)]
+#[derive(Debug, Serialize, utoipa::ToSchema, Clone)]
 pub struct TaskResponse {
     pub id: Uuid,
     pub title: String,
@@ -63,6 +63,6 @@ impl From<super::model::Task> for TaskResponse {
 
 impl axum::response::IntoResponse for TaskResponse {
     fn into_response(self) -> axum::response::Response {
-        (axum::http::StatusCode::OK, self).into_response()
+        (axum::http::StatusCode::OK, axum::Json(self)).into_response()
     }
 }

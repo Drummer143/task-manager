@@ -1,9 +1,7 @@
-use std::str::FromStr;
-
 use axum::{
-    extract::{Path, State},
-    Json,
+    extract::{Path, State}, Extension, Json
 };
+use uuid::Uuid;
 
 use crate::shared::error_handlers::handlers::ErrorResponse;
 
@@ -27,15 +25,10 @@ use crate::shared::error_handlers::handlers::ErrorResponse;
 )]
 pub async fn create_page_access(
     State(state): State<crate::types::app_state::AppState>,
-    // Path(workspace_id): Path<uuid::Uuid>,
-    Path(page_id): Path<uuid::Uuid>,
-    cookies: axum_extra::extract::CookieJar,
+    Extension(user_id): Extension<Uuid>,
+    Path((_, page_id)): Path<(Uuid, Uuid)>,
     Json(dto): Json<crate::entities::page_access::dto::CreatePageAccessDto>,
 ) -> impl axum::response::IntoResponse {
-    let user_id = cookies.get("user_id").unwrap().value();
-
-    let user_id = uuid::Uuid::from_str(user_id).unwrap();
-
     let user_page_access = crate::entities::page_access::service::get_page_access(
         &state.db,
         user_id,

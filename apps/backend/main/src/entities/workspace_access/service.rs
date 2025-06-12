@@ -1,6 +1,9 @@
 use uuid::Uuid;
 
-use crate::{entities::{workspace_access::dto::WorkspaceAccessResponse}, shared::error_handlers::{codes, handlers::ErrorResponse}};
+use crate::{
+    entities::workspace_access::dto::WorkspaceAccessResponse,
+    shared::error_handlers::handlers::ErrorResponse,
+};
 
 use super::model::WorkspaceAccess;
 
@@ -15,14 +18,10 @@ pub async fn get_workspace_access<'a>(
         workspace_id,
     )
     .await
-    .map_err(|e| match e {
-        sqlx::Error::RowNotFound => {
-            ErrorResponse::not_found(codes::NotFoundErrorCode::NotFound, None)
-        }
-        _ => ErrorResponse::internal_server_error(),
-    })?;
-    
-    let user = crate::entities::user::service::find_by_id(executor, workspace_access.user_id).await?;
+    .map_err(ErrorResponse::from)?;
+
+    let user =
+        crate::entities::user::service::find_by_id(executor, workspace_access.user_id).await?;
 
     Ok(WorkspaceAccessResponse {
         created_at: workspace_access.created_at,
@@ -38,19 +37,19 @@ pub async fn get_workspace_access_list<'a>(
     executor: impl sqlx::Executor<'a, Database = sqlx::Postgres> + Copy,
     workspace_id: Uuid,
 ) -> Result<Vec<WorkspaceAccessResponse>, ErrorResponse> {
-    let workspace_access_list = crate::entities::workspace_access::repository::get_workspace_access_list(executor, workspace_id)
+    let workspace_access_list =
+        crate::entities::workspace_access::repository::get_workspace_access_list(
+            executor,
+            workspace_id,
+        )
         .await
-        .map_err(|e| match e {
-            sqlx::Error::RowNotFound => {
-                ErrorResponse::not_found(codes::NotFoundErrorCode::NotFound, None)
-            }
-            _ => ErrorResponse::internal_server_error(),
-        })?;
+        .map_err(ErrorResponse::from)?;
 
     let mut workspace_access_list_response = Vec::new();
 
     for workspace_access in workspace_access_list {
-        let user = crate::entities::user::service::find_by_id(executor, workspace_access.user_id).await?;
+        let user =
+            crate::entities::user::service::find_by_id(executor, workspace_access.user_id).await?;
         workspace_access_list_response.push(WorkspaceAccessResponse {
             created_at: workspace_access.created_at,
             updated_at: workspace_access.updated_at,
@@ -77,19 +76,7 @@ pub async fn create_workspace_access<'a>(
         role,
     )
     .await
-    .map_err(|e| match e {
-        sqlx::Error::Database(e) => {
-            if e.code() == Some("23505".into()) {
-                return ErrorResponse::bad_request(
-                    codes::BadRequestErrorCode::AccessAlreadyGiven,
-                    None,
-                );
-            }
-
-            ErrorResponse::internal_server_error()
-        }
-        _ => ErrorResponse::internal_server_error(),
-    })
+    .map_err(ErrorResponse::from)
 }
 
 pub async fn update_workspace_access<'a>(
@@ -105,10 +92,5 @@ pub async fn update_workspace_access<'a>(
         role,
     )
     .await
-    .map_err(|e| match e {
-        sqlx::Error::RowNotFound => {
-            ErrorResponse::not_found(codes::NotFoundErrorCode::NotFound, None)
-        }
-        _ => ErrorResponse::internal_server_error(),
-    })
+    .map_err(ErrorResponse::from)
 }

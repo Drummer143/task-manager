@@ -24,7 +24,7 @@ use crate::{entities::task::dto::{ChangeStatusDto, TaskResponse}, shared::error_
 )]
 pub async fn change_status(
     State(state): State<crate::types::app_state::AppState>,
-    Path(task_id): Path<Uuid>,
+    Path((_, _, task_id)): Path<(Uuid, Uuid, Uuid)>,
     Json(dto): Json<ChangeStatusDto>,
 ) -> Result<TaskResponse, ErrorResponse> {
     crate::entities::task::service::change_status(&state.db, task_id, dto)

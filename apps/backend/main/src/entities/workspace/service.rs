@@ -151,3 +151,12 @@ pub async fn cancel_soft_delete(
         .await
         .map_err(ErrorResponse::from)
 }
+
+pub async fn get_any_workspace_user_has_access_to(
+    db: &sqlx::postgres::PgPool,
+    user_id: Uuid,
+) -> Result<Workspace, ErrorResponse> {
+    super::repository::get_any_workspace_user_has_access_to(db, user_id)
+        .await
+        .map_err(ErrorResponse::from)
+}

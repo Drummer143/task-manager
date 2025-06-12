@@ -15,6 +15,7 @@ export interface AccessListProps<Q extends EntityAccess[] = EntityAccess[]> {
 
 	editable?: boolean;
 
+	createAccess: (body: { role: string; userId: string }) => Promise<unknown>;
 	updateAccess: (body: { role?: string; userId: string }) => Promise<unknown>;
 	getAccessList: () => Promise<Q>;
 
@@ -24,6 +25,7 @@ export interface AccessListProps<Q extends EntityAccess[] = EntityAccess[]> {
 const AccessList = <Q extends EntityAccess[] = EntityAccess[]>({
 	editable,
 	getUserList = defaultGetUserList,
+	createAccess: propsCreateAccess,
 	updateAccess: propsUpdateAccess,
 	getAccessList,
 	queryKey
@@ -36,6 +38,18 @@ const AccessList = <Q extends EntityAccess[] = EntityAccess[]>({
 	});
 
 	const queryClient = useQueryClient();
+
+	const {
+		mutateAsync: createAccess,
+		isPending: isCreatingAccess,
+		variables: createdAccessArgs
+	} = useMutation({
+		mutationFn: propsCreateAccess,
+		onSuccess: () => {
+			setNewAddedUser(undefined);
+			queryClient.invalidateQueries({ queryKey });
+		}
+	});
 
 	const {
 		mutateAsync: updateAccess,
@@ -60,6 +74,8 @@ const AccessList = <Q extends EntityAccess[] = EntityAccess[]>({
 					user={access.user}
 					role={access.role}
 					onRoleChange={updateAccess}
+					onDelete={updateAccess}
+					isPending={isUpdatingAccess && updatedAccessArgs?.userId === access.user.id}
 				/>
 			))}
 
@@ -69,8 +85,11 @@ const AccessList = <Q extends EntityAccess[] = EntityAccess[]>({
 						<AccessListItem
 							user={newAddedUser}
 							editable
-							onRoleChange={updateAccess}
-							isPending={isUpdatingAccess && updatedAccessArgs?.userId === newAddedUser.id}
+							onRoleChange={createAccess}
+							onDelete={() => setNewAddedUser(undefined)}
+							isPending={
+								isCreatingAccess && createdAccessArgs?.userId === newAddedUser.id
+							}
 						/>
 					)}
 
@@ -87,7 +106,10 @@ const AccessList = <Q extends EntityAccess[] = EntityAccess[]>({
 					>
 						<Tooltip
 							placement="bottom"
-							title={newAddedUser && "Give role to previously selected user before adding a new one"}
+							title={
+								newAddedUser &&
+								"Give role to previously selected user before adding a new one"
+							}
 						>
 							<Button disabled={!!newAddedUser} icon={<PlusOutlined />}>
 								Add new user
@@ -101,3 +123,4 @@ const AccessList = <Q extends EntityAccess[] = EntityAccess[]>({
 };
 
 export default memo(AccessList);
+

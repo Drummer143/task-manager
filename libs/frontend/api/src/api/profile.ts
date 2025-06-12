@@ -12,11 +12,11 @@ type ResponseWithIncludeFilter<T extends GetProfileIncludes | undefined = undefi
 >;
 
 export const getProfile = async <T extends GetProfileIncludes | undefined = undefined>({
-	includes
+	include
 }: {
-	includes?: T[];
+	include?: T[];
 }) =>
-	(await axiosInstance.get<ResponseWithIncludeFilter<T>>("/profile", { params: { includes: includes?.toString() } }))
+	(await axiosInstance.get<ResponseWithIncludeFilter<T>>("/profile", { params: { include: include?.toString() } }))
 		.data;
 
 export const updateProfile = async (data: { username: string }) =>

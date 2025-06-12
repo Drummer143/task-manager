@@ -38,6 +38,10 @@ pub async fn create_workspace_access<'a>(
     workspace_id: Uuid,
     role: super::model::Role,
 ) -> Result<super::model::WorkspaceAccess, sqlx::Error> {
+    println!("user_id: {}", user_id);
+    println!("workspace_id: {}", workspace_id);
+    println!("role: {}", role);
+
     sqlx::query_as::<_, super::model::WorkspaceAccess>(
         r#"
         INSERT INTO workspace_accesses (user_id, workspace_id, role)
@@ -72,7 +76,7 @@ pub async fn update_workspace_access<'a>(
         .await;
     }
 
-    sqlx::query_as::<_, super::model::WorkspaceAccess>(
+    let workspace_access = sqlx::query_as::<_, super::model::WorkspaceAccess>(
         r#"
             UPDATE workspace_accesses
             SET role = $3
@@ -82,7 +86,11 @@ pub async fn update_workspace_access<'a>(
     )
     .bind(user_id)
     .bind(workspace_id)
-    .bind(role)
+    .bind(role.unwrap())
     .fetch_one(executor)
-    .await
+    .await?;
+
+    dbg!(&workspace_access);
+
+    Ok(workspace_access)
 }

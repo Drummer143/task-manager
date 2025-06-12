@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use axum::{
     extract::{Path, State},
     Json,
@@ -6,46 +8,56 @@ use uuid::Uuid;
 
 use crate::{
     entities::{
-        page::{dto::{
-            ChildPageResponse, PageListFormat, PageListInclude, PageListQuery, PageResponse,
-        }, model::{Page, PageType}},
+        page::{
+            dto::{
+                ChildPageResponse, PageListFormat, PageListInclude, PageListQuery, PageResponse,
+            },
+            model::{Page, PageType},
+        },
         workspace::dto::WorkspaceResponseWithoutInclude,
     },
-    shared::{error_handlers::handlers::ErrorResponse, extractors::query::ValidatedQuery},
+    shared::{
+        error_handlers::{codes, handlers::ErrorResponse},
+        extractors::query::ValidatedQuery,
+    },
     types::app_state::AppState,
 };
 
 pub fn build_page_tree(pages: Vec<(Page, PageResponse)>) -> Vec<(Page, PageResponse)> {
     let mut tree = Vec::new();
+    let mut parent_map: HashMap<Option<Uuid>, Vec<(Page, PageResponse)>> = HashMap::new();
 
-    for (page, page_response) in pages.iter() {
-        if page.r#type != PageType::Group {
-            tree.push((page.clone(), page_response.clone()));
-            continue;
-        }
-
-        let children = pages
-            .iter()
-            .filter(|(p, _)| p.parent_page_id == Some(page.id))
-            .map(|(_, page_response)| ChildPageResponse::from(page_response.clone()))
-            .collect::<Vec<_>>();
-
-        tree.push((page.clone(), PageResponse {
-            id: page.id,
-            r#type: page.r#type.clone(),
-            title: page.title.clone(),
-            text: page.text.clone(),
-            owner: page_response.owner.clone(),
-            workspace: page_response.workspace.clone(),
-            parent_page: page_response.parent_page.clone(),
-            child_pages: Some(children),
-            created_at: page.created_at,
-            updated_at: page.updated_at,
-            deleted_at: page.deleted_at,
-        }));
+    for entry in pages.into_iter() {
+        parent_map
+            .entry(entry.0.parent_page_id)
+            .or_default()
+            .push(entry);
     }
 
-    tree 
+    if let Some(roots) = parent_map.get(&None) {
+        for (page, page_response) in roots {
+            if page.r#type != PageType::Group {
+                tree.push((page.clone(), page_response.clone()));
+            } else {
+                let children = parent_map
+                    .get(&Some(page.id))
+                    .into_iter()
+                    .flat_map(|v| v.iter())
+                    .map(|(_, resp)| ChildPageResponse::from(resp.clone()))
+                    .collect();
+
+                tree.push((
+                    page.clone(),
+                    PageResponse {
+                        child_pages: Some(children),
+                        ..page_response.clone()
+                    },
+                ));
+            }
+        }
+    }
+
+    tree
 }
 
 #[utoipa::path(
@@ -104,6 +116,21 @@ pub async fn get_list_in_workspace(
                 } else {
                     None
                 },
+                role: Some(
+                    crate::entities::page_access::repository::get_page_access(
+                        &state.db,
+                        page.owner_id,
+                        page.id,
+                    )
+                    .await
+                    .map_err(|e| match e {
+                        sqlx::Error::RowNotFound => {
+                            ErrorResponse::not_found(codes::NotFoundErrorCode::NotFound, None)
+                        }
+                        _ => ErrorResponse::internal_server_error(),
+                    })?
+                    .role,
+                ),
                 workspace: if include_workspace {
                     Some(
                         crate::entities::workspace::service::get_by_id(
@@ -118,6 +145,7 @@ pub async fn get_list_in_workspace(
                 },
                 parent_page: None,
                 child_pages: None,
+                tasks: None,
                 created_at: page.created_at,
                 updated_at: page.updated_at,
                 deleted_at: page.deleted_at,
@@ -129,5 +157,10 @@ pub async fn get_list_in_workspace(
         response = build_page_tree(response);
     }
 
-    Ok(Json(response.iter().map(|(_, page_response)| page_response.clone()).collect()))
+    Ok(Json(
+        response
+            .iter()
+            .map(|(_, page_response)| page_response.clone())
+            .collect(),
+    ))
 }

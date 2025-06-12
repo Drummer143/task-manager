@@ -14,7 +14,7 @@ export const useUserMenuItems = () => {
 
 	const { data, isLoading } = useQuery({
 		queryKey: ["workspaces"],
-		queryFn: () => getWorkspaceList()
+		queryFn: () => getWorkspaceList({ limit: -1 })
 	});
 
 	const menu = useMemo<MenuProps>(
@@ -35,7 +35,7 @@ export const useUserMenuItems = () => {
 					disabled: isLoading,
 					type: data ? "submenu" : undefined,
 					children:
-						data?.map(workspace => ({
+						data?.data.map(workspace => ({
 							key: workspace.id,
 							label: workspace.name,
 							disabled: workspace.id === user?.workspace.id,
@@ -56,9 +56,7 @@ export const useUserMenuItems = () => {
 				{
 					key: "logout",
 					label: "Log out",
-					onClick: () => {
-						
-					}
+					onClick: () => {}
 				}
 			]
 		}),
@@ -67,3 +65,4 @@ export const useUserMenuItems = () => {
 
 	return menu;
 };
+

@@ -93,10 +93,15 @@ pub async fn get_list<'a>(
             sort_order.unwrap_or_default().to_string()
         ))
         .push(format!(
-            " LIMIT {} OFFSET {}",
-            limit.unwrap_or(10),
-            offset.unwrap_or(0)
+            " OFFSET {}",
+            offset.unwrap_or(crate::types::pagination::DEFAULT_OFFSET)
         ));
+
+    let limit = crate::types::pagination::calculate_limit(limit);
+
+    if limit > 0 {
+        builder.push(format!("LIMIT {}", limit));
+    }
 
     let rows = builder
         .build_query_as::<WorkspaceWithRole>()
@@ -133,4 +138,18 @@ pub async fn cancel_soft_delete<'a>(
         .await?;
 
     Ok(())
+}
+
+pub async fn get_any_workspace_user_has_access_to<'a>(
+    executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
+    user_id: Uuid,
+) -> Result<Workspace, sqlx::Error> {
+    let row: Workspace = sqlx::query_as::<_, Workspace>(
+        "SELECT w.* FROM workspaces w INNER JOIN workspace_accesses wa ON w.id = wa.workspace_id WHERE wa.user_id = $1 LIMIT 1",
+    )
+    .bind(user_id)
+    .fetch_one(executor)
+    .await?;
+
+    Ok(row)
 }

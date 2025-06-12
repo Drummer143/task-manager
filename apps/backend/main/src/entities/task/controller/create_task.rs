@@ -26,7 +26,7 @@ use crate::{
 )]
 pub async fn create_task(
     State(state): State<crate::types::app_state::AppState>,
-    Path(page_id): Path<Uuid>,
+    Path((_, page_id)): Path<(Uuid, Uuid)>,
     Json(dto): Json<CreateTaskDto>,
 ) -> Result<TaskResponse, ErrorResponse> {
     crate::entities::task::service::create_task(&state.db, page_id, dto)

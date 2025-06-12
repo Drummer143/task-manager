@@ -106,7 +106,7 @@ async fn main() {
         .merge(entities::auth::router::init())
         .merge(entities::workspace::router::init(app_state.clone()))
         .merge(entities::workspace_access::router::init(app_state.clone()))
-        .merge(entities::page::router::init())
+        .merge(entities::page::router::init(app_state.clone()))
         .merge(entities::page_access::router::init(app_state.clone()))
         .merge(entities::task::router::init())
         .merge(

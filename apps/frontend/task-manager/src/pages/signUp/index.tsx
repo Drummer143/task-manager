@@ -3,7 +3,7 @@ import React, { useMemo } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { parseApiError, signUp } from "@task-manager/api";
 import { Form, Input } from "antd";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router";
 
 import { useAuthStore } from "../../app/store/auth";
 import { withAuthPageCheck } from "../../shared/HOCs/withAuthPageCheck";
