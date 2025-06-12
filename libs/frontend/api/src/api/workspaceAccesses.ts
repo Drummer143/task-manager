@@ -7,7 +7,18 @@ interface GetWorkspaceAccessArgs {
 }
 
 export const getWorkspaceAccess = async ({ workspaceId }: GetWorkspaceAccessArgs) =>
-	(await axiosInstance.get<WorkspaceAccess[]>(`/workspaces/${workspaceId}/accesses`)).data;
+	(await axiosInstance.get<WorkspaceAccess[]>(`/workspaces/${workspaceId}/access`)).data;
+
+interface CreateWorkspaceAccessArgs extends GetWorkspaceAccessArgs {
+	body: {
+		role: string;
+
+		userId: string;
+	};
+}
+
+export const createWorkspaceAccess = async ({ workspaceId, body }: CreateWorkspaceAccessArgs) =>
+	(await axiosInstance.post<"Success">(`/workspaces/${workspaceId}/access`, body)).data;
 
 interface UpdateWorkspaceAccessArgs extends GetWorkspaceAccessArgs {
 	body: {
@@ -18,4 +29,4 @@ interface UpdateWorkspaceAccessArgs extends GetWorkspaceAccessArgs {
 }
 
 export const updateWorkspaceAccess = async ({ workspaceId, body }: UpdateWorkspaceAccessArgs) =>
-	(await axiosInstance.put<"Success">(`/workspaces/${workspaceId}/accesses`, body)).data;
+	(await axiosInstance.put<"Success">(`/workspaces/${workspaceId}/access`, body)).data;

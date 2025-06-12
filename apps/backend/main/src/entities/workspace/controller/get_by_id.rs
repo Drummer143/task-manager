@@ -1,4 +1,7 @@
-use axum::extract::{Path, State};
+use axum::{
+    extract::{Path, State},
+    Extension,
+};
 
 use crate::{
     entities::{
@@ -25,6 +28,7 @@ use crate::{
 )]
 pub async fn get_by_id(
     State(state): State<crate::types::app_state::AppState>,
+    Extension(user_id): Extension<uuid::Uuid>,
     Path(workspace_id): Path<uuid::Uuid>,
     ValidatedQuery(query): ValidatedQuery<crate::entities::workspace::dto::GetWorkspaceQuery>,
 ) -> Result<WorkspaceResponse, ErrorResponse> {
@@ -55,10 +59,20 @@ pub async fn get_by_id(
         None
     };
 
+    let role = crate::entities::workspace_access::repository::get_workspace_access(
+        &state.db,
+        user_id,
+        workspace_id,
+    )
+    .await
+    .map_err(ErrorResponse::from)?
+    .role;
+
     let mut workspace_response = WorkspaceResponse::from(workspace);
 
     workspace_response.owner = owner;
     workspace_response.pages = pages;
+    workspace_response.role = Some(role);
 
     Ok(workspace_response)
 }

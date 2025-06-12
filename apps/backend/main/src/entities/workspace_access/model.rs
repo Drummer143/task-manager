@@ -8,16 +8,22 @@ use uuid::Uuid;
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq, utoipa::ToSchema, PartialOrd)]
 #[serde(rename_all = "camelCase")]
 pub enum Role {
-    Owner,
-    Admin,
-    Member,
-    Commentator,
     Guest,
+    Commentator,
+    Member,
+    Admin,
+    Owner,
 }
 
 impl std::fmt::Display for Role {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        write!(f, "{}", self.to_string())
+        match self {
+            Role::Guest => write!(f, "guest"),
+            Role::Commentator => write!(f, "commentator"),
+            Role::Member => write!(f, "member"),
+            Role::Admin => write!(f, "admin"),
+            Role::Owner => write!(f, "owner"),
+        }
     }
 }
 
@@ -64,12 +70,10 @@ impl sqlx::Encode<'_, Postgres> for Role {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, FromRow)]
+#[derive(Debug, FromRow, Clone)]
 pub struct WorkspaceAccess {
     pub id: Uuid,
-    #[serde(skip_serializing)]
     pub user_id: Uuid,
-    #[serde(skip_serializing)]
     pub workspace_id: Uuid,
     pub role: Role,
     pub created_at: DateTime<Utc>,

@@ -21,6 +21,10 @@ pub fn init(
             axum::routing::put(super::controller::update_workspace_access::update_workspace_access),
         )
         .layer(axum::middleware::from_fn_with_state(
+            state.clone(),
+            crate::middleware::workspace_access_guard::workspace_access_guard,
+        ))
+        .layer(axum::middleware::from_fn_with_state(
             state,
             crate::middleware::auth_guard::auth_guard,
         ))

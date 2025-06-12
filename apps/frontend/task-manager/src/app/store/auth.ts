@@ -19,7 +19,7 @@ export const useAuthStore = create<authState>()(
 		(set, get) => ({
 			loading: false,
 
-			user: undefined as unknown as (User & { workspace: Workspace }),
+			user: undefined as unknown as User & { workspace: Workspace },
 
 			clear: () => set({ user: undefined, loading: false }),
 
@@ -41,9 +41,7 @@ export const useAuthStore = create<authState>()(
 				let user: (User & { workspace: Workspace }) | undefined = undefined;
 
 				try {
-					if (document.cookie) {
-						user = await getProfile({ includes: ["workspace"] });
-					}
+					user = await getProfile({ include: ["workspace"] });
 
 					set({ user });
 				} catch {

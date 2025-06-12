@@ -1,6 +1,4 @@
-use std::str::FromStr;
-
-use axum::{extract::{Path, State}, Json};
+use axum::{extract::{Path, State}, Extension, Json};
 
 use crate::entities::workspace_access::dto::WorkspaceAccessResponse;
 
@@ -23,14 +21,10 @@ use crate::entities::workspace_access::dto::WorkspaceAccessResponse;
 )]
 pub async fn update_workspace_access(
     State(state): State<crate::types::app_state::AppState>,
+    Extension(user_id): Extension<uuid::Uuid>,
     Path(workspace_id): Path<uuid::Uuid>,
-    cookies: axum_extra::extract::CookieJar,
     Json(dto): Json<crate::entities::workspace_access::dto::UpdateWorkspaceAccessDto>,
 ) -> impl axum::response::IntoResponse {
-    let user_id = cookies.get("user_id").unwrap().value();
-
-    let user_id = uuid::Uuid::from_str(user_id).unwrap();
-
     let user_workspace_access = crate::entities::workspace_access::service::get_workspace_access(
         &state.db,
         user_id,
@@ -66,6 +60,8 @@ pub async fn update_workspace_access(
         dto.role,
     )
     .await?;
+
+    dbg!(&workspace_access);
 
     Ok(WorkspaceAccessResponse {
         id: workspace_access.id,

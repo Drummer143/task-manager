@@ -20,7 +20,7 @@ use crate::{entities::task::dto::TaskResponse, shared::error_handlers::handlers:
 )]
 pub async fn get_task<'a>(
     State(state): State<crate::types::app_state::AppState>,
-    Path(task_id): Path<Uuid>,
+    Path((_, _, task_id)): Path<(Uuid, Uuid, Uuid)>,
 ) -> Result<TaskResponse, ErrorResponse> {
     let task = crate::entities::task::service::get_task_by_id(&state.db, task_id).await?;
 
@@ -32,6 +32,8 @@ pub async fn get_task<'a>(
     };
 
     let mut task_response = TaskResponse::from(task);
+
+    println!("task: {:#?}", task_response);
 
     task_response.reporter = Some(reporter);
     task_response.assignee = assignee;

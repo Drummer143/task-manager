@@ -7,8 +7,6 @@ interface GetUsersFilters {
 	exclude?: string[];
 	sort_by?: string;
 	sort_order?: string;
-	limit?: string;
-	offset?: string;
 	email?: string;
 	username?: string;
 }

@@ -1,7 +1,7 @@
 use crate::{entities::page::controller, types::app_state::AppState};
 use axum::{routing, Router};
 
-pub fn init() -> Router<AppState> {
+pub fn init(state: AppState) -> Router<AppState> {
     Router::new()
         .route(
             "/workspaces/{workspace_id}/pages",
@@ -23,4 +23,12 @@ pub fn init() -> Router<AppState> {
             "/workspaces/{workspace_id}/pages/{page_id}",
             routing::delete(controller::delete_page::delete_page),
         )
+        .layer(axum::middleware::from_fn_with_state(
+            state.clone(),
+            crate::middleware::page_access_guard::page_access_guard,
+        ))
+        .layer(axum::middleware::from_fn_with_state(
+            state,
+            crate::middleware::auth_guard::auth_guard,
+        ))
 }

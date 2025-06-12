@@ -8,7 +8,8 @@ interface GetPageAccessArgs {
 }
 
 export const getPageAccess = async ({ pageId, workspaceId }: GetPageAccessArgs) =>
-	(await axiosInstance.get<PageAccess[]>(`/workspaces/${workspaceId}/pages/${pageId}/accesses`)).data;
+	(await axiosInstance.get<PageAccess[]>(`/workspaces/${workspaceId}/pages/${pageId}/access`))
+		.data;
 
 interface UpdatePageAccessArgs extends GetPageAccessArgs {
 	body: {
@@ -19,4 +20,5 @@ interface UpdatePageAccessArgs extends GetPageAccessArgs {
 }
 
 export const updatePageAccess = async ({ pageId, body, workspaceId }: UpdatePageAccessArgs) =>
-	(await axiosInstance.put<"Success">(`/workspaces/${workspaceId}/pages/${pageId}/accesses`, body)).data;
+	(await axiosInstance.put<"Success">(`/workspaces/${workspaceId}/pages/${pageId}/access`, body))
+		.data;

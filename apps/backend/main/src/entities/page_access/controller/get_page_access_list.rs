@@ -1,6 +1,5 @@
-use std::str::FromStr;
-
-use axum::extract::{Path, State};
+use axum::{extract::{Path, State}, Extension};
+use uuid::Uuid;
 
 #[utoipa::path(
     get,
@@ -21,17 +20,12 @@ use axum::extract::{Path, State};
 )]
 pub async fn get_page_access_list(
     State(state): State<crate::types::app_state::AppState>,
-    // Path(workspace_id): Path<uuid::Uuid>,
-    Path(page_id): Path<uuid::Uuid>,
-    cookies: axum_extra::extract::CookieJar,
+    Extension(user_id): Extension<Uuid>,
+    Path((_, page_id)): Path<(Uuid, Uuid)>,
 ) -> Result<
     axum::Json<Vec<crate::entities::page_access::dto::PageAccessResponse>>,
     crate::shared::error_handlers::handlers::ErrorResponse,
 > {
-    let user_id = cookies.get("user_id").unwrap().value();
-
-    let user_id = uuid::Uuid::from_str(user_id).unwrap();
-
     let user_page_access = crate::entities::page_access::service::get_page_access(
         &state.db,
         user_id,

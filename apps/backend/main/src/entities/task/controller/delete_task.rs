@@ -20,9 +20,9 @@ use crate::{entities::task::dto::TaskResponse, shared::error_handlers::handlers:
 )]
 pub async fn delete_task<'a>(
     State(state): State<crate::types::app_state::AppState>,
-    Path(page_id): Path<Uuid>,
+    Path((_, _, task_id)): Path<(Uuid, Uuid, Uuid)>,
 ) -> Result<TaskResponse, ErrorResponse> {
-    crate::entities::task::service::delete_task(&state.db, page_id)
+    crate::entities::task::service::delete_task(&state.db, task_id)
         .await
         .map(TaskResponse::from)
 }

@@ -18,7 +18,11 @@ const Menu: React.FC<MenuProps> = ({ pages, onSubPageCreate }) => {
 		<div className={cx(styles.menuWrapper, "menu css-var-r1 ant-menu-css-var")}>
 			{pages?.map(page =>
 				page.type === "group" ? (
-					<ItemWithSubmenu key={page.id} rootPage={page} onSubPageCreate={onSubPageCreate} />
+					<ItemWithSubmenu
+						key={page.id}
+						rootPage={page}
+						onSubPageCreate={onSubPageCreate}
+					/>
 				) : (
 					<NavLink
 						className={({ isActive }) => cx(styles.menuListItem, isActive && "active")}

@@ -15,10 +15,18 @@ interface AccessListItemProps {
 	editable?: boolean;
 	isPending?: boolean;
 
-	onRoleChange?: (body: { userId: string; role?: string }) => void;
+	onDelete?: (body: { userId: string }) => void;
+	onRoleChange?: (body: { userId: string; role: string }) => void;
 }
 
-const AccessListItem: React.FC<AccessListItemProps> = ({ user, role, isPending, onRoleChange, editable }) => {
+const AccessListItem: React.FC<AccessListItemProps> = ({
+	user,
+	role,
+	isPending,
+	onDelete,
+	onRoleChange,
+	editable
+}) => {
 	const { itemWrapper, roleSelect } = useStyles().styles;
 
 	return (
@@ -41,7 +49,7 @@ const AccessListItem: React.FC<AccessListItemProps> = ({ user, role, isPending, 
 						danger
 						size="small"
 						icon={<CloseOutlined />}
-						onClick={() => onRoleChange?.({ userId: user.id })}
+						onClick={() => onDelete?.({ userId: user.id })}
 					/>
 				</Flex>
 			) : (

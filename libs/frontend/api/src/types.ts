@@ -1,6 +1,6 @@
 import { JSONContent } from "@tiptap/react";
 
-export type UserRole = "owner" | "admin" | "member" | "commentator" | "guest";
+export type UserRole = "guest" | "commentator" | "member" | "admin" | "owner";
 
 export type PageType = "board" | "text" | "group";
 

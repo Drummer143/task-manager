@@ -21,10 +21,10 @@ use crate::{entities::task::dto::{UpdateTaskDto, TaskResponse}, shared::error_ha
 )]
 pub async fn update_task<'a>(
     State(state): State<crate::types::app_state::AppState>,
-    Path(page_id): Path<Uuid>,
+    Path((_, _, task_id)): Path<(Uuid, Uuid, Uuid)>,
     Json(dto): Json<UpdateTaskDto>,
 ) -> Result<TaskResponse, ErrorResponse> {
-    crate::entities::task::service::update_task(&state.db, page_id, dto)
+    crate::entities::task::service::update_task(&state.db, task_id, dto)
         .await
         .map(TaskResponse::from)
 }

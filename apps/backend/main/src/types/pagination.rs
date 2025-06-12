@@ -5,6 +5,20 @@ use serde::{Deserialize, Serialize};
 pub const DEFAULT_LIMIT: i64 = 10;
 pub const DEFAULT_OFFSET: i64 = 0;
 
+pub fn calculate_limit(limit: Option<i64>) -> i64 {
+    let limit = limit.unwrap_or(DEFAULT_LIMIT);
+
+    if limit > 100 {
+        return 100;
+    }
+
+    if limit == 0 {
+        return DEFAULT_LIMIT;
+    }
+
+    limit
+}
+
 #[derive(Debug, Serialize, Deserialize, utoipa::ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct Meta {

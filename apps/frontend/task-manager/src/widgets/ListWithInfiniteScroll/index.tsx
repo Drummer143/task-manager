@@ -1,6 +1,6 @@
 import React, { memo, useCallback, useEffect, useRef, useState } from "react";
 
-import { InfiniteData, QueryKey, useInfiniteQuery } from "@tanstack/react-query";
+import { InfiniteData, QueryKey, useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
 import { PaginationQuery, ResponseWithPagination } from "@task-manager/api";
 import { List, ListProps, Spin } from "antd";
 
@@ -16,7 +16,11 @@ export interface ListWithInfiniteScrollProps<
 	extraParams?: Record<string, number | boolean | string | undefined | null>;
 
 	fetchItems: (query?: PaginationQuery) => Promise<Response>;
-	renderItem: (item: Response["data"][number], index: number, array: Response["data"]) => React.ReactNode;
+	renderItem: (
+		item: Response["data"][number],
+		index: number,
+		array: Response["data"]
+	) => React.ReactNode;
 }
 
 const ListWithInfiniteScroll = <
@@ -35,6 +39,8 @@ const ListWithInfiniteScroll = <
 	const [items, setItems] = useState<ItemValue[]>([]);
 	const observerRef = useRef<HTMLDivElement | null>(null);
 
+	const queryClient = useQueryClient();
+
 	const { styles, cx } = useStyles();
 
 	const { data, isFetching, isLoading, hasNextPage, fetchNextPage } = useInfiniteQuery<
@@ -46,12 +52,18 @@ const ListWithInfiniteScroll = <
 	>({
 		queryKey,
 		queryFn: ({ pageParam }) => fetchItems({ ...extraParams, offset: pageParam, limit: 10 }),
-		getNextPageParam: lastPage => (lastPage.meta.hasMore ? lastPage.meta.offset + lastPage.meta.limit : undefined),
+		getNextPageParam: lastPage =>
+			lastPage.meta.hasMore ? lastPage.meta.offset + lastPage.meta.limit : undefined,
 		initialPageParam: 0,
 		enabled,
 		initialData: {
 			pageParams: [0],
-			pages: [{ data: [], meta: { total: 0, limit: 10, offset: 0, hasMore: true } } as unknown as Response]
+			pages: [
+				{
+					data: [],
+					meta: { total: 0, limit: 10, offset: 0, hasMore: true }
+				} as unknown as Response
+			]
 		}
 	});
 
@@ -68,6 +80,11 @@ const ListWithInfiniteScroll = <
 	useEffect(() => {
 		requestMetaRef.current = { hasNextPage, isFetching, isLoading, fetchNextPage };
 	}, [fetchNextPage, hasNextPage, isFetching, isLoading]);
+
+	useEffect(() => {
+		queryClient.invalidateQueries({ queryKey });
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [extraParams]);
 
 	useEffect(() => {
 		if (!enabled) {
@@ -88,7 +105,10 @@ const ListWithInfiniteScroll = <
 					requestMetaRef.current.fetchNextPage();
 				} else if (requestMetaRef.current.isFetching || requestMetaRef.current.isLoading) {
 					const interval = setInterval(() => {
-						if (!requestMetaRef.current.isFetching && !requestMetaRef.current.isLoading) {
+						if (
+							!requestMetaRef.current.isFetching &&
+							!requestMetaRef.current.isLoading
+						) {
 							requestMetaRef.current.fetchNextPage();
 							clearInterval(interval);
 						}
@@ -138,3 +158,4 @@ const ListWithInfiniteScroll = <
 };
 
 export default memo(ListWithInfiniteScroll) as typeof ListWithInfiniteScroll;
+

@@ -19,7 +19,7 @@ use crate::{entities::task::dto::TaskResponse, shared::error_handlers::handlers:
 )]
 pub async fn get_tasks_in_page(
     State(state): State<crate::types::app_state::AppState>,
-    Path(page_id): Path<Uuid>,
+    Path((_, page_id)): Path<(Uuid, Uuid)>,
 ) -> Result<Json<Vec<TaskResponse>>, ErrorResponse> {
     let tasks = crate::entities::task::service::get_all_tasks_by_page_id(&state.db, page_id).await?;
 
