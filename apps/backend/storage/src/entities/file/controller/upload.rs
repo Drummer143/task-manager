@@ -6,6 +6,18 @@ use uuid::Uuid;
 
 use crate::entities::file::dto::{UploadRequest, UploadResponse};
 
+fn sanitize_folder(input: &str) -> Option<String> {
+    let valid = input
+        .chars()
+        .all(|c| c.is_ascii_alphanumeric() || c == '_' || c == '-');
+
+    if valid && !input.contains("..") && !input.contains('/') && !input.contains('\\') {
+        Some(input.to_string())
+    } else {
+        None
+    }
+}
+
 #[utoipa::path(
     post,
     path = "/files/upload",
@@ -32,7 +44,11 @@ pub async fn upload(mut multipart: Multipart) -> Result<UploadResponse, ErrorRes
                 file_bytes = Some(field.bytes().await.unwrap());
             }
             "folder" => {
-                folder = field.text().await.unwrap_or_else(|_| "common".to_string());
+                folder = field
+                    .text()
+                    .await
+                    .map(|s| sanitize_folder(&s).unwrap_or("common".to_string()))
+                    .unwrap_or("common".to_string());
             }
             _ => {}
         }
