@@ -1,9 +1,7 @@
+use error_handlers::handlers::ErrorResponse;
 use uuid::Uuid;
 
-use crate::{
-    entities::task::{model::Task, repository},
-    shared::error_handlers::handlers::ErrorResponse,
-};
+use crate::entities::task::{model::Task, repository};
 
 pub async fn create_task<'a>(
     executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
@@ -64,4 +62,3 @@ pub async fn get_all_tasks_by_page_id<'a>(
             ErrorResponse::from(e)
         })
 }
-

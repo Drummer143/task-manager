@@ -6,7 +6,7 @@ use axum::extract::{Json, State};
     request_body = crate::entities::auth::dto::LoginDto,
     responses(
         (status = 200, description = "Login successful", body = crate::entities::user::model::User),
-        (status = 400, description = "Invalid credentials", body = crate::shared::error_handlers::handlers::ErrorResponse),
+        (status = 400, description = "Invalid credentials", body = error_handlers::handlers::ErrorResponse),
     ),
     security(
         ("jwt" = []),
@@ -25,7 +25,7 @@ pub async fn login(
 
     if token.is_err() {
         return Err(
-            crate::shared::error_handlers::handlers::ErrorResponse::internal_server_error(),
+            error_handlers::handlers::ErrorResponse::internal_server_error(),
         );
     }
 

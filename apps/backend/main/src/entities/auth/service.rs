@@ -1,6 +1,6 @@
 use crate::entities::user::model::User;
-use crate::shared::error_handlers::codes;
-use crate::shared::error_handlers::handlers::ErrorResponse;
+use error_handlers::codes;
+use error_handlers::handlers::ErrorResponse;
 
 pub async fn login(
     db: &sqlx::postgres::PgPool,

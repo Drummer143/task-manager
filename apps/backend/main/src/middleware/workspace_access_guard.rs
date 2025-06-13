@@ -1,10 +1,8 @@
 use axum::extract::State;
+use error_handlers::{codes, handlers::ErrorResponse};
 use uuid::Uuid;
 
-use crate::{
-    shared::error_handlers::{codes, handlers::ErrorResponse},
-    types::app_state::AppState,
-};
+use crate::types::app_state::AppState;
 
 /// works only with path `/workspace/{workspace_id}/...`
 pub async fn workspace_access_guard(

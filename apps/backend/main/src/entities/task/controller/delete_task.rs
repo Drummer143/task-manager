@@ -1,7 +1,8 @@
 use axum::extract::{Path, State};
+use error_handlers::handlers::ErrorResponse;
 use uuid::Uuid;
 
-use crate::{entities::task::dto::TaskResponse, shared::error_handlers::handlers::ErrorResponse};
+use crate::entities::task::dto::TaskResponse;
 
 #[utoipa::path(
     delete,

@@ -1,6 +1,6 @@
 use axum::{extract::{Path, State}, Extension};
 
-use crate::shared::error_handlers::{codes, handlers::ErrorResponse};
+use error_handlers::{codes, handlers::ErrorResponse};
 
 #[utoipa::path(
     get,

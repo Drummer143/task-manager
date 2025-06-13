@@ -2,13 +2,14 @@ use axum::{
     extract::{Path, State},
     Extension,
 };
+use error_handlers::handlers::ErrorResponse;
 
 use crate::{
     entities::{
         page::dto::PageResponseWithoutInclude,
         workspace::dto::{Include, WorkspaceResponse},
     },
-    shared::{error_handlers::handlers::ErrorResponse, extractors::query::ValidatedQuery},
+    shared::extractors::query::ValidatedQuery,
 };
 
 #[utoipa::path(
@@ -34,7 +35,8 @@ pub async fn get_by_id(
 ) -> Result<WorkspaceResponse, ErrorResponse> {
     let include = query.include.unwrap_or_default();
 
-    let workspace = crate::entities::workspace::service::get_by_id(&state.postgres, workspace_id).await?;
+    let workspace =
+        crate::entities::workspace::service::get_by_id(&state.postgres, workspace_id).await?;
 
     let owner = if include.contains(&Include::Owner) {
         Some(

@@ -1,9 +1,10 @@
 use axum::{extract::State, Extension, Json};
 use axum_extra::extract::cookie;
+use error_handlers::handlers::ErrorResponse;
 
 use crate::{
     entities::profile::dto::{GetProfileDto, GetProfileInclude, GetProfileQuery},
-    shared::{error_handlers::handlers::ErrorResponse, extractors::query::ValidatedQuery},
+    shared::extractors::query::ValidatedQuery,
     types::app_state::AppState,
 };
 
@@ -46,7 +47,8 @@ pub async fn get_profile(
 
     if workspace_id.is_none() {
         let workspace = crate::entities::workspace::service::get_any_workspace_user_has_access_to(
-            &state.postgres, user_id,
+            &state.postgres,
+            user_id,
         )
         .await?;
 

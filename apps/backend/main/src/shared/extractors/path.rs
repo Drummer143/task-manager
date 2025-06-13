@@ -1,4 +1,4 @@
-use crate::shared::error_handlers::{codes, handlers::ErrorResponse};
+use error_handlers::{codes, handlers::ErrorResponse};
 
 pub struct ValidatedPath<T>(pub T);
 

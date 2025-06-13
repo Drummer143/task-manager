@@ -1,6 +1,6 @@
 use uuid::Uuid;
 
-use crate::shared::error_handlers::handlers::ErrorResponse;
+use error_handlers::handlers::ErrorResponse;
 
 pub async fn find_by_id(
     db: impl sqlx::Executor<'_, Database = sqlx::Postgres>,

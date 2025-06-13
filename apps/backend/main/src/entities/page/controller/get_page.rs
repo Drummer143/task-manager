@@ -1,4 +1,5 @@
 use axum::extract::{Path, State};
+use error_handlers::{codes, handlers::ErrorResponse};
 use uuid::Uuid;
 
 use crate::{
@@ -7,10 +8,7 @@ use crate::{
         task::dto::TaskResponse,
         workspace::dto::WorkspaceResponseWithoutInclude,
     },
-    shared::{
-        error_handlers::{codes, handlers::ErrorResponse},
-        extractors::query::ValidatedQuery,
-    },
+    shared::extractors::query::ValidatedQuery,
     types::app_state::AppState,
 };
 

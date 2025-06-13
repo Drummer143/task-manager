@@ -4,6 +4,7 @@ use axum::{
     extract::{Path, State},
     Json,
 };
+use error_handlers::{codes, handlers::ErrorResponse};
 use uuid::Uuid;
 
 use crate::{
@@ -16,10 +17,7 @@ use crate::{
         },
         workspace::dto::WorkspaceResponseWithoutInclude,
     },
-    shared::{
-        error_handlers::{codes, handlers::ErrorResponse},
-        extractors::query::ValidatedQuery,
-    },
+    shared::extractors::query::ValidatedQuery,
     types::app_state::AppState,
 };
 
@@ -81,7 +79,8 @@ pub async fn get_list_in_workspace(
     ValidatedQuery(query): ValidatedQuery<PageListQuery>,
     Path(workspace_id): Path<Uuid>,
 ) -> Result<Json<Vec<PageResponse>>, ErrorResponse> {
-    let pages = crate::entities::page::service::get_all_in_workspace(&state.postgres, workspace_id).await;
+    let pages =
+        crate::entities::page::service::get_all_in_workspace(&state.postgres, workspace_id).await;
 
     if let Err(error) = pages {
         return Err(error);

@@ -1,10 +1,8 @@
 use axum::extract::State;
 use axum_extra::extract::CookieJar;
+use error_handlers::{codes, handlers::ErrorResponse};
 
-use crate::{
-    shared::error_handlers::{codes, handlers::ErrorResponse},
-    types::app_state::AppState,
-};
+use crate::types::app_state::AppState;
 
 pub async fn auth_guard(
     State(state): State<AppState>,

@@ -1,9 +1,7 @@
+use error_handlers::handlers::ErrorResponse;
 use uuid::Uuid;
 
-use crate::{
-    entities::workspace_access::dto::WorkspaceAccessResponse,
-    shared::error_handlers::handlers::ErrorResponse,
-};
+use crate::entities::workspace_access::dto::WorkspaceAccessResponse;
 
 use super::model::WorkspaceAccess;
 

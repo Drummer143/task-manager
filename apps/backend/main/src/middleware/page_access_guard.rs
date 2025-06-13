@@ -1,7 +1,8 @@
 use axum::extract::State;
+use error_handlers::{codes, handlers::ErrorResponse};
 use uuid::Uuid;
 
-use crate::{shared::error_handlers::{codes, handlers::ErrorResponse}, types::app_state::AppState};
+use crate::types::app_state::AppState;
 
 // works only with path `workspace/{workspace_id}/page/{page_id}/...`
 pub async fn page_access_guard(
@@ -36,11 +37,12 @@ pub async fn page_access_guard(
     let user_id = user_id.unwrap().clone();
     let page_id = page_id.unwrap();
 
-    let page_access = crate::entities::page_access::service::get_page_access(&state.postgres, user_id, page_id).await;
+    let page_access =
+        crate::entities::page_access::service::get_page_access(&state.postgres, user_id, page_id)
+            .await;
 
     if let Err(e) = page_access {
-        let body = serde_json::to_string(&e)
-        .unwrap();
+        let body = serde_json::to_string(&e).unwrap();
 
         return axum::response::Response::builder()
             .status(e.status_code)

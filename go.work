@@ -2,6 +2,5 @@ go 1.23.1
 
 use (
 	./apps/backend/mailer
-	./apps/backend/storage
 	./libs/backend/errorHandlers
 )

@@ -4,11 +4,10 @@ use axum::{
     extract::{Path, State},
     Extension, Json,
 };
+use error_handlers::handlers::ErrorResponse;
 use uuid::Uuid;
 
-use crate::{
-    entities::workspace::dto::WorkspaceResponse, shared::error_handlers::handlers::ErrorResponse,
-};
+use crate::entities::workspace::dto::WorkspaceResponse;
 
 #[utoipa::path(
     put,

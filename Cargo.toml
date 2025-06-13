@@ -3,6 +3,9 @@
 resolver = '2'
 members = [
 	'apps/backend/main',
+	'apps/backend/storage',
+
+	'libs/backend/error-handlers',
 ]
 
 [profile.release]

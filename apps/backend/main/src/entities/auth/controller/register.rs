@@ -11,7 +11,7 @@ use crate::entities::auth;
     request_body = auth::dto::RegisterDto,
     responses(
         (status = 200, description = "User registered successfully", body = crate::entities::user::model::User),
-        (status = 400, description = "Invalid credentials", body = crate::shared::error_handlers::handlers::ErrorResponse),
+        (status = 400, description = "Invalid credentials", body = error_handlers::handlers::ErrorResponse),
     ),
     security(
         ("jwt" = []),

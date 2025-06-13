@@ -1,6 +1,6 @@
 use axum::{extract::{Path, State}, response::IntoResponse};
 
-use crate::shared::error_handlers::handlers::ErrorResponse;
+use error_handlers::handlers::ErrorResponse;
 
 #[utoipa::path(
     delete,

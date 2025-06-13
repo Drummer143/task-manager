@@ -3,7 +3,7 @@ use axum::{
     Extension, Json,
 };
 
-use crate::shared::error_handlers::handlers::ErrorResponse;
+use error_handlers::handlers::ErrorResponse;
 
 #[utoipa::path(
     post,
@@ -30,8 +30,8 @@ pub async fn create_workspace_access(
 ) -> impl axum::response::IntoResponse {
     if user_workspace_access.role < crate::entities::workspace_access::model::Role::Admin {
         return Err(
-            crate::shared::error_handlers::handlers::ErrorResponse::forbidden(
-                crate::shared::error_handlers::codes::ForbiddenErrorCode::InsufficientPermissions,
+            error_handlers::handlers::ErrorResponse::forbidden(
+                error_handlers::codes::ForbiddenErrorCode::InsufficientPermissions,
                 None,
             ),
         );
@@ -41,8 +41,8 @@ pub async fn create_workspace_access(
         && user_workspace_access.role < crate::entities::workspace_access::model::Role::Owner
     {
         return Err(
-            crate::shared::error_handlers::handlers::ErrorResponse::forbidden(
-                crate::shared::error_handlers::codes::ForbiddenErrorCode::InsufficientPermissions,
+            error_handlers::handlers::ErrorResponse::forbidden(
+                error_handlers::codes::ForbiddenErrorCode::InsufficientPermissions,
                 None,
             ),
         );
@@ -52,8 +52,8 @@ pub async fn create_workspace_access(
         .await
         .map_err(|e| {
             if e.status_code == 404 {
-                return crate::shared::error_handlers::handlers::ErrorResponse::not_found(
-                    crate::shared::error_handlers::codes::NotFoundErrorCode::NotFound,
+                return error_handlers::handlers::ErrorResponse::not_found(
+                    error_handlers::codes::NotFoundErrorCode::NotFound,
                     None,
                 );
             }

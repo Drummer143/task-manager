@@ -1,11 +1,8 @@
-use mongodb::bson::doc;
+use error_handlers::handlers::ErrorResponse;
 use sqlx::PgPool;
 use uuid::Uuid;
 
-use crate::{
-    entities::page::{model::Page, repository},
-    shared::error_handlers::handlers::ErrorResponse,
-};
+use crate::entities::page::{model::Page, repository};
 
 pub async fn get_by_id(
     postgres: &PgPool,

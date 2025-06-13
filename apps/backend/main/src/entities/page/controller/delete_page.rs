@@ -1,10 +1,8 @@
 use axum::extract::{Path, State};
+use error_handlers::handlers::ErrorResponse;
 use uuid::Uuid;
 
-use crate::{
-    entities::page::dto::PageResponse, shared::error_handlers::handlers::ErrorResponse,
-    types::app_state::AppState,
-};
+use crate::{entities::page::dto::PageResponse, types::app_state::AppState};
 
 #[utoipa::path(
     delete,

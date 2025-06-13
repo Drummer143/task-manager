@@ -1,6 +1,7 @@
 use axum::extract::State;
+use error_handlers::handlers::ErrorResponse;
 
-use crate::shared::{error_handlers::handlers::ErrorResponse, extractors::path::ValidatedPath};
+use crate::shared::extractors::path::ValidatedPath;
 
 #[utoipa::path(
     get,

@@ -1,7 +1,8 @@
 use axum::extract::{Path, State};
+use error_handlers::handlers::ErrorResponse;
 use uuid::Uuid;
 
-use crate::{entities::task::dto::TaskResponse, shared::error_handlers::handlers::ErrorResponse};
+use crate::entities::task::dto::TaskResponse;
 
 #[utoipa::path(
     get,
@@ -24,7 +25,8 @@ pub async fn get_task<'a>(
 ) -> Result<TaskResponse, ErrorResponse> {
     let task = crate::entities::task::service::get_task_by_id(&state.postgres, task_id).await?;
 
-    let reporter = crate::entities::user::service::find_by_id(&state.postgres, task.reporter_id).await?;
+    let reporter =
+        crate::entities::user::service::find_by_id(&state.postgres, task.reporter_id).await?;
     let assignee = if let Some(assignee_id) = task.assignee_id {
         Some(crate::entities::user::service::find_by_id(&state.postgres, assignee_id).await?)
     } else {

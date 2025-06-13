@@ -3,7 +3,7 @@ use axum::{
 };
 use uuid::Uuid;
 
-use crate::shared::error_handlers::handlers::ErrorResponse;
+use error_handlers::handlers::ErrorResponse;
 
 #[utoipa::path(
     post,
@@ -37,8 +37,8 @@ pub async fn create_page_access(
     .await
     .map_err(|e| {
         if e.status_code == 404 {
-            return crate::shared::error_handlers::handlers::ErrorResponse::forbidden(
-                crate::shared::error_handlers::codes::ForbiddenErrorCode::InsufficientPermissions,
+            return error_handlers::handlers::ErrorResponse::forbidden(
+                error_handlers::codes::ForbiddenErrorCode::InsufficientPermissions,
                 None,
             );
         }
@@ -48,8 +48,8 @@ pub async fn create_page_access(
 
     if user_page_access.role < crate::entities::page_access::model::Role::Admin {
         return Err(
-            crate::shared::error_handlers::handlers::ErrorResponse::forbidden(
-                crate::shared::error_handlers::codes::ForbiddenErrorCode::InsufficientPermissions,
+            error_handlers::handlers::ErrorResponse::forbidden(
+                error_handlers::codes::ForbiddenErrorCode::InsufficientPermissions,
                 None,
             ),
         );
@@ -59,8 +59,8 @@ pub async fn create_page_access(
         && user_page_access.role < crate::entities::page_access::model::Role::Owner
     {
         return Err(
-            crate::shared::error_handlers::handlers::ErrorResponse::forbidden(
-                crate::shared::error_handlers::codes::ForbiddenErrorCode::InsufficientPermissions,
+            error_handlers::handlers::ErrorResponse::forbidden(
+                error_handlers::codes::ForbiddenErrorCode::InsufficientPermissions,
                 None,
             ),
         );
@@ -70,8 +70,8 @@ pub async fn create_page_access(
         .await
         .map_err(|e| {
             if e.status_code == 404 {
-                return crate::shared::error_handlers::handlers::ErrorResponse::not_found(
-                    crate::shared::error_handlers::codes::NotFoundErrorCode::NotFound,
+                return error_handlers::handlers::ErrorResponse::not_found(
+                    error_handlers::codes::NotFoundErrorCode::NotFound,
                     None,
                 );
             }

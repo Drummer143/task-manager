@@ -1,10 +1,9 @@
 use axum::{extract::State, response::IntoResponse};
+use error_handlers::handlers::ErrorResponse;
 use uuid::Uuid;
 
 use crate::{
-    shared::{
-        error_handlers::handlers::ErrorResponse, extractors::query::ValidatedQuery, traits::IsValid,
-    },
+    shared::{extractors::query::ValidatedQuery, traits::IsValid},
     types::app_state::AppState,
 };
 
@@ -59,7 +58,7 @@ pub async fn get_list(
 
     if !filters.is_valid() {
         return Err(ErrorResponse::bad_request(
-            crate::shared::error_handlers::codes::BadRequestErrorCode::InvalidQueryParams,
+            error_handlers::codes::BadRequestErrorCode::InvalidQueryParams,
             Some(std::collections::HashMap::from([(
                 "filter".to_string(),
                 "You can't use all query with username or email filter at the same time"

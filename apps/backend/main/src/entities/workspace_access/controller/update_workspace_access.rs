@@ -7,11 +7,11 @@ use crate::entities::workspace_access::dto::WorkspaceAccessResponse;
     path = "/workspaces/{workspace_id}/access",
     responses(
         (status = 200, description = "Workspace access updated successfully", body = crate::entities::workspace_access::dto::WorkspaceAccessResponse),
-        (status = 400, description = "Invalid request", body = crate::shared::error_handlers::handlers::ErrorResponse),
-        (status = 401, description = "Unauthorized", body = crate::shared::error_handlers::handlers::ErrorResponse),
-        (status = 403, description = "Forbidden", body = crate::shared::error_handlers::handlers::ErrorResponse),
-        (status = 404, description = "Not found", body = crate::shared::error_handlers::handlers::ErrorResponse),
-        (status = 500, description = "Internal server error", body = crate::shared::error_handlers::handlers::ErrorResponse),
+        (status = 400, description = "Invalid request", body = error_handlers::handlers::ErrorResponse),
+        (status = 401, description = "Unauthorized", body = error_handlers::handlers::ErrorResponse),
+        (status = 403, description = "Forbidden", body = error_handlers::handlers::ErrorResponse),
+        (status = 404, description = "Not found", body = error_handlers::handlers::ErrorResponse),
+        (status = 500, description = "Internal server error", body = error_handlers::handlers::ErrorResponse),
     ),
     params(
         ("workspace_id" = Uuid, Path, description = "Workspace ID"),
@@ -33,8 +33,8 @@ pub async fn update_workspace_access(
     .await
     .map_err(|e| {
         if e.status_code == 404 {
-            return crate::shared::error_handlers::handlers::ErrorResponse::forbidden(
-                crate::shared::error_handlers::codes::ForbiddenErrorCode::InsufficientPermissions,
+            return error_handlers::handlers::ErrorResponse::forbidden(
+                error_handlers::codes::ForbiddenErrorCode::InsufficientPermissions,
                 None,
             );
         }
@@ -44,8 +44,8 @@ pub async fn update_workspace_access(
 
     if user_workspace_access.role < crate::entities::workspace_access::model::Role::Admin {
         return Err(
-            crate::shared::error_handlers::handlers::ErrorResponse::forbidden(
-                crate::shared::error_handlers::codes::ForbiddenErrorCode::InsufficientPermissions,
+            error_handlers::handlers::ErrorResponse::forbidden(
+                error_handlers::codes::ForbiddenErrorCode::InsufficientPermissions,
                 None,
             ),
         );

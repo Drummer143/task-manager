@@ -2,12 +2,10 @@ use axum::{
     extract::{Path, State},
     Json,
 };
+use error_handlers::handlers::ErrorResponse;
 use uuid::Uuid;
 
-use crate::{
-    entities::task::dto::{CreateTaskDto, TaskResponse},
-    shared::error_handlers::handlers::ErrorResponse,
-};
+use crate::entities::task::dto::{CreateTaskDto, TaskResponse};
 
 #[utoipa::path(
     post,

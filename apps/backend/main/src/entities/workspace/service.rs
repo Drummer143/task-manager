@@ -1,9 +1,7 @@
+use error_handlers::handlers::ErrorResponse;
 use uuid::Uuid;
 
-use crate::{
-    entities::{page::dto::PageResponseWithoutInclude, workspace::model::Workspace},
-    shared::error_handlers::handlers::ErrorResponse,
-};
+use crate::entities::{page::dto::PageResponseWithoutInclude, workspace::model::Workspace};
 
 use super::dto::WorkspaceInfo;
 

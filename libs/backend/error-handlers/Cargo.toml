@@ -1,0 +1,13 @@
+[package]
+name = "error_handlers"
+version = "0.1.0"
+edition = "2021"
+
+[dependencies]
+axum = "0.8"
+mongodb = "3.2"
+serde = { version = "1", features = ["derive"] }
+sqlx = "0.8"
+utoipa = { version = "5.3", features = ["uuid", "chrono"] }
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html

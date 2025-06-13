@@ -33,7 +33,7 @@
     components(schemas(
         crate::entities::user::model::User,
         crate::entities::user_credentials::model::UserCredentials,
-        crate::shared::error_handlers::handlers::ErrorResponse,
+        error_handlers::handlers::ErrorResponse,
         crate::entities::user::dto::UserSortBy,
         crate::types::pagination::SortOrder,
         crate::types::pagination::Meta,

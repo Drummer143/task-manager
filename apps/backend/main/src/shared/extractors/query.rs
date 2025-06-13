@@ -1,4 +1,4 @@
-use crate::shared::error_handlers::handlers::ErrorResponse;
+use error_handlers::handlers::ErrorResponse;
 
 pub struct ValidatedQuery<T>(pub T);
 
@@ -36,7 +36,7 @@ where
             }
 
             ErrorResponse::bad_request(
-                crate::shared::error_handlers::codes::BadRequestErrorCode::InvalidQueryParams,
+                error_handlers::codes::BadRequestErrorCode::InvalidQueryParams,
                 Some(details),
             )
         })?;

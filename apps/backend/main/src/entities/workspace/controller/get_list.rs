@@ -1,8 +1,9 @@
 use axum::{extract::State, Extension};
+use error_handlers::handlers::ErrorResponse;
 
 use crate::{
     entities::workspace::dto::{Include, WorkspaceResponse},
-    shared::{error_handlers::handlers::ErrorResponse, extractors::query::ValidatedQuery},
+    shared::extractors::query::ValidatedQuery,
     types::pagination::Pagination,
 };
 

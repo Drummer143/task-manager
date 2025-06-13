@@ -2,11 +2,11 @@ use axum::{
     extract::{Path, State},
     Json,
 };
+use error_handlers::handlers::ErrorResponse;
 use uuid::Uuid;
 
 use crate::{
     entities::page::dto::{PageResponse, UpdatePageDto},
-    shared::error_handlers::handlers::ErrorResponse,
     types::app_state::AppState,
 };
 
