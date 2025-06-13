@@ -15,6 +15,8 @@ impl IntoResponse for UploadResponse {
 #[derive(utoipa::ToSchema)]
 pub struct UploadRequest {
     #[schema(value_type = String, format = Binary)]
+    #[allow(dead_code)]
     pub file: String,
+    #[allow(dead_code)]
     pub folder: Option<String>,
 }
