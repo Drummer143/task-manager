@@ -107,7 +107,7 @@ pub async fn get_list_in_workspace(
                 id: page.id,
                 r#type: page.r#type,
                 title: page.title,
-                text: page.text,
+                text: page.text.map(crate::entities::page::dto::DocResponse::from),
                 owner: if include_owner {
                     Some(
                         crate::entities::user::service::find_by_id(&state.postgres, page.owner_id)

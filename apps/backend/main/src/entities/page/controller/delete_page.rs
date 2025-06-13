@@ -25,7 +25,13 @@ pub async fn delete_page(
     State(state): State<AppState>,
     Path((_, page_id)): Path<(Uuid, Uuid)>,
 ) -> Result<PageResponse, ErrorResponse> {
-    crate::entities::page::service::delete(&state.postgres, page_id)
-        .await
-        .map(PageResponse::from)
+    crate::entities::page::service::delete(
+        &state.postgres,
+        &state
+            .mongo
+            .database(crate::shared::mongo_constants::PAGE_DATABASE),
+        page_id,
+    )
+    .await
+    .map(PageResponse::from)
 }

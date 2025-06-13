@@ -7,7 +7,10 @@ use crate::{
         task::dto::TaskResponse,
         workspace::dto::WorkspaceResponseWithoutInclude,
     },
-    shared::{error_handlers::{codes, handlers::ErrorResponse}, extractors::query::ValidatedQuery},
+    shared::{
+        error_handlers::{codes, handlers::ErrorResponse},
+        extractors::query::ValidatedQuery,
+    },
     types::app_state::AppState,
 };
 
@@ -32,7 +35,14 @@ pub async fn get_page(
     ValidatedQuery(query): ValidatedQuery<PageQuery>,
     Path((_, page_id)): Path<(Uuid, Uuid)>,
 ) -> Result<PageResponse, ErrorResponse> {
-    let page = crate::entities::page::service::get_by_id(&state.postgres, page_id).await?;
+    let page = crate::entities::page::service::get_by_id(
+        &state.postgres,
+        &state
+            .mongo
+            .database(crate::shared::mongo_constants::PAGE_DATABASE),
+        page_id,
+    )
+    .await?;
 
     let mut include_owner = false;
     let mut include_workspace = false;
@@ -68,22 +78,29 @@ pub async fn get_page(
 
     if include_owner {
         page_response.owner = Some(
-            crate::entities::user::service::find_by_id(&state.postgres, page.owner_id.clone()).await?,
+            crate::entities::user::service::find_by_id(&state.postgres, page.owner_id.clone())
+                .await?,
         );
     }
 
     if include_workspace {
         page_response.workspace = Some(
-            crate::entities::workspace::service::get_by_id(&state.postgres, page.workspace_id.clone())
-                .await
-                .map(|w| WorkspaceResponseWithoutInclude::from(w))?,
+            crate::entities::workspace::service::get_by_id(
+                &state.postgres,
+                page.workspace_id.clone(),
+            )
+            .await
+            .map(|w| WorkspaceResponseWithoutInclude::from(w))?,
         );
     }
 
     if include_parent_page && page.parent_page_id.is_some() {
+        let database = state.mongo.database("typingapp");
+
         page_response.parent_page = Some(
             crate::entities::page::service::get_by_id(
                 &state.postgres,
+                &database,
                 page.parent_page_id.unwrap().clone(),
             )
             .await
@@ -101,9 +118,12 @@ pub async fn get_page(
 
     if include_tasks {
         page_response.tasks = Some(
-            crate::entities::task::service::get_all_tasks_by_page_id(&state.postgres, page.id.clone())
-                .await
-                .map(|tasks| tasks.into_iter().map(TaskResponse::from).collect())?,
+            crate::entities::task::service::get_all_tasks_by_page_id(
+                &state.postgres,
+                page.id.clone(),
+            )
+            .await
+            .map(|tasks| tasks.into_iter().map(TaskResponse::from).collect())?,
         );
     }
 

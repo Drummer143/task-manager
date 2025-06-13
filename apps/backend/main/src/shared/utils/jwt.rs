@@ -1,4 +1,3 @@
-use axum::http::HeaderValue;
 use chrono::Utc;
 use jsonwebtoken::{
     encode, errors::Result, Algorithm, DecodingKey, EncodingKey, Header, TokenData, Validation

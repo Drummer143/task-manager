@@ -82,8 +82,14 @@ impl ErrorResponse {
 impl From<sqlx::Error> for ErrorResponse {
     fn from(error: sqlx::Error) -> Self {
         match error {
-            sqlx::Error::RowNotFound => ErrorResponse::not_found(codes::NotFoundErrorCode::NotFound, None),
-            _ => ErrorResponse::internal_server_error(),
+            sqlx::Error::RowNotFound => Self::not_found(codes::NotFoundErrorCode::NotFound, None),
+            _ => Self::internal_server_error(),
         }
+    }
+}
+
+impl From<mongodb::error::Error> for ErrorResponse {
+    fn from(_: mongodb::error::Error) -> Self {
+        Self::internal_server_error()
     }
 }

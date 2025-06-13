@@ -37,7 +37,9 @@ impl FromStr for PageType {
 }
 
 impl<'r> Decode<'r, Postgres> for PageType {
-    fn decode(value: postgres::PgValueRef<'_>) -> Result<Self, Box<dyn std::error::Error + Send + Sync>> {
+    fn decode(
+        value: postgres::PgValueRef<'_>,
+    ) -> Result<Self, Box<dyn std::error::Error + Send + Sync>> {
         let s = <&str as Decode<Postgres>>::decode(value)?;
         Ok(PageType::from_str(s)?)
     }
@@ -62,12 +64,24 @@ impl Type<Postgres> for PageType {
     }
 }
 
-#[derive(Debug, FromRow, Clone, utoipa::ToSchema)]
+#[derive(Debug, Deserialize, Serialize, Clone)]
+pub struct Doc {
+    pub text: Option<String>,
+    pub r#type: String,
+    pub version: i32,
+    pub page_id: Option<String>,
+    pub attrs: Option<serde_json::Value>,
+    pub content: Option<serde_json::Value>,
+    pub marks: Option<serde_json::Value>,
+}
+
+#[derive(Debug, FromRow, Clone)]
 pub struct Page {
     pub id: Uuid,
     pub r#type: PageType,
     pub title: String,
-    pub text: Option<String>,
+    #[sqlx(skip)]
+    pub text: Option<Doc>,
     pub owner_id: Uuid,
     pub workspace_id: Uuid,
     pub parent_page_id: Option<Uuid>,

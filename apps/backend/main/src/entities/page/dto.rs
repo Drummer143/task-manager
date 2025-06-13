@@ -1,12 +1,12 @@
 use std::collections::HashMap;
 
 use chrono::{DateTime, Utc};
-use serde::Deserialize;
+use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 use crate::{
     entities::{
-        page::model::{Page, PageType},
+        page::model::{Doc, Page, PageType},
         task::dto::TaskResponse,
         user::model::User,
         workspace::dto::WorkspaceResponseWithoutInclude,
@@ -14,29 +14,68 @@ use crate::{
     shared::error_handlers::{codes, handlers::ErrorResponse},
 };
 
+#[derive(Debug, Deserialize, utoipa::ToSchema, Clone)]
+#[serde(rename_all = "camelCase")]
+pub struct PageTextDto {
+    pub text: Option<String>,
+    pub r#type: String,
+
+    pub attrs: Option<serde_json::Value>,
+    pub content: Option<serde_json::Value>,
+    pub marks: Option<serde_json::Value>,
+}
+
 #[derive(Debug, Deserialize, utoipa::ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct CreatePageDto {
     pub title: String,
     pub parent_page_id: Option<Uuid>,
-    pub r#type: String,
-    pub text: Option<String>,
+    pub r#type: PageType,
+    pub text: Option<PageTextDto>,
 }
 
 #[derive(Debug, Deserialize, utoipa::ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct UpdatePageDto {
     pub title: Option<String>,
-    pub text: Option<String>,
+    pub text: Option<PageTextDto>,
 }
 
-#[derive(Debug, serde::Serialize, Clone, utoipa::ToSchema)]
+#[derive(Debug, Serialize, Clone, utoipa::ToSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct DocResponse {
+    pub text: Option<String>,
+    pub r#type: String,
+    pub version: i32,
+
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub attrs: Option<serde_json::Value>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub content: Option<serde_json::Value>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub marks: Option<serde_json::Value>,
+}
+
+impl From<Doc> for DocResponse {
+    fn from(doc: Doc) -> Self {
+        Self {
+            text: doc.text,
+            r#type: doc.r#type,
+            version: doc.version,
+            attrs: doc.attrs,
+            content: doc.content,
+            marks: doc.marks,
+        }
+    }
+}
+
+#[derive(Debug, Serialize, Clone, utoipa::ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct PageResponseWithoutInclude {
     pub id: Uuid,
     pub r#type: PageType,
     pub title: String,
-    pub text: Option<String>,
+    pub text: Option<DocResponse>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
     pub deleted_at: Option<DateTime<Utc>>,
@@ -48,7 +87,7 @@ impl From<Page> for PageResponseWithoutInclude {
             id: page.id,
             r#type: page.r#type,
             title: page.title,
-            text: page.text,
+            text: page.text.map(DocResponse::from),
             created_at: page.created_at,
             updated_at: page.updated_at,
             deleted_at: page.deleted_at,
@@ -62,7 +101,7 @@ impl From<&Page> for PageResponseWithoutInclude {
             id: page.id,
             r#type: page.r#type.clone(),
             title: page.title.clone(),
-            text: page.text.clone(),
+            text: page.text.clone().map(DocResponse::from),
             created_at: page.created_at,
             updated_at: page.updated_at,
             deleted_at: page.deleted_at,
@@ -76,7 +115,7 @@ pub struct ChildPageResponse {
     pub id: Uuid,
     pub r#type: PageType,
     pub title: String,
-    pub text: Option<String>,
+    pub text: Option<DocResponse>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub owner: Option<User>,
@@ -92,7 +131,7 @@ impl From<Page> for ChildPageResponse {
             id: page.id,
             r#type: page.r#type,
             title: page.title,
-            text: page.text,
+            text: page.text.map(DocResponse::from),
             owner: None,
             created_at: page.created_at,
             updated_at: page.updated_at,
@@ -107,7 +146,7 @@ impl From<PageResponse> for ChildPageResponse {
             id: page.id,
             r#type: page.r#type,
             title: page.title,
-            text: page.text,
+            text: page.text.map(DocResponse::from),
             owner: page.owner,
             created_at: page.created_at,
             updated_at: page.updated_at,
@@ -122,9 +161,10 @@ pub struct PageResponse {
     pub id: Uuid,
     pub r#type: PageType,
     pub title: String,
-    pub text: Option<String>,
     pub role: Option<crate::entities::page_access::model::Role>,
-
+    
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub text: Option<DocResponse>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub owner: Option<User>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -153,7 +193,7 @@ impl From<super::model::Page> for PageResponse {
             id: page.id,
             r#type: page.r#type,
             title: page.title,
-            text: page.text,
+            text: page.text.map(DocResponse::from),
             role: None,
             owner: None,
             workspace: None,

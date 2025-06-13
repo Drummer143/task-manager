@@ -5,6 +5,7 @@ import { lazySuspense } from "@task-manager/react-utils";
 import { useNavigate } from "react-router";
 
 import { useAuthStore } from "../../app/store/auth";
+import { useSocketStore } from "../../app/store/socket";
 import FullSizeLoader from "../../shared/ui/FullSizeLoader";
 
 const DesktopLayout = lazySuspense(() => import("./Desktop"), <FullSizeLoader />);
@@ -15,7 +16,7 @@ const Layout: React.FC = () => {
 
 	// useWindowResize("md", setMobileLayout);
 
-	const { getSession, user, loading } = useAuthStore();
+	const { getSession, user } = useAuthStore();
 
 	const navigate = useNavigate();
 
@@ -29,6 +30,16 @@ const Layout: React.FC = () => {
 	useEffect(() => {
 		mutateAsync();
 	}, [mutateAsync]);
+
+	useEffect(() => {
+		const signalsChannel = useSocketStore.getState().getChannel("signals");
+
+		signalsChannel.on("message", console.log);
+
+		return () => {
+			useSocketStore.getState().closeSocket();
+		};
+	}, []);
 
 	if (isPending || !user) {
 		return <FullSizeLoader />;

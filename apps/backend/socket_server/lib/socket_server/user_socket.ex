@@ -1,4 +1,5 @@
 defmodule SocketServer.UserSocket do
+  require Logger
   use Phoenix.Socket
 
   channel("signals", SocketServer.SignalsChannel)

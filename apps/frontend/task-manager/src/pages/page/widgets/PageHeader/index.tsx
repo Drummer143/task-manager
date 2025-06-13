@@ -10,7 +10,6 @@ interface PageHeaderProps {
 }
 
 const PageHeader: React.FC<PageHeaderProps> = ({ page }) => {
-	console.log(page.role);
 	return (
 		<Flex justify="space-between" gap="var(--ant-margin-sm)">
 			<Typography.Title editable={{ triggerType: ["text"] }} level={3}>

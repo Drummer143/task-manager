@@ -32,7 +32,14 @@ pub async fn update_page(
     Path((_, page_id)): Path<(Uuid, Uuid)>,
     Json(update_page_dto): Json<UpdatePageDto>,
 ) -> Result<PageResponse, ErrorResponse> {
-    crate::entities::page::service::update(&state.postgres, page_id, update_page_dto)
-        .await
-        .map(PageResponse::from)
+    crate::entities::page::service::update(
+        &state.postgres,
+        &state
+            .mongo
+            .database(crate::shared::mongo_constants::PAGE_DATABASE),
+        page_id,
+        update_page_dto,
+    )
+    .await
+    .map(PageResponse::from)
 }
