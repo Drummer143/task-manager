@@ -1,8 +1,9 @@
 import React, { memo } from "react";
 
 import Icon from "@ant-design/icons";
+import { preventDefault } from "@task-manager/utils";
 import { Editor, BubbleMenu as TipTapBubbleMenu } from "@tiptap/react";
-import { Button, Tooltip, Typography } from "antd";
+import { Button, GetProp, Tooltip, Typography } from "antd";
 
 import { useStyles } from "./styles";
 
@@ -45,43 +46,46 @@ const bubbleMenuButtons = [
 	}
 ] as const;
 
+const tippyOptions: GetProp<typeof TipTapBubbleMenu, "tippyOptions"> = {
+	moveTransition: "transform var(--ant-motion-duration-fast) var(--ant-motion-ease-in-out)"
+};
+
 const BubbleMenu: React.FC<BubbleMenuProps> = ({ editor, selectionParams, onItemClick }) => {
 	const { styles, cx } = useStyles();
 
 	return (
-		<TipTapBubbleMenu
-			tippyOptions={{
-				moveTransition:
-					"transform var(--ant-motion-duration-fast) var(--ant-motion-ease-in-out)"
-			}}
-			editor={editor}
-			className={styles.menu}
-		>
-			{bubbleMenuButtons.map(({ action, icon, shortcut }) => (
-				<Tooltip
-					classNames={{ body: styles.buttonTooltip }}
-					title={
-						<Typography.Text>
-							{action}{" "}
-							<Typography.Text type="secondary">
-								{shortcut.map(key => (
-									<Typography.Text keyboard key={key}>
-										{key}
-									</Typography.Text>
-								))}
+		<TipTapBubbleMenu tippyOptions={tippyOptions} editor={editor}>
+			<div
+				className={styles.menu}
+				onContextMenu={preventDefault}
+				onContextMenuCapture={preventDefault}
+			>
+				{bubbleMenuButtons.map(({ action, icon, shortcut }) => (
+					<Tooltip
+						classNames={{ body: styles.buttonTooltip }}
+						title={
+							<Typography.Text>
+								{action}{" "}
+								<Typography.Text type="secondary">
+									{shortcut.map(key => (
+										<Typography.Text keyboard key={key}>
+											{key}
+										</Typography.Text>
+									))}
+								</Typography.Text>
 							</Typography.Text>
-						</Typography.Text>
-					}
-				>
-					<Button
-						type="text"
-						size="small"
-						icon={<Icon className={styles.buttonIcon} component={icon} />}
-						onClick={() => onItemClick(action)}
-						className={cx(styles.menuButton, selectionParams[action] && "active")}
-					/>
-				</Tooltip>
-			))}
+						}
+					>
+						<Button
+							type="text"
+							size="small"
+							icon={<Icon className={styles.buttonIcon} component={icon} />}
+							onClick={() => onItemClick(action)}
+							className={cx(styles.menuButton, selectionParams[action] && "active")}
+						/>
+					</Tooltip>
+				))}
+			</div>
 		</TipTapBubbleMenu>
 	);
 };

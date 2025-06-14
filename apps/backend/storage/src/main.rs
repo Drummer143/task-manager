@@ -8,7 +8,7 @@ mod swagger;
 
 #[tokio::main]
 async fn main() {
-    dotenvy::dotenv().expect("Failed to load .env file");
+    let _ = dotenvy::dotenv();
 
     tracing_subscriber::registry()
         .with(tracing_subscriber::fmt::layer())

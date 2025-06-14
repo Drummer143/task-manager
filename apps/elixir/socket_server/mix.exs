@@ -9,6 +9,10 @@ defmodule SocketServer.MixProject do
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
+      build_path: "../../../dist/apps/socket_server",
+      config_path: "../../../config/config.exs",
+      deps_path: "../../../deps",
+      lockfile: "../../../mix.lock",
       deps: deps()
     ]
   end

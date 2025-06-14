@@ -1,8 +1,8 @@
 package router
 
 import (
-	"libs/backend/errorHandlers/libs/errorCodes"
-	"libs/backend/errorHandlers/libs/errorHandlers"
+	"mailer/errorCodes"
+	"mailer/errorHandlers"
 	"net/http"
 
 	"mailer/mail"

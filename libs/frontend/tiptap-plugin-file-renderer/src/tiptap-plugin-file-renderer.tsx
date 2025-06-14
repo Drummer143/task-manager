@@ -23,12 +23,12 @@ export interface FileRendererOptions {
  */
 export const inputRegex = /(?:^|\s)(!\[(.+|:?)]\((\S+)(?:(?:\s+)["'](\S+)["'])?\))$/;
 
-const defaultNodeImageRenderer: React.FC<NodeViewProps> = props => (
-	<NodeViewWrapper {...props.HTMLAttributes} as="img" />
-);
-const defaultNodeVideoRenderer: React.FC<NodeViewProps> = props => (
-	<NodeViewWrapper {...props.HTMLAttributes} as="video" />
-);
+// const defaultNodeImageRenderer: React.FC<NodeViewProps> = props => (
+// 	<NodeViewWrapper {...props.HTMLAttributes} as="img" />
+// );
+// const defaultNodeVideoRenderer: React.FC<NodeViewProps> = props => (
+// 	<NodeViewWrapper {...props.HTMLAttributes} as="video" />
+// );
 const defaultNodeFileRenderer: React.FC<NodeViewProps> = props => (
 	<NodeViewWrapper {...props.HTMLAttributes} as="a" download>
 		{props.node.attrs["title"]}
@@ -45,24 +45,24 @@ export const FileRenderer = Node.create<FileRendererOptions>({
 	addOptions() {
 		return {
 			filesRules: {
-				"image/*": {
-					HTMLAttributes: {
-						class: "is-image"
-					},
-					render: defaultNodeImageRenderer
-				},
-				"video/*": {
-					HTMLAttributes: {
-						class: "is-video"
-					},
-					render: defaultNodeVideoRenderer
-				},
-				"!image/*": {
-					HTMLAttributes: {
-						class: "is-file"
-					},
-					render: defaultNodeFileRenderer
-				}
+				// "image/*": {
+				// 	HTMLAttributes: {
+				// 		class: "is-image"
+				// 	},
+				// 	render: defaultNodeImageRenderer
+				// },
+				// "video/*": {
+				// 	HTMLAttributes: {
+				// 		class: "is-video"
+				// 	},
+				// 	render: defaultNodeVideoRenderer
+				// },
+				// "**/**": {
+				// 	HTMLAttributes: {
+				// 		class: "is-file"
+				// 	},
+				// 	render: defaultNodeFileRenderer
+				// }
 			}
 		};
 	},
@@ -124,8 +124,9 @@ export const FileRenderer = Node.create<FileRendererOptions>({
 		const mime = node.attrs["type"];
 
 		const HTMLAttrsForMime =
-			Object.entries(this.options.filesRules).find(([key]) => minimatch(mime, key))?.[1] ||
-			{};
+			Object.entries(this.options.filesRules).find(
+				([key]) => mime && key && minimatch(mime, key)
+			)?.[1] || {};
 
 		return mime?.startsWith("image/")
 			? ["img", mergeAttributes(HTMLAttrsForMime, HTMLAttributes)]

@@ -7,10 +7,6 @@ import React, {
 	useState
 } from "react";
 
-import { uploadAvatar, uploadFile } from "@task-manager/api";
-import { FileUploadPlugin } from "@task-manager/tiptap-file-upload-plugin";
-import { FileRenderer as FileRendererPlugin } from "@task-manager/tiptap-plugin-file-renderer";
-import Placeholder from "@tiptap/extension-placeholder";
 import {
 	Editor,
 	EditorContent,
@@ -19,12 +15,12 @@ import {
 	JSONContent,
 	useEditor
 } from "@tiptap/react";
-import StarterKit from "@tiptap/starter-kit";
+import { Dropdown } from "antd";
 
+import { EMPTY_NODE_CLASS, extensions } from "./extensions";
 import { useStyles } from "./styles";
+import { useContextMenuItems } from "./useContextMenuItems";
 import BubbleMenu from "./widgets/BubbleMenu";
-import FileRenderer from "./widgets/FileRenderer";
-import ImageRender from "./widgets/ImageRender";
 
 interface MDEditorProps
 	extends Omit<
@@ -43,48 +39,6 @@ interface MDEditorProps
 
 	onChange?: (value: JSONContent) => void;
 }
-
-const EMPTY_NODE_CLASS = "is-empty";
-
-const extensions = [
-	StarterKit,
-	FileUploadPlugin.configure({
-		uploadFn: {
-			"image/*": async file => {
-				const { link } = await uploadFile({ file });
-
-				return {
-					name: file.name,
-					url: link,
-					size: file.size,
-					type: file.type
-				};
-			}
-		}
-	}),
-	FileRendererPlugin.configure({
-		filesRules: {
-			"image/*": {
-				render: ImageRender
-			},
-			"video/*": {},
-			"!image/*": {
-				render: FileRenderer
-			}
-		}
-	}),
-	Placeholder.configure({
-		emptyNodeClass: EMPTY_NODE_CLASS,
-		showOnlyWhenEditable: false,
-		placeholder: placeholderProps => {
-			if (placeholderProps.editor.isEditable) {
-				return "Type something...";
-			}
-
-			return "No content";
-		}
-	})
-];
 
 const MDEditor: React.ForwardRefRenderFunction<Editor | null, MDEditorProps> = (
 	{ editable = true, value, onChange, className, ...props },
@@ -136,6 +90,8 @@ const MDEditor: React.ForwardRefRenderFunction<Editor | null, MDEditorProps> = (
 		}
 	});
 
+	const ctxMenuItems = useContextMenuItems(editor);
+
 	useImperativeHandle(ref, () => editor as Editor, [editor]);
 
 	const onBubbleMenuItemClick = useCallback(
@@ -159,7 +115,13 @@ const MDEditor: React.ForwardRefRenderFunction<Editor | null, MDEditorProps> = (
 
 	return (
 		<>
-			<EditorContent {...props} editor={editor} className={cx(styles.editor, className)} />
+			<Dropdown menu={{ items: ctxMenuItems }} trigger={["contextMenu"]}>
+				<EditorContent
+					{...props}
+					editor={editor}
+					className={cx(styles.editor, className)}
+				/>
+			</Dropdown>
 
 			<BubbleMenu
 				editor={editor}

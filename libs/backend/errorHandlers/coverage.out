@@ -1,7 +1,0 @@
-mode: set
-libs/backend/errorHandlers/libs/errorHandlers/errorHandlers.go:18.36,23.2 1 1
-libs/backend/errorHandlers/libs/errorHandlers/errorHandlers.go:26.66,33.2 1 1
-libs/backend/errorHandlers/libs/errorHandlers/errorHandlers.go:36.55,42.2 1 1
-libs/backend/errorHandlers/libs/errorHandlers/errorHandlers.go:45.65,52.2 1 1
-libs/backend/errorHandlers/libs/errorHandlers/errorHandlers.go:55.64,62.2 1 1
-libs/backend/errorHandlers/libs/errorHandlers/errorHandlers.go:67.44,73.2 1 1

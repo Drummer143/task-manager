@@ -2,7 +2,7 @@
 	"$schema": "../../../node_modules/nx/schemas/project-schema.json",
 	"name": "socket-server",
 	"projectType": "application",
-	"sourceRoot": "apps/backend/socket_server/src",
+	"sourceRoot": "apps/elixir/socket_server/src",
 	"targets": {
 		"dev": {
 			"executor": "nx:run-commands",
@@ -15,6 +15,9 @@
 			"executor": "nx:run-commands",
 			"options": {
 				"command": "mix compile",
+				"env": {
+					"MIX_ENV": "prod"
+				},
 				"cwd": "{projectRoot}"
 			}
 		}

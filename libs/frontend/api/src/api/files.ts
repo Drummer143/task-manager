@@ -14,6 +14,6 @@ export const uploadFile = async ({ file, folder }: { file: File; folder?: string
 		formData.append("folder", folder);
 	}
 
-	return (await axiosInstance.post<{ link: string }>("/upload", formData)).data;
+	return (await axiosInstance.post<{ link: string }>("/files/upload", formData)).data;
 };
 

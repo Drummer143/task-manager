@@ -2,7 +2,7 @@ import Config
 
 # Configure your database
 config :socket_server, SocketServer.Repo,
-  url: System.get_env("DATABASE_URL") || "ecto://postgres:postgres@localhost:5432/socket_server_dev",
+  url: System.get_env("DATABASE_URL") || "ecto://postgres:postgres@localhost:1234/socket_server_dev",
   stacktrace: true,
   show_sensitive_data_on_connection_error: true,
   pool_size: 10

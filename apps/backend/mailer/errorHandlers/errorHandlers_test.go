@@ -2,8 +2,8 @@ package errorHandlers_test
 
 import (
 	"encoding/json"
-	"libs/backend/errorHandlers/libs/errorCodes"
-	"libs/backend/errorHandlers/libs/errorHandlers"
+	"mailer/errorCodes"
+	"mailer/errorHandlers"
 	"net/http"
 	"net/http/httptest"
 	"testing"

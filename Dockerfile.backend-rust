@@ -1,0 +1,29 @@
+FROM rust:1.86.0 AS builder
+
+ARG APP_NAME
+
+WORKDIR /app
+
+COPY Cargo.toml Cargo.lock ./
+
+COPY apps/backend/ ./apps/backend/
+
+ENV APP_NAME=${APP_NAME}
+
+COPY libs/ ./libs/
+
+RUN cargo build -p ${APP_NAME} --release
+
+FROM rust:1.86.0 as runner
+
+ARG APP_NAME
+
+WORKDIR /app
+
+COPY --from=builder /app/target/release/ ./
+
+RUN echo "#!/bin/sh\n./${APP_NAME}" > entrypoint.sh
+
+RUN chmod +x entrypoint.sh
+
+CMD ["./entrypoint.sh"]

@@ -7,7 +7,7 @@ import { Button, Flex } from "antd";
 
 import { useStyles } from "./styles";
 
-const ImageRender: ReactNodeRenderer = props => {
+const ImageRenderer: ReactNodeRenderer = props => {
 	const { styles } = useStyles();
 
 	const handleDeleteSelf = () => {
@@ -56,5 +56,5 @@ const ImageRender: ReactNodeRenderer = props => {
 	);
 };
 
-export default memo(ImageRender);
+export default memo(ImageRenderer);
 

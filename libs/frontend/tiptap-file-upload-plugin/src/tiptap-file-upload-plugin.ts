@@ -3,8 +3,8 @@ import { Plugin } from "@tiptap/pm/state";
 
 import { FileUploadPluginOptions } from "./types";
 import {
-	defaultFileUploadFn,
-	defaultImageUploadFn,
+	// defaultFileUploadFn,
+	// defaultImageUploadFn,
 	getInsertPos,
 	uploadFiles,
 	validateFile
@@ -29,8 +29,8 @@ export const FileUploadPlugin = Extension.create<FileUploadPluginOptions>({
 	addOptions() {
 		return {
 			uploadFn: {
-				"image/*": defaultImageUploadFn,
-				"!image/*": defaultFileUploadFn
+				// "image/*": defaultImageUploadFn,
+				// "!image/*": defaultFileUploadFn
 			},
 			accept: "**",
 			maxFileSize: 0

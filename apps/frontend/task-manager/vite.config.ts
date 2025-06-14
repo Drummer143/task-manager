@@ -2,6 +2,7 @@
 import { nxCopyAssetsPlugin } from "@nx/vite/plugins/nx-copy-assets.plugin";
 import { nxViteTsPaths } from "@nx/vite/plugins/nx-tsconfig-paths.plugin";
 import react from "@vitejs/plugin-react";
+import { visualizer } from "rollup-plugin-visualizer";
 import { defineConfig } from "vite";
 
 export default defineConfig(() => ({
@@ -20,11 +21,30 @@ export default defineConfig(() => ({
 	//  plugins: [ nxViteTsPaths() ],
 	// },
 	build: {
-		outDir: "../../../dist/apps/task-manager",
+		outDir: "../../../dist/apps/frontend/task-manager",
 		emptyOutDir: true,
 		reportCompressedSize: true,
 		commonjsOptions: {
 			transformMixedEsModules: true
+		},
+		rollupOptions: {
+			output: {
+				manualChunks: id => {
+					if (id.includes("lowlight") || id.includes("react-syntax-highlighter")) {
+						return "syntax-highlighter";
+					}
+
+					if (id.includes("highlight.js")) {
+						return "highlight";
+					}
+				}
+			},
+			plugins: [
+				visualizer({
+					filename: "../../../dist/apps/frontend/task-manager/stats.html",
+					open: false
+				})
+			]
 		}
 	},
 	resolve: {
@@ -48,3 +68,4 @@ export default defineConfig(() => ({
 		}
 	}
 }));
+

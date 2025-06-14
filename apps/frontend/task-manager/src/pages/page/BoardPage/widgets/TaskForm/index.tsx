@@ -1,13 +1,16 @@
 import React from "react";
 
+import { lazySuspense } from "@task-manager/react-utils";
 import { Alert, Button, DatePicker, Form, Input, Select, Space } from "antd";
 
 import { TaskFormProps } from "./types";
 import { initialValues, requiredRule, statusSelectOptions } from "./utils";
 
 import { today } from "../../../../../shared/constants";
+import FullSizeLoader from "../../../../../shared/ui/FullSizeLoader";
 import Drawer from "../../../../../widgets/Drawer";
-import MDEditor from "../../../../../widgets/MDEditor";
+
+const MDEditor = lazySuspense(() => import("../../../../../widgets/MDEditor"), <FullSizeLoader />);
 
 const TaskForm: React.FC<TaskFormProps> = ({
 	onClose,
@@ -67,7 +70,10 @@ const TaskForm: React.FC<TaskFormProps> = ({
 			<>
 				{submitError && (
 					<Form.Item>
-						<Alert message={submitError === true ? "Failed to submit task" : submitError} type="error" />
+						<Alert
+							message={submitError === true ? "Failed to submit task" : submitError}
+							type="error"
+						/>
 					</Form.Item>
 				)}
 
@@ -92,3 +98,4 @@ const TaskForm: React.FC<TaskFormProps> = ({
 );
 
 export default TaskForm;
+

@@ -2,7 +2,7 @@ FROM rust:1.86 AS builder
 
 WORKDIR /app
 
-COPY Cargo.toml Cargo.lock ./
+COPY Cargo.toml ./
 
 RUN cargo fetch
 
@@ -23,6 +23,6 @@ COPY --from=builder /app/target/release/main ./
 COPY --from=builder /app/.env.docker ./.env
 COPY --from=builder /app/migrations ./migrations
 
-EXPOSE 8080
+EXPOSE 8082
 
 CMD ["./main"]

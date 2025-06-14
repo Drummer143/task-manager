@@ -2,13 +2,13 @@ import React, { useCallback, useEffect, useMemo, useRef } from "react";
 
 import { useMutation } from "@tanstack/react-query";
 import {
-	updatePassword as apiUpdatePassword,
-	verifyResetPasswordToken as apiVerifyResetPasswordToken,
+	// updatePassword as apiUpdatePassword,
+	// verifyResetPasswordToken as apiVerifyResetPasswordToken,
 	parseApiError
 } from "@task-manager/api";
 import { Flex, Form, Input, Spin, Typography } from "antd";
 import { Rule } from "antd/es/form";
-import { Link, useNavigate, useSearchParams } from "react-router-dom";
+import { Link, useNavigate, useSearchParams } from "react-router";
 
 import { withAuthPageCheck } from "../../shared/HOCs/withAuthPageCheck";
 import AuthPageMessageWrapper from "../../shared/ui/AuthPageMessageWrapper";
@@ -34,7 +34,7 @@ const NewPassword: React.FC = () => {
 		isSuccess: isTokenValidated,
 		isPending: isTokenValidating
 	} = useMutation({
-		mutationFn: apiVerifyResetPasswordToken
+		mutationFn: (token: string) => Promise.resolve()
 	});
 
 	const {
@@ -43,7 +43,7 @@ const NewPassword: React.FC = () => {
 		isPending: isPasswordUpdating,
 		error
 	} = useMutation({
-		mutationFn: apiUpdatePassword
+		mutationFn: ({ password, token }: { password: string; token: string }) => Promise.resolve()
 	});
 
 	const passwordUpdateError = useMemo(() => parseApiError(error, undefined, [400, 404]), [error]);
@@ -90,8 +90,8 @@ const NewPassword: React.FC = () => {
 				<Typography.Title level={3}>Invalid token</Typography.Title>
 
 				<Typography.Paragraph>
-					Invalid password reset token. Please check the email and try again. If issue persists, please
-					request a new password reset email or contact support.
+					Invalid password reset token. Please check the email and try again. If issue
+					persists, please request a new password reset email or contact support.
 				</Typography.Paragraph>
 
 				<Typography.Paragraph>
@@ -107,7 +107,8 @@ const NewPassword: React.FC = () => {
 				<Typography.Title level={3}>Password updated</Typography.Title>
 
 				<Typography.Paragraph>
-					Your password has been updated. You will be redirected to login page in 5 seconds.
+					Your password has been updated. You will be redirected to login page in 5
+					seconds.
 				</Typography.Paragraph>
 
 				<Typography.Paragraph>
@@ -129,7 +130,10 @@ const NewPassword: React.FC = () => {
 			<Form.Item name="password" label="Password" rules={rules.password}>
 				<Input.Password
 					placeholder="********"
-					visibilityToggle={{ onVisibleChange: setPasswordsVisible, visible: passwordsVisible }}
+					visibilityToggle={{
+						onVisibleChange: setPasswordsVisible,
+						visible: passwordsVisible
+					}}
 					autoComplete="new-password"
 					name="password"
 					id="password"
@@ -144,7 +148,10 @@ const NewPassword: React.FC = () => {
 			>
 				<Input.Password
 					placeholder="********"
-					visibilityToggle={{ onVisibleChange: setPasswordsVisible, visible: passwordsVisible }}
+					visibilityToggle={{
+						onVisibleChange: setPasswordsVisible,
+						visible: passwordsVisible
+					}}
 					autoComplete="new-password"
 					name="confirm_password"
 					id="confirm_password"
@@ -155,3 +162,4 @@ const NewPassword: React.FC = () => {
 };
 
 export default withAuthPageCheck(NewPassword, false);
+

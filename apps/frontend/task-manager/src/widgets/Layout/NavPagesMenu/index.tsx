@@ -4,7 +4,6 @@ import { PlusOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { createPage, getPageList, PageType, parseApiError } from "@task-manager/api";
 import { Button, Form, Input, Select, Typography } from "antd";
-import ErrorList from "antd/es/form/ErrorList";
 import { DefaultOptionType } from "antd/es/select";
 import { createStyles } from "antd-style";
 
@@ -129,7 +128,7 @@ const NavPagesMenu: React.FC = () => {
 					/>
 				</Form.Item>
 
-				<ErrorList errors={parsedError} />
+				<Form.ErrorList errors={parsedError} />
 			</Drawer>
 		</>
 	);
