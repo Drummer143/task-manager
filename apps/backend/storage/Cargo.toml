@@ -6,9 +6,12 @@ edition = "2021"
 
 [dependencies]
 axum = { version = "0.8", features = ["multipart"] }
+axum-macros = "0.5"
 dotenvy = "0.15"
 error_handlers = { path = "../../../libs/backend/error-handlers" }
+infer = "0.19"
 tokio = { version = "1", features = ["full"] }
+tokio-util = "0.7"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 tower-http = { version = "0.6", features = ["trace", "cors", "fs"] }

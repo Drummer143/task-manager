@@ -70,7 +70,7 @@ async fn main() {
         .layer(tower_http::trace::TraceLayer::new_for_http());
 
     let port = std::env::var("PORT").unwrap_or("3000".to_string());
-    let addr = format!("0.0.0.0:{}", port);
+    let addr = format!("localhost:{}", port);
 
     tracing::info!("Listening on {}", addr);
 

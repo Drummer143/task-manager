@@ -4,7 +4,7 @@ use std::{collections::HashMap, env, path::PathBuf};
 use tokio::{fs, io::AsyncWriteExt};
 use uuid::Uuid;
 
-use crate::entities::file::dto::{UploadRequest, UploadResponse};
+use crate::entities::actions::dto::{UploadRequest, UploadResponse};
 
 fn sanitize_folder(input: &str) -> Option<String> {
     let valid = input
@@ -20,7 +20,7 @@ fn sanitize_folder(input: &str) -> Option<String> {
 
 #[utoipa::path(
     post,
-    path = "/files/upload",
+    path = "/upload",
     request_body(
         content = UploadRequest,
         content_type = "multipart/form-data"

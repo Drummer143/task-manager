@@ -1,5 +1,4 @@
 use axum::http;
-use tower_http::services::ServeDir;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use utoipa::OpenApi;
 
@@ -35,17 +34,14 @@ async fn main() {
         .allow_credentials(true);
 
     let port = std::env::var("SELF_PORT").unwrap_or("3000".to_string());
-    let addr = format!("0.0.0.0:{}", port);
+    let addr = format!("localhost:{}", port);
 
     let app = axum::Router::new()
-        .merge(entities::file::router::init())
+        .merge(entities::actions::router::init())
+        .merge(entities::files::router::init())
         .merge(
             utoipa_swagger_ui::SwaggerUi::new("/api")
                 .url("/api/openapi.json", swagger::ApiDoc::openapi()),
-        )
-        .nest_service(
-            "/files",
-            ServeDir::new(std::env::var("STATIC_FOLDER_PATH").unwrap_or("./static".to_string())),
         )
         .layer(cors)
         .layer(tower_http::trace::TraceLayer::new_for_http());
