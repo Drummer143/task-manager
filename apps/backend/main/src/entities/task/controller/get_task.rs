@@ -35,8 +35,6 @@ pub async fn get_task<'a>(
 
     let mut task_response = TaskResponse::from(task);
 
-    println!("task: {:#?}", task_response);
-
     task_response.reporter = Some(reporter);
     task_response.assignee = assignee;
 

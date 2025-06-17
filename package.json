@@ -3,18 +3,20 @@
 	"version": "0.0.0",
 	"license": "MIT",
 	"scripts": {
-		"dev": "nx run-many --target=dev --projects=task-manager,main,socket-server,storage",
+		"start_db": "docker compose up -d postgres rmq mongo",
+		"dev": "nx run-many --target=dev --projects=task-manager,main,storage",
 		"dev:all": "nx run-many --target=dev --all",
 		"dev:custom": "nx run-many --target=dev",
 		"dev:task-manager": "nx run-many --target=dev --projects=task-manager",
 		"dev:main": "nx run-many --target=dev --projects=main",
 		"dev:socket-server": "nx run-many --target=dev --projects=socket-server",
 		"dev:storage": "nx run-many --target=dev --projects=storage",
+		"dev:backend": "nx run-many --target=dev --projects=main,storage",
 		"lint": "nx run-many --target=lint --all --verbose",
 		"lint:fix": "nx run-many --target=lint:fix --all --verbose",
 		"build": "nx run-many --target=build --all",
 		"build:frontend": "nx run-many --target=build --projects=task-manager",
-		"build:backend": "nx run-many --target=build --projects=main,mailer,storage",
+		"build:backend": "nx run-many --target=build --projects=main,storage",
 		"swagger": "nx run-many --target=swagger --all",
 		"tidy": "nx run-many --target=tidy --all",
 		"typecheck": "nx run-many --target=typecheck --all",
@@ -109,3 +111,4 @@
 		"node": "^22.0.0"
 	}
 }
+

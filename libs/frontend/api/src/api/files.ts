@@ -5,6 +5,10 @@ const axiosInstance = axios.create({
 	withCredentials: true
 });
 
+export interface UploadFileResponse {
+	link: string;
+}
+
 export const uploadFile = async ({ file, folder }: { file: File; folder?: string }) => {
 	const formData = new FormData();
 
@@ -14,6 +18,6 @@ export const uploadFile = async ({ file, folder }: { file: File; folder?: string
 		formData.append("folder", folder);
 	}
 
-	return (await axiosInstance.post<{ link: string }>("/files/upload", formData)).data;
+	return (await axiosInstance.post<UploadFileResponse>("/actions/upload", formData)).data;
 };
 

@@ -85,14 +85,14 @@ pub async fn create_workspace(
 
     let workspace = super::repository::create(&mut *tx, dto).await;
 
-    if workspace.is_err() {
-        tx.rollback().await.map_err(ErrorResponse::from)?;
-        return Err(ErrorResponse::internal_server_error());
+    if let Err(err) = workspace {
+        let _ = tx.rollback().await;
+        return Err(ErrorResponse::from(err));
     }
 
     let workspace = workspace.unwrap();
 
-    let workspace_access = crate::entities::workspace_access::service::create_workspace_access(
+    let workspace_access = crate::entities::workspace_access::repository::create_workspace_access(
         &mut *tx,
         workspace.owner_id,
         workspace.id,
@@ -100,9 +100,9 @@ pub async fn create_workspace(
     )
     .await;
 
-    if workspace_access.is_err() {
-        tx.rollback().await.map_err(ErrorResponse::from)?;
-        return Err(ErrorResponse::internal_server_error());
+    if let Err(err) = workspace_access {
+        let _ = tx.rollback().await;
+        return Err(ErrorResponse::from(err));
     }
 
     tx.commit().await.map_err(ErrorResponse::from)?;

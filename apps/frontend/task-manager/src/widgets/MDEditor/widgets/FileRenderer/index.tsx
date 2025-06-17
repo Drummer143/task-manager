@@ -9,20 +9,22 @@ import {
 import { useMutation } from "@tanstack/react-query";
 import { lazySuspense } from "@task-manager/react-utils";
 import { ReactNodeRenderer } from "@task-manager/tiptap-plugin-file-renderer";
-import { NodeViewWrapper } from "@tiptap/react";
+import { mergeDeep, NodeViewWrapper } from "@tiptap/react";
 import { Button, Flex, Spin } from "antd";
 import axios from "axios";
-import { oneDark, oneLight } from "react-syntax-highlighter/dist/esm/styles/prism";
+import oneDarkDefault from "react-syntax-highlighter/dist/esm/styles/prism/one-dark";
+import oneLightDefault from "react-syntax-highlighter/dist/esm/styles/prism/one-light";
 
 import { useStyles } from "./styles";
 
 const SyntaxHighlighter = lazySuspense(
-	() => import("react-syntax-highlighter").then(d => ({ default: d.PrismAsyncLight })),
+	() => import("react-syntax-highlighter/dist/esm/prism-async-light"),
 	<Flex
 		justify="center"
 		align="center"
 		style={{
-			padding: "var(--ant-padding)"
+			padding: "var(--ant-padding)",
+			background: "var(--ant-color-bg-container)"
 		}}
 	>
 		<Spin />
@@ -40,10 +42,22 @@ const extToLang: Record<string, string> = {
 	xml: "xml"
 };
 
+const antdStyle: typeof oneDarkDefault = {
+	'pre[class*="language-"]': {
+		background: "var(--ant-color-bg-container)"
+	},
+	'code[class*="language-"]': {
+		background: "var(--ant-color-bg-container)"
+	}
+};
+
+const oneDark = mergeDeep(oneDarkDefault, antdStyle);
+const oneLight = mergeDeep(oneLightDefault, antdStyle);
+
 const FileRender: ReactNodeRenderer = info => {
 	const [previewVisible, setPreviewVisible] = useState(false);
 
-	const { styles, theme } = useStyles();
+	// console.debug("info.HTMLAttributes", info.HTMLAttributes);
 
 	const {
 		data,
@@ -55,6 +69,8 @@ const FileRender: ReactNodeRenderer = info => {
 				responseType: "text"
 			})
 	});
+
+	const { styles, theme } = useStyles({ opened: previewVisible });
 
 	const handleDeleteSelf = () => {
 		if (!info.editor.isEditable) {
@@ -72,19 +88,7 @@ const FileRender: ReactNodeRenderer = info => {
 
 	return (
 		<NodeViewWrapper as="div">
-			<Flex
-				className={styles.wrapper}
-				justify="space-between"
-				align="center"
-				style={{
-					background:
-						!isPending && previewVisible
-							? theme.appearance === "dark"
-								? oneDark['code[class*="language-"]'].background
-								: oneLight['code[class*="language-"]'].background
-							: undefined
-				}}
-			>
+			<Flex className={styles.wrapper} justify="space-between" align="center">
 				<a
 					href={info.node.attrs["src"]}
 					target="_blank"
@@ -135,10 +139,6 @@ const FileRender: ReactNodeRenderer = info => {
 						justify="center"
 						align="center"
 						style={{
-							background:
-								theme.appearance === "dark"
-									? oneDark['code[class*="language-"]'].background
-									: oneLight['code[class*="language-"]'].background,
 							padding: "var(--ant-padding)"
 						}}
 					>
@@ -151,7 +151,7 @@ const FileRender: ReactNodeRenderer = info => {
 							borderTopLeftRadius: 0,
 							borderTopRightRadius: 0
 						}}
-						language={extToLang[info.node.attrs["src"].split(".").pop() || ""]}
+						language={extToLang[info.node.attrs["src"].split(".").pop()] ?? "plaintext"}
 						style={theme.appearance === "dark" ? oneDark : oneLight}
 					>
 						{data?.data}

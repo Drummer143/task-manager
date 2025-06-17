@@ -10,6 +10,8 @@ mod shared;
 mod swagger;
 mod types;
 
+const MIGRATOR: sqlx::migrate::Migrator = sqlx::migrate!("./migrations");
+
 #[tokio::main]
 async fn main() {
     let _ = dotenvy::dotenv();
@@ -23,7 +25,13 @@ async fn main() {
     let mongo_url = std::env::var("MONGODB_URL").expect("MONGODB_URL not found");
     let rabbitmq_url = std::env::var("RABBITMQ_URL").expect("RABBITMQ_URL not found");
 
-    let (postgres, mongo, rabbitmq) = db_connections::init_databases(&db_url, &mongo_url, &rabbitmq_url).await;
+    let (postgres, mongo, rabbitmq) =
+        db_connections::init_databases(&db_url, &mongo_url, &rabbitmq_url).await;
+
+    MIGRATOR
+        .run(&postgres)
+        .await
+        .expect("Failed to run migrations");
 
     let cors = tower_http::cors::CorsLayer::new()
         .allow_origin(tower_http::cors::AllowOrigin::exact(

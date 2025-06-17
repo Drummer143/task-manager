@@ -23,13 +23,18 @@ export interface FileRendererOptions {
  */
 export const inputRegex = /(?:^|\s)(!\[(.+|:?)]\((\S+)(?:(?:\s+)["'](\S+)["'])?\))$/;
 
-// const defaultNodeImageRenderer: React.FC<NodeViewProps> = props => (
-// 	<NodeViewWrapper {...props.HTMLAttributes} as="img" />
-// );
-// const defaultNodeVideoRenderer: React.FC<NodeViewProps> = props => (
-// 	<NodeViewWrapper {...props.HTMLAttributes} as="video" />
-// );
-const defaultNodeFileRenderer: React.FC<NodeViewProps> = props => (
+export const defaultNodeImageRenderer: React.FC<NodeViewProps> = props => (
+	<NodeViewWrapper {...props.HTMLAttributes} as="img" />
+);
+export const defaultNodeVideoRenderer: React.FC<NodeViewProps> = props => (
+	<NodeViewWrapper>
+		<video controls width="100%" preload="metadata">
+			<source src={props.node.attrs["src"]} type={props.node.attrs["type"]} />
+			Ваш браузер не поддерживает видео.
+		</video>
+	</NodeViewWrapper>
+);
+export const defaultNodeFileRenderer: React.FC<NodeViewProps> = props => (
 	<NodeViewWrapper {...props.HTMLAttributes} as="a" download>
 		{props.node.attrs["title"]}
 	</NodeViewWrapper>
@@ -122,10 +127,11 @@ export const FileRenderer = Node.create<FileRendererOptions>({
 
 	renderHTML({ HTMLAttributes, node }) {
 		const mime = node.attrs["type"];
+		const ext = "." + node.attrs["src"].split(".").pop();
 
 		const HTMLAttrsForMime =
 			Object.entries(this.options.filesRules).find(
-				([key]) => mime && key && minimatch(mime, key)
+				([key]) => (key && mime && minimatch(mime, key)) || (ext && key.includes(ext))
 			)?.[1] || {};
 
 		return mime?.startsWith("image/")
@@ -158,12 +164,15 @@ export const FileRenderer = Node.create<FileRendererOptions>({
 	addNodeView() {
 		return props => {
 			const mime = props.node.attrs["type"];
+			const ext = "." + props.node.attrs["src"].split(".").pop();
 
-			const optionsForMime = mime
-				? Object.entries(this.options.filesRules).find(([key]) =>
-						minimatch(mime, key)
-					)?.[1] || {}
-				: {};
+			const optionsForMime =
+				mime || ext
+					? Object.entries(this.options.filesRules).find(
+							([key]) =>
+								(key && mime && minimatch(mime, key)) || (ext && key.includes(ext))
+						)?.[1] || {}
+					: {};
 
 			return ReactNodeViewRenderer(optionsForMime.render || defaultNodeFileRenderer)({
 				...props,

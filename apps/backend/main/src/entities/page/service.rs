@@ -48,9 +48,30 @@ pub async fn create(
 
     let doc_dto = dto.text.clone();
 
-    let mut page = repository::create(&mut *tx, dto, workspace_id, owner_id)
+    let page = repository::create(&mut *tx, dto, workspace_id, owner_id)
         .await
-        .map_err(ErrorResponse::from)?;
+        .map_err(ErrorResponse::from);
+
+    if let Err(e) = page {
+        let _ = tx.rollback().await;
+        return Err(e);
+    }
+
+    let mut page = page.unwrap();
+
+    let page_access = crate::entities::page_access::service::create_page_access(
+        &mut *tx,
+        owner_id,
+        page.id,
+        crate::entities::page_access::model::Role::Owner,
+    )
+    .await
+    .map_err(ErrorResponse::from);
+
+    if let Err(e) = page_access {
+        let _ = tx.rollback().await;
+        return Err(e);
+    }
 
     if page.r#type == super::model::PageType::Text && doc_dto.is_some() {
         let doc_dto = doc_dto.unwrap();
@@ -71,7 +92,7 @@ pub async fn create(
         if let Ok(text) = text {
             page.text = text;
         } else {
-            tx.rollback().await.map_err(ErrorResponse::from)?;
+            let _ = tx.rollback().await;
             return Err(text.unwrap_err());
         }
     }
@@ -100,6 +121,8 @@ pub async fn update(
             .await
             .map_err(ErrorResponse::from)?
     };
+
+    println!("page type: {}. doc_dto.is_some(): {}", page.r#type, doc_dto.is_some());
 
     if page.r#type == super::model::PageType::Text && doc_dto.is_some() {
         let doc_dto = doc_dto.unwrap();
@@ -130,7 +153,7 @@ pub async fn update(
         if let Ok(text) = text {
             page.text = text;
         } else {
-            tx.rollback().await.map_err(ErrorResponse::from)?;
+            let _ = tx.rollback().await;
             return Err(text.unwrap_err());
         }
     }

@@ -38,10 +38,6 @@ pub async fn create_workspace_access<'a>(
     workspace_id: Uuid,
     role: super::model::Role,
 ) -> Result<super::model::WorkspaceAccess, sqlx::Error> {
-    println!("user_id: {}", user_id);
-    println!("workspace_id: {}", workspace_id);
-    println!("role: {}", role);
-
     sqlx::query_as::<_, super::model::WorkspaceAccess>(
         r#"
         INSERT INTO workspace_accesses (user_id, workspace_id, role)

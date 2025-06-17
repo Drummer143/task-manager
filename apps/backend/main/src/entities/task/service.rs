@@ -57,8 +57,5 @@ pub async fn get_all_tasks_by_page_id<'a>(
 ) -> Result<Vec<Task>, ErrorResponse> {
     repository::get_all_tasks_by_page_id(executor, page_id)
         .await
-        .map_err(|e| {
-            println!("Error: {}", e);
-            ErrorResponse::from(e)
-        })
+        .map_err(ErrorResponse::from)
 }

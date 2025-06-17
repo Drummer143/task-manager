@@ -30,6 +30,13 @@ async fn main() {
             http::header::CONTENT_TYPE,
             http::header::AUTHORIZATION,
             http::header::ACCEPT,
+            http::header::RANGE,
+            http::header::CONTENT_RANGE,
+        ])
+        .expose_headers([
+            http::header::CONTENT_RANGE,
+            http::header::CONTENT_LENGTH,
+            http::header::ACCEPT_RANGES,
         ])
         .allow_credentials(true);
 

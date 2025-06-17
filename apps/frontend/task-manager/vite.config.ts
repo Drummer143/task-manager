@@ -30,19 +30,15 @@ export default defineConfig(() => ({
 		rollupOptions: {
 			output: {
 				manualChunks: id => {
-					if (id.includes("lowlight") || id.includes("react-syntax-highlighter")) {
+					if (id.includes("react-syntax-highlighter")) {
 						return "syntax-highlighter";
-					}
-
-					if (id.includes("highlight.js")) {
-						return "highlight";
 					}
 				}
 			},
 			plugins: [
 				visualizer({
 					filename: "../../../dist/apps/frontend/task-manager/stats.html",
-					open: false
+					open: true
 				})
 			]
 		}

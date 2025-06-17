@@ -2,16 +2,13 @@ import React, { useCallback, useRef, useState } from "react";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { Page, updatePage } from "@task-manager/api";
-import { lazySuspense } from "@task-manager/react-utils";
 import { Editor } from "@tiptap/react";
 import { App, Button } from "antd";
 
 import { useStyles } from "./styled";
 
 import { useAuthStore } from "../../../app/store/auth";
-import FullSizeLoader from "../../../shared/ui/FullSizeLoader";
-
-const MDEditor = lazySuspense(() => import("../../../widgets/MDEditor"), <FullSizeLoader />);
+import MDEditor from "../../../widgets/MDEditor";
 
 interface TextPageProps {
 	page: Omit<Page, "tasks" | "owner" | "childPages" | "parentPage" | "workspace">;

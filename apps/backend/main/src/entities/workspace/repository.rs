@@ -13,6 +13,7 @@ pub async fn create<'a>(
         "INSERT INTO workspaces (name, owner_id) VALUES ($1, $2) RETURNING *",
     )
     .bind(dto.name)
+    .bind(dto.owner_id)
     .fetch_one(executor)
     .await
 }

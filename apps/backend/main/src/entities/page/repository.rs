@@ -54,7 +54,7 @@ pub async fn create<'a>(
     workspace_id: Uuid,
     owner_id: Uuid,
 ) -> Result<Page, sqlx::Error> {
-    sqlx::query_as::<_, Page>("INSERT INTO pages (title, parent_page_id, type, workspace_id, owner_id) VALUES ($1, $2, $3, $4, $5)")
+    sqlx::query_as::<_, Page>("INSERT INTO pages (title, parent_page_id, type, workspace_id, owner_id) VALUES ($1, $2, $3, $4, $5) RETURNING *")
         .bind(page.title)
         .bind(page.parent_page_id)
         .bind(page.r#type)
@@ -69,7 +69,7 @@ pub async fn update<'a>(
     id: Uuid,
     page: super::dto::UpdatePageDto,
 ) -> Result<Page, sqlx::Error> {
-    sqlx::query_as::<_, Page>("UPDATE pages SET title = $1 WHERE id = $2")
+    sqlx::query_as::<_, Page>("UPDATE pages SET title = $1 WHERE id = $2 RETURNING *")
         .bind(page.title)
         .bind(id)
         .fetch_one(executor)
@@ -94,7 +94,7 @@ pub async fn delete<'a>(
     executor: impl Executor<'a, Database = Postgres>,
     id: Uuid,
 ) -> Result<Page, sqlx::Error> {
-    sqlx::query_as::<_, Page>("DELETE FROM pages WHERE id = $1")
+    sqlx::query_as::<_, Page>("DELETE FROM pages WHERE id = $1 RETURNING *")
         .bind(id)
         .fetch_one(executor)
         .await

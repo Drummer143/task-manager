@@ -9,7 +9,12 @@ pub async fn login(
 ) -> Result<User, ErrorResponse> {
     let user = crate::entities::user::repository::find_by_email(db, email)
         .await
-        .map_err(ErrorResponse::from)?;
+        .map_err(|e| match e {
+            sqlx::Error::RowNotFound => {
+                ErrorResponse::bad_request(codes::BadRequestErrorCode::InvalidCredentials, None)
+            }
+            _ => ErrorResponse::internal_server_error(),
+        })?;
 
     let is_valid =
         crate::entities::user_credentials::repository::verify_credentials(db, user.id, password)
@@ -29,10 +34,13 @@ pub async fn register(
     db: &sqlx::postgres::PgPool,
     dto: &super::dto::RegisterDto,
 ) -> Result<User, ErrorResponse> {
-    if crate::entities::user::repository::find_by_email(db, &dto.email)
-        .await
-        .is_err()
-    {
+    let user = crate::entities::user::repository::find_by_email(db, &dto.email).await;
+
+    if let Err(err) = user {
+        if !matches!(err, sqlx::Error::RowNotFound) {
+            return Err(ErrorResponse::internal_server_error());
+        }
+    } else if user.is_ok() {
         return Err(ErrorResponse::bad_request(
             codes::BadRequestErrorCode::EmailTaken,
             None,
@@ -55,7 +63,9 @@ pub async fn register(
     .await;
 
     if user.is_err() {
-        tx.rollback().await.map_err(|_| ErrorResponse::internal_server_error())?;
+        tx.rollback()
+            .await
+            .map_err(|_| ErrorResponse::internal_server_error())?;
         return Err(ErrorResponse::internal_server_error());
     }
 
@@ -69,7 +79,9 @@ pub async fn register(
     .await;
 
     if user_credentials.is_err() {
-        tx.rollback().await.map_err(|_| ErrorResponse::internal_server_error())?;
+        tx.rollback()
+            .await
+            .map_err(|_| ErrorResponse::internal_server_error())?;
         return Err(ErrorResponse::internal_server_error());
     }
 
@@ -77,14 +89,15 @@ pub async fn register(
         .await
         .map_err(|_| ErrorResponse::internal_server_error())?;
 
-    crate::entities::workspace::repository::create(
+    crate::entities::workspace::service::create_workspace(
         db,
         crate::entities::workspace::dto::CreateWorkspaceDto {
             name: format!("{}'s workspace", user.username),
             owner_id: user.id,
         },
     )
-    .await;
+    .await
+    .map_err(ErrorResponse::from)?;
 
     Ok(user)
 }

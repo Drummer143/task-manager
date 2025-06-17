@@ -1,6 +1,6 @@
 import { uploadFile } from "@task-manager/api";
 import { FileUploadPlugin } from "@task-manager/tiptap-file-upload-plugin";
-import { FileRenderer as FileRendererPlugin } from "@task-manager/tiptap-plugin-file-renderer";
+import { defaultNodeVideoRenderer, FileRenderer as FileRendererPlugin } from "@task-manager/tiptap-plugin-file-renderer";
 import Placeholder from "@tiptap/extension-placeholder";
 import StarterKit from "@tiptap/starter-kit";
 
@@ -18,8 +18,6 @@ export const extensions = [
 			"**/**": async file => {
 				const { link } = await uploadFile({ file });
 
-				console.log(file);
-
 				return {
 					name: file.name,
 					url: link,
@@ -31,14 +29,14 @@ export const extensions = [
 	}),
 	FileRendererPlugin.configure({
 		filesRules: {
-			".js,.ts,.jsx,.tsx,.json,.css,.html,.xml,.js,.ts,.jsx,.tsx,.json,.css,.html,.xml": {
+			".js,.ts,.jsx,.tsx,.json,.css,.html,.xml": {
 				render: FileRenderer
 			},
 			"image/*": {
 				render: ImageRenderer
 			},
-			"**/**": {
-				render: FileRenderer
+			"video/*": {
+				render: defaultNodeVideoRenderer
 			}
 		}
 	}),
