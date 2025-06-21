@@ -1,11 +1,12 @@
 import { uploadFile } from "@task-manager/api";
 import { FileUploadPlugin } from "@task-manager/tiptap-file-upload-plugin";
-import { defaultNodeVideoRenderer, FileRenderer as FileRendererPlugin } from "@task-manager/tiptap-plugin-file-renderer";
+import { FileRenderer as FileRendererPlugin } from "@task-manager/tiptap-plugin-file-renderer";
 import Placeholder from "@tiptap/extension-placeholder";
 import StarterKit from "@tiptap/starter-kit";
 
 import FileRenderer from "./widgets/FileRenderer";
 import ImageRenderer from "./widgets/ImageRenderer";
+import VideoRenderer from "./widgets/VideoRenderer";
 
 export const EMPTY_NODE_CLASS = "is-empty";
 
@@ -36,7 +37,7 @@ export const extensions = [
 				render: ImageRenderer
 			},
 			"video/*": {
-				render: defaultNodeVideoRenderer
+				render: VideoRenderer
 			}
 		}
 	}),

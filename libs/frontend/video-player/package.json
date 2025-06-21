@@ -1,15 +1,14 @@
 {
-	"name": "@task-manager/tiptap-plugin-file-renderer",
+	"name": "@task-manager/video-player",
 	"version": "0.0.1",
 	"private": true,
 	"type": "module",
 	"main": "./index.js",
 	"types": "./index.d.ts",
 	"dependencies": {
-		"@tiptap/core": "2.11.9",
-		"@tiptap/react": "2.11.9",
-		"minimatch": "^10.0.1",
+		"@ant-design/icons": "^5.5.1",
+		"antd": "^5.24.9",
+		"antd-style": "^3.7.1",
 		"react": "^18.3.1"
 	}
 }
-

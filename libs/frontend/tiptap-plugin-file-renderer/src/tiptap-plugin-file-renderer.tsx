@@ -27,11 +27,8 @@ export const defaultNodeImageRenderer: React.FC<NodeViewProps> = props => (
 	<NodeViewWrapper {...props.HTMLAttributes} as="img" />
 );
 export const defaultNodeVideoRenderer: React.FC<NodeViewProps> = props => (
-	<NodeViewWrapper>
-		<video controls width="100%" preload="metadata">
-			<source src={props.node.attrs["src"]} type={props.node.attrs["type"]} />
-			Ваш браузер не поддерживает видео.
-		</video>
+	<NodeViewWrapper {...props.HTMLAttributes}>
+		<video src={props.node.attrs["src"]} />
 	</NodeViewWrapper>
 );
 export const defaultNodeFileRenderer: React.FC<NodeViewProps> = props => (

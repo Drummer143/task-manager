@@ -6,6 +6,7 @@
 		"strict": true,
 		"importHelpers": true,
 		"noImplicitOverride": true,
+		"esModuleInterop": true,
 		"noImplicitReturns": true,
 		"noFallthroughCasesInSwitch": true,
 		"noPropertyAccessFromIndexSignature": true,

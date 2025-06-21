@@ -1,0 +1,9 @@
+{
+	"name": "video-player",
+	"$schema": "../../../node_modules/nx/schemas/project-schema.json",
+	"sourceRoot": "libs/frontend/video-player/src",
+	"projectType": "library",
+	"tags": [],
+	"// targets": "to see all targets run: nx show project video-player --web",
+	"targets": {}
+}
