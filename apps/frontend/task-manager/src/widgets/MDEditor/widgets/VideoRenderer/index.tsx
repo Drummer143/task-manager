@@ -1,11 +1,11 @@
 import { memo, useMemo } from "react";
 
 import { DeleteOutlined, DownloadOutlined } from "@ant-design/icons";
-import { ReactNodeRenderer } from "@task-manager/tiptap-plugin-file-renderer";
 import VideoPlayer from "@task-manager/video-player";
+import { NodeViewProps, ReactNodeViewRenderer } from "@tiptap/react";
 import { GetProp } from "antd";
 
-const VideoRenderer: ReactNodeRenderer = ({ HTMLAttributes, editor, getPos, node }) => {
+const VideoRenderer: React.FC<NodeViewProps> = ({ HTMLAttributes, editor, getPos, node }) => {
 	const menuItems = useMemo<GetProp<typeof VideoPlayer, "options">>(() => {
 		const options: GetProp<typeof VideoPlayer, "options"> = [
 			{
@@ -53,5 +53,5 @@ const VideoRenderer: ReactNodeRenderer = ({ HTMLAttributes, editor, getPos, node
 	return <VideoPlayer controls src={HTMLAttributes.src} options={menuItems} />;
 };
 
-export default memo(VideoRenderer);
+export default ReactNodeViewRenderer(memo(VideoRenderer));
 

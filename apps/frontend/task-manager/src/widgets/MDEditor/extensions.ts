@@ -1,6 +1,6 @@
 import { uploadFile } from "@task-manager/api";
 import { FileUploadPlugin } from "@task-manager/tiptap-file-upload-plugin";
-import { FileRenderer as FileRendererPlugin } from "@task-manager/tiptap-plugin-file-renderer";
+import { FileRendererPlugin } from "@task-manager/tiptap-plugin-file-renderer";
 import Placeholder from "@tiptap/extension-placeholder";
 import StarterKit from "@tiptap/starter-kit";
 
@@ -29,21 +29,22 @@ export const extensions = [
 		}
 	}),
 	FileRendererPlugin.configure({
-		filesRules: {
+		rendererMap: {
 			".js,.ts,.jsx,.tsx,.json,.css,.html,.xml": {
-				render: FileRenderer
+				renderer: FileRenderer
 			},
 			"image/*": {
-				render: ImageRenderer
+				renderer: ImageRenderer
 			},
 			"video/*": {
-				render: VideoRenderer
+				renderer: VideoRenderer
 			}
 		}
 	}),
 	Placeholder.configure({
 		emptyNodeClass: EMPTY_NODE_CLASS,
 		showOnlyWhenEditable: false,
+		showOnlyCurrent: true,
 		placeholder: placeholderProps => {
 			if (placeholderProps.editor.isEditable) {
 				return "Type something...";

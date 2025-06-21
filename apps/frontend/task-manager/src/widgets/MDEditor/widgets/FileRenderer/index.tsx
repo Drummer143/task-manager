@@ -8,8 +8,7 @@ import {
 } from "@ant-design/icons";
 import { useMutation } from "@tanstack/react-query";
 import { lazySuspense } from "@task-manager/react-utils";
-import { ReactNodeRenderer } from "@task-manager/tiptap-plugin-file-renderer";
-import { mergeDeep, NodeViewWrapper } from "@tiptap/react";
+import { mergeDeep, NodeViewProps, NodeViewWrapper, ReactNodeViewRenderer } from "@tiptap/react";
 import { Button, Flex, Spin } from "antd";
 import axios from "axios";
 import oneDarkDefault from "react-syntax-highlighter/dist/esm/styles/prism/one-dark";
@@ -54,7 +53,7 @@ const antdStyle: typeof oneDarkDefault = {
 const oneDark = mergeDeep(oneDarkDefault, antdStyle);
 const oneLight = mergeDeep(oneLightDefault, antdStyle);
 
-const FileRender: ReactNodeRenderer = info => {
+const FileRender: React.FC<NodeViewProps> = info => {
 	const [previewVisible, setPreviewVisible] = useState(false);
 
 	// console.debug("info.HTMLAttributes", info.HTMLAttributes);
@@ -162,5 +161,5 @@ const FileRender: ReactNodeRenderer = info => {
 	);
 };
 
-export default memo(FileRender);
+export default ReactNodeViewRenderer(memo(FileRender));
 

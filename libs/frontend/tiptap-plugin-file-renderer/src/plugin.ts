@@ -1,71 +1,27 @@
-import React from "react";
-
-import { mergeAttributes, Node, nodeInputRule, NodeViewProps } from "@tiptap/core";
-import { NodeViewWrapper, ReactNodeViewRenderer } from "@tiptap/react";
+import { mergeAttributes, Node, nodeInputRule, NodeViewRenderer } from "@tiptap/core";
 import { minimatch } from "minimatch";
 
-export type ReactNodeRenderer = React.FC<NodeViewProps>;
+import { defaultFileRenderer } from "./renderers";
 
 export interface FileRendererOptions {
-	filesRules: Record<
+	rendererMap: Record<
 		string,
 		{
 			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			HTMLAttributes?: Record<string, any>;
-
-			render?: ReactNodeRenderer;
+			renderer?: NodeViewRenderer;
 		}
 	>;
 }
 
-/**
- * Matches an image to a ![image](src "title") on input.
- */
-export const inputRegex = /(?:^|\s)(!\[(.+|:?)]\((\S+)(?:(?:\s+)["'](\S+)["'])?\))$/;
+const inputRegex = /(?:^|\s)(!\[(.+|:?)]\((\S+)(?:(?:\s+)["'](\S+)["'])?\))$/;
 
-export const defaultNodeImageRenderer: React.FC<NodeViewProps> = props => (
-	<NodeViewWrapper {...props.HTMLAttributes} as="img" />
-);
-export const defaultNodeVideoRenderer: React.FC<NodeViewProps> = props => (
-	<NodeViewWrapper {...props.HTMLAttributes}>
-		<video src={props.node.attrs["src"]} />
-	</NodeViewWrapper>
-);
-export const defaultNodeFileRenderer: React.FC<NodeViewProps> = props => (
-	<NodeViewWrapper {...props.HTMLAttributes} as="a" download>
-		{props.node.attrs["title"]}
-	</NodeViewWrapper>
-);
-
-/**
- * This extension allows you to insert images.
- * @see https://www.tiptap.dev/api/nodes/image
- */
-export const FileRenderer = Node.create<FileRendererOptions>({
+export const FileRendererPlugin = Node.create<FileRendererOptions>({
 	name: "file",
 
 	addOptions() {
 		return {
-			filesRules: {
-				// "image/*": {
-				// 	HTMLAttributes: {
-				// 		class: "is-image"
-				// 	},
-				// 	render: defaultNodeImageRenderer
-				// },
-				// "video/*": {
-				// 	HTMLAttributes: {
-				// 		class: "is-video"
-				// 	},
-				// 	render: defaultNodeVideoRenderer
-				// },
-				// "**/**": {
-				// 	HTMLAttributes: {
-				// 		class: "is-file"
-				// 	},
-				// 	render: defaultNodeFileRenderer
-				// }
-			}
+			rendererMap: {}
 		};
 	},
 
@@ -127,7 +83,7 @@ export const FileRenderer = Node.create<FileRendererOptions>({
 		const ext = "." + node.attrs["src"].split(".").pop();
 
 		const HTMLAttrsForMime =
-			Object.entries(this.options.filesRules).find(
+			Object.entries(this.options.rendererMap).find(
 				([key]) => (key && mime && minimatch(mime, key)) || (ext && key.includes(ext))
 			)?.[1] || {};
 
@@ -163,19 +119,19 @@ export const FileRenderer = Node.create<FileRendererOptions>({
 			const mime = props.node.attrs["type"];
 			const ext = "." + props.node.attrs["src"].split(".").pop();
 
-			const optionsForMime =
+			const rendererConfig =
 				mime || ext
-					? Object.entries(this.options.filesRules).find(
+					? Object.entries(this.options.rendererMap).find(
 							([key]) =>
 								(key && mime && minimatch(mime, key)) || (ext && key.includes(ext))
 						)?.[1] || {}
 					: {};
 
-			return ReactNodeViewRenderer(optionsForMime.render || defaultNodeFileRenderer)({
+			return (rendererConfig.renderer || defaultFileRenderer)({
 				...props,
 				HTMLAttributes: {
 					...props.HTMLAttributes,
-					...optionsForMime.HTMLAttributes
+					...rendererConfig.HTMLAttributes
 				}
 			});
 		};

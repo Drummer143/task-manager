@@ -1,1 +1,3 @@
-export * from "./tiptap-plugin-file-renderer";
+export * from "./plugin";
+export * from "./renderers";
+

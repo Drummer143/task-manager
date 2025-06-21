@@ -1,13 +1,12 @@
 import { memo } from "react";
 
 import { DeleteOutlined, DownloadOutlined } from "@ant-design/icons";
-import { ReactNodeRenderer } from "@task-manager/tiptap-plugin-file-renderer";
-import { NodeViewWrapper } from "@tiptap/react";
+import { NodeViewProps, NodeViewWrapper, ReactNodeViewRenderer } from "@tiptap/react";
 import { Button, Flex } from "antd";
 
 import { useStyles } from "./styles";
 
-const ImageRenderer: ReactNodeRenderer = props => {
+const ImageRenderer: React.FC<NodeViewProps> = props => {
 	const { styles } = useStyles();
 
 	const handleDeleteSelf = () => {
@@ -56,5 +55,5 @@ const ImageRenderer: ReactNodeRenderer = props => {
 	);
 };
 
-export default memo(ImageRenderer);
+export default ReactNodeViewRenderer(memo(ImageRenderer));
 

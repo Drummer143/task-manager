@@ -6,10 +6,8 @@
 	"main": "./index.js",
 	"types": "./index.d.ts",
 	"dependencies": {
-		"@tiptap/core": "2.11.9",
-		"@tiptap/react": "2.11.9",
-		"minimatch": "^10.0.1",
-		"react": "^18.3.1"
+		"@tiptap/core": "^2.11.9",
+		"minimatch": "^10.0.1"
 	}
 }
 
