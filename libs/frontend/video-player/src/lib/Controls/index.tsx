@@ -1,13 +1,8 @@
-import React, { memo } from "react";
+import React from "react";
 
-import {
-	FullscreenExitOutlined,
-	FullscreenOutlined,
-	PauseOutlined as Pause,
-	CaretRightFilled as Play
-} from "@ant-design/icons";
-import { Flex, Slider } from "antd";
+import { Slider } from "antd";
 
+import ControlButtons from "./ControlButtons";
 import { useStyles } from "./styles";
 
 interface ControlsProps {
@@ -46,28 +41,14 @@ const Controls: React.FC<ControlsProps> = ({
 				max={duration}
 			/>
 
-			<Flex justify="space-between" align="center">
-				{paused ? (
-					<Play className={styles.playStateIcon} />
-				) : (
-					<Pause className={styles.playStateIcon} />
-				)}
-
-				{fullscreen ? (
-					<FullscreenExitOutlined
-						onClick={onFullscreenToggle}
-						className={styles.playStateIcon}
-					/>
-				) : (
-					<FullscreenOutlined
-						onClick={onFullscreenToggle}
-						className={styles.playStateIcon}
-					/>
-				)}
-			</Flex>
+			<ControlButtons
+				onFullscreenToggle={onFullscreenToggle}
+				paused={paused}
+				fullscreen={fullscreen}
+			/>
 		</div>
 	);
 };
 
-export default memo(Controls);
+export default Controls;
 

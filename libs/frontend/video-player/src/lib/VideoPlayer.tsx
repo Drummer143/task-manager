@@ -1,9 +1,10 @@
-import React from "react";
+import React, { memo } from "react";
 
 import { NodeViewWrapper } from "@tiptap/react";
-import { Flex, Spin } from "antd";
+import { Flex, MenuProps, Spin } from "antd";
 
 import Controls from "./Controls";
+import OptionsMenu from "./OptionsMenu";
 import { useStyles } from "./styles";
 import { useControlHandlers } from "./useControlHandlers";
 
@@ -14,9 +15,10 @@ interface VideoPlayerProps {
 	// muted?: boolean;
 	// autoPlay?: boolean;
 	// playbackSpeed?: number;
+	options?: MenuProps["items"];
 }
 
-const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, loop, controls }) => {
+const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, loop, controls, options }) => {
 	const {
 		state,
 		handleOverlayClick,
@@ -45,7 +47,7 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, loop, controls }) => {
 			onKeyDown={handleKeyDown}
 		>
 			<video
-				style={{ userSelect: "none" }}
+				className={styles.video}
 				ref={videoRef}
 				onLoadStart={handleLoadStart}
 				onTimeUpdate={handleTimeUpdate}
@@ -61,7 +63,6 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, loop, controls }) => {
 			<div
 				className={styles.overlay}
 				onClick={handleOverlayClick}
-				style={{ userSelect: "none" }}
 			>
 				{state.loading ? (
 					<Flex justify="center" align="center" className={styles.loaderWrapper}>
@@ -82,9 +83,11 @@ const VideoPlayer: React.FC<VideoPlayerProps> = ({ src, loop, controls }) => {
 					)
 				)}
 			</div>
+
+			{options?.length && <OptionsMenu options={options} />}
 		</NodeViewWrapper>
 	);
 };
 
-export default VideoPlayer;
+export default memo(VideoPlayer);
 
