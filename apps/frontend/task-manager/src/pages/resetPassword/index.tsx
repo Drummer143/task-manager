@@ -3,6 +3,7 @@ import React, { useMemo } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { parseApiError /* resetPassword */ } from "@task-manager/api";
 import { App, Form, Input, Typography } from "antd";
+import { useTranslation } from "react-i18next";
 import { Link } from "react-router";
 
 import { withAuthPageCheck } from "../../shared/HOCs/withAuthPageCheck";
@@ -15,6 +16,8 @@ const emailRule = composeRules(required(), email());
 const ResetPassword: React.FC = () => {
 	const message = App.useApp().message;
 
+	const t = useTranslation("reset_password_page")[0];
+
 	const { mutateAsync, isSuccess, isPending, error, reset } = useMutation({
 		mutationFn: () => new Promise(resolve => setTimeout(resolve, 1000)),
 		onError: error => message.error(error.message ?? "Failed to reset password")
@@ -25,31 +28,28 @@ const ResetPassword: React.FC = () => {
 	if (isSuccess) {
 		return (
 			<AuthPageMessageWrapper>
-				<Typography.Title level={3}>Password reset email sent</Typography.Title>
+				<Typography.Title level={3}>{t("success_title")}</Typography.Title>
 
-				<Typography.Paragraph>
-					We have sent you an email with a link to reset your password. Please check your
-					inbox.
-				</Typography.Paragraph>
+				<Typography.Paragraph>{t("success_description")}</Typography.Paragraph>
 
-				<Link to="/login">Back to login</Link>
+				<Link to="/login">{t("back_to_login")}</Link>
 			</AuthPageMessageWrapper>
 		);
 	}
 
 	return (
 		<AuthForm
-			submitText="Send reset password mail"
-			headingText="Reset password"
+			submitText={t("submit_button")}
+			headingText={t("heading_text")}
 			onFinish={mutateAsync}
 			error={parsedError}
 			submitLoading={isPending}
 			onValuesChange={reset}
-			bottomLink={<Link to="/login">Back to login</Link>}
+			bottomLink={<Link to="/login">{t("back_to_login")}</Link>}
 		>
-			<Form.Item name="email" label="Email" rules={emailRule}>
+			<Form.Item name="email" label={t("email_field_label")} rules={emailRule}>
 				<Input
-					placeholder="email@example.com"
+					placeholder={t("email_field_placeholder")}
 					type="email"
 					autoComplete="email"
 					name="email"

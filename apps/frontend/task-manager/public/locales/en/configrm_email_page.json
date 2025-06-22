@@ -1,0 +1,11 @@
+{
+	"error_title": "Verification Error",
+	"token_missing": "Unfortunately, the token for confirming your email is missing. Please check the link you used to access this page.",
+	"request_new_email": "If you did not receive the confirmation email or the link no longer works, you can request a new verification email.",
+	"back_to_main_page": "back to main page",
+	"loading_title": "Confirming Email",
+	"verification_error": "An error occurred ,while confirming your email Reason: {{parsedError}}. Please check the link you used to access this page or request a new verification email.",
+	"email_confirmed": "Email Confirmed",
+	"email_confirmed_description": "Your email has been successfully confirmed. You have full access to the platform.",
+	"email_confirmed_redirect": "You will be redirected to the main page in 5 seconds."
+}

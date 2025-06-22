@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo, useRef } from "react";
+import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useMutation } from "@tanstack/react-query";
 import {
@@ -8,6 +8,7 @@ import {
 } from "@task-manager/api";
 import { Flex, Form, Input, Spin, Typography } from "antd";
 import { Rule } from "antd/es/form";
+import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useSearchParams } from "react-router";
 
 import { withAuthPageCheck } from "../../shared/HOCs/withAuthPageCheck";
@@ -25,7 +26,9 @@ const NewPassword: React.FC = () => {
 
 	const navigate = useNavigate();
 
-	const [passwordsVisible, setPasswordsVisible] = React.useState(false);
+	const [passwordsVisible, setPasswordsVisible] = useState(false);
+
+	const t = useTranslation("new_password_page")[0];
 
 	const redirectTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -77,7 +80,7 @@ const NewPassword: React.FC = () => {
 	if (isTokenValidating) {
 		return (
 			<Flex justify="center" vertical align="center" className="h-full w-full">
-				<Typography.Title level={3}>Verifying password reset token</Typography.Title>
+				<Typography.Title level={3}>{t("loading_title")}</Typography.Title>
 
 				<Spin size="large" />
 			</Flex>
@@ -87,15 +90,12 @@ const NewPassword: React.FC = () => {
 	if (!token || !isTokenValidated) {
 		return (
 			<AuthPageMessageWrapper>
-				<Typography.Title level={3}>Invalid token</Typography.Title>
+				<Typography.Title level={3}>{t("invalid_title")}</Typography.Title>
+
+				<Typography.Paragraph>{t("invalid_description")}</Typography.Paragraph>
 
 				<Typography.Paragraph>
-					Invalid password reset token. Please check the email and try again. If issue
-					persists, please request a new password reset email or contact support.
-				</Typography.Paragraph>
-
-				<Typography.Paragraph>
-					<Link to="/login">Back to login</Link>
+					<Link to="/login">{t("back_to_login")}</Link>
 				</Typography.Paragraph>
 			</AuthPageMessageWrapper>
 		);
@@ -104,15 +104,12 @@ const NewPassword: React.FC = () => {
 	if (isPasswordUpdated) {
 		return (
 			<AuthPageMessageWrapper>
-				<Typography.Title level={3}>Password updated</Typography.Title>
+				<Typography.Title level={3}>{t("password_updated_title")}</Typography.Title>
+
+				<Typography.Paragraph>{t("password_updated_description")}</Typography.Paragraph>
 
 				<Typography.Paragraph>
-					Your password has been updated. You will be redirected to login page in 5
-					seconds.
-				</Typography.Paragraph>
-
-				<Typography.Paragraph>
-					<Link to="/login">Back to login</Link>
+					<Link to="/login">{t("back_to_login")}</Link>
 				</Typography.Paragraph>
 			</AuthPageMessageWrapper>
 		);

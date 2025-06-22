@@ -3,6 +3,7 @@ import React, { useEffect, useMemo, useRef } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { /* confirmEmail, */ parseApiError } from "@task-manager/api";
 import { Flex, Spin, Typography } from "antd";
+import { useTranslation } from "react-i18next";
 import { Link, useNavigate, useSearchParams } from "react-router";
 
 import { useAuthStore } from "../../app/store/auth";
@@ -14,6 +15,8 @@ const ConfirmEmail: React.FC = () => {
 	const navigate = useNavigate();
 
 	const token = useSearchParams()[0].get("token");
+
+	const t = useTranslation("confirm_email_page")[0];
 
 	const { mutateAsync, isPending, error } = useMutation({
 		mutationFn: ({ token }: { token: string }) => Promise.resolve()
@@ -45,19 +48,13 @@ const ConfirmEmail: React.FC = () => {
 	if (!token) {
 		return (
 			<AuthPageMessageWrapper>
-				<Typography.Title level={3}>Verification Error</Typography.Title>
+				<Typography.Title level={3}>{t("error_title")}</Typography.Title>
 
-				<Typography.Paragraph>
-					Unfortunately, the token for confirming your email is missing. Please check the
-					link you used to access this page.
-				</Typography.Paragraph>
+				<Typography.Paragraph>{t("token_missing")}</Typography.Paragraph>
 
-				<Typography.Paragraph>
-					If you did not receive the confirmation email or the link no longer works, you
-					can request a new verification email.
-				</Typography.Paragraph>
+				<Typography.Paragraph>{t("request_new_email")}</Typography.Paragraph>
 
-				<Link to={user ? "/profile" : "/login"}>back to main page</Link>
+				<Link to={user ? "/profile" : "/login"}>{t("back_to_main_page")}</Link>
 			</AuthPageMessageWrapper>
 		);
 	}
@@ -65,7 +62,7 @@ const ConfirmEmail: React.FC = () => {
 	if (isPending) {
 		return (
 			<Flex justify="center" vertical align="center" className="h-full w-full">
-				<Typography.Title level={3}>Confirming Email</Typography.Title>
+				<Typography.Title level={3}>{t("loading_title")}</Typography.Title>
 
 				<Spin size="large" />
 			</Flex>
@@ -75,32 +72,27 @@ const ConfirmEmail: React.FC = () => {
 	if (error) {
 		return (
 			<AuthPageMessageWrapper>
-				<Typography.Title level={3}>Verification Error</Typography.Title>
+				<Typography.Title level={3}>{t("error_title")}</Typography.Title>
 
 				<Typography.Paragraph>
-					An error occurred while confirming your email Reason: {parsedError}. Please
-					check the link you used to access this page or request a new verification email.
+					{t("verification_error", { parsedError })}
 				</Typography.Paragraph>
 
-				<Link to={user ? "/profile" : "/login"}>back to main page</Link>
+				<Link to={user ? "/profile" : "/login"}>{t("back_to_main_page")}</Link>
 			</AuthPageMessageWrapper>
 		);
 	}
 
 	return (
 		<AuthPageMessageWrapper>
-			<Typography.Title level={3}>Email Confirmed</Typography.Title>
+			<Typography.Title level={3}>{t("email_confirmed")}</Typography.Title>
 
-			<Typography.Paragraph>
-				Your email has been successfully confirmed. You have full access to the platform.
-			</Typography.Paragraph>
+			<Typography.Paragraph>{t("email_confirmed_description")}</Typography.Paragraph>
 
-			<Typography.Paragraph>
-				You will be redirected to the main page in 5 seconds.
-			</Typography.Paragraph>
+			<Typography.Paragraph>{t("email_confirmed_redirect")}</Typography.Paragraph>
 
 			<Link to={user ? "/profile" : "/login"} replace>
-				back to main page
+				{t("back_to_main_page")}
 			</Link>
 		</AuthPageMessageWrapper>
 	);

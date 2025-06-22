@@ -3,6 +3,7 @@ import React, { useMemo } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { login, parseApiError } from "@task-manager/api";
 import { Form, Input } from "antd";
+import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router";
 
 import { useStyles } from "./styles";
@@ -24,6 +25,8 @@ const Login: React.FC = () => {
 
 	const navigate = useNavigate();
 
+	const t = useTranslation("login_page")[0];
+
 	const { mutateAsync, error, reset, isPending } = useMutation({
 		mutationFn: login,
 		onSuccess: () => {
@@ -39,31 +42,35 @@ const Login: React.FC = () => {
 		<AuthForm
 			onFinish={mutateAsync}
 			onValuesChange={reset}
-			submitText="Login"
-			headingText="Login"
+			submitText={t("submit_button")}
+			headingText={t("title")}
 			error={parsedError}
 			submitLoading={isPending}
 			bottomLink={
 				<>
-					Don&apos;t have an account?
-					<Link to="/sign-up"> Sign up</Link>
+					{t("dont_have_account")} <Link to="/sign-up">{t("sign_in")}</Link>
 				</>
 			}
 		>
-			<Form.Item name="email" label="Email" rules={rules.email}>
-				<Input placeholder="email@example.com" />
+			<Form.Item name="email" label={t("email_field_label")} rules={rules.email}>
+				<Input placeholder={t("email_field_placeholder")} />
 			</Form.Item>
 
 			<Form.Item
 				name="password"
-				label="Password"
+				label={t("password_field_label")}
 				rules={rules.password}
-				extra={<Link to="/reset-password" className={resetPasswordLink}>Forgot password?</Link>}
+				extra={
+					<Link to="/reset-password" className={resetPasswordLink}>
+						{t("forgot_password")}
+					</Link>
+				}
 			>
-				<Input.Password placeholder="********" />
+				<Input.Password placeholder={t("password_field_placeholder")} />
 			</Form.Item>
 		</AuthForm>
 	);
 };
 
 export default withAuthPageCheck(Login, false);
+

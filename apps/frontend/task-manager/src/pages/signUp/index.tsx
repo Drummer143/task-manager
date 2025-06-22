@@ -3,6 +3,7 @@ import React, { useMemo } from "react";
 import { useMutation } from "@tanstack/react-query";
 import { parseApiError, signUp } from "@task-manager/api";
 import { Form, Input } from "antd";
+import { useTranslation } from "react-i18next";
 import { Link, useNavigate } from "react-router";
 
 import { useAuthStore } from "../../app/store/auth";
@@ -21,6 +22,8 @@ const SignUp: React.FC = () => {
 
 	const navigate = useNavigate();
 
+	const t = useTranslation("sign_up_page")[0];
+
 	const { mutateAsync, error, isPending, reset } = useMutation({
 		mutationFn: signUp,
 		onSuccess: () => {
@@ -34,29 +37,29 @@ const SignUp: React.FC = () => {
 
 	return (
 		<AuthForm
-			headingText="Sign Up"
-			submitText="Sign Up"
+			headingText={t("title")}
+			submitText={t("submit_button")}
 			onFinish={mutateAsync}
 			error={parsedError}
 			submitLoading={isPending}
 			onValuesChange={reset}
 			bottomLink={
 				<>
-					Already have an account?
-					<Link to="/login"> Login</Link>
+					{t("already_have_account")}{" "}
+					<Link to="/login">{t("login")}</Link>
 				</>
 			}
 		>
-			<Form.Item name="username" label="Username" rules={rules.username}>
-				<Input placeholder="username" type="text" autoComplete="name" />
+			<Form.Item name="username" label={t("username_label")} rules={rules.username}>
+				<Input placeholder={t("username_placeholder")} type="text" autoComplete="name" />
 			</Form.Item>
 
-			<Form.Item name="email" label="Email" rules={rules.email}>
-				<Input type="email" placeholder="email@example.com" />
+			<Form.Item name="email" label={t("email_label")} rules={rules.email}>
+				<Input type="email" placeholder={t("email_placeholder")} />
 			</Form.Item>
 
-			<Form.Item name="password" label="Password" rules={rules.password}>
-				<Input.Password placeholder="********" autoComplete="new-password" />
+			<Form.Item name="password" label={t("password_label")} rules={rules.password}>
+				<Input.Password placeholder={t("password_placeholder")} autoComplete="new-password" />
 			</Form.Item>
 		</AuthForm>
 	);

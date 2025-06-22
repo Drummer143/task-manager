@@ -1,0 +1,11 @@
+{
+    "title": "Login",
+    "email_field_label": "Email",
+    "email_field_placeholder": "email@example.com",
+    "password_field_label": "Password",
+    "password_field_placeholder": "********",
+    "forgot_password": "Forgot Password?",
+    "submit_button": "Login",
+    "dont_have_account": "Don't have an account?",
+    "sign_in": "Sign In"
+}
