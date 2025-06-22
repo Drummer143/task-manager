@@ -64,7 +64,7 @@ impl Type<Postgres> for PageType {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize, Clone)]
+#[derive(Debug, Deserialize, Serialize, Clone, utoipa::ToSchema)]
 pub struct Doc {
     pub text: Option<String>,
     pub r#type: String,

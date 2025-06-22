@@ -5,15 +5,16 @@ use super::model::Task;
 pub async fn create_task<'a>(
     db: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
     page_id: Uuid,
+    reporter_id: Uuid,
     dto: super::dto::CreateTaskDto,
 ) -> Result<Task, sqlx::Error> {
-    sqlx::query_as::<_, Task>("INSERT INTO tasks (title, status, description, due_date, assignee_id, page_id) VALUES ($1, $2, $3, $4, $5, $6)")
+    sqlx::query_as::<_, Task>("INSERT INTO tasks (title, status, due_date, assignee_id, page_id, reporter_id) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *")
         .bind(dto.title)
         .bind(dto.status)
-        .bind(dto.description)
         .bind(dto.due_date)
         .bind(dto.assignee_id)
         .bind(page_id)
+        .bind(reporter_id)
         .fetch_one(db)
         .await
 }
@@ -23,10 +24,9 @@ pub async fn update_task<'a>(
     id: Uuid,
     dto: super::dto::UpdateTaskDto,
 ) -> Result<Task, sqlx::Error> {
-    sqlx::query_as::<_, Task>("UPDATE tasks SET title = $1, status = $2, description = $3, due_date = $4, assignee_id = $5 WHERE id = $6 RETURNING *")
+    sqlx::query_as::<_, Task>("UPDATE tasks SET title = $1, status = $2, due_date = $3, assignee_id = $4 WHERE id = $5 RETURNING *")
         .bind(dto.title)
         .bind(dto.status)
-        .bind(dto.description)
         .bind(dto.due_date)
         .bind(dto.assignee_id)
         .bind(id)

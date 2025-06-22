@@ -1,62 +1,77 @@
-import React, { memo, useCallback } from "react";
+import React, { memo, useCallback, useEffect, useRef, useState } from "react";
 
 import { PlusOutlined } from "@ant-design/icons";
+import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { Task, TaskStatus } from "@task-manager/api";
-import { preventDefault } from "@task-manager/utils";
-import { Button, Typography } from "antd";
+import { Button, Spin, Typography } from "antd";
 
 import { useStyles } from "./styles";
 
-import { useTasksStore } from "../../../../../app/store/tasks";
 import { taskStatusLocale } from "../../../../../shared/constants";
+import { isTaskSource, TaskTargetData } from "../../utils";
 import TaskList from "../TaskList";
 
 interface TaskColumnProps {
 	status: TaskStatus;
 
 	tasks?: Task[];
+	isMutating?: boolean;
 }
 
-const TaskColumn: React.FC<TaskColumnProps> = ({ status, tasks }) => {
-	const { dropTarget } = useTasksStore();
+const TaskColumn: React.FC<TaskColumnProps> = ({ status, tasks, isMutating }) => {
+	const [isDragTarget, setIsDragTarget] = useState(false);
+
+	const taskGroupRef = useRef<HTMLDivElement | null>(null);
 
 	const { addTaskButton, taskGroup, taskGroupHeader, taskGroupTitle } = useStyles({
-		isDragTarget: dropTarget === status,
+		isDragTarget,
 		status
 	}).styles;
 
-	const handleDragEnter: React.DragEventHandler<HTMLDivElement> = useCallback(
-		() => useTasksStore.setState({ dropTarget: status }),
+	const handleCreateTaskButtonClick = useCallback(
+		() => document.dispatchEvent(new CustomEvent("createTask", { detail: { status } })),
 		[status]
 	);
 
-	const handleDragLeave: React.DragEventHandler<HTMLDivElement> = useCallback(e => {
-		if (e.relatedTarget && e.currentTarget.contains(e.relatedTarget as Node)) {
+	useEffect(() => {
+		const element = taskGroupRef.current;
+
+		if (!element) {
 			return;
 		}
 
-		useTasksStore.setState({ dropTarget: undefined });
-	}, []);
+		const targetData: TaskTargetData = {
+			type: "task",
+			status
+		};
 
-	const handleCreateTaskButtonClick = useCallback(() => {
-		document.dispatchEvent(new CustomEvent("createTask", { detail: { status } }));
+		return dropTargetForElements({
+			element,
+			getData: () => targetData as unknown as Record<string, unknown>,
+			onDrop: () => setIsDragTarget(false),
+			onDragEnter: args => {
+				if (!isTaskSource(args.source.data)) {
+					return;
+				}
+
+				setIsDragTarget(true);
+			},
+			onDragLeave: () => setIsDragTarget(false)
+		});
 	}, [status]);
 
 	return (
-		<div
-			className={taskGroup}
-			onDragOver={preventDefault}
-			onDragEnter={handleDragEnter}
-			onDragLeave={handleDragLeave}
-		>
+		<div className={taskGroup} ref={taskGroupRef}>
 			<div className={taskGroupHeader}>
-				<Typography.Text className={taskGroupTitle}>{taskStatusLocale[status]}</Typography.Text>
+				<Typography.Text className={taskGroupTitle}>
+					{taskStatusLocale[status]}
+				</Typography.Text>
 
 				<Button
 					className={addTaskButton}
 					onClick={handleCreateTaskButtonClick}
 					type="text"
-					icon={<PlusOutlined />}
+					icon={isMutating ? <Spin /> : <PlusOutlined />}
 				/>
 			</div>
 
@@ -66,3 +81,4 @@ const TaskColumn: React.FC<TaskColumnProps> = ({ status, tasks }) => {
 };
 
 export default memo(TaskColumn);
+

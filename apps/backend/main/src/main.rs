@@ -68,7 +68,7 @@ async fn main() {
         .merge(entities::workspace_access::router::init(app_state.clone()))
         .merge(entities::page::router::init(app_state.clone()))
         .merge(entities::page_access::router::init(app_state.clone()))
-        .merge(entities::task::router::init())
+        .merge(entities::task::router::init(app_state.clone()))
         .merge(
             utoipa_swagger_ui::SwaggerUi::new("/api")
                 .url("/api/openapi.json", swagger::ApiDoc::openapi()),

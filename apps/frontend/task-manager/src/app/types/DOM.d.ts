@@ -24,10 +24,10 @@ declare global {
 			options?: boolean | EventListenerOptions
 		);
 
-		dispatchEvent<T extends keyof MergedEventMap>(e: MergedEventMap[T]);
+		dispatchEvent<T extends keyof MergedEventMap>(e: MergedEventMap[T]): boolean;
 	}
 
-	interface HTMLDivElement {
+	interface HTMLElement {
 		addEventListener<T extends keyof MergedEventMap>(
 			event: T,
 			handler: (this: Document, e: MergedEventMap[T]) => void,
@@ -43,7 +43,9 @@ declare global {
 		dispatchEvent<T extends keyof MergedEventMap>(e: MergedEventMap[T]);
 	}
 
-	type DocumentEventHandler<T extends keyof MergedEventMap = MergedEventMap> = (event: MergedEventMap[T]) => void;
+	type DocumentEventHandler<T extends keyof MergedEventMap = MergedEventMap> = (
+		event: MergedEventMap[T]
+	) => void;
 }
 
 export {};

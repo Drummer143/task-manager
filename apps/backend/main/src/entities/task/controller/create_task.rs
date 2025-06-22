@@ -1,5 +1,5 @@
 use axum::{
-    extract::{Path, State},
+    extract::{Extension, Path, State},
     Json,
 };
 use error_handlers::handlers::ErrorResponse;
@@ -24,10 +24,11 @@ use crate::entities::task::dto::{CreateTaskDto, TaskResponse};
 )]
 pub async fn create_task(
     State(state): State<crate::types::app_state::AppState>,
+    Extension(reporter_id): Extension<Uuid>,
     Path((_, page_id)): Path<(Uuid, Uuid)>,
     Json(dto): Json<CreateTaskDto>,
 ) -> Result<TaskResponse, ErrorResponse> {
-    crate::entities::task::service::create_task(&state.postgres, page_id, dto)
+    crate::entities::task::service::create_task(&state.postgres, page_id, reporter_id, dto)
         .await
         .map(TaskResponse::from)
 }

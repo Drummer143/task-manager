@@ -6,9 +6,10 @@ use crate::entities::task::{model::Task, repository};
 pub async fn create_task<'a>(
     executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
     page_id: Uuid,
+    reporter_id: Uuid,
     dto: super::dto::CreateTaskDto,
 ) -> Result<Task, ErrorResponse> {
-    repository::create_task(executor, page_id, dto)
+    repository::create_task(executor, page_id, reporter_id, dto)
         .await
         .map_err(ErrorResponse::from)
 }

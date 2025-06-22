@@ -1,25 +1,57 @@
-import React, { memo } from "react";
+import React, { memo, useEffect, useRef, useState } from "react";
 
+import { draggable } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { Task } from "@task-manager/api";
 import { Typography } from "antd";
 
 import { useStyles } from "./styles";
 
+import { TaskSourceData } from "../../utils";
+
 interface TaskItemProps {
 	task: Task;
+	pageId: string;
 
-	onClick?: React.MouseEventHandler<HTMLElement>;
-	onDragStart: (e: React.DragEvent<HTMLElement>, task: Task) => void;
+	onClick?: React.MouseEventHandler<HTMLDivElement>;
 }
 
-const TaskItem: React.FC<TaskItemProps> = ({ task, onDragStart, onClick }) => {
-	const { taskWrapper } = useStyles({ status: task.status }).styles;
+const TaskItem: React.FC<TaskItemProps> = ({ task, onClick, pageId }) => {
+	const [isDragging, setIsDragging] = useState(false);
+
+	const { taskWrapper } = useStyles({ status: task.status, isDragging }).styles;
+
+	const taskRef = useRef<HTMLDivElement | null>(null);
+
+	useEffect(() => {
+		const element = taskRef.current;
+
+		if (!element) {
+			return;
+		}
+
+		const initialData: TaskSourceData = {
+			type: "task",
+			task
+		};
+
+		return draggable({
+			element,
+			getInitialData: () => initialData as unknown as Record<string, unknown>,
+			// getInitialDataForExternal: () => ({
+			// 	"text/uri-list": `${window.location.origin}/pages/${pageId}?taskId=${task.id}`,
+			// 	"text/plain": `${task.title}\n\n${task.description}\n\n${taskStatusLocale[task.status]}`
+			// }),
+			onDragStart: () => setIsDragging(true),
+			onDrop: () => setIsDragging(false)
+		});
+	}, [pageId, task]);
 
 	return (
-		<div className={taskWrapper} onClick={onClick} draggable onDragStart={e => onDragStart(e, task)}>
+		<div className={taskWrapper} onClick={onClick} ref={taskRef}>
 			<Typography.Text>{task.title}</Typography.Text>
 		</div>
 	);
 };
 
-export default memo(TaskItem, (prev, next) => prev.task.id === next.task.id && prev.onDragStart === next.onDragStart);
+export default memo(TaskItem);
+

@@ -1,15 +1,15 @@
+use crate::entities::user::model::User;
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
-use crate::entities::user::model::User;
 
 #[derive(Debug, Deserialize, utoipa::ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct CreateTaskDto {
     pub title: String,
     pub status: String,
-    pub description: Option<String>,
-    pub due_date: Option<String>,
+    pub description: Option<serde_json::Value>,
+    pub due_date: Option<DateTime<Utc>>,
     pub assignee_id: Option<Uuid>,
 }
 
@@ -18,8 +18,8 @@ pub struct CreateTaskDto {
 pub struct UpdateTaskDto {
     pub title: Option<String>,
     pub status: Option<String>,
-    pub description: Option<String>,
-    pub due_date: Option<String>,
+    pub description: Option<serde_json::Value>,
+    pub due_date: Option<DateTime<Utc>>,
     pub assignee_id: Option<Uuid>,
 }
 
@@ -33,7 +33,7 @@ pub struct TaskResponse {
     pub id: Uuid,
     pub title: String,
     pub status: String,
-    pub description: Option<String>,
+    pub description: Option<serde_json::Value>,
     pub due_date: Option<DateTime<Utc>>,
 
     pub reporter: Option<User>,
@@ -50,7 +50,7 @@ impl From<super::model::Task> for TaskResponse {
             id: value.id,
             title: value.title,
             status: value.status,
-            description: value.description,
+            description: None,
             due_date: value.due_date,
             reporter: None,
             assignee: None,
