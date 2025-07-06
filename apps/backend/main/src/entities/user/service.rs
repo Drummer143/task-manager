@@ -5,8 +5,8 @@ use error_handlers::handlers::ErrorResponse;
 pub async fn find_by_id(
     db: impl sqlx::Executor<'_, Database = sqlx::Postgres>,
     id: Uuid,
-) -> Result<super::model::User, ErrorResponse> {
-    super::repository::find_by_id(db, id)
+) -> Result<repo::entities::user::model::User, ErrorResponse> {
+    repo::entities::user::repository::find_by_id(db, id)
         .await
         .map_err(ErrorResponse::from)
 }
@@ -15,14 +15,14 @@ pub async fn get_list(
     db: impl sqlx::Executor<'_, Database = sqlx::Postgres> + Copy,
     limit: Option<i64>,
     offset: Option<i64>,
-    filter: Option<super::dto::UserFilterBy>,
-    sort_by: Option<super::dto::UserSortBy>,
-    sort_order: Option<crate::types::pagination::SortOrder>,
-) -> Result<(Vec<super::model::User>, i64), ErrorResponse> {
-    let limit = limit.unwrap_or(crate::types::pagination::DEFAULT_LIMIT);
-    let offset = offset.unwrap_or(crate::types::pagination::DEFAULT_OFFSET);
+    filter: Option<repo::entities::user::dto::UserFilterBy>,
+    sort_by: Option<repo::entities::user::dto::UserSortBy>,
+    sort_order: Option<repo::shared::types::SortOrder>,
+) -> Result<(Vec<repo::entities::user::model::User>, i64), ErrorResponse> {
+    let limit = limit.unwrap_or(repo::shared::constants::DEFAULT_LIMIT);
+    let offset = offset.unwrap_or(repo::shared::constants::DEFAULT_OFFSET);
 
-    super::repository::get_list(
+    repo::entities::user::repository::get_list(
         db,
         limit,
         offset,

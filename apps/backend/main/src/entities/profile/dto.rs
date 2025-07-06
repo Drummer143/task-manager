@@ -2,7 +2,7 @@ use std::convert::Infallible;
 
 use serde::{Deserialize, Serialize};
 
-use crate::entities::{user::model::User, workspace::model::Workspace};
+use repo::entities::{user::model::User, workspace::model::Workspace};
 
 #[derive(Serialize, utoipa::ToSchema)]
 pub struct GetProfileDto {

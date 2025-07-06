@@ -1,7 +1,7 @@
 use chrono::Duration;
 use uuid::Uuid;
 
-use crate::{entities::workspace::model::Workspace, types::pagination::SortOrder};
+use crate::{entities::workspace::model::Workspace, shared::types::SortOrder};
 
 use super::{dto::WorkspaceSortBy, model::WorkspaceWithRole};
 
@@ -94,10 +94,10 @@ pub async fn get_list<'a>(
         ))
         .push(format!(
             " OFFSET {}",
-            offset.unwrap_or(crate::types::pagination::DEFAULT_OFFSET)
+            offset.unwrap_or(crate::shared::constants::DEFAULT_OFFSET)
         ));
 
-    let limit = crate::types::pagination::calculate_limit(limit);
+    let limit = crate::shared::utils::calculate_limit(limit);
 
     if limit > 0 {
         builder.push(format!("LIMIT {}", limit));

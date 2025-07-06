@@ -1,25 +1,12 @@
 use chrono::{DateTime, Utc};
-use serde::Deserialize;
 use uuid::Uuid;
 
-use super::model::Role;
-
-#[derive(Debug, Deserialize, utoipa::ToSchema)]
-pub struct CreatePageAccessDto {
-    pub user_id: Uuid,
-    pub role: Role,
-}
-
-#[derive(Debug, Deserialize, utoipa::ToSchema)]
-pub struct UpdatePageAccessDto {
-    pub user_id: Uuid,
-    pub role: Option<Role>,
-}
+use repo::entities::page_access::model::Role;
 
 #[derive(Debug, serde::Serialize, utoipa::ToSchema, Clone)]
 pub struct PageAccessResponse {
     pub id: Uuid,
-    pub user: crate::entities::user::model::User,
+    pub user: repo::entities::user::model::User,
     pub role: Role,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,

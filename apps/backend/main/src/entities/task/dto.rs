@@ -1,32 +1,7 @@
-use crate::entities::user::model::User;
 use chrono::{DateTime, Utc};
-use serde::{Deserialize, Serialize};
+use repo::entities::{task::model::Task, user::model::User};
+use serde::Serialize;
 use uuid::Uuid;
-
-#[derive(Debug, Deserialize, utoipa::ToSchema)]
-#[serde(rename_all = "camelCase")]
-pub struct CreateTaskDto {
-    pub title: String,
-    pub status: String,
-    pub description: Option<serde_json::Value>,
-    pub due_date: Option<DateTime<Utc>>,
-    pub assignee_id: Option<Uuid>,
-}
-
-#[derive(Debug, Deserialize, utoipa::ToSchema)]
-#[serde(rename_all = "camelCase")]
-pub struct UpdateTaskDto {
-    pub title: Option<String>,
-    pub status: Option<String>,
-    pub description: Option<serde_json::Value>,
-    pub due_date: Option<DateTime<Utc>>,
-    pub assignee_id: Option<Uuid>,
-}
-
-#[derive(Debug, Deserialize, utoipa::ToSchema)]
-pub struct ChangeStatusDto {
-    pub status: String,
-}
 
 #[derive(Debug, Serialize, utoipa::ToSchema, Clone)]
 pub struct TaskResponse {
@@ -44,8 +19,8 @@ pub struct TaskResponse {
     pub deleted_at: Option<DateTime<Utc>>,
 }
 
-impl From<super::model::Task> for TaskResponse {
-    fn from(value: super::model::Task) -> Self {
+impl From<Task> for TaskResponse {
+    fn from(value: Task) -> Self {
         Self {
             id: value.id,
             title: value.title,

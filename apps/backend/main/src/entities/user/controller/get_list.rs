@@ -2,10 +2,7 @@ use axum::{extract::State, response::IntoResponse};
 use error_handlers::handlers::ErrorResponse;
 use uuid::Uuid;
 
-use crate::{
-    shared::{extractors::query::ValidatedQuery, traits::IsValid},
-    types::app_state::AppState,
-};
+use crate::{shared::extractors::query::ValidatedQuery, types::app_state::AppState};
 
 #[derive(serde::Deserialize)]
 pub struct GetListQuery {
@@ -19,8 +16,8 @@ pub struct GetListQuery {
         deserialize_with = "crate::shared::deserialization::deserialize_comma_separated_query_param"
     )]
     exclude: Option<Vec<Uuid>>,
-    sort_by: Option<crate::entities::user::dto::UserSortBy>,
-    sort_order: Option<crate::types::pagination::SortOrder>,
+    sort_by: Option<repo::entities::user::dto::UserSortBy>,
+    sort_order: Option<repo::shared::types::SortOrder>,
 }
 
 #[utoipa::path(
@@ -38,7 +35,7 @@ pub struct GetListQuery {
         ("sort_order" = Option<crate::types::pagination::SortOrder>, Query, description = "Sort order. Default: asc"),
     ),
     responses(
-        (status = 200, description = "List of users", body = crate::types::pagination::Pagination<crate::entities::user::model::User>),
+        (status = 200, description = "List of users", body = crate::types::pagination::Pagination<repo::entities::user::model::User>),
         (status = 400, description = "Invalid query parameters", body = ErrorResponse),
         (status = 401, description = "Unauthorized", body = ErrorResponse),
         (status = 500, description = "Internal server error", body = ErrorResponse),
@@ -49,7 +46,7 @@ pub async fn get_list(
     State(state): State<AppState>,
     ValidatedQuery(query): ValidatedQuery<GetListQuery>,
 ) -> impl IntoResponse {
-    let filters = crate::entities::user::dto::UserFilterBy {
+    let filters = repo::entities::user::dto::UserFilterBy {
         email: query.email,
         username: query.username,
         query: query.query,
@@ -82,9 +79,9 @@ pub async fn get_list(
         total,
         query
             .limit
-            .unwrap_or(crate::types::pagination::DEFAULT_LIMIT),
+            .unwrap_or(repo::shared::constants::DEFAULT_LIMIT),
         query
             .offset
-            .unwrap_or(crate::types::pagination::DEFAULT_OFFSET),
+            .unwrap_or(repo::shared::constants::DEFAULT_OFFSET),
     ))
 }

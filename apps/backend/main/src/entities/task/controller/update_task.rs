@@ -3,9 +3,10 @@ use axum::{
     Json,
 };
 use error_handlers::handlers::ErrorResponse;
+use repo::entities::task::dto::UpdateTaskDto;
 use uuid::Uuid;
 
-use crate::entities::task::dto::{TaskResponse, UpdateTaskDto};
+use crate::entities::task::dto::TaskResponse;
 
 #[utoipa::path(
     put,

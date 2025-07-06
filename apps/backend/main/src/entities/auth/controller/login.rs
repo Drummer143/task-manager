@@ -5,7 +5,7 @@ use axum::extract::{Json, State};
     path = "/auth/login",
     request_body = crate::entities::auth::dto::LoginDto,
     responses(
-        (status = 200, description = "Login successful", body = crate::entities::user::model::User),
+        (status = 200, description = "Login successful", body = repo::entities::user::model::User),
         (status = 400, description = "Invalid credentials", body = error_handlers::handlers::ErrorResponse),
     ),
     security(

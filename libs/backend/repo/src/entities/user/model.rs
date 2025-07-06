@@ -16,9 +16,3 @@ pub struct User {
     pub updated_at: DateTime<Utc>,
     pub deleted_at: Option<DateTime<Utc>>,
 }
-
-impl axum::response::IntoResponse for User {
-    fn into_response(self) -> axum::response::Response {
-        (axum::http::StatusCode::OK, axum::Json(self)).into_response()
-    }
-}

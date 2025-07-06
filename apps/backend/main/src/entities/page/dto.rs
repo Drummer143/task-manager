@@ -2,42 +2,11 @@ use std::collections::HashMap;
 
 use chrono::{DateTime, Utc};
 use error_handlers::{codes, handlers::ErrorResponse};
-use serde::{Deserialize, Serialize};
+use repo::entities::{page::model::{Doc, Page, PageType}, user::model::User};
+use serde::Serialize;
 use uuid::Uuid;
 
-use crate::entities::{
-    page::model::{Doc, Page, PageType},
-    task::dto::TaskResponse,
-    user::model::User,
-    workspace::dto::WorkspaceResponseWithoutInclude,
-};
-
-#[derive(Debug, Deserialize, utoipa::ToSchema, Clone)]
-#[serde(rename_all = "camelCase")]
-pub struct PageTextDto {
-    pub text: Option<String>,
-    pub r#type: String,
-
-    pub attrs: Option<serde_json::Value>,
-    pub content: Option<serde_json::Value>,
-    pub marks: Option<serde_json::Value>,
-}
-
-#[derive(Debug, Deserialize, utoipa::ToSchema)]
-#[serde(rename_all = "camelCase")]
-pub struct CreatePageDto {
-    pub title: String,
-    pub parent_page_id: Option<Uuid>,
-    pub r#type: PageType,
-    pub text: Option<PageTextDto>,
-}
-
-#[derive(Debug, Deserialize, utoipa::ToSchema)]
-#[serde(rename_all = "camelCase")]
-pub struct UpdatePageDto {
-    pub title: Option<String>,
-    pub text: Option<PageTextDto>,
-}
+use crate::entities::{task::dto::TaskResponse, workspace::dto::WorkspaceResponseWithoutInclude};
 
 #[derive(Debug, Serialize, Clone, utoipa::ToSchema)]
 #[serde(rename_all = "camelCase")]
@@ -159,7 +128,7 @@ pub struct PageResponse {
     pub id: Uuid,
     pub r#type: PageType,
     pub title: String,
-    pub role: Option<crate::entities::page_access::model::Role>,
+    pub role: Option<repo::entities::page_access::model::Role>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub text: Option<DocResponse>,
@@ -185,8 +154,8 @@ impl axum::response::IntoResponse for PageResponse {
     }
 }
 
-impl From<super::model::Page> for PageResponse {
-    fn from(page: super::model::Page) -> Self {
+impl From<Page> for PageResponse {
+    fn from(page: Page) -> Self {
         Self {
             id: page.id,
             r#type: page.r#type,

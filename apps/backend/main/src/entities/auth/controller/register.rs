@@ -10,7 +10,7 @@ use crate::entities::auth;
     path = "/auth/register",
     request_body = auth::dto::RegisterDto,
     responses(
-        (status = 200, description = "User registered successfully", body = crate::entities::user::model::User),
+        (status = 200, description = "User registered successfully", body = repo::entities::user::model::User),
         (status = 400, description = "Invalid credentials", body = error_handlers::handlers::ErrorResponse),
     ),
     security(
@@ -22,5 +22,8 @@ pub async fn register(
     State(state): State<crate::types::app_state::AppState>,
     Json(body): Json<auth::dto::RegisterDto>,
 ) -> impl IntoResponse {
-    auth::service::register(&state.postgres, &body).await
+    match auth::service::register(&state.postgres, &body).await {
+        Ok(user) => (axum::http::StatusCode::OK, axum::Json(user)).into_response(),
+        Err(error) => error.into_response(),
+    }
 }

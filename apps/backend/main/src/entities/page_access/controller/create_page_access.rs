@@ -20,14 +20,14 @@ use error_handlers::handlers::ErrorResponse;
         ("workspace_id" = Uuid, Path, description = "Workspace ID"),
         ("page_id" = Uuid, Path, description = "Page ID"),
     ),
-    request_body = crate::entities::page_access::dto::CreatePageAccessDto,
+    request_body = repo::entities::page_access::dto::CreatePageAccessDto,
     tags = ["Page Access"],
 )]
 pub async fn create_page_access(
     State(state): State<crate::types::app_state::AppState>,
     Extension(user_id): Extension<Uuid>,
     Path((_, page_id)): Path<(Uuid, Uuid)>,
-    Json(dto): Json<crate::entities::page_access::dto::CreatePageAccessDto>,
+    Json(dto): Json<repo::entities::page_access::dto::CreatePageAccessDto>,
 ) -> impl axum::response::IntoResponse {
     let user_page_access = crate::entities::page_access::service::get_page_access(
         &state.postgres,
@@ -46,7 +46,7 @@ pub async fn create_page_access(
         e
     })?;
 
-    if user_page_access.role < crate::entities::page_access::model::Role::Admin {
+    if user_page_access.role < repo::entities::page_access::model::Role::Admin {
         return Err(
             error_handlers::handlers::ErrorResponse::forbidden(
                 error_handlers::codes::ForbiddenErrorCode::InsufficientPermissions,
@@ -55,8 +55,8 @@ pub async fn create_page_access(
         );
     }
 
-    if dto.role > crate::entities::page_access::model::Role::Admin
-        && user_page_access.role < crate::entities::page_access::model::Role::Owner
+    if dto.role > repo::entities::page_access::model::Role::Admin
+        && user_page_access.role < repo::entities::page_access::model::Role::Owner
     {
         return Err(
             error_handlers::handlers::ErrorResponse::forbidden(

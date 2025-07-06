@@ -1,5 +1,6 @@
-use axum::extract::State;
+use axum::{extract::State, response::IntoResponse};
 use error_handlers::handlers::ErrorResponse;
+use repo::entities::user::model::User;
 
 use crate::shared::extractors::path::ValidatedPath;
 
@@ -11,7 +12,7 @@ use crate::shared::extractors::path::ValidatedPath;
         ("id", Path, description = "ID of user to get"),
     ),
     responses(
-        (status = 200, description = "User", body = crate::entities::user::model::User),
+        (status = 200, description = "User", body = User),
         (status = 404, description = "User not found", body = ErrorResponse),
         (status = 500, description = "Internal server error", body = ErrorResponse),
     ),
@@ -21,5 +22,8 @@ pub async fn get_by_id(
     State(state): State<crate::types::app_state::AppState>,
     ValidatedPath(id): ValidatedPath<uuid::Uuid>,
 ) -> impl axum::response::IntoResponse {
-    crate::entities::user::service::find_by_id(&state.postgres, id).await
+    match crate::entities::user::service::find_by_id(&state.postgres, id).await {
+        Ok(user) => (axum::http::StatusCode::OK, axum::Json(user)).into_response(),
+        Err(error) => error.into_response(),
+    }
 }

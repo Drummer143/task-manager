@@ -1,33 +1,13 @@
 use chrono::{DateTime, Utc};
+use repo::entities::{user::model::User, workspace::model::Workspace, workspace_access::model::Role};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use crate::entities::{
-    page::dto::PageResponseWithoutInclude, user::model::User, workspace::model::Workspace,
-    workspace_access::model::Role,
-};
-
-#[derive(Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct UpdateWorkspaceDto {
-    pub name: String,
-}
-
-#[derive(Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
-pub struct CreateWorkspaceDto {
-    pub name: String,
-    pub owner_id: Uuid,
-}
-
-#[derive(Debug, Deserialize, utoipa::ToSchema)]
-pub struct WorkspaceRequestDto {
-    pub name: String,
-}
+use crate::entities::page::dto::PageResponseWithoutInclude;
 
 #[derive(Debug, utoipa::ToSchema)]
 pub struct WorkspaceInfo {
-    pub workspace: super::model::Workspace,
+    pub workspace: repo::entities::workspace::model::Workspace,
     pub role: Option<Role>,
     pub owner: Option<User>,
     pub pages: Option<Vec<PageResponseWithoutInclude>>,
@@ -179,8 +159,8 @@ pub struct GetListQueryDto {
     pub limit: Option<i64>,
     pub offset: Option<i64>,
     pub search: Option<String>,
-    pub sort_by: Option<WorkspaceSortBy>,
-    pub sort_order: Option<crate::types::pagination::SortOrder>,
+    pub sort_by: Option<repo::entities::workspace::dto::WorkspaceSortBy>,
+    pub sort_order: Option<repo::shared::types::SortOrder>,
     #[serde(
         default,
         deserialize_with = "crate::shared::deserialization::deserialize_comma_separated_query_param"

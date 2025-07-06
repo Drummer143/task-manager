@@ -2,7 +2,11 @@ use error_handlers::handlers::ErrorResponse;
 use sqlx::PgPool;
 use uuid::Uuid;
 
-use crate::entities::page::{model::Page, repository};
+use repo::entities::page::{
+    dto::{CreatePageDto, UpdatePageDto},
+    model::{Doc, Page, PageType},
+    repository,
+};
 
 pub async fn get_by_id(
     postgres: &PgPool,
@@ -13,7 +17,7 @@ pub async fn get_by_id(
         .await
         .map_err(ErrorResponse::from)?;
 
-    if page.r#type == super::model::PageType::Text {
+    if page.r#type == PageType::Text {
         page.text = repository::get_page_text(mongodb, page.id)
             .await
             .map_err(ErrorResponse::from)?;
@@ -40,7 +44,7 @@ pub async fn get_child_pages(db: &PgPool, page_id: Uuid) -> Result<Vec<Page>, Er
 pub async fn create(
     db: &PgPool,
     mongodb: &mongodb::Database,
-    dto: super::dto::CreatePageDto,
+    dto: CreatePageDto,
     workspace_id: Uuid,
     owner_id: Uuid,
 ) -> Result<Page, ErrorResponse> {
@@ -63,7 +67,7 @@ pub async fn create(
         &mut *tx,
         owner_id,
         page.id,
-        crate::entities::page_access::model::Role::Owner,
+        repo::entities::page_access::model::Role::Owner,
     )
     .await
     .map_err(ErrorResponse::from);
@@ -73,9 +77,9 @@ pub async fn create(
         return Err(e);
     }
 
-    if page.r#type == super::model::PageType::Text && doc_dto.is_some() {
+    if page.r#type == PageType::Text && doc_dto.is_some() {
         let doc_dto = doc_dto.unwrap();
-        let doc = super::model::Doc {
+        let doc = Doc {
             page_id: Some(page.id.to_string()),
             version: 1,
             attrs: doc_dto.attrs,
@@ -106,7 +110,7 @@ pub async fn update(
     db: &PgPool,
     mongodb: &mongodb::Database,
     id: Uuid,
-    page: super::dto::UpdatePageDto,
+    page: UpdatePageDto,
 ) -> Result<Page, ErrorResponse> {
     let mut tx = db.begin().await.map_err(ErrorResponse::from)?;
 
@@ -122,11 +126,15 @@ pub async fn update(
             .map_err(ErrorResponse::from)?
     };
 
-    println!("page type: {}. doc_dto.is_some(): {}", page.r#type, doc_dto.is_some());
+    println!(
+        "page type: {}. doc_dto.is_some(): {}",
+        page.r#type,
+        doc_dto.is_some()
+    );
 
-    if page.r#type == super::model::PageType::Text && doc_dto.is_some() {
+    if page.r#type == PageType::Text && doc_dto.is_some() {
         let doc_dto = doc_dto.unwrap();
-        let mut doc = super::model::Doc {
+        let mut doc = Doc {
             page_id: Some(page.id.to_string()),
             version: 1,
             attrs: doc_dto.attrs,
@@ -174,7 +182,7 @@ pub async fn delete(
         .await
         .map_err(ErrorResponse::from)?;
 
-    if page.r#type == super::model::PageType::Text {
+    if page.r#type == PageType::Text {
         repository::delete_page_text(mongodb, page.id)
             .await
             .map_err(ErrorResponse::from)?;

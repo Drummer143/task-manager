@@ -3,12 +3,10 @@ use axum::{
     Extension, Json,
 };
 use error_handlers::handlers::ErrorResponse;
+use repo::entities::page::dto::CreatePageDto;
 use uuid::Uuid;
 
-use crate::{
-    entities::page::dto::{CreatePageDto, PageResponse},
-    types::app_state::AppState,
-};
+use crate::{entities::page::dto::PageResponse, types::app_state::AppState};
 
 #[utoipa::path(
     post,
@@ -35,7 +33,7 @@ pub async fn create_page(
         &state.postgres,
         &state
             .mongo
-            .database(crate::shared::mongo_constants::PAGE_DATABASE),
+            .database(repo::shared::constants::PAGE_DATABASE),
         create_page_dto,
         workspace_id,
         user_id,

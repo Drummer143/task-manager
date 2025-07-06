@@ -27,7 +27,7 @@ pub async fn delete_page(
         &state.postgres,
         &state
             .mongo
-            .database(crate::shared::mongo_constants::PAGE_DATABASE),
+            .database(repo::shared::constants::PAGE_DATABASE),
         page_id,
     )
     .await

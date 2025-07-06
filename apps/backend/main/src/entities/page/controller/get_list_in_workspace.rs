@@ -5,15 +5,13 @@ use axum::{
     Json,
 };
 use error_handlers::{codes, handlers::ErrorResponse};
+use repo::entities::page::model::{Page, PageType};
 use uuid::Uuid;
 
 use crate::{
     entities::{
-        page::{
-            dto::{
-                ChildPageResponse, PageListFormat, PageListInclude, PageListQuery, PageResponse,
-            },
-            model::{Page, PageType},
+        page::dto::{
+            ChildPageResponse, PageListFormat, PageListInclude, PageListQuery, PageResponse,
         },
         workspace::dto::WorkspaceResponseWithoutInclude,
     },
@@ -116,7 +114,7 @@ pub async fn get_list_in_workspace(
                     None
                 },
                 role: Some(
-                    crate::entities::page_access::repository::get_page_access(
+                    repo::entities::page_access::repository::get_page_access(
                         &state.postgres,
                         page.owner_id,
                         page.id,

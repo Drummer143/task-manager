@@ -43,7 +43,7 @@ pub async fn get_page_access_list(
         e
     })?;
 
-    if user_page_access.role < crate::entities::page_access::model::Role::Member {
+    if user_page_access.role < repo::entities::page_access::model::Role::Member {
         return Err(
             error_handlers::handlers::ErrorResponse::forbidden(
                 error_handlers::codes::ForbiddenErrorCode::InsufficientPermissions,

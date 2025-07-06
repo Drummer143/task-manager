@@ -1,16 +1,15 @@
 use error_handlers::handlers::ErrorResponse;
+use repo::entities::workspace_access::model::WorkspaceAccess;
 use uuid::Uuid;
 
 use crate::entities::workspace_access::dto::WorkspaceAccessResponse;
-
-use super::model::WorkspaceAccess;
 
 pub async fn get_workspace_access<'a>(
     executor: impl sqlx::Executor<'a, Database = sqlx::Postgres> + Copy,
     user_id: Uuid,
     workspace_id: Uuid,
 ) -> Result<WorkspaceAccessResponse, ErrorResponse> {
-    let workspace_access = crate::entities::workspace_access::repository::get_workspace_access(
+    let workspace_access = repo::entities::workspace_access::repository::get_workspace_access(
         executor,
         user_id,
         workspace_id,
@@ -36,7 +35,7 @@ pub async fn get_workspace_access_list<'a>(
     workspace_id: Uuid,
 ) -> Result<Vec<WorkspaceAccessResponse>, ErrorResponse> {
     let workspace_access_list =
-        crate::entities::workspace_access::repository::get_workspace_access_list(
+        repo::entities::workspace_access::repository::get_workspace_access_list(
             executor,
             workspace_id,
         )
@@ -65,9 +64,9 @@ pub async fn create_workspace_access<'a>(
     executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
     user_id: Uuid,
     workspace_id: Uuid,
-    role: super::model::Role,
+    role: repo::entities::workspace_access::model::Role,
 ) -> Result<WorkspaceAccess, ErrorResponse> {
-    crate::entities::workspace_access::repository::create_workspace_access(
+    repo::entities::workspace_access::repository::create_workspace_access(
         executor,
         user_id,
         workspace_id,
@@ -81,9 +80,9 @@ pub async fn update_workspace_access<'a>(
     executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
     user_id: Uuid,
     workspace_id: Uuid,
-    role: Option<super::model::Role>,
+    role: Option<repo::entities::workspace_access::model::Role>,
 ) -> Result<WorkspaceAccess, ErrorResponse> {
-    crate::entities::workspace_access::repository::update_workspace_access(
+    repo::entities::workspace_access::repository::update_workspace_access(
         executor,
         user_id,
         workspace_id,

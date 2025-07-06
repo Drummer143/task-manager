@@ -1,27 +1,11 @@
 use chrono::{DateTime, Utc};
-use serde::Deserialize;
+use repo::entities::workspace_access::model::Role;
 use uuid::Uuid;
-
-use super::model::Role;
-
-#[derive(Debug, Deserialize, utoipa::ToSchema)]
-#[serde(rename_all = "camelCase")]
-pub struct CreateWorkspaceAccessDto {
-    pub user_id: Uuid,
-    pub role: Role,
-}
-
-#[derive(Debug, Deserialize, utoipa::ToSchema)]
-#[serde(rename_all = "camelCase")]
-pub struct UpdateWorkspaceAccessDto {
-    pub user_id: Uuid,
-    pub role: Option<Role>,
-}
 
 #[derive(Debug, serde::Serialize, utoipa::ToSchema, Clone)]
 pub struct WorkspaceAccessResponse {
     pub id: Uuid,
-    pub user: crate::entities::user::model::User,
+    pub user: repo::entities::user::model::User,
     pub role: Role,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,

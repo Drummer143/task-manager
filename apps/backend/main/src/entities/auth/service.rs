@@ -1,4 +1,4 @@
-use crate::entities::user::model::User;
+use repo::entities::user::model::User;
 use error_handlers::codes;
 use error_handlers::handlers::ErrorResponse;
 
@@ -7,7 +7,7 @@ pub async fn login(
     email: &str,
     password: &str,
 ) -> Result<User, ErrorResponse> {
-    let user = crate::entities::user::repository::find_by_email(db, email)
+    let user = repo::entities::user::repository::find_by_email(db, email)
         .await
         .map_err(|e| match e {
             sqlx::Error::RowNotFound => {
@@ -17,7 +17,7 @@ pub async fn login(
         })?;
 
     let is_valid =
-        crate::entities::user_credentials::repository::verify_credentials(db, user.id, password)
+        repo::entities::user_credentials::repository::verify_credentials(db, user.id, password)
             .await;
 
     if !is_valid {
@@ -34,7 +34,7 @@ pub async fn register(
     db: &sqlx::postgres::PgPool,
     dto: &super::dto::RegisterDto,
 ) -> Result<User, ErrorResponse> {
-    let user = crate::entities::user::repository::find_by_email(db, &dto.email).await;
+    let user = repo::entities::user::repository::find_by_email(db, &dto.email).await;
 
     if let Err(err) = user {
         if !matches!(err, sqlx::Error::RowNotFound) {
@@ -52,9 +52,9 @@ pub async fn register(
         .await
         .map_err(|_| ErrorResponse::internal_server_error())?;
 
-    let user = crate::entities::user::repository::create(
+    let user = repo::entities::user::repository::create(
         &mut *tx,
-        crate::entities::user::dto::CreateUserDto {
+        repo::entities::user::dto::CreateUserDto {
             email: dto.email.clone(),
             username: dto.username.clone(),
             picture: None,
@@ -71,7 +71,7 @@ pub async fn register(
 
     let user = user.unwrap();
 
-    let user_credentials = crate::entities::user_credentials::repository::create_credentials(
+    let user_credentials = repo::entities::user_credentials::repository::create_credentials(
         &mut *tx,
         user.id,
         &dto.password,
@@ -91,7 +91,7 @@ pub async fn register(
 
     crate::entities::workspace::service::create_workspace(
         db,
-        crate::entities::workspace::dto::CreateWorkspaceDto {
+        repo::entities::workspace::dto::CreateWorkspaceDto {
             name: format!("{}'s workspace", user.username),
             owner_id: user.id,
         },

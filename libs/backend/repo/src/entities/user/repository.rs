@@ -1,7 +1,4 @@
-use crate::{
-    shared::traits::{IsEmpty, IsValid},
-    types::pagination::SortOrder,
-};
+use crate::shared::types::SortOrder;
 use sqlx::Postgres;
 use uuid::Uuid;
 
