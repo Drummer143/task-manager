@@ -7,7 +7,7 @@ export interface FormValues {
 	status: TaskStatus;
 
 	dueDate?: Dayjs;
-	assignedTo?: string;
+	assigneeId?: string;
 	description?: string;
 }
 

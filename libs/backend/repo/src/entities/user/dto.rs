@@ -29,6 +29,7 @@ pub struct UserFilterBy {
     pub email: Option<String>,
     pub username: Option<String>,
     pub query: Option<String>,
+    pub workspace_id: Option<Uuid>,
     pub exclude: Option<Vec<Uuid>>,
 }
 
@@ -38,10 +39,13 @@ impl UserFilterBy {
             && self.username.is_none()
             && self.query.is_none()
             && self.exclude.is_none()
+            && self.workspace_id.is_none()
     }
-}
 
-impl UserFilterBy {
+    pub fn has_any_user_filter(&self) -> bool {
+        self.email.is_some() || self.username.is_some() || self.exclude.is_some()
+    }
+
     pub fn is_valid(&self) -> bool {
         if self.email.is_some() || self.username.is_some() {
             self.query.is_none()

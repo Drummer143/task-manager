@@ -13,53 +13,54 @@ fn apply_filter<'a>(
 ) -> sqlx::QueryBuilder<'a, Postgres> {
     let mut where_started = false;
 
-    builder.push(" WHERE ");
+    if filter.workspace_id.is_some() {
+        builder.push(" JOIN workspace_accesses ON users.id = workspace_accesses.user_id AND workspace_accesses.workspace_id = ").push_bind(filter.workspace_id.unwrap());
+    }
 
     if let Some(query) = &filter.query {
         builder
-            .push("(")
-            .push("email ILIKE ")
+            .push(" WHERE (")
+            .push("users.email ILIKE ")
             .push_bind(format!("%{}%", query))
-            .push(" OR username ILIKE ")
+            .push(" OR users.username ILIKE ")
             .push_bind(format!("%{}%", query))
             .push(")");
         where_started = true;
-    } else {
-        if filter.email.is_some() || filter.username.is_some() {
-            builder.push(" (");
+    } else if filter.has_any_user_filter() {
+        builder.push(" WHERE (");
 
-            if let Some(email) = &filter.email {
-                builder
-                    .push("email ILIKE ")
-                    .push_bind(format!("%{}%", email));
-                where_started = true;
-            }
-
-            if let Some(username) = &filter.username {
-                builder.push(" AND ");
-                where_started = true;
-                builder
-                    .push("username ILIKE ")
-                    .push_bind(format!("%{}%", username));
-            }
-
-            builder.push(")");
+        if let Some(email) = &filter.email {
+            builder
+                .push("users.email ILIKE ")
+                .push_bind(format!("%{}%", email));
+            where_started = true;
         }
-    }
 
-    if let Some(ref exclude) = filter.exclude {
-        if !exclude.is_empty() {
+        if let Some(username) = &filter.username {
             if where_started {
                 builder.push(" AND ");
             }
-            builder.push("id NOT IN (");
+            where_started = true;
+            builder
+                .push("users.username ILIKE ")
+                .push_bind(format!("%{}%", username));
+        }
 
-            let mut separated = builder.separated(", ");
-            for id in exclude {
-                separated.push_bind(id);
+        if let Some(ref exclude) = filter.exclude {
+            if !exclude.is_empty() {
+                if where_started {
+                    builder.push(" AND ");
+                }
+
+                builder.push("users.id NOT IN (");
+
+                let mut separated = builder.separated(", ");
+                for id in exclude {
+                    separated.push_bind(id);
+                }
+
+                builder.push(")");
             }
-
-            builder.push(")");
         }
     }
 
@@ -98,8 +99,9 @@ pub async fn get_list<'a>(
     sort_by: Option<&UserSortBy>,
     sort_order: Option<&SortOrder>,
 ) -> Result<(Vec<User>, i64), sqlx::Error> {
-    let mut query_builder = sqlx::QueryBuilder::<Postgres>::new("SELECT * FROM users");
-    let mut total_builder = sqlx::QueryBuilder::<Postgres>::new("SELECT COUNT(*) FROM users");
+    let mut query_builder = sqlx::QueryBuilder::<Postgres>::new("SELECT users.* FROM users");
+    let mut total_builder =
+        sqlx::QueryBuilder::<Postgres>::new("SELECT COUNT(DISTINCT users.id) FROM users");
 
     if let Some(filter) = filter {
         if !filter.is_empty() && filter.is_valid() {
@@ -107,6 +109,7 @@ pub async fn get_list<'a>(
             total_builder = apply_filter(total_builder, filter);
         }
     }
+
     query_builder.push(format!(
         " ORDER BY {} {} LIMIT {} OFFSET {}",
         sort_by.unwrap_or(&UserSortBy::CreatedAt),

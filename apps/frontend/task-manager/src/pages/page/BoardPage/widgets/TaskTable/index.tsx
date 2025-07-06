@@ -1,10 +1,9 @@
 import React, { memo, useEffect, useMemo } from "react";
 
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { changeStatus, Task, TaskStatus } from "@task-manager/api";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { changeStatus, getTaskList, Task, TaskStatus } from "@task-manager/api";
 import { App, Flex } from "antd";
-import { useParams } from "react-router";
 
 import { useStyles } from "./styles";
 
@@ -14,32 +13,36 @@ import { isTaskSource, isTaskTarget, TaskSourceData } from "../../utils";
 import TaskColumn from "../TaskStatusGroup";
 
 interface TaskTableProps {
-	tasks?: Task[];
+	pageId: string;
 }
 
-const TaskTable: React.FC<TaskTableProps> = ({ tasks }) => {
+const TaskTable: React.FC<TaskTableProps> = ({ pageId }) => {
 	const { container } = useStyles().styles;
-
-	const pageId = useParams<{ id: string }>().id!;
 
 	const message = App.useApp().message;
 
 	const queryClient = useQueryClient();
+
+	const { data: tasks } = useQuery({
+		queryKey: [pageId, "tasks"],
+		queryFn: () =>
+			getTaskList({
+				pageId,
+				workspaceId: useAuthStore.getState().user.workspace.id,
+				include: ["assignee"]
+			}).then(tasks =>
+				tasks.reduce(
+					(acc, task) => ({ ...acc, [task.status]: [...(acc[task.status] || []), task] }),
+					{} as Record<TaskStatus, Task[]>
+				)
+			)
+	});
 
 	const { mutateAsync: changeTaskStatus, isPending: isTaskStatusChanging } = useMutation({
 		mutationFn: changeStatus,
 		onSuccess: () => queryClient.invalidateQueries({ queryKey: [pageId] }),
 		onError: error => message.error(error.message ?? "Failed to change task status")
 	});
-
-	const tasksByStatus = useMemo(
-		() =>
-			tasks?.reduce(
-				(acc, task) => ({ ...acc, [task.status]: [...(acc[task.status] || []), task] }),
-				{} as Record<TaskStatus, Task[]>
-			),
-		[tasks]
-	);
 
 	useEffect(() => {
 		return monitorForElements({
@@ -68,7 +71,7 @@ const TaskTable: React.FC<TaskTableProps> = ({ tasks }) => {
 					isMutating={isTaskStatusChanging}
 					key={status}
 					status={status}
-					tasks={tasksByStatus?.[status]}
+					tasks={tasks?.[status]}
 				/>
 			))}
 		</Flex>

@@ -30,7 +30,7 @@ pub async fn create_workspace(
         },
     )
     .await
-    .map_err(|_| ErrorResponse::internal_server_error())?;
+    .map_err(|_| ErrorResponse::internal_server_error(None))?;
 
     Ok(workspace.into())
 }

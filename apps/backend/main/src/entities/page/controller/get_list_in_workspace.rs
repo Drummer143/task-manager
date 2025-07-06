@@ -124,7 +124,7 @@ pub async fn get_list_in_workspace(
                         sqlx::Error::RowNotFound => {
                             ErrorResponse::not_found(codes::NotFoundErrorCode::NotFound, None)
                         }
-                        _ => ErrorResponse::internal_server_error(),
+                        _ => ErrorResponse::internal_server_error(None),
                     })?
                     .role,
                 ),

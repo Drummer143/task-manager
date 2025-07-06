@@ -76,7 +76,7 @@ export interface Task extends Timestamps {
 	description?: string;
 
 	page: Page;
-	assignee: User;
+	assignee?: User;
 	reporter: User;
 }
 

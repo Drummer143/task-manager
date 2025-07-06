@@ -4,13 +4,14 @@ use uuid::Uuid;
 
 use crate::{shared::extractors::query::ValidatedQuery, types::app_state::AppState};
 
-#[derive(serde::Deserialize)]
+#[derive(serde::Deserialize, Debug)]
 pub struct GetListQuery {
     pub limit: Option<i64>,
     pub offset: Option<i64>,
     pub email: Option<String>,
     pub username: Option<String>,
     pub query: Option<String>,
+    pub workspace_id: Option<Uuid>,
     #[serde(
         default,
         deserialize_with = "crate::shared::deserialization::deserialize_comma_separated_query_param"
@@ -30,6 +31,7 @@ pub struct GetListQuery {
         ("email" = Option<String>, Query, description = "Filter by email. Can't be used with query"),
         ("username" = Option<String>, Query, description = "Filter by username. Can't be used with query"),
         ("query" = Option<String>, Query, description = "Search by username or email. Can't be used with email or username"),
+        ("workspace_id" = Option<Uuid>, Query, description = "Filter by workspace id"),
         ("exclude" = Option<Vec<Uuid>>, Query, explode = false, description = "Array of ids to exclude separated by comma"),
         ("sort_by" = Option<crate::entities::user::dto::UserSortBy>, Query, description = "Sort by field. Default: createdAt"),
         ("sort_order" = Option<crate::types::pagination::SortOrder>, Query, description = "Sort order. Default: asc"),
@@ -51,6 +53,7 @@ pub async fn get_list(
         username: query.username,
         query: query.query,
         exclude: query.exclude,
+        workspace_id: query.workspace_id,
     };
 
     if !filters.is_valid() {

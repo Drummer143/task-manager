@@ -17,7 +17,7 @@ pub async fn get_page_access<'a>(
                 sqlx::Error::RowNotFound => {
                     ErrorResponse::not_found(codes::NotFoundErrorCode::NotFound, None)
                 }
-                _ => ErrorResponse::internal_server_error(),
+                _ => ErrorResponse::internal_server_error(None),
             })?;
 
     let user = crate::entities::user::service::find_by_id(executor, page_access.user_id).await?;
@@ -43,7 +43,7 @@ pub async fn get_page_access_list<'a>(
                 sqlx::Error::RowNotFound => {
                     ErrorResponse::not_found(codes::NotFoundErrorCode::NotFound, None)
                 }
-                _ => ErrorResponse::internal_server_error(),
+                _ => ErrorResponse::internal_server_error(None),
             })?;
 
     let mut page_access_list_response = Vec::new();
@@ -81,9 +81,9 @@ pub async fn create_page_access<'a>(
                     );
                 }
 
-                ErrorResponse::internal_server_error()
+                ErrorResponse::internal_server_error(None)
             }
-            _ => ErrorResponse::internal_server_error(),
+            _ => ErrorResponse::internal_server_error(None),
         })
 }
 
@@ -99,6 +99,6 @@ pub async fn update_page_access<'a>(
             sqlx::Error::RowNotFound => {
                 ErrorResponse::not_found(codes::NotFoundErrorCode::NotFound, None)
             }
-            _ => ErrorResponse::internal_server_error(),
+            _ => ErrorResponse::internal_server_error(None),
         })
 }

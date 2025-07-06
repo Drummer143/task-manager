@@ -19,5 +19,5 @@ pub async fn soft_delete(
 ) -> impl IntoResponse {
     crate::entities::workspace::service::soft_delete(&state.postgres, workspace_id)
         .await
-        .map_err(|_| ErrorResponse::internal_server_error())
+        .map_err(|_| ErrorResponse::internal_server_error(None))
 }

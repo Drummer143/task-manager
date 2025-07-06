@@ -29,6 +29,13 @@ pub async fn update_task<'a>(
     Path((_, _, task_id)): Path<(Uuid, Uuid, Uuid)>,
     Json(dto): Json<UpdateTaskDto>,
 ) -> Result<TaskResponse, ErrorResponse> {
+    println!("1");
+    println!("1");
+    println!("1");
+    println!("{:?}", dto);
+    println!("1");
+    println!("1");
+    println!("1");
     crate::entities::task::service::update_task(&state.postgres, task_id, dto)
         .await
         .map(TaskResponse::from)

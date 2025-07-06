@@ -3,7 +3,7 @@ import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from "
 import { InfiniteData, QueryKey, useInfiniteQuery } from "@tanstack/react-query";
 import { PaginationQuery, ResponseWithPagination } from "@task-manager/api";
 import { useDebouncedEffect } from "@task-manager/react-utils";
-import { GetRef, Select, Spin, Tooltip } from "antd";
+import { GetProp, GetRef, Select, Spin, Tooltip } from "antd";
 import { DefaultOptionType, SelectProps } from "antd/es/select";
 
 interface SelectWithInfiniteScrollProps<
@@ -12,10 +12,21 @@ interface SelectWithInfiniteScrollProps<
 	ExtraQuery extends object
 > extends Omit<
 		SelectProps,
-		"options" | "onPopupScroll" | "onSearch" | "loading" | "filterOption" | "dropdownRender" | "maxTagPlaceholder"
+		| "options"
+		| "onPopupScroll"
+		| "onSearch"
+		| "loading"
+		| "filterOption"
+		| "dropdownRender"
+		| "maxTagPlaceholder"
+		| "optionRender"
 	> {
 	fetchItems: (query?: PaginationQuery<ExtraQuery>) => Promise<Response>;
 	transformItem: (item: Response["data"][number]) => DefaultOptionType;
+	optionRender?: (
+		item: Response["data"][number],
+		...args: Parameters<GetProp<SelectProps, "optionRender">>
+	) => React.ReactNode;
 
 	queryKey: QueryKey;
 	filterQueryName?: string;
@@ -48,24 +59,22 @@ const SelectWithInfiniteScroll = <
 	maxTagPlaceholder: propsMaxTagPlaceholder,
 	extraQueryParams,
 	filterQueryName,
+	optionRender: propsOptionRender,
 	...props
 }: SelectWithInfiniteScrollProps<ItemType, Response, ExtraQuery>) => {
-	const [items, setItems] = useState<DefaultOptionType[]>([]);
 	const [searchText, setSearchText] = useState("");
 	const [debouncedSearchText, setDebouncedSearchText] = useState("");
 
-	const extraParams = useMemo<ExtraQuery>(
-		() =>
-			({
-				...extraQueryParams,
-				...(filterQueryName ? { [filterQueryName]: debouncedSearchText } : {})
-			}) as ExtraQuery,
-		[debouncedSearchText, extraQueryParams, filterQueryName]
-	);
+	const extraParams = useMemo<ExtraQuery>(() => {
+		return {
+			...extraQueryParams,
+			...(filterQueryName ? { [filterQueryName]: debouncedSearchText } : {})
+		} as ExtraQuery;
+	}, [debouncedSearchText, extraQueryParams, filterQueryName]);
 
 	const selectRef = useRef<GetRef<typeof Select> | null>(null);
 
-	const { data, isFetching, isLoading, hasNextPage, fetchNextPage } = useInfiniteQuery<
+	const { data, isFetching, isLoading, hasNextPage, fetchNextPage, refetch } = useInfiniteQuery<
 		Response,
 		Error,
 		InfiniteData<Response, number>,
@@ -74,13 +83,33 @@ const SelectWithInfiniteScroll = <
 	>({
 		queryKey,
 		queryFn: ({ pageParam }) => fetchItems({ ...extraParams, offset: pageParam, limit: 10 }),
-		getNextPageParam: lastPage => (lastPage.meta.hasMore ? lastPage.meta.offset + lastPage.meta.limit : undefined),
+		getNextPageParam: lastPage =>
+			lastPage.meta.hasMore ? lastPage.meta.offset + lastPage.meta.limit : undefined,
 		initialPageParam: 0,
 		initialData: {
 			pageParams: [0],
-			pages: [{ data: [], meta: { total: 0, limit: 10, offset: 0, hasMore: true } } as unknown as Response]
+			pages: [
+				{
+					data: [],
+					meta: { total: 0, limit: 10, offset: 0, hasMore: true }
+				} as unknown as Response
+			]
 		}
 	});
+
+	const { items, optionRender } = useMemo<{
+		items: DefaultOptionType[];
+		optionRender?: GetProp<SelectProps, "optionRender">;
+	}>(() => {
+		const items = data?.pages.flatMap(page => page.data) || [];
+
+		return {
+			items: items.map(transformItem),
+			optionRender: propsOptionRender
+				? (option, info) => propsOptionRender(items[info.index], option, info)
+				: undefined
+		};
+	}, [data?.pages, propsOptionRender, transformItem]);
 
 	const maxTagPlaceHolder: SelectProps["maxTagPlaceholder"] = useMemo(() => {
 		if (!propsMaxTagPlaceholder || propsMaxTagPlaceholder !== "withTooltip") {
@@ -89,7 +118,10 @@ const SelectWithInfiniteScroll = <
 
 		return omittedValues => (
 			<span onClick={e => e.stopPropagation()}>
-				<Tooltip style={{ userSelect: "all" }} title={omittedValues.map(item => item.label).join(", ")}>
+				<Tooltip
+					style={{ userSelect: "all" }}
+					title={omittedValues.map(item => item.label).join(", ")}
+				>
 					+{omittedValues.length}...
 				</Tooltip>
 			</span>
@@ -107,34 +139,24 @@ const SelectWithInfiniteScroll = <
 		[fetchNextPage, hasNextPage]
 	);
 
-	useDebouncedEffect(
-		searchText,
-		name => {
-			setDebouncedSearchText(name);
-			setItems([]);
-		},
-		500
-	);
+	useDebouncedEffect(searchText, setDebouncedSearchText, 500);
 
 	useEffect(() => {
-		if (!data) {
-			return;
-		}
-
-		setItems(prevItems => prevItems.concat(data.pages.at(-1)?.data.map(transformItem) || []));
-	}, [data, transformItem]);
+		refetch({ cancelRefetch: true });
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [extraParams]);
 
 	useEffect(() => {
 		const ref = selectRef.current;
 
 		return () => {
 			ref?.scrollTo(0);
-			setItems([]);
 		};
 	}, [extraQueryParams]);
 
 	return (
 		<Select
+			showSearch
 			{...props}
 			options={items}
 			onFocus={onFocus}
@@ -143,8 +165,8 @@ const SelectWithInfiniteScroll = <
 			onSearch={setSearchText}
 			searchValue={searchText}
 			loading={isLoading}
+			optionRender={optionRender}
 			ref={selectRef}
-			showSearch
 			filterOption={false}
 			maxTagPlaceholder={maxTagPlaceHolder}
 			virtual={items.length > 100 ? true : undefined}
@@ -160,3 +182,4 @@ const SelectWithInfiniteScroll = <
 };
 
 export default memo(SelectWithInfiniteScroll) as typeof SelectWithInfiniteScroll;
+

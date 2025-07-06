@@ -8,7 +8,7 @@ export const useStyles = createStyles(
 		taskGroup: css`
 			--inner-border-radius: calc(var(--ant-border-radius) - var(--ant-padding-xxs) / 2);
 
-			min-width: 280px;
+			width: 280px;
 
 			padding: var(--ant-padding-xxs) var(--ant-padding-xxs) var(--ant-padding-xs);
 

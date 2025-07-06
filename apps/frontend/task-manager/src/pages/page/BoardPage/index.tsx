@@ -9,19 +9,17 @@ const EditTaskForm = lazySuspense(() => import("./widgets/EditTaskForm"));
 const NewTaskForm = lazySuspense(() => import("./widgets/NewTaskForm"));
 
 interface BoardPageProps {
-	page: Omit<Page, "owner" | "childPages" | "parentPage" | "workspace">;
+	page: Omit<Page, "owner" | "childPages" | "parentPage" | "workspace" | "tasks">;
 }
 
-const BoardPage: React.FC<BoardPageProps> = ({ page }) => {
-	return (
-		<>
-			<NewTaskForm />
+const BoardPage: React.FC<BoardPageProps> = ({ page }) => (
+	<>
+		<NewTaskForm />
 
-			<EditTaskForm />
+		<EditTaskForm />
 
-			<TaskTable tasks={page.tasks} />
-		</>
-	);
-};
+		<TaskTable pageId={page.id} />
+	</>
+);
 
 export default BoardPage;

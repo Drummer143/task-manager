@@ -7,6 +7,7 @@ interface GetUsersFilters {
 	exclude?: string[];
 	sort_by?: string;
 	sort_order?: string;
+	workspaceId?: string;
 	email?: string;
 	username?: string;
 }

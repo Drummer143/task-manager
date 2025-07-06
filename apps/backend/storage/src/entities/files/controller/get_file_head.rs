@@ -44,11 +44,11 @@ pub async fn head_file(
 
     let metadata = tokio::fs::metadata(&path_buf)
         .await
-        .map_err(|_| ErrorResponse::internal_server_error())?;
+        .map_err(|_| ErrorResponse::internal_server_error(None))?;
 
     let file_size = metadata.len();
     let mime = infer::get_from_path(&path_buf)
-        .map_err(|_| ErrorResponse::internal_server_error())?
+        .map_err(|_| ErrorResponse::internal_server_error(None))?
         .and_then(|mime| Some(mime.mime_type()))
         .unwrap_or("application/octet-stream");
 

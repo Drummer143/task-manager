@@ -28,7 +28,7 @@ export const getTaskList = async <T extends GetTaskIncludes | undefined = undefi
 	include
 }: GetPageArgs<T>) =>
 	(
-		await axiosInstance.get<Record<TaskStatus, ResponseWithIncludeFilter<T>[] | undefined>>(
+		await axiosInstance.get<ResponseWithIncludeFilter<T>[]>(
 			`/workspaces/${workspaceId}/pages/${pageId}/tasks`,
 			{
 				params: { include: include?.join(",") }

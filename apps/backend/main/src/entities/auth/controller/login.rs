@@ -25,7 +25,7 @@ pub async fn login(
 
     if token.is_err() {
         return Err(
-            error_handlers::handlers::ErrorResponse::internal_server_error(),
+            error_handlers::handlers::ErrorResponse::internal_server_error(None),
         );
     }
 

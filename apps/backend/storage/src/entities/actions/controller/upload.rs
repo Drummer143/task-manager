@@ -28,7 +28,7 @@ pub async fn upload(mut multipart: Multipart) -> Result<UploadResponse, ErrorRes
 
             let mut file = File::create(&file_path)
                 .await
-                .map_err(|_| ErrorResponse::internal_server_error())?;
+                .map_err(|_| ErrorResponse::internal_server_error(None))?;
 
             // let mut file_size = 0usize;
             let mut stream = field;
@@ -38,13 +38,13 @@ pub async fn upload(mut multipart: Multipart) -> Result<UploadResponse, ErrorRes
 
                 if file.write_all(&chunk).await.is_err() {
                     let _ = tokio::fs::remove_file(&file_path).await;
-                    return Err(ErrorResponse::internal_server_error());
+                    return Err(ErrorResponse::internal_server_error(None));
                 }
             }
 
             if file.flush().await.is_err() {
                 let _ = tokio::fs::remove_file(&file_path).await;
-                return Err(ErrorResponse::internal_server_error());
+                return Err(ErrorResponse::internal_server_error(None));
             }
 
             let link = format!(

@@ -14,7 +14,14 @@ interface ProvidersProps {
 	children: React.ReactNode;
 }
 
-const queryClient = new QueryClient();
+const queryClient = new QueryClient({
+	defaultOptions: {
+		queries: {
+			refetchOnWindowFocus: false,
+			refetchInterval: 60000
+		}
+	}
+});
 
 const Providers: React.FC<ProvidersProps> = props => {
 	const { theme, toggleTheme } = useAppStore();
@@ -45,3 +52,4 @@ const Providers: React.FC<ProvidersProps> = props => {
 };
 
 export default Providers;
+

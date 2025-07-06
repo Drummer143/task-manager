@@ -13,7 +13,7 @@ pub async fn login(
             sqlx::Error::RowNotFound => {
                 ErrorResponse::bad_request(codes::BadRequestErrorCode::InvalidCredentials, None)
             }
-            _ => ErrorResponse::internal_server_error(),
+            _ => ErrorResponse::internal_server_error(None),
         })?;
 
     let is_valid =
@@ -38,7 +38,7 @@ pub async fn register(
 
     if let Err(err) = user {
         if !matches!(err, sqlx::Error::RowNotFound) {
-            return Err(ErrorResponse::internal_server_error());
+            return Err(ErrorResponse::internal_server_error(None));
         }
     } else if user.is_ok() {
         return Err(ErrorResponse::bad_request(
@@ -50,7 +50,7 @@ pub async fn register(
     let mut tx = db
         .begin()
         .await
-        .map_err(|_| ErrorResponse::internal_server_error())?;
+        .map_err(|_| ErrorResponse::internal_server_error(None))?;
 
     let user = repo::entities::user::repository::create(
         &mut *tx,
@@ -65,8 +65,8 @@ pub async fn register(
     if user.is_err() {
         tx.rollback()
             .await
-            .map_err(|_| ErrorResponse::internal_server_error())?;
-        return Err(ErrorResponse::internal_server_error());
+            .map_err(|_| ErrorResponse::internal_server_error(None))?;
+        return Err(ErrorResponse::internal_server_error(None));
     }
 
     let user = user.unwrap();
@@ -81,13 +81,13 @@ pub async fn register(
     if user_credentials.is_err() {
         tx.rollback()
             .await
-            .map_err(|_| ErrorResponse::internal_server_error())?;
-        return Err(ErrorResponse::internal_server_error());
+            .map_err(|_| ErrorResponse::internal_server_error(None))?;
+        return Err(ErrorResponse::internal_server_error(None));
     }
 
     tx.commit()
         .await
-        .map_err(|_| ErrorResponse::internal_server_error())?;
+        .map_err(|_| ErrorResponse::internal_server_error(None))?;
 
     crate::entities::workspace::service::create_workspace(
         db,

@@ -2,12 +2,12 @@ import React, { useCallback } from "react";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getTask, updateTask } from "@task-manager/api";
-import { App, Flex } from "antd";
+import { App } from "antd";
 import dayjs from "dayjs";
 import { useNavigate, useParams, useSearchParams } from "react-router";
 
 import { useAuthStore } from "../../../../../app/store/auth";
-import TaskChat from "../TaskChat";
+// import TaskChat from "../TaskChat";
 import TaskForm from "../TaskForm";
 import { FormValues } from "../TaskForm/types";
 // import TaskHistory from "../TaskHistory";
@@ -41,7 +41,7 @@ const EditTaskForm: React.FC = () => {
 				status: result.status,
 				title: result.title,
 				description: result.description,
-				assignedTo: result.assignee?.id,
+				assigneeId: result.assignee?.id,
 				dueDate: result.dueDate ? dayjs(result.dueDate) : undefined
 			};
 		}
@@ -57,10 +57,8 @@ const EditTaskForm: React.FC = () => {
 	});
 
 	const handleSubmit = useCallback(
-		async (values: FormValues) => {
-			console.log(values);
-
-			return mutateAsync({
+		async (values: FormValues) =>
+			mutateAsync({
 				taskId: taskId!,
 				pageId,
 				workspaceId: useAuthStore.getState().user.workspace.id,
@@ -68,8 +66,7 @@ const EditTaskForm: React.FC = () => {
 					...values,
 					dueDate: values.dueDate?.toISOString()
 				}
-			});
-		},
+			}),
 		[mutateAsync, taskId, pageId]
 	);
 
@@ -83,12 +80,12 @@ const EditTaskForm: React.FC = () => {
 			onClose={handleClose}
 			open={!!taskId}
 			type="edit"
-			extraHeader={
-				<Flex gap={"var(--ant-margin-xxs)"}>
-					<TaskChat />
-					{/* <TaskHistory taskId={taskId!} pageId={pageId} /> */}
-				</Flex>
-			}
+			// extraHeader={
+			// 	<Flex gap={"var(--ant-margin-xxs)"}>
+			// 		<TaskChat />
+			// 		{/* <TaskHistory taskId={taskId!} pageId={pageId} /> */}
+			// 	</Flex>
+			// }
 		/>
 	);
 };

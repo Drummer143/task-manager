@@ -8,14 +8,19 @@ pub struct TaskResponse {
     pub id: Uuid,
     pub title: String,
     pub status: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub description: Option<serde_json::Value>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub due_date: Option<DateTime<Utc>>,
-
+    
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub reporter: Option<User>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub assignee: Option<User>,
-
+    
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub deleted_at: Option<DateTime<Utc>>,
 }
 

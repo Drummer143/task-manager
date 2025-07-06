@@ -55,12 +55,12 @@ pub async fn get_file(
 
     let metadata = tokio::fs::metadata(&path_buf)
         .await
-        .map_err(|_| ErrorResponse::internal_server_error())?;
+        .map_err(|_| ErrorResponse::internal_server_error(None))?;
 
     let file_size = metadata.len();
 
     let mime = infer::get_from_path(&path_buf)
-        .map_err(|_| ErrorResponse::internal_server_error())?
+        .map_err(|_| ErrorResponse::internal_server_error(None))?
         .and_then(|mime| Some(mime.mime_type()))
         .unwrap_or("application/octet-stream");
 
@@ -103,7 +103,7 @@ pub async fn get_file(
 
     let file = File::open(path_buf)
         .await
-        .map_err(|_| ErrorResponse::internal_server_error())?;
+        .map_err(|_| ErrorResponse::internal_server_error(None))?;
 
     let body = Body::from_stream(tokio_util::io::ReaderStream::new(file));
 
@@ -167,11 +167,11 @@ async fn serve_partial_content(
 ) -> Result<(StatusCode, HeaderMap, Body), ErrorResponse> {
     let mut file = File::open(path_buf)
         .await
-        .map_err(|_| ErrorResponse::internal_server_error())?;
+        .map_err(|_| ErrorResponse::internal_server_error(None))?;
 
     file.seek(std::io::SeekFrom::Start(range.start))
         .await
-        .map_err(|_| ErrorResponse::internal_server_error())?;
+        .map_err(|_| ErrorResponse::internal_server_error(None))?;
 
     let content_length = range.end - range.start + 1;
 
@@ -192,7 +192,7 @@ async fn serve_partial_content(
     let mut buffer = vec![0; content_length as usize];
     file.read_exact(&mut buffer)
         .await
-        .map_err(|_| ErrorResponse::internal_server_error())?;
+        .map_err(|_| ErrorResponse::internal_server_error(None))?;
 
     let body = Body::from(buffer);
 

@@ -1,4 +1,4 @@
-import React from "react";
+import React, { memo } from "react";
 
 import { ExportOutlined } from "@ant-design/icons";
 import { User } from "@task-manager/api";
@@ -35,7 +35,9 @@ const UserCard: React.FC<UserCardProps> = ({ user, hideOpenLink }) => {
 					<Typography.Text className={styles.username}>{user.username}</Typography.Text>
 				) : (
 					<Flex gap="var(--ant-margin-xxs)" align="center">
-						<Typography.Text className={styles.username}>{user.username}</Typography.Text>
+						<Typography.Text className={styles.username}>
+							{user.username}
+						</Typography.Text>
 
 						<Button
 							onClick={stopPropagation}
@@ -54,4 +56,4 @@ const UserCard: React.FC<UserCardProps> = ({ user, hideOpenLink }) => {
 	);
 };
 
-export default UserCard;
+export default memo(UserCard);
