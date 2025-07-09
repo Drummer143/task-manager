@@ -6,7 +6,17 @@ defmodule TaskManager.MixProject do
       apps_path: "apps/elixir",
       version: "0.1.0",
       start_permanent: Mix.env() == :prod,
-      deps: deps()
+      deps: deps(),
+      releases: releases()
+    ]
+  end
+
+  defp releases do
+    [
+      socket_server: [
+        applications: [socket_server: :permanent],
+        include_executables_for: [:unix]
+      ]
     ]
   end
 

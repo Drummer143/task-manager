@@ -132,6 +132,7 @@ services:
             SELF_PORT: ${STORAGE_SERVICE_PORT}
             SELF_HOST: ${STORAGE_SERVICE_HOST}
             STATIC_FOLDER_PATH: ${STORAGE_SERVICE_STATIC_FOLDER_PATH}
+            DATABASE_URL: ${DATABASE_URL}
         networks:
             - net
         volumes:

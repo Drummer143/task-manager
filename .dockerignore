@@ -4,3 +4,5 @@ coverage
 *prettier*
 tmp
 .env
+_build
+target

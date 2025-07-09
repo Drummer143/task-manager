@@ -38,7 +38,7 @@ export default defineConfig(() => ({
 			plugins: [
 				visualizer({
 					filename: "../../../dist/apps/frontend/task-manager/stats.html",
-					open: true
+					// open: true
 				})
 			]
 		}

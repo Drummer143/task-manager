@@ -16,9 +16,10 @@ async fn main() {
         .init();
 
     let cors = tower_http::cors::CorsLayer::new()
-        .allow_origin(tower_http::cors::AllowOrigin::exact(
-            "http://localhost:1346".parse().unwrap(),
-        ))
+        .allow_origin(tower_http::cors::AllowOrigin::list([
+            "http://0.0.0.0:1346".parse().unwrap(),
+            "http://0.0.0.0:80".parse().unwrap(),
+        ]))
         .allow_methods([
             http::Method::GET,
             http::Method::POST,
@@ -43,7 +44,7 @@ async fn main() {
         .allow_credentials(true);
 
     let port = std::env::var("SELF_PORT").unwrap_or("3000".to_string());
-    let addr = format!("localhost:{}", port);
+    let addr = format!("0.0.0.0:{}", port);
 
     let db = db_connections::init_databases(
         &std::env::var("DATABASE_URL").expect("DATABASE_URL not found"),

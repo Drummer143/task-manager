@@ -12,7 +12,7 @@ error_handlers = { path = "../../../libs/backend/error-handlers" }
 infer = "0.19"
 tokio = { version = "1", features = ["full"] }
 tokio-util = "0.7"
-rust_api = { path = "../../../libs/backend/rust_api" }
+rust_api = { path = "../../../libs/backend/rust-api" }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 sqlx = { version = "0.8", features = [
