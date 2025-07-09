@@ -1,28 +1,27 @@
 use axum::{
     body::Body,
-    extract::{Path as PathExtract, Request},
+    extract::{Path as PathExtract, Request, State},
     http::{header, HeaderMap, HeaderValue, StatusCode},
 };
 use error_handlers::{codes, handlers::ErrorResponse};
-use std::path::{Component, Path, PathBuf};
+use std::path::PathBuf;
 use tokio::fs::File;
 use tokio::io::{AsyncReadExt, AsyncSeekExt};
+use uuid::Uuid;
 
-fn is_safe_path(p: &Path) -> bool {
-    !p.components()
-        .any(|c| matches!(c, Component::ParentDir) || matches!(c, Component::RootDir))
-}
+use crate::types::app_state::AppState;
 
 #[utoipa::path(
     get,
-    path = "/files/{path}",
+    path = "/files/{file_id}/{filename}",
     responses(
         (status = 200, description = "File found", body = String),
         (status = 206, description = "Partial content", body = String),
         (status = 404, description = "File not found", body = String),
     ),
     params(
-        ("path" = String, Path, description = "Path to the file"),
+        ("file_id" = Uuid, Path, description = "File ID"),
+        ("filename" = String, Path, description = "File name"),
     ),
     tag = "Files",
     operation_id = "get_file",
@@ -31,35 +30,31 @@ fn is_safe_path(p: &Path) -> bool {
     )
 )]
 pub async fn get_file(
-    PathExtract(path): PathExtract<PathBuf>,
+    State(app_state): State<AppState>,
+    PathExtract((file_id, _)): PathExtract<(Uuid, String)>,
     request: Request,
 ) -> Result<(StatusCode, HeaderMap, Body), ErrorResponse> {
-    println!("path: {}", path.display().to_string());
-    let user_path = PathBuf::from(path);
-    if !is_safe_path(&user_path) {
-        return Err(ErrorResponse::forbidden(
-            codes::ForbiddenErrorCode::AccessDenied,
-            None,
-        ));
-    }
+    let asset =
+        rust_api::entities::asset::repository::get_asset_by_id(&app_state.postgres, file_id)
+            .await
+            .map_err(ErrorResponse::from)?;
 
-    let static_folder_path = std::env::var("STATIC_FOLDER_PATH").unwrap_or("./static".to_string());
-    let path_buf = PathBuf::from(static_folder_path).join(&user_path);
+    let file_path = PathBuf::from(asset.path);
 
-    if !path_buf.exists() {
+    if !file_path.exists() {
         return Err(ErrorResponse::not_found(
             codes::NotFoundErrorCode::NotFound,
             None,
         ));
     }
 
-    let metadata = tokio::fs::metadata(&path_buf)
+    let metadata = tokio::fs::metadata(&file_path)
         .await
         .map_err(|_| ErrorResponse::internal_server_error(None))?;
 
     let file_size = metadata.len();
 
-    let mime = infer::get_from_path(&path_buf)
+    let mime = infer::get_from_path(&file_path)
         .map_err(|_| ErrorResponse::internal_server_error(None))?
         .and_then(|mime| Some(mime.mime_type()))
         .unwrap_or("application/octet-stream");
@@ -70,7 +65,7 @@ pub async fn get_file(
     if let Some(range_header) = request.headers().get(header::RANGE) {
         if let Ok(range_str) = range_header.to_str() {
             if let Some(range) = parse_range_header(range_str, file_size) {
-                return serve_partial_content(path_buf, range, file_size, headers).await;
+                return serve_partial_content(file_path, range, file_size, headers).await;
             }
         }
     }
@@ -80,28 +75,8 @@ pub async fn get_file(
         HeaderValue::from_str(&file_size.to_string()).unwrap(),
     );
     headers.insert(header::ACCEPT_RANGES, HeaderValue::from_static("bytes"));
-    headers.insert(
-        header::ACCESS_CONTROL_EXPOSE_HEADERS,
-        HeaderValue::from_static("Content-Range, Content-Length, Accept-Ranges"),
-    );
-    headers.insert(
-        header::ACCESS_CONTROL_ALLOW_ORIGIN,
-        HeaderValue::from_static("http://localhost:1346"),
-    );
-    headers.insert(
-        header::ACCESS_CONTROL_ALLOW_METHODS,
-        HeaderValue::from_static("GET, HEAD, OPTIONS"),
-    );
-    headers.insert(
-        header::ACCESS_CONTROL_ALLOW_HEADERS,
-        HeaderValue::from_static("Range, Content-Type, Authorization"),
-    );
-    headers.insert(
-        "X-Firefox-Spdy",
-        HeaderValue::from_static("h2"),
-    );
 
-    let file = File::open(path_buf)
+    let file = File::open(&file_path)
         .await
         .map_err(|_| ErrorResponse::internal_server_error(None))?;
 

@@ -5,7 +5,7 @@ use axum::{
     Json,
 };
 use error_handlers::{codes, handlers::ErrorResponse};
-use repo::entities::page::model::{Page, PageType};
+use rust_api::entities::page::model::{Page, PageType};
 use uuid::Uuid;
 
 use crate::{
@@ -114,7 +114,7 @@ pub async fn get_list_in_workspace(
                     None
                 },
                 role: Some(
-                    repo::entities::page_access::repository::get_page_access(
+                    rust_api::entities::page_access::repository::get_page_access(
                         &state.postgres,
                         page.owner_id,
                         page.id,

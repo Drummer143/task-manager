@@ -37,7 +37,7 @@ pub async fn get_page(
         &state.postgres,
         &state
             .mongo
-            .database(repo::shared::constants::PAGE_DATABASE),
+            .database(rust_api::shared::constants::PAGE_DATABASE),
         page_id,
     )
     .await?;
@@ -59,7 +59,7 @@ pub async fn get_page(
     let mut page_response = PageResponse::from(page.clone());
 
     page_response.role = Some(
-        repo::entities::page_access::repository::get_page_access(
+        rust_api::entities::page_access::repository::get_page_access(
             &state.postgres,
             page.owner_id,
             page.id,

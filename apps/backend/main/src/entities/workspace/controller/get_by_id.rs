@@ -40,7 +40,7 @@ pub async fn get_by_id(
 
     let owner = if include.contains(&Include::Owner) {
         Some(
-            repo::entities::user::repository::find_by_id(&state.postgres, workspace.owner_id)
+            rust_api::entities::user::repository::find_by_id(&state.postgres, workspace.owner_id)
                 .await
                 .map_err(ErrorResponse::from)?,
         )
@@ -61,7 +61,7 @@ pub async fn get_by_id(
         None
     };
 
-    let role = repo::entities::workspace_access::repository::get_workspace_access(
+    let role = rust_api::entities::workspace_access::repository::get_workspace_access(
         &state.postgres,
         user_id,
         workspace_id,

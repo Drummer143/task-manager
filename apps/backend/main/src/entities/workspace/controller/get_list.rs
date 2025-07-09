@@ -15,8 +15,8 @@ use crate::{
         ("limit" = Option<i64>, Query, description = "Count of items to return. Default: 10"),
         ("offset" = Option<i64>, Query, description = "Start position. Default: 0"),
         ("search" = Option<String>, Query, description = "Search by name"),
-        ("sort_by" = Option<repo::entities::workspace::dto::WorkspaceSortBy>, Query, description = "Sort by field. Default: createdAt"),
-        ("sort_order" = Option<repo::shared::types::SortOrder>, Query, description = "Sort order. Default: asc"),
+        ("sort_by" = Option<rust_api::entities::workspace::dto::WorkspaceSortBy>, Query, description = "Sort by field. Default: createdAt"),
+        ("sort_order" = Option<rust_api::shared::types::SortOrder>, Query, description = "Sort order. Default: asc"),
         ("include" = Option<Vec<Include>>, Query, explode = false, description = "Include related entities"),
     ),
     responses(
@@ -55,9 +55,9 @@ pub async fn get_list(
         count,
         query
             .limit
-            .unwrap_or(repo::shared::constants::DEFAULT_LIMIT),
+            .unwrap_or(rust_api::shared::constants::DEFAULT_LIMIT),
         query
             .offset
-            .unwrap_or(repo::shared::constants::DEFAULT_OFFSET),
+            .unwrap_or(rust_api::shared::constants::DEFAULT_OFFSET),
     ))
 }

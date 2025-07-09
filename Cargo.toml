@@ -4,9 +4,8 @@ resolver = '2'
 members = [
 	'apps/backend/main',
 	'apps/backend/storage',
-
 	'libs/backend/error-handlers',
-	'libs/backend/repo',
+	'libs/backend/rust-api',
 ]
 
 [profile.release]

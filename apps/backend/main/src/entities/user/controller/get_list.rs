@@ -17,8 +17,8 @@ pub struct GetListQuery {
         deserialize_with = "crate::shared::deserialization::deserialize_comma_separated_query_param"
     )]
     exclude: Option<Vec<Uuid>>,
-    sort_by: Option<repo::entities::user::dto::UserSortBy>,
-    sort_order: Option<repo::shared::types::SortOrder>,
+    sort_by: Option<rust_api::entities::user::dto::UserSortBy>,
+    sort_order: Option<rust_api::shared::types::SortOrder>,
 }
 
 #[utoipa::path(
@@ -37,7 +37,7 @@ pub struct GetListQuery {
         ("sort_order" = Option<crate::types::pagination::SortOrder>, Query, description = "Sort order. Default: asc"),
     ),
     responses(
-        (status = 200, description = "List of users", body = crate::types::pagination::Pagination<repo::entities::user::model::User>),
+        (status = 200, description = "List of users", body = crate::types::pagination::Pagination<rust_api::entities::user::model::User>),
         (status = 400, description = "Invalid query parameters", body = ErrorResponse),
         (status = 401, description = "Unauthorized", body = ErrorResponse),
         (status = 500, description = "Internal server error", body = ErrorResponse),
@@ -48,7 +48,7 @@ pub async fn get_list(
     State(state): State<AppState>,
     ValidatedQuery(query): ValidatedQuery<GetListQuery>,
 ) -> impl IntoResponse {
-    let filters = repo::entities::user::dto::UserFilterBy {
+    let filters = rust_api::entities::user::dto::UserFilterBy {
         email: query.email,
         username: query.username,
         query: query.query,
@@ -82,9 +82,9 @@ pub async fn get_list(
         total,
         query
             .limit
-            .unwrap_or(repo::shared::constants::DEFAULT_LIMIT),
+            .unwrap_or(rust_api::shared::constants::DEFAULT_LIMIT),
         query
             .offset
-            .unwrap_or(repo::shared::constants::DEFAULT_OFFSET),
+            .unwrap_or(rust_api::shared::constants::DEFAULT_OFFSET),
     ))
 }

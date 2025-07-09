@@ -2,8 +2,10 @@ use axum::http;
 use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use utoipa::OpenApi;
 
+mod db_connections;
 mod entities;
 mod swagger;
+mod types;
 
 #[tokio::main]
 async fn main() {
@@ -43,6 +45,21 @@ async fn main() {
     let port = std::env::var("SELF_PORT").unwrap_or("3000".to_string());
     let addr = format!("localhost:{}", port);
 
+    let db = db_connections::init_databases(
+        &std::env::var("DATABASE_URL").expect("DATABASE_URL not found"),
+    )
+    .await;
+
+    let static_folder_path = std::path::PathBuf::from(
+        std::env::var("STATIC_FOLDER_PATH").expect("STATIC_FOLDER_PATH not found"),
+    );
+
+    if !static_folder_path.exists() {
+        std::fs::create_dir_all(&static_folder_path).expect("Failed to create static folder");
+    }
+
+    let app_state = types::app_state::AppState { postgres: db };
+
     let app = axum::Router::new()
         .merge(entities::actions::router::init())
         .merge(entities::files::router::init())
@@ -50,6 +67,7 @@ async fn main() {
             utoipa_swagger_ui::SwaggerUi::new("/api")
                 .url("/api/openapi.json", swagger::ApiDoc::openapi()),
         )
+        .with_state(app_state)
         .layer(cors)
         .layer(tower_http::trace::TraceLayer::new_for_http());
 

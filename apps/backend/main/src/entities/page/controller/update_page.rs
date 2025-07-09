@@ -3,7 +3,7 @@ use axum::{
     Json,
 };
 use error_handlers::handlers::ErrorResponse;
-use repo::entities::page::dto::UpdatePageDto;
+use rust_api::entities::page::dto::UpdatePageDto;
 use uuid::Uuid;
 
 use crate::{entities::page::dto::PageResponse, types::app_state::AppState};
@@ -34,7 +34,7 @@ pub async fn update_page(
         &state.postgres,
         &state
             .mongo
-            .database(repo::shared::constants::PAGE_DATABASE),
+            .database(rust_api::shared::constants::PAGE_DATABASE),
         page_id,
         update_page_dto,
     )

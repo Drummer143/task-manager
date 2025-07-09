@@ -1,16 +1,4 @@
-use axum::response::IntoResponse;
-use serde::Serialize;
-
-#[derive(Serialize, utoipa::ToSchema)]
-pub struct UploadResponse {
-    pub link: String,
-}
-
-impl IntoResponse for UploadResponse {
-    fn into_response(self) -> axum::response::Response {
-        (axum::http::StatusCode::CREATED, axum::Json(self)).into_response()
-    }
-}
+use sqlx::types::chrono::{DateTime, Utc};
 
 #[derive(utoipa::ToSchema)]
 pub struct UploadRequest {
@@ -18,5 +6,13 @@ pub struct UploadRequest {
     #[allow(dead_code)]
     pub file: String,
     #[allow(dead_code)]
-    pub folder: Option<String>,
+    pub name: Option<String>,
+}
+
+#[derive(utoipa::ToSchema, serde::Serialize)]
+pub struct UploadResponse {
+    pub link: String,
+    pub name: String,
+    pub size: i64,
+    pub created_at: DateTime<Utc>,
 }

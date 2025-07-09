@@ -1,5 +1,5 @@
 [package]
-name = "repo"
+name = "rust-api"
 version = "0.1.0"
 edition = "2021"
 

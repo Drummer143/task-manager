@@ -16,14 +16,14 @@ use crate::entities::workspace_access::dto::WorkspaceAccessResponse;
     params(
         ("workspace_id" = Uuid, Path, description = "Workspace ID"),
     ),
-    request_body = repo::entities::workspace_access::dto::UpdateWorkspaceAccessDto,
+    request_body = rust_api::entities::workspace_access::dto::UpdateWorkspaceAccessDto,
     tags = ["Workspace Access"],
 )]
 pub async fn update_workspace_access(
     State(state): State<crate::types::app_state::AppState>,
     Extension(user_id): Extension<uuid::Uuid>,
     Path(workspace_id): Path<uuid::Uuid>,
-    Json(dto): Json<repo::entities::workspace_access::dto::UpdateWorkspaceAccessDto>,
+    Json(dto): Json<rust_api::entities::workspace_access::dto::UpdateWorkspaceAccessDto>,
 ) -> impl axum::response::IntoResponse {
     let user_workspace_access = crate::entities::workspace_access::service::get_workspace_access(
         &state.postgres,
@@ -42,7 +42,7 @@ pub async fn update_workspace_access(
         e
     })?;
 
-    if user_workspace_access.role < repo::entities::workspace_access::model::Role::Admin {
+    if user_workspace_access.role < rust_api::entities::workspace_access::model::Role::Admin {
         return Err(
             error_handlers::handlers::ErrorResponse::forbidden(
                 error_handlers::codes::ForbiddenErrorCode::InsufficientPermissions,

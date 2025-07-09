@@ -3,7 +3,7 @@ use uuid::Uuid;
 
 use crate::entities::page_access::dto::PageAccessResponse;
 
-use repo::entities::page_access::model::PageAccess;
+use rust_api::entities::page_access::model::PageAccess;
 
 pub async fn get_page_access<'a>(
     executor: impl sqlx::Executor<'a, Database = sqlx::Postgres> + Copy,
@@ -11,7 +11,7 @@ pub async fn get_page_access<'a>(
     page_id: Uuid,
 ) -> Result<PageAccessResponse, ErrorResponse> {
     let page_access =
-        repo::entities::page_access::repository::get_page_access(executor, user_id, page_id)
+        rust_api::entities::page_access::repository::get_page_access(executor, user_id, page_id)
             .await
             .map_err(|e| match e {
                 sqlx::Error::RowNotFound => {
@@ -37,7 +37,7 @@ pub async fn get_page_access_list<'a>(
     page_id: Uuid,
 ) -> Result<Vec<PageAccessResponse>, ErrorResponse> {
     let page_access_list =
-        repo::entities::page_access::repository::get_page_access_list(executor, page_id)
+        rust_api::entities::page_access::repository::get_page_access_list(executor, page_id)
             .await
             .map_err(|e| match e {
                 sqlx::Error::RowNotFound => {
@@ -68,9 +68,9 @@ pub async fn create_page_access<'a>(
     executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
     user_id: Uuid,
     page_id: Uuid,
-    role: repo::entities::page_access::model::Role,
+    role: rust_api::entities::page_access::model::Role,
 ) -> Result<PageAccess, ErrorResponse> {
-    repo::entities::page_access::repository::create_page_access(executor, user_id, page_id, role)
+    rust_api::entities::page_access::repository::create_page_access(executor, user_id, page_id, role)
         .await
         .map_err(|e| match e {
             sqlx::Error::Database(e) => {
@@ -91,9 +91,9 @@ pub async fn update_page_access<'a>(
     executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
     user_id: Uuid,
     page_id: Uuid,
-    role: Option<repo::entities::page_access::model::Role>,
+    role: Option<rust_api::entities::page_access::model::Role>,
 ) -> Result<PageAccess, ErrorResponse> {
-    repo::entities::page_access::repository::update_page_access(executor, user_id, page_id, role)
+    rust_api::entities::page_access::repository::update_page_access(executor, user_id, page_id, role)
         .await
         .map_err(|e| match e {
             sqlx::Error::RowNotFound => {

@@ -1,5 +1,5 @@
 use chrono::{DateTime, Utc};
-use repo::entities::{task::model::Task, user::model::User};
+use rust_api::entities::{task::model::Task, user::model::User};
 use serde::Serialize;
 use uuid::Uuid;
 

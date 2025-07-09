@@ -1,11 +1,11 @@
 use chrono::{DateTime, Utc};
-use repo::entities::workspace_access::model::Role;
+use rust_api::entities::workspace_access::model::Role;
 use uuid::Uuid;
 
 #[derive(Debug, serde::Serialize, utoipa::ToSchema, Clone)]
 pub struct WorkspaceAccessResponse {
     pub id: Uuid,
-    pub user: repo::entities::user::model::User,
+    pub user: rust_api::entities::user::model::User,
     pub role: Role,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,

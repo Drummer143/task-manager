@@ -1,3 +1,4 @@
+pub mod asset;
 pub mod page;
 pub mod page_access;
 pub mod task;

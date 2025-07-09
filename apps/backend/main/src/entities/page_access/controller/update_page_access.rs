@@ -20,14 +20,14 @@ use crate::entities::page_access::dto::PageAccessResponse;
         ("workspace_id" = Uuid, Path, description = "Workspace ID"),
         ("page_id" = Uuid, Path, description = "Page ID"),
     ),
-    request_body = repo::entities::page_access::dto::UpdatePageAccessDto,
+    request_body = rust_api::entities::page_access::dto::UpdatePageAccessDto,
     tags = ["Page Access"],
 )]
 pub async fn update_page_access(
     State(state): State<crate::types::app_state::AppState>,
     Extension(user_id): Extension<Uuid>,
     Path((_, page_id)): Path<(Uuid, Uuid)>,
-    Json(dto): Json<repo::entities::page_access::dto::UpdatePageAccessDto>,
+    Json(dto): Json<rust_api::entities::page_access::dto::UpdatePageAccessDto>,
 ) -> impl axum::response::IntoResponse {
     let user_page_access =
         crate::entities::page_access::service::get_page_access(&state.postgres, user_id, page_id)
@@ -43,7 +43,7 @@ pub async fn update_page_access(
                 e
             })?;
 
-    if user_page_access.role < repo::entities::page_access::model::Role::Admin {
+    if user_page_access.role < rust_api::entities::page_access::model::Role::Admin {
         return Err(
             error_handlers::handlers::ErrorResponse::forbidden(
                 error_handlers::codes::ForbiddenErrorCode::InsufficientPermissions,

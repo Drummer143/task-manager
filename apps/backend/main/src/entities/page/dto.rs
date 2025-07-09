@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use chrono::{DateTime, Utc};
 use error_handlers::{codes, handlers::ErrorResponse};
-use repo::entities::{page::model::{Doc, Page, PageType}, user::model::User};
+use rust_api::entities::{page::model::{Doc, Page, PageType}, user::model::User};
 use serde::Serialize;
 use uuid::Uuid;
 
@@ -128,7 +128,7 @@ pub struct PageResponse {
     pub id: Uuid,
     pub r#type: PageType,
     pub title: String,
-    pub role: Option<repo::entities::page_access::model::Role>,
+    pub role: Option<rust_api::entities::page_access::model::Role>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub text: Option<DocResponse>,

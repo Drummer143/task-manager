@@ -10,7 +10,7 @@ use crate::entities::auth;
     path = "/auth/register",
     request_body = auth::dto::RegisterDto,
     responses(
-        (status = 200, description = "User registered successfully", body = repo::entities::user::model::User),
+        (status = 200, description = "User registered successfully", body = rust_api::entities::user::model::User),
         (status = 400, description = "Invalid credentials", body = error_handlers::handlers::ErrorResponse),
     ),
     security(

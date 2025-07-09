@@ -3,7 +3,7 @@ use axum::{
     Json,
 };
 use error_handlers::handlers::ErrorResponse;
-use repo::entities::task::dto::CreateTaskDto;
+use rust_api::entities::task::dto::CreateTaskDto;
 use uuid::Uuid;
 
 use crate::entities::task::dto::TaskResponse;

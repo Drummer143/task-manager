@@ -1,9 +1,8 @@
-use axum::{routing::{get, head}, Router};
+use axum::{routing::get, Router};
 
-use crate::entities::files::controller;
+use crate::{entities::files::controller, types::app_state::AppState};
 
-pub fn init() -> Router {
+pub fn init() -> Router<AppState> {
     Router::new()
-        .route("/files/{*path}", get(controller::get_file::get_file))
-        .route("/files/{*path}", head(controller::get_file_head::head_file))
+        .route("/files/{file_id}/{filename}", get(controller::get_file::get_file))
 }

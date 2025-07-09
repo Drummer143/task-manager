@@ -11,10 +11,8 @@ fn apply_filter<'a>(
     mut builder: sqlx::QueryBuilder<'a, Postgres>,
     filter: &'a UserFilterBy,
 ) -> sqlx::QueryBuilder<'a, Postgres> {
-    let mut where_started = false;
-
-    if filter.workspace_id.is_some() {
-        builder.push(" JOIN workspace_accesses ON users.id = workspace_accesses.user_id AND workspace_accesses.workspace_id = ").push_bind(filter.workspace_id.unwrap());
+    if let Some(workspace_id) = filter.workspace_id {
+        builder.push(" JOIN workspace_accesses ON users.id = workspace_accesses.user_id AND workspace_accesses.workspace_id = ").push_bind(workspace_id);
     }
 
     if let Some(query) = &filter.query {
@@ -25,8 +23,9 @@ fn apply_filter<'a>(
             .push(" OR users.username ILIKE ")
             .push_bind(format!("%{}%", query))
             .push(")");
-        where_started = true;
     } else if filter.has_any_user_filter() {
+        let mut where_started = false;
+
         builder.push(" WHERE (");
 
         if let Some(email) = &filter.email {

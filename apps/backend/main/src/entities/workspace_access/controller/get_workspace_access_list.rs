@@ -43,7 +43,7 @@ pub async fn get_workspace_access_list(
         e
     })?;
 
-    if user_workspace_access.role < repo::entities::workspace_access::model::Role::Member {
+    if user_workspace_access.role < rust_api::entities::workspace_access::model::Role::Member {
         return Err(ErrorResponse::forbidden(
             codes::ForbiddenErrorCode::InsufficientPermissions,
             None,

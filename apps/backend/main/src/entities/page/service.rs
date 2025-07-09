@@ -2,7 +2,7 @@ use error_handlers::handlers::ErrorResponse;
 use sqlx::PgPool;
 use uuid::Uuid;
 
-use repo::entities::page::{
+use rust_api::entities::page::{
     dto::{CreatePageDto, UpdatePageDto},
     model::{Doc, Page, PageType},
     repository,
@@ -67,7 +67,7 @@ pub async fn create(
         &mut *tx,
         owner_id,
         page.id,
-        repo::entities::page_access::model::Role::Owner,
+        rust_api::entities::page_access::model::Role::Owner,
     )
     .await
     .map_err(ErrorResponse::from);

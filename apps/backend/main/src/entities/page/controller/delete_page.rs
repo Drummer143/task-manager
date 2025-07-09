@@ -27,7 +27,7 @@ pub async fn delete_page(
         &state.postgres,
         &state
             .mongo
-            .database(repo::shared::constants::PAGE_DATABASE),
+            .database(rust_api::shared::constants::PAGE_DATABASE),
         page_id,
     )
     .await

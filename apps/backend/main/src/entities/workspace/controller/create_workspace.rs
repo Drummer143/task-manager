@@ -1,6 +1,6 @@
 use axum::{extract::State, Extension, Json};
 use error_handlers::handlers::ErrorResponse;
-use repo::entities::workspace::dto::WorkspaceRequestDto;
+use rust_api::entities::workspace::dto::WorkspaceRequestDto;
 
 use crate::entities::workspace::dto::WorkspaceResponse;
 
@@ -24,7 +24,7 @@ pub async fn create_workspace(
 ) -> Result<WorkspaceResponse, ErrorResponse> {
     let workspace = crate::entities::workspace::service::create_workspace(
         &state.postgres,
-        repo::entities::workspace::dto::CreateWorkspaceDto {
+        rust_api::entities::workspace::dto::CreateWorkspaceDto {
             name: json.name,
             owner_id: user_id,
         },

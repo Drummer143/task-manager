@@ -1,5 +1,5 @@
 use error_handlers::handlers::ErrorResponse;
-use repo::{entities::workspace::{dto::WorkspaceSortBy, model::Workspace}, shared::types::SortOrder};
+use rust_api::{entities::workspace::{dto::WorkspaceSortBy, model::Workspace}, shared::types::SortOrder};
 use uuid::Uuid;
 
 use crate::entities::page::dto::PageResponseWithoutInclude;
@@ -10,7 +10,7 @@ pub async fn get_by_id(
     db: &sqlx::postgres::PgPool,
     workspace_id: Uuid,
 ) -> Result<Workspace, ErrorResponse> {
-    repo::entities::workspace::repository::get_by_id(db, workspace_id)
+    rust_api::entities::workspace::repository::get_by_id(db, workspace_id)
         .await
         .map_err(ErrorResponse::from)
 }
@@ -26,7 +26,7 @@ pub async fn get_list(
     include_owner: bool,
     include_pages: bool,
 ) -> Result<(Vec<super::dto::WorkspaceInfo>, i64), ErrorResponse> {
-    let (rows, count) = repo::entities::workspace::repository::get_list(
+    let (rows, count) = rust_api::entities::workspace::repository::get_list(
         db, user_id, limit, offset, search, sort_by, sort_order,
     )
     .await
@@ -47,7 +47,7 @@ pub async fn get_list(
             role: Some(row.role),
             owner: if include_owner {
                 Some(
-                    repo::entities::user::repository::find_by_id(db, row.owner_id)
+                    rust_api::entities::user::repository::find_by_id(db, row.owner_id)
                         .await
                         .map_err(ErrorResponse::from)?,
                 )
@@ -56,7 +56,7 @@ pub async fn get_list(
             },
             pages: if include_pages {
                 Some(
-                    sqlx::query_as::<_, repo::entities::page::model::Page>(
+                    sqlx::query_as::<_, rust_api::entities::page::model::Page>(
                         "SELECT * FROM pages WHERE workspace_id = $1",
                     )
                     .bind(row.id)
@@ -81,11 +81,11 @@ pub async fn get_list(
 
 pub async fn create_workspace(
     db: &sqlx::postgres::PgPool,
-    dto: repo::entities::workspace::dto::CreateWorkspaceDto,
+    dto: rust_api::entities::workspace::dto::CreateWorkspaceDto,
 ) -> Result<WorkspaceInfo, ErrorResponse> {
     let mut tx = db.begin().await.map_err(ErrorResponse::from)?;
 
-    let workspace = repo::entities::workspace::repository::create(&mut *tx, dto).await;
+    let workspace = rust_api::entities::workspace::repository::create(&mut *tx, dto).await;
 
     if let Err(err) = workspace {
         let _ = tx.rollback().await;
@@ -94,11 +94,11 @@ pub async fn create_workspace(
 
     let workspace = workspace.unwrap();
 
-    let workspace_access = repo::entities::workspace_access::repository::create_workspace_access(
+    let workspace_access = rust_api::entities::workspace_access::repository::create_workspace_access(
         &mut *tx,
         workspace.owner_id,
         workspace.id,
-        repo::entities::workspace_access::model::Role::Owner,
+        rust_api::entities::workspace_access::model::Role::Owner,
     )
     .await;
 
@@ -120,9 +120,9 @@ pub async fn create_workspace(
 pub async fn update_workspace(
     db: &sqlx::postgres::PgPool,
     workspace_id: Uuid,
-    dto: repo::entities::workspace::dto::UpdateWorkspaceDto,
+    dto: rust_api::entities::workspace::dto::UpdateWorkspaceDto,
 ) -> Result<WorkspaceInfo, ErrorResponse> {
-    let workspace = repo::entities::workspace::repository::update(db, workspace_id, dto)
+    let workspace = rust_api::entities::workspace::repository::update(db, workspace_id, dto)
         .await
         .map_err(ErrorResponse::from)?;
 
@@ -138,7 +138,7 @@ pub async fn soft_delete(
     db: &sqlx::postgres::PgPool,
     workspace_id: Uuid,
 ) -> Result<(), ErrorResponse> {
-    repo::entities::workspace::repository::soft_delete(db, workspace_id)
+    rust_api::entities::workspace::repository::soft_delete(db, workspace_id)
         .await
         .map_err(ErrorResponse::from)
 }
@@ -147,7 +147,7 @@ pub async fn cancel_soft_delete(
     db: &sqlx::postgres::PgPool,
     workspace_id: Uuid,
 ) -> Result<(), ErrorResponse> {
-    repo::entities::workspace::repository::cancel_soft_delete(db, workspace_id)
+    rust_api::entities::workspace::repository::cancel_soft_delete(db, workspace_id)
         .await
         .map_err(ErrorResponse::from)
 }
@@ -156,7 +156,7 @@ pub async fn get_any_workspace_user_has_access_to(
     db: &sqlx::postgres::PgPool,
     user_id: Uuid,
 ) -> Result<Workspace, ErrorResponse> {
-    repo::entities::workspace::repository::get_any_workspace_user_has_access_to(db, user_id)
+    rust_api::entities::workspace::repository::get_any_workspace_user_has_access_to(db, user_id)
         .await
         .map_err(ErrorResponse::from)
 }

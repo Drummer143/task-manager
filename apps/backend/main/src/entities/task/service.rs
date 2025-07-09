@@ -1,12 +1,12 @@
 use error_handlers::handlers::ErrorResponse;
-use repo::entities::task::{model::Task, repository};
+use rust_api::entities::task::{model::Task, repository};
 use uuid::Uuid;
 
 pub async fn create_task<'a>(
     executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
     page_id: Uuid,
     reporter_id: Uuid,
-    dto: repo::entities::task::dto::CreateTaskDto,
+    dto: rust_api::entities::task::dto::CreateTaskDto,
 ) -> Result<Task, ErrorResponse> {
     repository::create_task(executor, page_id, reporter_id, dto)
         .await
@@ -16,7 +16,7 @@ pub async fn create_task<'a>(
 pub async fn update_task<'a>(
     executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
     task_id: Uuid,
-    dto: repo::entities::task::dto::UpdateTaskDto,
+    dto: rust_api::entities::task::dto::UpdateTaskDto,
 ) -> Result<Task, ErrorResponse> {
     repository::update_task(executor, task_id, dto)
         .await
@@ -26,7 +26,7 @@ pub async fn update_task<'a>(
 pub async fn change_status<'a>(
     executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
     task_id: Uuid,
-    dto: repo::entities::task::dto::ChangeStatusDto,
+    dto: rust_api::entities::task::dto::ChangeStatusDto,
 ) -> Result<Task, ErrorResponse> {
     repository::change_status(executor, task_id, dto.status)
         .await

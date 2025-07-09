@@ -3,7 +3,7 @@ use axum::{
     Extension, Json,
 };
 use error_handlers::handlers::ErrorResponse;
-use repo::entities::page::dto::CreatePageDto;
+use rust_api::entities::page::dto::CreatePageDto;
 use uuid::Uuid;
 
 use crate::{entities::page::dto::PageResponse, types::app_state::AppState};
@@ -33,7 +33,7 @@ pub async fn create_page(
         &state.postgres,
         &state
             .mongo
-            .database(repo::shared::constants::PAGE_DATABASE),
+            .database(rust_api::shared::constants::PAGE_DATABASE),
         create_page_dto,
         workspace_id,
         user_id,

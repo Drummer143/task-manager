@@ -1,7 +1,7 @@
 -- Add migration script here
 CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
 
-CREATE TABLE
+CREATE TABLE IF NOT EXISTS
     "users" (
         "id" UUID PRIMARY KEY DEFAULT (uuid_generate_v4 ()),
         "email" VARCHAR(255) UNIQUE NOT NULL,
@@ -13,7 +13,7 @@ CREATE TABLE
         "deleted_at" TIMESTAMPTZ
     );
 
-CREATE TABLE
+CREATE TABLE IF NOT EXISTS
     "user_credentials" (
         "id" UUID PRIMARY KEY DEFAULT (uuid_generate_v4 ()),
         "password_hash" VARCHAR(255) NOT NULL,
@@ -26,7 +26,7 @@ CREATE TABLE
         FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE CASCADE
     );
 
-CREATE TABLE
+CREATE TABLE IF NOT EXISTS
     "user_meta" (
         "id" UUID PRIMARY KEY DEFAULT (uuid_generate_v4 ()),
         "user_id" UUID UNIQUE NOT NULL,
@@ -37,7 +37,7 @@ CREATE TABLE
         FOREIGN KEY ("user_id") REFERENCES "users" ("id") ON DELETE CASCADE
     );
 
-CREATE TABLE
+CREATE TABLE IF NOT EXISTS
     "workspaces" (
         "id" UUID PRIMARY KEY DEFAULT (uuid_generate_v4 ()),
         "name" VARCHAR(255) NOT NULL,
@@ -48,7 +48,7 @@ CREATE TABLE
         FOREIGN KEY ("owner_id") REFERENCES "users" ("id") ON DELETE CASCADE
     );
 
-CREATE TABLE
+CREATE TABLE IF NOT EXISTS
     "workspace_accesses" (
         "id" UUID PRIMARY KEY DEFAULT (uuid_generate_v4 ()),
         "user_id" UUID NOT NULL,
@@ -62,7 +62,7 @@ CREATE TABLE
         CONSTRAINT "workspace_accesses_user_workspace_idx" UNIQUE ("user_id", "workspace_id")
     );
 
-CREATE TABLE
+CREATE TABLE IF NOT EXISTS
     "pages" (
         "id" UUID PRIMARY KEY DEFAULT (uuid_generate_v4 ()),
         "type" VARCHAR(50) NOT NULL,
@@ -78,7 +78,7 @@ CREATE TABLE
         FOREIGN KEY ("parent_page_id") REFERENCES "pages" ("id") ON DELETE SET NULL
     );
 
-CREATE TABLE
+CREATE TABLE IF NOT EXISTS
     "page_accesses" (
         "id" UUID PRIMARY KEY DEFAULT (uuid_generate_v4 ()),
         "user_id" UUID NOT NULL,
@@ -92,7 +92,7 @@ CREATE TABLE
         CONSTRAINT "page_accesses_user_page_idx" UNIQUE ("user_id", "page_id")
     );
 
-CREATE TABLE
+CREATE TABLE IF NOT EXISTS
     "tasks" (
         "id" UUID PRIMARY KEY DEFAULT (uuid_generate_v4 ()),
         "title" VARCHAR(255) NOT NULL,

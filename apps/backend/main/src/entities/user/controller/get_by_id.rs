@@ -1,6 +1,6 @@
 use axum::{extract::State, response::IntoResponse};
 use error_handlers::handlers::ErrorResponse;
-use repo::entities::user::model::User;
+use rust_api::entities::user::model::User;
 
 use crate::shared::extractors::path::ValidatedPath;
 
