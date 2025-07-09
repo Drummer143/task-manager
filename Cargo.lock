@@ -2002,7 +2002,7 @@ dependencies = [
  "lapin",
  "mongodb",
  "reqwest",
- "rust-api",
+ "rust_api",
  "serde",
  "serde_json",
  "serde_path_to_error",
@@ -2875,22 +2875,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "rust-api"
-version = "0.1.0"
-dependencies = [
- "bcrypt",
- "chrono",
- "mongodb",
- "serde",
- "serde_json",
- "sqlx",
- "utoipa",
- "utoipa-axum",
- "utoipa-swagger-ui",
- "uuid",
-]
-
-[[package]]
 name = "rust-embed"
 version = "8.7.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2922,6 +2906,22 @@ checksum = "f6cc0c81648b20b70c491ff8cce00c1c3b223bb8ed2b5d41f0e54c6c4c0a3594"
 dependencies = [
  "sha2",
  "walkdir",
+]
+
+[[package]]
+name = "rust_api"
+version = "0.1.0"
+dependencies = [
+ "bcrypt",
+ "chrono",
+ "mongodb",
+ "serde",
+ "serde_json",
+ "sqlx",
+ "utoipa",
+ "utoipa-axum",
+ "utoipa-swagger-ui",
+ "uuid",
 ]
 
 [[package]]
@@ -3637,7 +3637,7 @@ dependencies = [
  "dotenvy",
  "error_handlers",
  "infer",
- "rust-api",
+ "rust_api",
  "serde",
  "serde_json",
  "sqlx",
