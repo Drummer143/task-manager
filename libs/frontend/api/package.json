@@ -6,7 +6,7 @@
   "main": "./index.js",
   "types": "./index.d.ts",
   "dependencies": {
-    "axios": "*",
+    "axios": "^1.9.0",
     "@task-manager/utils": "*"
   }
 }

@@ -6,6 +6,6 @@
   "main": "./index.js",
   "types": "./index.d.ts",
   "dependencies": {
-    "antd": "*"
+    "antd": "^5.24.9"
   }
 }
