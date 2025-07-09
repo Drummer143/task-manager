@@ -3,6 +3,16 @@ services:
         image: postgres:latest
         # restart: always
         container_name: postgres
+        mem_limit: 256M
+        cpus: "0.5"
+        deploy:
+            resources:
+                limits:
+                    memory: 256M
+                    cpus: "0.5"
+                reservations:
+                    memory: 128M
+                    cpus: "0.25"
         environment:
             POSTGRES_USER: ${POSTGRES_USER}
             POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -19,6 +29,16 @@ services:
         image: mongo:latest
         # restart: always
         container_name: mongo
+        mem_limit: 256M
+        cpus: "0.5"
+        deploy:
+            resources:
+                limits:
+                    memory: 256M
+                    cpus: "0.5"
+                reservations:
+                    memory: 128M
+                    cpus: "0.25"
         ports:
             - 27017:27017
         volumes:
@@ -29,6 +49,16 @@ services:
     rmq:
         image: rabbitmq:management-alpine
         container_name: rmq
+        mem_limit: 256M
+        cpus: "0.5"
+        deploy:
+            resources:
+                limits:
+                    memory: 256M
+                    cpus: "0.5"
+                reservations:
+                    memory: 128M
+                    cpus: "0.25"
         ports:
             - 5672:5672
             - 15672:15672
