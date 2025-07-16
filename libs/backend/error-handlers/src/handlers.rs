@@ -4,13 +4,13 @@ use axum::{
     Json,
 };
 use serde::Serialize;
-use std::{borrow::Cow, collections::HashMap};
+use std::collections::HashMap;
 
 use super::codes;
 
 #[derive(Debug, Serialize, utoipa::ToSchema)]
 pub struct ErrorResponse {
-    pub error: Cow<'static, str>,
+    pub error: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub error_code: Option<String>,
     pub status_code: u16,

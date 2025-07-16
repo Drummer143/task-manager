@@ -13,7 +13,6 @@ import { FormValues } from "../TaskForm/types";
 const NewTaskForm: React.FC = () => {
 	const queryClient = useQueryClient();
 
-	// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 	const pageId = useParams<{ id: string }>().id!;
 
 	const { onClose, onOpen, open } = useDisclosure();
@@ -45,7 +44,7 @@ const NewTaskForm: React.FC = () => {
 
 	useEffect(() => {
 		const handleOpenModal: DocumentEventHandler<"createTask"> = e => {
-			form.setFieldValue("status", e.detail.status);
+			form.setFieldValue("statusId", e.detail.status);
 
 			onOpen();
 		};
@@ -65,6 +64,7 @@ const NewTaskForm: React.FC = () => {
 			type="create"
 			form={form}
 			open={open}
+			pageId={pageId}
 		/>
 	);
 };

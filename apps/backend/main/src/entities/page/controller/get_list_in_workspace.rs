@@ -143,6 +143,7 @@ pub async fn get_list_in_workspace(
                 parent_page: None,
                 child_pages: None,
                 tasks: None,
+                board_statuses: None,
                 created_at: page.created_at,
                 updated_at: page.updated_at,
                 deleted_at: page.deleted_at,

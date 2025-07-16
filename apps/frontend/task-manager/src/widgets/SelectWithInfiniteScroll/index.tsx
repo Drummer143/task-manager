@@ -29,6 +29,8 @@ interface SelectWithInfiniteScrollProps<
 	) => React.ReactNode;
 
 	queryKey: QueryKey;
+
+	enabled?: boolean;
 	filterQueryName?: string;
 	extraQueryParams?: ExtraQuery;
 	/** if equals to "withTooltip" then tag will open tooltip on hover */
@@ -60,8 +62,10 @@ const SelectWithInfiniteScroll = <
 	extraQueryParams,
 	filterQueryName,
 	optionRender: propsOptionRender,
+	enabled,
 	...props
 }: SelectWithInfiniteScrollProps<ItemType, Response, ExtraQuery>) => {
+	const [mounted, setMounted] = useState(false);
 	const [searchText, setSearchText] = useState("");
 	const [debouncedSearchText, setDebouncedSearchText] = useState("");
 
@@ -82,10 +86,13 @@ const SelectWithInfiniteScroll = <
 		number
 	>({
 		queryKey,
-		queryFn: ({ pageParam }) => fetchItems({ ...extraParams, offset: pageParam, limit: 10 }),
+		queryFn: ({ pageParam }) => {
+			return fetchItems({ ...extraParams, offset: pageParam, limit: 10 });
+		},
 		getNextPageParam: lastPage =>
 			lastPage.meta.hasMore ? lastPage.meta.offset + lastPage.meta.limit : undefined,
 		initialPageParam: 0,
+		enabled,
 		initialData: {
 			pageParams: [0],
 			pages: [
@@ -142,6 +149,10 @@ const SelectWithInfiniteScroll = <
 	useDebouncedEffect(searchText, setDebouncedSearchText, 500);
 
 	useEffect(() => {
+		if (!mounted) {
+			return setMounted(true);
+		}
+
 		refetch({ cancelRefetch: true });
 		// eslint-disable-next-line react-hooks/exhaustive-deps
 	}, [extraParams]);

@@ -23,7 +23,7 @@ export const useContextMenuItems = (editor: Editor | null): MenuItems => {
 		document.body.appendChild(input);
 
 		return () => {
-			document.body.removeChild(input);
+			input.remove();
 		};
 	}, [editor]);
 

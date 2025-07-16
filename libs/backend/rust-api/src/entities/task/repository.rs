@@ -8,9 +8,9 @@ pub async fn create_task<'a>(
     reporter_id: Uuid,
     dto: super::dto::CreateTaskDto,
 ) -> Result<Task, sqlx::Error> {
-    sqlx::query_as::<_, Task>("INSERT INTO tasks (title, status, due_date, assignee_id, page_id, reporter_id) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *")
+    sqlx::query_as::<_, Task>("INSERT INTO tasks (title, status_id, due_date, assignee_id, page_id, reporter_id) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *")
         .bind(dto.title)
-        .bind(dto.status)
+        .bind(dto.status_id)
         .bind(dto.due_date)
         .bind(dto.assignee_id)
         .bind(page_id)
@@ -24,9 +24,9 @@ pub async fn update_task<'a>(
     id: Uuid,
     dto: super::dto::UpdateTaskDto,
 ) -> Result<Task, sqlx::Error> {
-    sqlx::query_as::<_, Task>("UPDATE tasks SET title = $1, status = $2, due_date = $3, assignee_id = $4 WHERE id = $5 RETURNING *")
+    sqlx::query_as::<_, Task>("UPDATE tasks SET title = $1, status_id = $2, due_date = $3, assignee_id = $4 WHERE id = $5 RETURNING *")
         .bind(dto.title)
-        .bind(dto.status)
+        .bind(dto.status_id)
         .bind(dto.due_date)
         .bind(dto.assignee_id)
         .bind(id)
@@ -37,10 +37,10 @@ pub async fn update_task<'a>(
 pub async fn change_status<'a>(
     db: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
     id: Uuid,
-    status: String,
+    status_id: Uuid,
 ) -> Result<Task, sqlx::Error> {
-    sqlx::query_as::<_, Task>("UPDATE tasks SET status = $1 WHERE id = $2 RETURNING *")
-        .bind(status)
+    sqlx::query_as::<_, Task>("UPDATE tasks SET status_id = $1 WHERE id = $2 RETURNING *")
+        .bind(status_id)
         .bind(id)
         .fetch_one(db)
         .await

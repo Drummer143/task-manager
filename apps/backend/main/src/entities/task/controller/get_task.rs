@@ -2,7 +2,7 @@ use axum::extract::{Path, State};
 use error_handlers::handlers::ErrorResponse;
 use uuid::Uuid;
 
-use crate::entities::task::dto::TaskResponse;
+use crate::entities::{board_statuses::dto::BoardStatusResponseDto, task::dto::TaskResponse};
 
 #[utoipa::path(
     get,
@@ -22,6 +22,7 @@ use crate::entities::task::dto::TaskResponse;
 pub async fn get_task<'a>(
     State(state): State<crate::types::app_state::AppState>,
     Path((_, _, task_id)): Path<(Uuid, Uuid, Uuid)>,
+    headers: axum::http::header::HeaderMap,
 ) -> Result<TaskResponse, ErrorResponse> {
     let task = crate::entities::task::service::get_task_by_id(&state.postgres, task_id).await?;
 
@@ -33,10 +34,29 @@ pub async fn get_task<'a>(
         None
     };
 
+    let lang = headers
+        .get("User-Language")
+        .map(|h| h.to_str().unwrap_or("en"))
+        .unwrap_or("en");
+
+    let board_status = crate::entities::board_statuses::service::get_board_status_by_id(
+        &state.postgres,
+        task.status_id,
+    )
+    .await?;
+
     let mut task_response = TaskResponse::from(task);
 
     task_response.reporter = Some(reporter);
     task_response.assignee = assignee;
+    task_response.status = Some(BoardStatusResponseDto {
+        id: board_status.id,
+        code: board_status.code.clone(),
+        title: board_status.localizations.get(lang).unwrap().to_string(),
+        initial: board_status.initial,
+        position: board_status.position,
+        r#type: board_status.r#type.clone(),
+    });
 
     Ok(task_response)
 }

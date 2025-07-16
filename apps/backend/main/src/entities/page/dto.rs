@@ -2,11 +2,14 @@ use std::collections::HashMap;
 
 use chrono::{DateTime, Utc};
 use error_handlers::{codes, handlers::ErrorResponse};
-use rust_api::entities::{page::model::{Doc, Page, PageType}, user::model::User};
+use rust_api::entities::{
+    page::model::{Doc, Page, PageType},
+    user::model::User,
+};
 use serde::Serialize;
 use uuid::Uuid;
 
-use crate::entities::{task::dto::TaskResponse, workspace::dto::WorkspaceResponseWithoutInclude};
+use crate::entities::{board_statuses::dto::BoardStatusResponseDto, task::dto::TaskResponse, workspace::dto::WorkspaceResponseWithoutInclude};
 
 #[derive(Debug, Serialize, Clone, utoipa::ToSchema)]
 #[serde(rename_all = "camelCase")]
@@ -142,6 +145,8 @@ pub struct PageResponse {
     pub child_pages: Option<Vec<ChildPageResponse>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub tasks: Option<Vec<TaskResponse>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub board_statuses: Option<Vec<BoardStatusResponseDto>>,
 
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
@@ -167,6 +172,7 @@ impl From<Page> for PageResponse {
             parent_page: None,
             child_pages: None,
             tasks: None,
+            board_statuses: None,
             created_at: page.created_at,
             updated_at: page.updated_at,
             deleted_at: page.deleted_at,
@@ -189,6 +195,7 @@ pub enum PageInclude {
     Workspace,
     ParentPage,
     ChildPages,
+    BoardStatuses,
 }
 
 impl std::str::FromStr for PageInclude {
@@ -201,6 +208,7 @@ impl std::str::FromStr for PageInclude {
             "workspace" => Ok(PageInclude::Workspace),
             "parentPage" => Ok(PageInclude::ParentPage),
             "childPages" => Ok(PageInclude::ChildPages),
+            "boardStatuses" => Ok(PageInclude::BoardStatuses),
             _ => {
                 return Err(ErrorResponse::bad_request(
                     codes::BadRequestErrorCode::InvalidQueryParams,

@@ -1,4 +1,4 @@
-import { Task, TaskStatus } from "@task-manager/api";
+import { Task } from "@task-manager/api";
 
 export interface TaskSourceData {
 	type: "task";
@@ -10,7 +10,7 @@ export const isTaskSource = (data: unknown): data is TaskSourceData =>
 
 export interface TaskTargetData {
 	type: "task";
-	status: TaskStatus;
+	status: string;
 }
 
 export const isTaskTarget = (data: unknown): data is TaskTargetData =>

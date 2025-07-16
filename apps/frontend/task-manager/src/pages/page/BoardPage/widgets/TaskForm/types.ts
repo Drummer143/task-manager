@@ -1,10 +1,9 @@
-import { TaskStatus } from "@task-manager/api";
 import { FormInstance } from "antd";
 import { Dayjs } from "dayjs";
 
 export interface FormValues {
 	title: string;
-	status: TaskStatus;
+	statusId: string;
 
 	dueDate?: Dayjs;
 	assigneeId?: string;
@@ -14,6 +13,7 @@ export interface FormValues {
 export interface TaskFormProps {
 	open: boolean;
 	type: "create" | "edit";
+	pageId: string;
 
 	onClose: () => void;
 	onCancel: () => void;

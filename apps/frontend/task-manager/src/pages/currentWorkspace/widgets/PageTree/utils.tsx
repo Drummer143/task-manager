@@ -4,7 +4,7 @@ import { Button, Flex, Typography } from "antd";
 import { BasicDataNode, DataNode } from "antd/es/tree";
 
 export const preparePageTree = (
-	pages?: Omit<Page, "workspace" | "owner" | "parentPage" | "tasks">[],
+	pages?: Omit<Page, "workspace" | "owner" | "parentPage" | "tasks" | "boardStatuses">[],
 	editable?: boolean
 ): (BasicDataNode | DataNode)[] | undefined =>
 	pages?.map(page => ({

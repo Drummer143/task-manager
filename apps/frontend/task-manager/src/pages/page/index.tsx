@@ -32,7 +32,7 @@ const Page: React.FC = () => {
 			getPage({
 				pageId,
 				workspaceId,
-				include: ["childPages"]
+				include: ["childPages", "workspace", "boardStatuses"]
 			}).catch(error => {
 				navigate("/profile", { replace: true });
 

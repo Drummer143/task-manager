@@ -6,7 +6,7 @@ use uuid::Uuid;
 pub struct Task {
     pub id: Uuid,
     pub title: String,
-    pub status: String,
+    pub status_id: Uuid,
     pub description: Option<String>,
     pub due_date: Option<DateTime<Utc>>,
     pub page_id: Uuid,

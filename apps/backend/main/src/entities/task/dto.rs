@@ -3,21 +3,23 @@ use rust_api::entities::{task::model::Task, user::model::User};
 use serde::Serialize;
 use uuid::Uuid;
 
+use crate::entities::board_statuses::dto::BoardStatusResponseDto;
+
 #[derive(Debug, Serialize, utoipa::ToSchema, Clone)]
 pub struct TaskResponse {
     pub id: Uuid,
     pub title: String,
-    pub status: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub description: Option<serde_json::Value>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub due_date: Option<DateTime<Utc>>,
-    
+
+    pub status: Option<BoardStatusResponseDto>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reporter: Option<User>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub assignee: Option<User>,
-    
+
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -29,9 +31,9 @@ impl From<Task> for TaskResponse {
         Self {
             id: value.id,
             title: value.title,
-            status: value.status,
             description: None,
             due_date: value.due_date,
+            status: None,
             reporter: None,
             assignee: None,
             created_at: value.created_at,

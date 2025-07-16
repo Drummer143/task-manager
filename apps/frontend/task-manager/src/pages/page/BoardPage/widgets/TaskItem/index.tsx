@@ -6,7 +6,6 @@ import { Avatar, Flex, Typography } from "antd";
 
 import { useStyles } from "./styles";
 
-import UserCard from "../../../../../widgets/UserCard";
 import { TaskSourceData } from "../../utils";
 
 interface TaskItemProps {
@@ -19,7 +18,7 @@ interface TaskItemProps {
 const TaskItem: React.FC<TaskItemProps> = ({ task, onClick, pageId }) => {
 	const [isDragging, setIsDragging] = useState(false);
 
-	const styles = useStyles({ status: task.status, isDragging }).styles;
+	const styles = useStyles({ isDragging }).styles;
 
 	const taskRef = useRef<HTMLDivElement | null>(null);
 

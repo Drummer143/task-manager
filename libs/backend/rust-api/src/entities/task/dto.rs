@@ -6,7 +6,7 @@ use uuid::Uuid;
 #[serde(rename_all = "camelCase")]
 pub struct CreateTaskDto {
     pub title: String,
-    pub status: String,
+    pub status_id: Uuid,
     pub description: Option<serde_json::Value>,
     pub due_date: Option<DateTime<Utc>>,
     pub assignee_id: Option<Uuid>,
@@ -16,13 +16,14 @@ pub struct CreateTaskDto {
 #[serde(rename_all = "camelCase")]
 pub struct UpdateTaskDto {
     pub title: Option<String>,
-    pub status: Option<String>,
+    pub status_id: Option<Uuid>,
     pub description: Option<serde_json::Value>,
     pub due_date: Option<DateTime<Utc>>,
     pub assignee_id: Option<Uuid>,
 }
 
 #[derive(Debug, Deserialize, utoipa::ToSchema)]
+#[serde(rename_all = "camelCase")]
 pub struct ChangeStatusDto {
-    pub status: String,
+    pub status_id: Uuid,
 }

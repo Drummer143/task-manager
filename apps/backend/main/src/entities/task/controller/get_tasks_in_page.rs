@@ -5,7 +5,7 @@ use axum::{
 use error_handlers::handlers::ErrorResponse;
 use uuid::Uuid;
 
-use crate::entities::task::dto::TaskResponse;
+use crate::entities::{board_statuses::dto::BoardStatusResponseDto, task::dto::TaskResponse};
 
 #[utoipa::path(
     get,
@@ -24,11 +24,32 @@ use crate::entities::task::dto::TaskResponse;
 pub async fn get_tasks_in_page(
     State(state): State<crate::types::app_state::AppState>,
     Path((_, page_id)): Path<(Uuid, Uuid)>,
+    headers: axum::http::header::HeaderMap,
 ) -> Result<Json<Vec<TaskResponse>>, ErrorResponse> {
     let tasks =
         crate::entities::task::service::get_all_tasks_by_page_id(&state.postgres, page_id).await?;
 
     let mut task_responses = Vec::new();
+    let lang = headers
+        .get("User-Language")
+        .map(|h| h.to_str().unwrap_or("en"))
+        .unwrap_or("en");
+
+    let board_statuses = crate::entities::board_statuses::service::get_board_statuses_by_page_id(
+        &state.postgres,
+        page_id,
+    )
+    .await?
+    .iter()
+    .map(|status| BoardStatusResponseDto {
+        id: status.id,
+        code: status.code.clone(),
+        title: status.localizations.get(lang).unwrap().to_string(),
+        initial: status.initial,
+        position: status.position,
+        r#type: status.r#type.clone(),
+    })
+    .collect::<Vec<_>>();
 
     for task in tasks {
         let reporter =
@@ -39,10 +60,16 @@ pub async fn get_tasks_in_page(
             None
         };
 
+        let status = board_statuses
+            .iter()
+            .find(|status| status.id == task.status_id)
+            .cloned();
+
         let mut task_response = TaskResponse::from(task);
 
         task_response.reporter = Some(reporter);
         task_response.assignee = assignee;
+        task_response.status = status;
 
         task_responses.push(task_response);
     }

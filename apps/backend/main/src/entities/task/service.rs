@@ -28,7 +28,7 @@ pub async fn change_status<'a>(
     task_id: Uuid,
     dto: rust_api::entities::task::dto::ChangeStatusDto,
 ) -> Result<Task, ErrorResponse> {
-    repository::change_status(executor, task_id, dto.status)
+    repository::change_status(executor, task_id, dto.status_id)
         .await
         .map_err(ErrorResponse::from)
 }

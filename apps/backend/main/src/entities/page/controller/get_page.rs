@@ -1,9 +1,11 @@
 use axum::extract::{Path, State};
 use error_handlers::{codes, handlers::ErrorResponse};
+use rust_api::entities::page::model::PageType;
 use uuid::Uuid;
 
 use crate::{
     entities::{
+        board_statuses::dto::BoardStatusResponseDto,
         page::dto::{ChildPageResponse, PageInclude, PageQuery, PageResponse},
         task::dto::TaskResponse,
         workspace::dto::WorkspaceResponseWithoutInclude,
@@ -32,6 +34,7 @@ pub async fn get_page(
     State(state): State<AppState>,
     ValidatedQuery(query): ValidatedQuery<PageQuery>,
     Path((_, page_id)): Path<(Uuid, Uuid)>,
+    headers: axum::http::header::HeaderMap,
 ) -> Result<PageResponse, ErrorResponse> {
     let page = crate::entities::page::service::get_by_id(
         &state.postgres,
@@ -47,6 +50,7 @@ pub async fn get_page(
     let mut include_parent_page = false;
     let mut include_child_pages = false;
     let mut include_tasks = false;
+    let mut include_board_statuses = false;
 
     if let Some(includes) = query.include {
         include_owner = includes.contains(&PageInclude::Owner);
@@ -54,6 +58,7 @@ pub async fn get_page(
         include_parent_page = includes.contains(&PageInclude::ParentPage);
         include_child_pages = includes.contains(&PageInclude::ChildPages);
         include_tasks = includes.contains(&PageInclude::Tasks);
+        include_board_statuses = includes.contains(&PageInclude::BoardStatuses);
     }
 
     let mut page_response = PageResponse::from(page.clone());
@@ -122,6 +127,34 @@ pub async fn get_page(
             )
             .await
             .map(|tasks| tasks.into_iter().map(TaskResponse::from).collect())?,
+        );
+    }
+
+    if include_board_statuses && page.r#type == PageType::Board {
+        let lang = headers
+            .get("User-Language")
+            .map(|v| v.to_str().unwrap_or("en"))
+            .unwrap_or("en");
+
+        page_response.board_statuses = Some(
+            crate::entities::board_statuses::service::get_board_statuses_by_page_id(
+                &state.postgres,
+                page.id.clone(),
+            )
+            .await
+            .map(|statuses| {
+                statuses
+                    .into_iter()
+                    .map(|status| BoardStatusResponseDto {
+                        id: status.id,
+                        code: status.code,
+                        r#type: status.r#type,
+                        initial: status.initial,
+                        position: status.position,
+                        title: status.localizations.get(lang).unwrap().to_string(),
+                    })
+                    .collect()
+            })?,
         );
     }
 

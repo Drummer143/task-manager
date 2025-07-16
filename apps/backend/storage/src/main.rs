@@ -51,6 +51,11 @@ async fn main() {
     )
     .await;
 
+    rust_api::migration::MIGRATOR
+        .run(&db)
+        .await
+        .expect("Failed to run migrations");
+
     let static_folder_path = std::path::PathBuf::from(
         std::env::var("STATIC_FOLDER_PATH").expect("STATIC_FOLDER_PATH not found"),
     );

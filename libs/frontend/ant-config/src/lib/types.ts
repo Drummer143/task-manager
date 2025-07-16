@@ -1,8 +1,9 @@
 export type ExtraThemeToken = {
-	colorDone: string;
-	colorInProgress: string;
-	colorNotDone: string;
+	taskBoardColumnBg: string;
 	colorTaskGroupTitle: string;
+	taskBg: string;
+
+	colorBorderTertiary: string;
 
 	imageCropMaskColor: string;
 };

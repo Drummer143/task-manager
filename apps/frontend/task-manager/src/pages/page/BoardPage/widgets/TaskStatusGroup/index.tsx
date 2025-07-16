@@ -2,17 +2,16 @@ import React, { memo, useCallback, useEffect, useRef, useState } from "react";
 
 import { PlusOutlined } from "@ant-design/icons";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-import { Task, TaskStatus } from "@task-manager/api";
+import { BoardStatus, Task } from "@task-manager/api";
 import { Button, Spin, Typography } from "antd";
 
 import { useStyles } from "./styles";
 
-import { taskStatusLocale } from "../../../../../shared/constants";
 import { isTaskSource, TaskTargetData } from "../../utils";
 import TaskList from "../TaskList";
 
 interface TaskColumnProps {
-	status: TaskStatus;
+	status: BoardStatus;
 
 	tasks?: Task[];
 	isMutating?: boolean;
@@ -23,9 +22,8 @@ const TaskColumn: React.FC<TaskColumnProps> = ({ status, tasks, isMutating }) =>
 
 	const taskGroupRef = useRef<HTMLDivElement | null>(null);
 
-	const { addTaskButton, taskGroup, taskGroupHeader, taskGroupTitle } = useStyles({
-		isDragTarget,
-		status
+	const styles = useStyles({
+		isDragTarget
 	}).styles;
 
 	const handleCreateTaskButtonClick = useCallback(
@@ -42,7 +40,7 @@ const TaskColumn: React.FC<TaskColumnProps> = ({ status, tasks, isMutating }) =>
 
 		const targetData: TaskTargetData = {
 			type: "task",
-			status
+			status: status.id
 		};
 
 		return dropTargetForElements({
@@ -61,14 +59,12 @@ const TaskColumn: React.FC<TaskColumnProps> = ({ status, tasks, isMutating }) =>
 	}, [status]);
 
 	return (
-		<div className={taskGroup} ref={taskGroupRef}>
-			<div className={taskGroupHeader}>
-				<Typography.Text className={taskGroupTitle}>
-					{taskStatusLocale[status]}
-				</Typography.Text>
+		<div className={styles.taskGroup} ref={taskGroupRef}>
+			<div className={styles.taskGroupHeader}>
+				<Typography.Text className={styles.taskGroupTitle}>{status.title}</Typography.Text>
 
 				<Button
-					className={addTaskButton}
+					className={styles.addTaskButton}
 					onClick={handleCreateTaskButtonClick}
 					type="text"
 					icon={isMutating ? <Spin /> : <PlusOutlined />}

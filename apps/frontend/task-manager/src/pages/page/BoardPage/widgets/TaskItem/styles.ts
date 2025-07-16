@@ -1,16 +1,14 @@
-import { TaskStatus } from "@task-manager/api";
 import { createStyles } from "antd-style";
 
-import { statusColors } from "../../../../../shared/constants";
-
 export const useStyles = createStyles(
-	({ css }, { status, isDragging }: { status: TaskStatus; isDragging: boolean }) => ({
+	({ css }, { isDragging }: { isDragging: boolean }) => ({
 		taskWrapper: css`
 			padding: var(--ant-padding-xs);
 
 			cursor: pointer;
 			border-radius: var(--inner-border-radius);
-			background-color: var(${statusColors[status]});
+			background-color: var(--ant-task-bg);
+			border: 1px solid var(--ant-color-border-tertiary);
 			${isDragging && "opacity: 0.4;"}
 			transition: opacity var(--ant-motion-duration-fast) var(--ant-motion-ease-in-out);
 
@@ -19,7 +17,6 @@ export const useStyles = createStyles(
 			}
 		`,
 		taskTitle: css`
-			font-size: var(--ant-font-size-lg);
 			display: inline-block;
 
 			&:last-child {

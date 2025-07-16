@@ -1,8 +1,7 @@
 import { axiosInstance } from "./base";
 
 import {
-	Task,
-	TaskStatus
+	Task
 	// VersionHistoryLog
 } from "../types";
 
@@ -54,7 +53,7 @@ export const getTask = async <T extends GetTaskIncludes | undefined = undefined>
 interface CreateTaskArgs extends Ids {
 	task: {
 		title: string;
-		status: TaskStatus;
+		statusId: string;
 
 		dueDate?: string;
 		assigneeId?: string;
@@ -89,14 +88,14 @@ export const deleteTask = async ({ pageId, taskId, workspaceId }: DeleteTaskArgs
 
 interface ChangeStatusArgs extends Ids {
 	taskId: string;
-	status: TaskStatus;
+	statusId: string;
 }
 
-export const changeStatus = async ({ taskId, pageId, workspaceId, status }: ChangeStatusArgs) =>
+export const changeStatus = async ({ taskId, pageId, workspaceId, statusId }: ChangeStatusArgs) =>
 	(
 		await axiosInstance.patch<Task>(
 			`/workspaces/${workspaceId}/pages/${pageId}/tasks/${taskId}/status`,
-			{ status }
+			{ statusId }
 		)
 	).data;
 

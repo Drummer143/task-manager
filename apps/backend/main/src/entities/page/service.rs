@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use error_handlers::handlers::ErrorResponse;
 use sqlx::PgPool;
 use uuid::Uuid;
@@ -7,6 +9,8 @@ use rust_api::entities::page::{
     model::{Doc, Page, PageType},
     repository,
 };
+
+use crate::shared::constants::INIT_BOARD_STATUSES;
 
 pub async fn get_by_id(
     postgres: &PgPool,
@@ -98,6 +102,31 @@ pub async fn create(
         } else {
             let _ = tx.rollback().await;
             return Err(text.unwrap_err());
+        }
+    }
+
+    if page.r#type == PageType::Board {
+        for status in INIT_BOARD_STATUSES {
+            let localizations = status
+                .localizations
+                .iter()
+                .map(|(k, v)| (k.to_string(), v.to_string()))
+                .collect::<HashMap<String, String>>();
+
+            rust_api::entities::board_statuses::repository::create_board_status(
+                &mut *tx,
+                rust_api::entities::board_statuses::dto::CreateBoardStatusDto {
+                    page_id: page.id,
+                    code: status.code.to_string(),
+                    position: status.position,
+                    parent_status_id: None,
+                    initial: Some(status.initial),
+                    r#type: status.r#type,
+                    localizations: sqlx::types::Json(localizations),
+                },
+            )
+            .await
+            .map_err(ErrorResponse::from)?;
         }
     }
 
