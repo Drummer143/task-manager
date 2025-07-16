@@ -46,6 +46,11 @@ export interface Workspace extends Timestamps {
 	pages: Page[];
 }
 
+// export type Workspace<T extends "owner" | "pages" | never = never> = Omit<
+// 	FullWorkspace,
+// 	Exclude<"owner" | "pages", T>
+// >;
+
 export type WorkspaceAccess = EntityAccess;
 
 export type Type = "mainStatus" | "subStatus";

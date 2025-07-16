@@ -1,10 +1,11 @@
-import React from "react";
+import React, { useEffect } from "react";
 
 import { useQuery } from "@tanstack/react-query";
 import { getPage } from "@task-manager/api";
-import { lazySuspense } from "@task-manager/react-utils";
+import { lazySuspense, useDisclosure } from "@task-manager/react-utils";
 import { Navigate, useNavigate, useParams } from "react-router";
 
+import Settings from "./Settings";
 import { useStyles } from "./styles";
 import PageHeader from "./widgets/PageHeader";
 
@@ -17,6 +18,8 @@ const TextPage = lazySuspense(() => import("./TextPage"), <FullSizeLoader />);
 
 const Page: React.FC = () => {
 	const { container } = useStyles().styles;
+
+	const { open: settingsOpened, onOpen: openSettings, onClose: closeSettings } = useDisclosure();
 
 	// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 	const pageId = useParams<{ id: string }>().id!;
@@ -40,6 +43,13 @@ const Page: React.FC = () => {
 			})
 	});
 
+	useEffect(() => {
+		return () => {
+			closeSettings();
+		};
+		// eslint-disable-next-line react-hooks/exhaustive-deps
+	}, [pageId]);
+
 	if (isLoading) {
 		return <FullSizeLoader />;
 	}
@@ -50,17 +60,24 @@ const Page: React.FC = () => {
 
 	return (
 		<div className={container}>
-			<PageHeader page={page} />
-
-			{page?.type === "board" ? (
-				<BoardPage page={page} />
-			) : page?.type === "text" ? (
-				<TextPage page={page} />
+			{settingsOpened ? (
+				<Settings page={page} onClose={closeSettings} />
 			) : (
-				<div>Not implemented</div>
+				<>
+					<PageHeader page={page} onSettingsClick={openSettings} />
+
+					{page?.type === "board" ? (
+						<BoardPage page={page} />
+					) : page?.type === "text" ? (
+						<TextPage page={page} />
+					) : (
+						<div>Not implemented</div>
+					)}
+				</>
 			)}
 		</div>
 	);
 };
 
 export default withAuthPageCheck(Page);
+

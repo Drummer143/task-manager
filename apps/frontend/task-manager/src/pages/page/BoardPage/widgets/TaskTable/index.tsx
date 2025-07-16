@@ -1,15 +1,12 @@
-import React, { memo, useEffect } from "react";
+import React, { memo, useCallback } from "react";
 
-import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { BoardStatus, changeStatus, getTaskList, Task } from "@task-manager/api";
 import { App } from "antd";
-
-import { useStyles } from "./styles";
+import { useNavigate } from "react-router";
 
 import { useAuthStore } from "../../../../../app/store/auth";
-import { isTaskSource, isTaskTarget, TaskSourceData } from "../../utils";
-import TaskColumn from "../TaskStatusGroup";
+import TaskBoard from "../../../../../widgets/TaskBoard";
 
 interface TaskTableProps {
 	pageId: string;
@@ -17,9 +14,9 @@ interface TaskTableProps {
 }
 
 const TaskTable: React.FC<TaskTableProps> = ({ pageId, statuses }) => {
-	const styles = useStyles().styles;
-
 	const message = App.useApp().message;
+
+	const navigate = useNavigate();
 
 	const queryClient = useQueryClient();
 
@@ -42,43 +39,37 @@ const TaskTable: React.FC<TaskTableProps> = ({ pageId, statuses }) => {
 			)
 	});
 
-	const { mutateAsync: changeTaskStatus, isPending: isTaskStatusChanging } = useMutation({
-		mutationFn: changeStatus,
+	const { mutateAsync: changeTaskStatus } = useMutation({
+		mutationFn: ({ taskId, statusId }: { taskId: string; statusId: string }) =>
+			changeStatus({
+				workspaceId: useAuthStore.getState().user.workspace.id,
+				pageId,
+				taskId,
+				statusId
+			}),
 		onSuccess: () => queryClient.invalidateQueries({ queryKey: [pageId] }),
 		onError: error => message.error(error.message ?? "Failed to change task status")
 	});
 
-	useEffect(() => {
-		return monitorForElements({
-			canMonitor: args => isTaskSource(args.source.data),
-			onDrop: args => {
-				if (
-					isTaskTarget(args.location.current.dropTargets[0].data) &&
-					args.location.current.dropTargets[0].data.status !==
-						(args.source.data as unknown as TaskSourceData).task.status.id
-				) {
-					changeTaskStatus({
-						workspaceId: useAuthStore.getState().user.workspace.id,
-						pageId,
-						taskId: (args.source.data as unknown as TaskSourceData).task.id,
-						statusId: args.location.current.dropTargets[0].data.status
-					});
-				}
-			}
-		});
-	}, [changeTaskStatus, pageId]);
+	const handleCreateTaskButtonClick = useCallback(
+		(status: string) =>
+			document.dispatchEvent(new CustomEvent("createTask", { detail: { status } })),
+		[]
+	);
+
+	const handleOpenTask = useCallback(
+		(task: Task) => navigate(`/pages/${pageId}?taskId=${task.id}`),
+		[pageId, navigate]
+	);
 
 	return (
-		<div className={styles.container}>
-			{statuses.map(status => (
-				<TaskColumn
-					isMutating={isTaskStatusChanging}
-					key={status.id}
-					status={status}
-					tasks={tasks?.[status.id]}
-				/>
-			))}
-		</div>
+		<TaskBoard
+			statuses={statuses}
+			tasks={tasks}
+			onTaskCreateButtonClick={handleCreateTaskButtonClick}
+			onTaskOpen={handleOpenTask}
+			onTaskMove={changeTaskStatus}
+		/>
 	);
 };
 

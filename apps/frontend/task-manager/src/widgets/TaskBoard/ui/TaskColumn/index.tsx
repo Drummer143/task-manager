@@ -1,9 +1,9 @@
-import React, { memo, useCallback, useEffect, useRef, useState } from "react";
+import React, { useEffect, useRef, useState } from "react";
 
 import { PlusOutlined } from "@ant-design/icons";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { BoardStatus, Task } from "@task-manager/api";
-import { Button, Spin, Typography } from "antd";
+import { Button, Typography } from "antd";
 
 import { useStyles } from "./styles";
 
@@ -14,24 +14,30 @@ interface TaskColumnProps {
 	status: BoardStatus;
 
 	tasks?: Task[];
-	isMutating?: boolean;
+	draggable?: boolean;
+
+	onTaskClick?: (task: Task) => void;
+	onTaskCreateButtonClick?: (statusId: string) => void;
 }
 
-const TaskColumn: React.FC<TaskColumnProps> = ({ status, tasks, isMutating }) => {
+const TaskColumn: React.FC<TaskColumnProps> = ({
+	status,
+	tasks,
+	onTaskCreateButtonClick,
+	draggable,
+	onTaskClick
+}) => {
 	const [isDragTarget, setIsDragTarget] = useState(false);
+
+	const styles = useStyles({ isDragTarget }).styles;
 
 	const taskGroupRef = useRef<HTMLDivElement | null>(null);
 
-	const styles = useStyles({
-		isDragTarget
-	}).styles;
-
-	const handleCreateTaskButtonClick = useCallback(
-		() => document.dispatchEvent(new CustomEvent("createTask", { detail: { status } })),
-		[status]
-	);
-
 	useEffect(() => {
+		if (!draggable) {
+			return;
+		}
+
 		const element = taskGroupRef.current;
 
 		if (!element) {
@@ -56,25 +62,27 @@ const TaskColumn: React.FC<TaskColumnProps> = ({ status, tasks, isMutating }) =>
 			},
 			onDragLeave: () => setIsDragTarget(false)
 		});
-	}, [status]);
+	}, [draggable, status]);
 
 	return (
 		<div className={styles.taskGroup} ref={taskGroupRef}>
 			<div className={styles.taskGroupHeader}>
 				<Typography.Text className={styles.taskGroupTitle}>{status.title}</Typography.Text>
 
-				<Button
-					className={styles.addTaskButton}
-					onClick={handleCreateTaskButtonClick}
-					type="text"
-					icon={isMutating ? <Spin /> : <PlusOutlined />}
-				/>
+				{onTaskCreateButtonClick && (
+					<Button
+						className={styles.addTaskButton}
+						onClick={() => onTaskCreateButtonClick(status.id)}
+						type="text"
+						icon={<PlusOutlined />}
+					/>
+				)}
 			</div>
 
-			<TaskList tasks={tasks} />
+			<TaskList draggable={draggable} onTaskClick={onTaskClick} tasks={tasks} />
 		</div>
 	);
 };
 
-export default memo(TaskColumn);
+export default TaskColumn;
 

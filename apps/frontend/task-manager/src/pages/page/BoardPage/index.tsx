@@ -23,3 +23,4 @@ const BoardPage: React.FC<BoardPageProps> = ({ page }) => (
 );
 
 export default BoardPage;
+

@@ -5,11 +5,19 @@ export const useStyles = createStyles(({ css }) => ({
 		height: 100%;
 		max-height: 100%;
 
-		display: grid;
-		grid-template-rows: min-content 1fr;
-
-		padding: var(--ant-padding);
-
 		overflow: hidden auto;
+
+		&:first-child {
+			padding-top: var(--ant-padding);
+		}
+
+		& > * {
+			padding-left: var(--ant-padding);
+			padding-right: var(--ant-padding);
+		}
+
+		&:last-child {
+			padding-bottom: var(--ant-padding);
+		}
 	`
 }));

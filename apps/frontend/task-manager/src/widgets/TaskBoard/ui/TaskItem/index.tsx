@@ -10,12 +10,13 @@ import { TaskSourceData } from "../../utils";
 
 interface TaskItemProps {
 	task: Task;
-	pageId: string;
 
-	onClick?: React.MouseEventHandler<HTMLDivElement>;
+	draggable?: boolean;
+
+	onClick?: (task: Task) => void;
 }
 
-const TaskItem: React.FC<TaskItemProps> = ({ task, onClick, pageId }) => {
+const TaskItem: React.FC<TaskItemProps> = ({ task, draggable: taskDraggable, onClick }) => {
 	const [isDragging, setIsDragging] = useState(false);
 
 	const styles = useStyles({ isDragging }).styles;
@@ -23,6 +24,10 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, onClick, pageId }) => {
 	const taskRef = useRef<HTMLDivElement | null>(null);
 
 	useEffect(() => {
+		if (!taskDraggable) {
+			return;
+		}
+
 		const element = taskRef.current;
 
 		if (!element) {
@@ -37,17 +42,13 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, onClick, pageId }) => {
 		return draggable({
 			element,
 			getInitialData: () => initialData as unknown as Record<string, unknown>,
-			// getInitialDataForExternal: () => ({
-			// 	"text/uri-list": `${window.location.origin}/pages/${pageId}?taskId=${task.id}`,
-			// 	"text/plain": `${task.title}\n\n${task.description}\n\n${taskStatusLocale[task.status]}`
-			// }),
 			onDragStart: () => setIsDragging(true),
 			onDrop: () => setIsDragging(false)
 		});
-	}, [pageId, task]);
+	}, [task, taskDraggable]);
 
 	return (
-		<div className={styles.taskWrapper} onClick={onClick} ref={taskRef}>
+		<div className={styles.taskWrapper} onClick={() => onClick?.(task)} ref={taskRef}>
 			<Typography.Text ellipsis className={styles.taskTitle}>
 				{task.title}
 			</Typography.Text>
