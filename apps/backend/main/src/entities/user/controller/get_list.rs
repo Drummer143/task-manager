@@ -64,6 +64,7 @@ pub async fn get_list(
                 "You can't use all query with username or email filter at the same time"
                     .to_string(),
             )])),
+            None,
         ));
     }
 

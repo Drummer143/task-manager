@@ -45,6 +45,7 @@ pub async fn get_file(
         return Err(ErrorResponse::not_found(
             codes::NotFoundErrorCode::NotFound,
             None,
+            None,
         ));
     }
 

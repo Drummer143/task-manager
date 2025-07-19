@@ -1,5 +1,8 @@
+use std::collections::HashMap;
+
 use axum::{
-    extract::{Path, State}, Extension, Json
+    extract::{Path, State},
+    Extension, Json,
 };
 use uuid::Uuid;
 
@@ -35,21 +38,27 @@ pub async fn update_page_access(
             .map_err(|e| {
                 if e.status_code == 404 {
                     return error_handlers::handlers::ErrorResponse::forbidden(
-                error_handlers::codes::ForbiddenErrorCode::InsufficientPermissions,
-                None,
-            );
+                        error_handlers::codes::ForbiddenErrorCode::InsufficientPermissions,
+                        Some(HashMap::from([(
+                            "message".to_string(),
+                            "Insufficient permissions".to_string(),
+                        )])),
+                        None,
+                    );
                 }
 
                 e
             })?;
 
     if user_page_access.role < rust_api::entities::page_access::model::Role::Admin {
-        return Err(
-            error_handlers::handlers::ErrorResponse::forbidden(
-                error_handlers::codes::ForbiddenErrorCode::InsufficientPermissions,
-                None,
-            ),
-        );
+        return Err(error_handlers::handlers::ErrorResponse::forbidden(
+            error_handlers::codes::ForbiddenErrorCode::InsufficientPermissions,
+            Some(HashMap::from([(
+                "message".to_string(),
+                "Insufficient permissions".to_string(),
+            )])),
+            None,
+        ));
     }
 
     // TODO: complete access checks

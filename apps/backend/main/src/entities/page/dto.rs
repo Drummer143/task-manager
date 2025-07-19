@@ -205,6 +205,7 @@ impl std::str::FromStr for PageInclude {
                 return Err(ErrorResponse::bad_request(
                     codes::BadRequestErrorCode::InvalidQueryParams,
                     Some(HashMap::from([("include".to_string(), s.to_string())])),
+                    None,
                 ));
             }
         }
@@ -238,6 +239,7 @@ impl std::str::FromStr for PageListInclude {
                 return Err(ErrorResponse::bad_request(
                     codes::BadRequestErrorCode::InvalidQueryParams,
                     Some(HashMap::from([("include".to_string(), s.to_string())])),
+                    None,
                 ));
             }
         }

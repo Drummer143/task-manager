@@ -25,6 +25,7 @@ pub async fn workspace_access_guard(
     if user_id.is_none() {
         let body = serde_json::to_string(&ErrorResponse::unauthorized(
             codes::UnauthorizedErrorCode::Unauthorized,
+            Some("User is not authorized".to_string()),
         ))
         .unwrap();
 
@@ -48,6 +49,7 @@ pub async fn workspace_access_guard(
         let body = serde_json::to_string(&ErrorResponse::forbidden(
             codes::ForbiddenErrorCode::InsufficientPermissions,
             None,
+            None
         ))
         .unwrap();
 

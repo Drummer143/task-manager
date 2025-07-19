@@ -67,9 +67,9 @@ pub async fn get_page(
         .await
         .map_err(|e| match e {
             sqlx::Error::RowNotFound => {
-                ErrorResponse::not_found(codes::NotFoundErrorCode::NotFound, None)
+                ErrorResponse::not_found(codes::NotFoundErrorCode::NotFound, None, Some(e.to_string()))
             }
-            _ => ErrorResponse::internal_server_error(None),
+            error => ErrorResponse::internal_server_error(Some(error.to_string())),
         })?
         .role,
     );

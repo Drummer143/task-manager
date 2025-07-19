@@ -14,10 +14,12 @@ pub async fn get_page_access<'a>(
         rust_api::entities::page_access::repository::get_page_access(executor, user_id, page_id)
             .await
             .map_err(|e| match e {
-                sqlx::Error::RowNotFound => {
-                    ErrorResponse::not_found(codes::NotFoundErrorCode::NotFound, None)
-                }
-                _ => ErrorResponse::internal_server_error(None),
+                sqlx::Error::RowNotFound => ErrorResponse::not_found(
+                    codes::NotFoundErrorCode::NotFound,
+                    None,
+                    Some(e.to_string()),
+                ),
+                error => ErrorResponse::internal_server_error(Some(error.to_string())),
             })?;
 
     let user = crate::entities::user::service::find_by_id(executor, page_access.user_id).await?;
@@ -40,10 +42,12 @@ pub async fn get_page_access_list<'a>(
         rust_api::entities::page_access::repository::get_page_access_list(executor, page_id)
             .await
             .map_err(|e| match e {
-                sqlx::Error::RowNotFound => {
-                    ErrorResponse::not_found(codes::NotFoundErrorCode::NotFound, None)
-                }
-                _ => ErrorResponse::internal_server_error(None),
+                sqlx::Error::RowNotFound => ErrorResponse::not_found(
+                    codes::NotFoundErrorCode::NotFound,
+                    None,
+                    Some(e.to_string()),
+                ),
+                error => ErrorResponse::internal_server_error(Some(error.to_string())),
             })?;
 
     let mut page_access_list_response = Vec::new();
@@ -70,21 +74,24 @@ pub async fn create_page_access<'a>(
     page_id: Uuid,
     role: rust_api::entities::page_access::model::Role,
 ) -> Result<PageAccess, ErrorResponse> {
-    rust_api::entities::page_access::repository::create_page_access(executor, user_id, page_id, role)
-        .await
-        .map_err(|e| match e {
-            sqlx::Error::Database(e) => {
-                if e.code() == Some("23505".into()) {
-                    return ErrorResponse::bad_request(
-                        codes::BadRequestErrorCode::AccessAlreadyGiven,
-                        None,
-                    );
-                }
-
-                ErrorResponse::internal_server_error(None)
+    rust_api::entities::page_access::repository::create_page_access(
+        executor, user_id, page_id, role,
+    )
+    .await
+    .map_err(|e| match e {
+        sqlx::Error::Database(e) => {
+            if e.code() == Some("23505".into()) {
+                return ErrorResponse::conflict(
+                    codes::ConflictErrorCode::AccessAlreadyGiven,
+                    None,
+                    Some(e.to_string()),
+                );
             }
-            _ => ErrorResponse::internal_server_error(None),
-        })
+
+            ErrorResponse::internal_server_error(None)
+        }
+        _ => ErrorResponse::internal_server_error(None),
+    })
 }
 
 pub async fn update_page_access<'a>(
@@ -93,12 +100,14 @@ pub async fn update_page_access<'a>(
     page_id: Uuid,
     role: Option<rust_api::entities::page_access::model::Role>,
 ) -> Result<PageAccess, ErrorResponse> {
-    rust_api::entities::page_access::repository::update_page_access(executor, user_id, page_id, role)
-        .await
-        .map_err(|e| match e {
-            sqlx::Error::RowNotFound => {
-                ErrorResponse::not_found(codes::NotFoundErrorCode::NotFound, None)
-            }
-            _ => ErrorResponse::internal_server_error(None),
-        })
+    rust_api::entities::page_access::repository::update_page_access(
+        executor, user_id, page_id, role,
+    )
+    .await
+    .map_err(|e| match e {
+        sqlx::Error::RowNotFound => {
+            ErrorResponse::not_found(codes::NotFoundErrorCode::NotFound, None, Some(e.to_string()))
+        }
+        error => ErrorResponse::internal_server_error(Some(error.to_string())),
+    })
 }

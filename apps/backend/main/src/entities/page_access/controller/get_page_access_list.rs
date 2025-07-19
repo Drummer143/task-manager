@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use axum::{extract::{Path, State}, Extension};
 use uuid::Uuid;
 
@@ -36,6 +38,7 @@ pub async fn get_page_access_list(
         if e.status_code == 404 {
             return error_handlers::handlers::ErrorResponse::forbidden(
                 error_handlers::codes::ForbiddenErrorCode::InsufficientPermissions,
+                Some(HashMap::from([("message".to_string(), "Insufficient permissions".to_string())])),
                 None,
             );
         }
@@ -47,6 +50,7 @@ pub async fn get_page_access_list(
         return Err(
             error_handlers::handlers::ErrorResponse::forbidden(
                 error_handlers::codes::ForbiddenErrorCode::InsufficientPermissions,
+                Some(HashMap::from([("message".to_string(), "Insufficient permissions".to_string())])),
                 None,
             ),
         );
@@ -62,6 +66,7 @@ pub async fn get_page_access_list(
             if e.status_code == 404 {
                 return error_handlers::handlers::ErrorResponse::forbidden(
                 error_handlers::codes::ForbiddenErrorCode::InsufficientPermissions,
+                Some(HashMap::from([("message".to_string(), "Insufficient permissions".to_string())])),
                 None,
             );
             }
