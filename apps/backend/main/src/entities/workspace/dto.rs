@@ -5,6 +5,11 @@ use uuid::Uuid;
 
 use crate::entities::page::dto::PageResponseWithoutInclude;
 
+#[derive(Debug, Deserialize, utoipa::ToSchema)]
+pub struct CreateWorkspaceDto {
+    pub name: String,
+}
+
 #[derive(Debug, utoipa::ToSchema)]
 pub struct WorkspaceInfo {
     pub workspace: rust_api::entities::workspace::model::Workspace,

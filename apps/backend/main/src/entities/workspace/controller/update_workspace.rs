@@ -5,7 +5,7 @@ use axum::{
     Extension, Json,
 };
 use error_handlers::handlers::ErrorResponse;
-use rust_api::entities::workspace::dto::WorkspaceRequestDto;
+use rust_api::entities::workspace::dto::UpdateWorkspaceDto;
 use uuid::Uuid;
 
 use crate::entities::workspace::dto::WorkspaceResponse;
@@ -22,7 +22,7 @@ use crate::entities::workspace::dto::WorkspaceResponse;
     params(
         ("workspace_id" = Uuid, Path, description = "Workspace ID"),
     ),
-    request_body = WorkspaceRequestDto,
+    request_body = UpdateWorkspaceDto,
     tags = ["Workspace"],
 )]
 #[axum_macros::debug_handler]
@@ -30,12 +30,12 @@ pub async fn update_workspace(
     State(state): State<crate::types::app_state::AppState>,
     Extension(user_id): Extension<Uuid>,
     Path(workspace_id): Path<Uuid>,
-    Json(dto): Json<WorkspaceRequestDto>,
+    Json(dto): Json<UpdateWorkspaceDto>,
 ) -> Result<WorkspaceResponse, ErrorResponse> {
     let workspace = crate::entities::workspace::service::update_workspace(
         &state.postgres,
         workspace_id,
-        rust_api::entities::workspace::dto::UpdateWorkspaceDto { name: dto.name },
+        dto,
     )
     .await
     .map(WorkspaceResponse::from)?;

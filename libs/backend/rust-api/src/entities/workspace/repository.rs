@@ -23,9 +23,19 @@ pub async fn update<'a>(
     workspace_id: Uuid,
     dto: super::dto::UpdateWorkspaceDto,
 ) -> Result<Workspace, sqlx::Error> {
-    sqlx::query_as::<_, Workspace>("UPDATE workspaces SET name = $1 WHERE id = $2 RETURNING *")
-        .bind(dto.name)
-        .bind(workspace_id)
+    let mut builder = sqlx::QueryBuilder::new("UPDATE workspaces SET");
+
+    let mut separated = builder.separated(", ");
+
+    if let Some(name) = dto.name {
+        separated.push("name = ").push_bind(name);
+    }
+
+    builder
+        .push(" WHERE id = ")
+        .push_bind(workspace_id)
+        .push(" RETURNING *")
+        .build_query_as::<Workspace>()
         .fetch_one(executor)
         .await
 }

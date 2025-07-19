@@ -1,6 +1,8 @@
 use sqlx::{Executor, Postgres};
 use uuid::Uuid;
 
+use crate::shared::traits::UpdateDto;
+
 use super::model::Page;
 
 pub async fn get_by_id<'a>(
@@ -69,9 +71,21 @@ pub async fn update<'a>(
     id: Uuid,
     page: super::dto::UpdatePageDto,
 ) -> Result<Page, sqlx::Error> {
-    sqlx::query_as::<_, Page>("UPDATE pages SET title = $1 WHERE id = $2 RETURNING *")
-        .bind(page.title)
-        .bind(id)
+    if page.is_empty() {
+        return get_by_id(executor, id).await;
+    }
+
+    let mut query_builder = sqlx::QueryBuilder::new("UPDATE pages SET");
+
+    if let Some(title) = page.title {
+        query_builder.push(" title = ").push_bind(title);
+    }
+
+    query_builder
+        .push(" WHERE id = ")
+        .push_bind(id)
+        .push(" RETURNING *")
+        .build_query_as::<Page>()
         .fetch_one(executor)
         .await
 }
@@ -80,8 +94,8 @@ pub async fn update_page_text(
     executor: &mongodb::Database,
     text: super::model::Doc,
 ) -> Result<Option<super::model::Doc>, mongodb::error::Error> {
-    let collection = executor
-        .collection::<super::model::Doc>(crate::shared::constants::PAGE_TEXT_COLLECTION);
+    let collection =
+        executor.collection::<super::model::Doc>(crate::shared::constants::PAGE_TEXT_COLLECTION);
 
     let result = collection.insert_one(text).await?;
 

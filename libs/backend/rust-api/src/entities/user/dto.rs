@@ -3,6 +3,8 @@ use std::fmt;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
+use crate::shared::traits::UpdateDto;
+
 #[derive(Debug, Deserialize)]
 pub struct CreateUserDto {
     pub email: String,
@@ -14,11 +16,11 @@ pub struct CreateUserDto {
 pub struct UpdateUserDto {
     pub email: Option<String>,
     pub username: Option<String>,
-    pub picture: Option<String>,
+    pub picture: Option<Option<String>>,
 }
 
-impl UpdateUserDto {
-    pub fn is_empty(&self) -> bool {
+impl UpdateDto for UpdateUserDto {
+    fn is_empty(&self) -> bool {
         self.email.is_none() && self.username.is_none() && self.picture.is_none()
     }
 }

@@ -24,12 +24,31 @@ pub async fn update_task<'a>(
     id: Uuid,
     dto: super::dto::UpdateTaskDto,
 ) -> Result<Task, sqlx::Error> {
-    sqlx::query_as::<_, Task>("UPDATE tasks SET title = $1, status = $2, due_date = $3, assignee_id = $4 WHERE id = $5 RETURNING *")
-        .bind(dto.title)
-        .bind(dto.status)
-        .bind(dto.due_date)
-        .bind(dto.assignee_id)
-        .bind(id)
+    let mut query_builder = sqlx::QueryBuilder::new("UPDATE tasks SET");
+
+    let mut separated = query_builder.separated(", ");
+
+    if let Some(title) = dto.title {
+        separated.push("title = ").push_bind(title);
+    }
+
+    if let Some(status) = dto.status {
+        separated.push("status = ").push_bind(status);
+    }
+
+    if let Some(due_date) = dto.due_date {
+        separated.push("due_date = ").push_bind(due_date);
+    }
+
+    if let Some(assignee_id) = dto.assignee_id {
+        separated.push("assignee_id = ").push_bind(assignee_id);
+    }
+
+    query_builder
+        .push(" WHERE id = ")
+        .push_bind(id)
+        .push(" RETURNING *")
+        .build_query_as::<Task>()
         .fetch_one(db)
         .await
 }

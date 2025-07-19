@@ -126,43 +126,38 @@ pub async fn update(
             .map_err(ErrorResponse::from)?
     };
 
-    println!(
-        "page type: {}. doc_dto.is_some(): {}",
-        page.r#type,
-        doc_dto.is_some()
-    );
+    if page.r#type == PageType::Text {
+        if let Some(Some(doc_dto)) = doc_dto {
+            let mut doc = Doc {
+                page_id: Some(page.id.to_string()),
+                version: 1,
+                attrs: doc_dto.attrs,
+                content: doc_dto.content,
+                marks: doc_dto.marks,
+                r#type: doc_dto.r#type,
+                text: doc_dto.text,
+            };
 
-    if page.r#type == PageType::Text && doc_dto.is_some() {
-        let doc_dto = doc_dto.unwrap();
-        let mut doc = Doc {
-            page_id: Some(page.id.to_string()),
-            version: 1,
-            attrs: doc_dto.attrs,
-            content: doc_dto.content,
-            marks: doc_dto.marks,
-            r#type: doc_dto.r#type,
-            text: doc_dto.text,
-        };
+            let prev_doc = repository::get_page_text(mongodb, page.id)
+                .await
+                .map_err(ErrorResponse::from)?;
 
-        let prev_doc = repository::get_page_text(mongodb, page.id)
-            .await
-            .map_err(ErrorResponse::from)?;
+            if let Some(prev_doc) = prev_doc {
+                doc.version = prev_doc.version + 1;
+            } else {
+                doc.version = 1;
+            }
 
-        if let Some(prev_doc) = prev_doc {
-            doc.version = prev_doc.version + 1;
-        } else {
-            doc.version = 1;
-        }
+            let text = repository::update_page_text(&mongodb, doc)
+                .await
+                .map_err(ErrorResponse::from);
 
-        let text = repository::update_page_text(&mongodb, doc)
-            .await
-            .map_err(ErrorResponse::from);
-
-        if let Ok(text) = text {
-            page.text = text;
-        } else {
-            let _ = tx.rollback().await;
-            return Err(text.unwrap_err());
+            if let Ok(text) = text {
+                page.text = text;
+            } else {
+                let _ = tx.rollback().await;
+                return Err(text.unwrap_err());
+            }
         }
     }
 

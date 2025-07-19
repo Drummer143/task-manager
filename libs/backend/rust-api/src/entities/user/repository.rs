@@ -146,10 +146,10 @@ pub async fn create<'a>(
     Ok(user)
 }
 
-// pub async fn update(
-//     &self,
+// pub async fn update<'a>(
+//     executor: impl sqlx::Executor<'a, Database = Postgres>,
 //     user_id: Uuid,
-//     user: &crate::dto::user::UpdateUserDto,
+//     user: &super::dto::UpdateUserDto,
 // ) -> Result<User, sqlx::Error> {
 //     let mut builder = sqlx::QueryBuilder::<Postgres>::new("UPDATE users SET");
 
@@ -172,7 +172,7 @@ pub async fn create<'a>(
 //         .push_bind(user_id)
 //         .push(" RETURNING *");
 
-//     let user = builder.build_query_as::<User>().fetch_one(self.db).await?;
+//     let user = builder.build_query_as::<User>().fetch_one(executor).await?;
 
 //     Ok(user)
 // }
