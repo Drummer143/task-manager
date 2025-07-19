@@ -53,12 +53,13 @@ export interface Workspace extends Timestamps {
 
 export type WorkspaceAccess = EntityAccess;
 
-export type Type = "mainStatus" | "subStatus";
+export type BoardStatusType = "mainStatus" | "subStatus";
 
 export interface BoardStatus extends Timestamps {
 	id: string;
 	code: string;
-	type: Type;
+	type: BoardStatusType;
+	initial: boolean;
 	position: number;
 	title: string;
 }

@@ -1,8 +1,8 @@
-import React, { useEffect } from "react";
+import React, { useCallback } from "react";
 
 import { useQuery } from "@tanstack/react-query";
-import { getPage } from "@task-manager/api";
-import { lazySuspense, useDisclosure } from "@task-manager/react-utils";
+import { getPage, Page } from "@task-manager/api";
+import { lazySuspense, useSearchParams } from "@task-manager/react-utils";
 import { Navigate, useNavigate, useParams } from "react-router";
 
 import Settings from "./Settings";
@@ -16,22 +16,26 @@ import FullSizeLoader from "../../shared/ui/FullSizeLoader";
 const BoardPage = lazySuspense(() => import("./BoardPage"), <FullSizeLoader />);
 const TextPage = lazySuspense(() => import("./TextPage"), <FullSizeLoader />);
 
-const Page: React.FC = () => {
+const PageComponent: React.FC = () => {
+	const workspaceId = useAuthStore(state => state.user.workspace.id);
+
 	const { container } = useStyles().styles;
 
-	const { open: settingsOpened, onOpen: openSettings, onClose: closeSettings } = useDisclosure();
+	const [{ settingsOpened }, setParams] = useSearchParams<"taskId" | "settingsOpened">();
 
 	// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 	const pageId = useParams<{ id: string }>().id!;
 
-	const workspaceId = useAuthStore.getState().user.workspace.id;
-
 	const navigate = useNavigate();
+
+	const openSettings = useCallback(() => setParams({ settingsOpened: "true" }), [setParams]);
+
+	const closeSettings = useCallback(() => setParams({ settingsOpened: null }), [setParams]);
 
 	const { data: page, isLoading } = useQuery({
 		queryKey: [pageId],
 		enabled: !!workspaceId,
-		queryFn: () =>
+		queryFn: (): Promise<Omit<Page, "tasks" | "owner" | "parentPage">> =>
 			getPage({
 				pageId,
 				workspaceId,
@@ -43,13 +47,6 @@ const Page: React.FC = () => {
 			})
 	});
 
-	useEffect(() => {
-		return () => {
-			closeSettings();
-		};
-		// eslint-disable-next-line react-hooks/exhaustive-deps
-	}, [pageId]);
-
 	if (isLoading) {
 		return <FullSizeLoader />;
 	}
@@ -60,7 +57,7 @@ const Page: React.FC = () => {
 
 	return (
 		<div className={container}>
-			{settingsOpened ? (
+			{settingsOpened && (page.role === "admin" || page.role === "owner") ? (
 				<Settings page={page} onClose={closeSettings} />
 			) : (
 				<>
@@ -79,5 +76,5 @@ const Page: React.FC = () => {
 	);
 };
 
-export default withAuthPageCheck(Page);
+export default withAuthPageCheck(PageComponent);
 

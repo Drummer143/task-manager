@@ -5,6 +5,7 @@ export const useStyles = createStyles(({ css }, { isDragTarget }: { isDragTarget
 		--inner-border-radius: calc(var(--ant-border-radius) - var(--ant-padding-xxs) / 2);
 
 		width: 100%;
+		min-width: 280px;
 
 		padding: var(--ant-padding-xxs) var(--ant-padding-xxs) var(--ant-padding-xs);
 

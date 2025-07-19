@@ -1,21 +1,26 @@
-import React, { useEffect, useRef, useState } from "react";
+import React, { useEffect, useMemo, useRef, useState } from "react";
 
-import { PlusOutlined } from "@ant-design/icons";
-import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import { MenuOutlined, MoreOutlined, PlusOutlined } from "@ant-design/icons";
+import {
+	draggable,
+	dropTargetForElements
+} from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { BoardStatus, Task } from "@task-manager/api";
-import { Button, Typography } from "antd";
+import { Button, Dropdown, GetProp, MenuProps, Typography } from "antd";
 
 import { useStyles } from "./styles";
 
-import { isTaskSource, TaskTargetData } from "../../utils";
+import { ColumnSourceData, isTaskSource, TaskTargetData } from "../../utils";
 import TaskList from "../TaskList";
 
 interface TaskColumnProps {
 	status: BoardStatus;
 
 	tasks?: Task[];
-	draggable?: boolean;
+	taskDraggable?: boolean;
+	columnDraggable?: boolean;
 
+	menu?: (status: BoardStatus) => GetProp<MenuProps, "items">;
 	onTaskClick?: (task: Task) => void;
 	onTaskCreateButtonClick?: (statusId: string) => void;
 }
@@ -24,7 +29,9 @@ const TaskColumn: React.FC<TaskColumnProps> = ({
 	status,
 	tasks,
 	onTaskCreateButtonClick,
-	draggable,
+	taskDraggable,
+	columnDraggable,
+	menu,
 	onTaskClick
 }) => {
 	const [isDragTarget, setIsDragTarget] = useState(false);
@@ -32,9 +39,15 @@ const TaskColumn: React.FC<TaskColumnProps> = ({
 	const styles = useStyles({ isDragTarget }).styles;
 
 	const taskGroupRef = useRef<HTMLDivElement | null>(null);
+	const dragHandleRef = useRef<HTMLButtonElement | null>(null);
+
+	const menuItems = useMemo<GetProp<MenuProps, "items"> | undefined>(
+		() => menu?.(status),
+		[menu, status]
+	);
 
 	useEffect(() => {
-		if (!draggable) {
+		if (!taskDraggable) {
 			return;
 		}
 
@@ -45,11 +58,11 @@ const TaskColumn: React.FC<TaskColumnProps> = ({
 		}
 
 		const targetData: TaskTargetData = {
-			type: "task",
+			type: "task-target",
 			status: status.id
 		};
 
-		return dropTargetForElements({
+		return  dropTargetForElements({
 			element,
 			getData: () => targetData as unknown as Record<string, unknown>,
 			onDrop: () => setIsDragTarget(false),
@@ -62,7 +75,32 @@ const TaskColumn: React.FC<TaskColumnProps> = ({
 			},
 			onDragLeave: () => setIsDragTarget(false)
 		});
-	}, [draggable, status]);
+	}, [status, taskDraggable]);
+
+	useEffect(() => {
+		if (!columnDraggable) {
+			return;
+		}
+
+		const element = taskGroupRef.current;
+		const dragHandle = dragHandleRef.current;
+
+		if (!element || !dragHandle) {
+			return;
+		}
+
+		const sourceData: ColumnSourceData = {
+			type: "column-source",
+			statusId: status.id,
+			position: status.position
+		};
+
+		return draggable({
+			element,
+			dragHandle,
+			getInitialData: () => sourceData as unknown as Record<string, unknown>
+		});
+	}, [status, columnDraggable]);
 
 	return (
 		<div className={styles.taskGroup} ref={taskGroupRef}>
@@ -77,9 +115,19 @@ const TaskColumn: React.FC<TaskColumnProps> = ({
 						icon={<PlusOutlined />}
 					/>
 				)}
+
+				{!!menuItems?.length && (
+					<Dropdown menu={{ items: menuItems }} trigger={["click"]}>
+						<Button type="text" icon={<MenuOutlined />} />
+					</Dropdown>
+				)}
+
+				{columnDraggable && (
+					<Button type="text" ref={dragHandleRef} icon={<MoreOutlined />} />
+				)}
 			</div>
 
-			<TaskList draggable={draggable} onTaskClick={onTaskClick} tasks={tasks} />
+			<TaskList draggable={taskDraggable} onTaskClick={onTaskClick} tasks={tasks} />
 		</div>
 	);
 };

@@ -1,6 +1,7 @@
 use axum::{
     extract::{Path, State},
-    http::header::HeaderMap, Json,
+    http::header::HeaderMap,
+    Json,
 };
 use error_handlers::handlers::ErrorResponse;
 use uuid::Uuid;

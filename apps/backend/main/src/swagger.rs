@@ -6,6 +6,9 @@
 
         crate::entities::board_statuses::controller::create_board_status::create_board_status,
         crate::entities::board_statuses::controller::get_board_statuses::get_board_statuses,
+        crate::entities::board_statuses::controller::get_board_status_by_id::get_board_status_by_id,
+        crate::entities::board_statuses::controller::update_board_status::update_board_status,
+        crate::entities::board_statuses::controller::delete_board_status::delete_board_status,
 
         crate::entities::page::controller::get_list_in_workspace::get_list_in_workspace,
         crate::entities::page::controller::get_page::get_page,

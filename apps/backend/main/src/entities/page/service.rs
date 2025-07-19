@@ -122,7 +122,7 @@ pub async fn create(
                     parent_status_id: None,
                     initial: Some(status.initial),
                     r#type: status.r#type,
-                    localizations: sqlx::types::Json(localizations),
+                    localizations,
                 },
             )
             .await

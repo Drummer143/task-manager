@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 
 import { Page } from "@task-manager/api";
 import { Button, Flex, Typography } from "antd";
@@ -11,23 +11,29 @@ interface SettingsProps {
 	onClose: () => void;
 }
 
-const Settings: React.FC<SettingsProps> = ({ page, onClose }) => {
-	return (
-		<>
-			<Flex justify="space-between" style={{ position: "sticky", top: 0, zIndex: 1, backgroundColor: "var(--ant-layout-body-bg)" }}>
-				<Typography.Title level={3}>
-					Settings for page &quot;{page.title}&quot;
-				</Typography.Title>
+const Settings: React.FC<SettingsProps> = ({ page, onClose }) => (
+	<>
+		<Flex
+			justify="space-between"
+			style={{
+				position: "sticky",
+				top: 0,
+				zIndex: 1,
+				backgroundColor: "var(--ant-layout-body-bg)"
+			}}
+		>
+			<Typography.Title level={3}>
+				Settings for page &quot;{page.title}&quot;
+			</Typography.Title>
 
-				<Button onClick={onClose}>Close settings</Button>
-			</Flex>
+			<Button onClick={onClose}>Close settings</Button>
+		</Flex>
 
-			<AccessSettings page={page} />
+		<AccessSettings page={page} />
 
-			{page.type === "board" && <BoardLayoutSettings page={page} />}
-		</>
-	);
-};
+		{page.type === "board" && <BoardLayoutSettings page={page} />}
+	</>
+);
 
 export default Settings;
 

@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use sqlx::{prelude::Type, types::Json};
+use sqlx::{prelude::Type};
 use uuid::Uuid;
 
 #[derive(Debug, Clone, Serialize, Deserialize, utoipa::ToSchema, Type)]
@@ -24,5 +24,5 @@ pub struct BoardStatus {
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
     pub deleted_at: Option<DateTime<Utc>>,
-    pub localizations: Json<HashMap<String, String>>,
+    pub localizations: sqlx::types::Json<HashMap<String, String>>,
 }

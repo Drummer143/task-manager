@@ -1,16 +1,16 @@
+use std::collections::HashMap;
+
 use axum::{
     extract::{Path, State},
     http::HeaderMap,
     Json,
 };
-use error_handlers::handlers::ErrorResponse;
+use error_handlers::{codes, handlers::ErrorResponse};
+use rust_api::entities::board_statuses::dto::CreateBoardStatusDto;
 use uuid::Uuid;
 
 use crate::{
-    entities::board_statuses::{
-        dto::{BoardStatusResponseDto, CreateBoardStatusDto},
-        service,
-    },
+    entities::board_statuses::{dto::BoardStatusResponseDto, service},
     types::app_state::AppState,
 };
 
@@ -18,8 +18,8 @@ use crate::{
     post,
     path = "/workspaces/{workspace_id}/pages/{page_id}/board-statuses",
     params(
-        ("workspace_id", Path, description = "Workspace ID"),
-        ("page_id", Path, description = "Page ID"),
+        ("workspace_id" = Uuid, Path, description = "Workspace ID"),
+        ("page_id" = Uuid, Path, description = "Page ID"),
     ),
     request_body = CreateBoardStatusDto,
     responses(
@@ -35,16 +35,26 @@ pub async fn create_board_status(
     Path((_, page_id)): Path<(Uuid, Uuid)>,
     Json(dto): Json<CreateBoardStatusDto>,
 ) -> Result<Json<BoardStatusResponseDto>, ErrorResponse> {
+    if dto.localizations.is_empty() || dto.localizations.get("en").is_none() {
+        return Err(ErrorResponse::bad_request(
+            codes::BadRequestErrorCode::ValidationErrors,
+            Some(HashMap::from([(
+                "localizations".to_string(),
+                "en localization is required".to_string(),
+            )])),
+        ));
+    }
+
     service::create_board_status(
         &app_state.postgres,
-        rust_api::entities::board_statuses::dto::CreateBoardStatusDto {
+        CreateBoardStatusDto {
             code: dto.code,
             r#type: dto.r#type,
             parent_status_id: dto.parent_status_id,
             page_id,
             initial: dto.initial,
             position: dto.position,
-            localizations: sqlx::types::Json(dto.localizations),
+            localizations: dto.localizations,
         },
     )
     .await

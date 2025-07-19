@@ -76,6 +76,10 @@ pub async fn update_board_status(
 
     let initial = dto.initial.unwrap_or(false);
 
+    let initial_status = repository::get_board_status_by_id(&mut *tx, status_id)
+        .await
+        .map_err(ErrorResponse::from)?;
+
     let updated_status = repository::update_board_status(&mut *tx, status_id, dto)
         .await
         .map_err(ErrorResponse::from);
@@ -123,6 +127,40 @@ pub async fn update_board_status(
         }
     }
 
+    if initial_status.position != updated_status.position {
+        let (from, to, action, direction) = if initial_status.position > updated_status.position {
+            (
+                updated_status.position,
+                Some(initial_status.position),
+                rust_api::entities::board_statuses::dto::StatusShiftAction::Decrement,
+                rust_api::entities::board_statuses::dto::StatusShiftDirection::Less,
+            )
+        } else {
+            (
+                initial_status.position,
+                Some(updated_status.position),
+                rust_api::entities::board_statuses::dto::StatusShiftAction::Increment,
+                rust_api::entities::board_statuses::dto::StatusShiftDirection::Greater,
+            )
+        };
+
+        let shift_result = repository::shift_board_status_positions(
+            &mut *tx,
+            updated_status.page_id,
+            from,
+            to,
+            action,
+            direction,
+        )
+        .await
+        .map_err(ErrorResponse::from);
+
+        if let Err(e) = shift_result {
+            tx.rollback().await.map_err(ErrorResponse::from)?;
+            return Err(e);
+        }
+    }
+
     tx.commit().await.map_err(ErrorResponse::from)?;
     Ok(updated_status)
 }
@@ -166,7 +204,36 @@ pub async fn delete_board_status(
         });
     }
 
-    repository::delete_board_status(db, status_id)
+    let mut tx = db.begin().await.map_err(ErrorResponse::from)?;
+
+    let shift_result = repository::shift_board_status_positions(
+        &mut *tx,
+        target_status.page_id,
+        target_status.position,
+        None,
+        rust_api::entities::board_statuses::dto::StatusShiftAction::Decrement,
+        rust_api::entities::board_statuses::dto::StatusShiftDirection::Less,
+    )
+    .await
+    .map_err(ErrorResponse::from);
+
+    if let Err(e) = shift_result {
+        tx.rollback().await.map_err(ErrorResponse::from)?;
+        return Err(e);
+    }
+
+    let deleted_status = repository::delete_board_status(&mut *tx, status_id)
         .await
-        .map_err(ErrorResponse::from)
+        .map_err(ErrorResponse::from);
+
+    match deleted_status {
+        Ok(status) => {
+            tx.commit().await.map_err(ErrorResponse::from)?;
+            Ok(status)
+        }
+        Err(e) => {
+            tx.rollback().await.map_err(ErrorResponse::from)?;
+            Err(e)
+        }
+    }
 }

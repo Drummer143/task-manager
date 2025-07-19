@@ -11,6 +11,18 @@ pub fn init(app_state: AppState) -> Router<AppState> {
             "/workspaces/{workspace_id}/pages/{page_id}/board-statuses",
             axum::routing::get(super::controller::get_board_statuses::get_board_statuses),
         )
+        .route(
+            "/workspaces/{workspace_id}/pages/{page_id}/board-statuses/{status_id}",
+            axum::routing::put(super::controller::update_board_status::update_board_status),
+        )
+        .route(
+            "/workspaces/{workspace_id}/pages/{page_id}/board-statuses/{status_id}",
+            axum::routing::delete(super::controller::delete_board_status::delete_board_status),
+        )
+        .route(
+            "/workspaces/{workspace_id}/pages/{page_id}/board-statuses/{status_id}",
+            axum::routing::get(super::controller::get_board_status_by_id::get_board_status_by_id),
+        )
         .layer(axum::middleware::from_fn_with_state(
             app_state.clone(),
             crate::middleware::workspace_access_guard::workspace_access_guard,
