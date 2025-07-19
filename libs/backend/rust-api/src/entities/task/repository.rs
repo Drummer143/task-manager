@@ -4,8 +4,6 @@ use super::model::Task;
 
 pub async fn create_task<'a>(
     db: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
-    page_id: Uuid,
-    reporter_id: Uuid,
     dto: super::dto::CreateTaskDto,
 ) -> Result<Task, sqlx::Error> {
     sqlx::query_as::<_, Task>("INSERT INTO tasks (title, status, due_date, assignee_id, page_id, reporter_id) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *")
@@ -13,8 +11,8 @@ pub async fn create_task<'a>(
         .bind(dto.status)
         .bind(dto.due_date)
         .bind(dto.assignee_id)
-        .bind(page_id)
-        .bind(reporter_id)
+        .bind(dto.page_id)
+        .bind(dto.reporter_id)
         .fetch_one(db)
         .await
 }

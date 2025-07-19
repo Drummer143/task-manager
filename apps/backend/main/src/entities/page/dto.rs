@@ -2,11 +2,19 @@ use std::collections::HashMap;
 
 use chrono::{DateTime, Utc};
 use error_handlers::{codes, handlers::ErrorResponse};
-use rust_api::entities::{page::model::{Doc, Page, PageType}, user::model::User};
+use rust_api::entities::{page::{dto::PageTextDto, model::{Doc, Page, PageType}}, user::model::User};
 use serde::Serialize;
 use uuid::Uuid;
 
 use crate::entities::{task::dto::TaskResponse, workspace::dto::WorkspaceResponseWithoutInclude};
+
+#[derive(Debug, serde::Deserialize, utoipa::ToSchema)]
+pub struct CreatePageDto {
+    pub title: String,
+    pub r#type: PageType,
+    pub parent_page_id: Option<Uuid>,
+    pub text: Option<PageTextDto>,
+}
 
 #[derive(Debug, Serialize, Clone, utoipa::ToSchema)]
 #[serde(rename_all = "camelCase")]

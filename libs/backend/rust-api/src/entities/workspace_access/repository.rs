@@ -34,9 +34,7 @@ pub async fn get_workspace_access_list<'a>(
 
 pub async fn create_workspace_access<'a>(
     executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
-    user_id: Uuid,
-    workspace_id: Uuid,
-    role: super::model::Role,
+    dto: super::dto::CreateWorkspaceAccessDto,
 ) -> Result<super::model::WorkspaceAccess, sqlx::Error> {
     sqlx::query_as::<_, super::model::WorkspaceAccess>(
         r#"
@@ -45,20 +43,18 @@ pub async fn create_workspace_access<'a>(
         RETURNING *
         "#,
     )
-    .bind(user_id)
-    .bind(workspace_id)
-    .bind(role)
+    .bind(dto.user_id)
+    .bind(dto.workspace_id)
+    .bind(dto.role)
     .fetch_one(executor)
     .await
 }
 
 pub async fn update_workspace_access<'a>(
     executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
-    user_id: Uuid,
-    workspace_id: Uuid,
-    role: Option<super::model::Role>,
+    dto: super::dto::UpdateWorkspaceAccessDto,
 ) -> Result<super::model::WorkspaceAccess, sqlx::Error> {
-    if role.is_none() {
+    if dto.role.is_none() {
         return sqlx::query_as::<_, super::model::WorkspaceAccess>(
             r#"
             DELETE FROM workspace_accesses
@@ -66,8 +62,8 @@ pub async fn update_workspace_access<'a>(
             RETURNING *
             "#,
         )
-        .bind(user_id)
-        .bind(workspace_id)
+        .bind(dto.user_id)
+        .bind(dto.workspace_id)
         .fetch_one(executor)
         .await;
     }
@@ -80,9 +76,9 @@ pub async fn update_workspace_access<'a>(
             RETURNING *
             "#,
     )
-    .bind(user_id)
-    .bind(workspace_id)
-    .bind(role.unwrap())
+    .bind(dto.user_id)
+    .bind(dto.workspace_id)
+    .bind(dto.role.unwrap())
     .fetch_one(executor)
     .await?;
 

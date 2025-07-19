@@ -2,92 +2,110 @@ use error_handlers::handlers::ErrorResponse;
 use rust_api::entities::workspace_access::model::WorkspaceAccess;
 use uuid::Uuid;
 
-use crate::entities::workspace_access::dto::WorkspaceAccessResponse;
+use crate::{
+    entities::workspace_access::dto::WorkspaceAccessResponse, shared::traits::{ServiceBase, ServiceCreateMethod, ServiceUpdateMethod},
+};
 
-pub async fn get_workspace_access<'a>(
-    executor: impl sqlx::Executor<'a, Database = sqlx::Postgres> + Copy,
-    user_id: Uuid,
-    workspace_id: Uuid,
-) -> Result<WorkspaceAccessResponse, ErrorResponse> {
-    let workspace_access = rust_api::entities::workspace_access::repository::get_workspace_access(
-        executor,
-        user_id,
-        workspace_id,
-    )
-    .await
-    .map_err(ErrorResponse::from)?;
+pub struct WorkspaceAccessService;
 
-    let user =
-        crate::entities::user::service::find_by_id(executor, workspace_access.user_id).await?;
-
-    Ok(WorkspaceAccessResponse {
-        created_at: workspace_access.created_at,
-        updated_at: workspace_access.updated_at,
-        deleted_at: workspace_access.deleted_at,
-        id: workspace_access.id,
-        user,
-        role: workspace_access.role,
-    })
+impl ServiceBase for WorkspaceAccessService {
+    type Response = WorkspaceAccess;
 }
 
-pub async fn get_workspace_access_list<'a>(
-    executor: impl sqlx::Executor<'a, Database = sqlx::Postgres> + Copy,
-    workspace_id: Uuid,
-) -> Result<Vec<WorkspaceAccessResponse>, ErrorResponse> {
-    let workspace_access_list =
-        rust_api::entities::workspace_access::repository::get_workspace_access_list(
-            executor,
-            workspace_id,
+impl ServiceCreateMethod for WorkspaceAccessService {
+    type CreateDto = rust_api::entities::workspace_access::dto::CreateWorkspaceAccessDto;
+
+    async fn create(
+        app_state: &crate::types::app_state::AppState,
+        dto: Self::CreateDto,
+    ) -> Result<Self::Response, ErrorResponse> {
+        rust_api::entities::workspace_access::repository::create_workspace_access(
+            &app_state.postgres,
+            dto,
         )
         .await
-        .map_err(ErrorResponse::from)?;
+        .map_err(ErrorResponse::from)
+    }
+}
 
-    let mut workspace_access_list_response = Vec::new();
+impl ServiceUpdateMethod for WorkspaceAccessService {
+    type UpdateDto = rust_api::entities::workspace_access::dto::UpdateWorkspaceAccessDto;
 
-    for workspace_access in workspace_access_list {
-        let user =
-            crate::entities::user::service::find_by_id(executor, workspace_access.user_id).await?;
-        workspace_access_list_response.push(WorkspaceAccessResponse {
+    async fn update(
+        app_state: &crate::types::app_state::AppState,
+        _: Uuid,
+        dto: Self::UpdateDto,
+    ) -> Result<Self::Response, ErrorResponse> {
+        rust_api::entities::workspace_access::repository::update_workspace_access(
+            &app_state.postgres,
+            dto,
+        )
+        .await
+        .map_err(ErrorResponse::from)
+    }
+}
+
+impl WorkspaceAccessService {
+    pub async fn get_workspace_access<'a>(
+        app_state: &crate::types::app_state::AppState,
+        user_id: Uuid,
+        workspace_id: Uuid,
+    ) -> Result<WorkspaceAccessResponse, ErrorResponse> {
+        let workspace_access =
+            rust_api::entities::workspace_access::repository::get_workspace_access(
+                &app_state.postgres,
+                user_id,
+                workspace_id,
+            )
+            .await
+            .map_err(ErrorResponse::from)?;
+
+        let user = rust_api::entities::user::repository::find_by_id(
+            &app_state.postgres,
+            workspace_access.user_id,
+        )
+        .await?;
+
+        Ok(WorkspaceAccessResponse {
             created_at: workspace_access.created_at,
             updated_at: workspace_access.updated_at,
             deleted_at: workspace_access.deleted_at,
             id: workspace_access.id,
             user,
             role: workspace_access.role,
-        });
+        })
     }
 
-    Ok(workspace_access_list_response)
-}
+    pub async fn get_workspace_access_list<'a>(
+        app_state: &crate::types::app_state::AppState,
+        workspace_id: Uuid,
+    ) -> Result<Vec<WorkspaceAccessResponse>, ErrorResponse> {
+        let workspace_access_list =
+            rust_api::entities::workspace_access::repository::get_workspace_access_list(
+                &app_state.postgres,
+                workspace_id,
+            )
+            .await
+            .map_err(ErrorResponse::from)?;
 
-pub async fn create_workspace_access<'a>(
-    executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
-    user_id: Uuid,
-    workspace_id: Uuid,
-    role: rust_api::entities::workspace_access::model::Role,
-) -> Result<WorkspaceAccess, ErrorResponse> {
-    rust_api::entities::workspace_access::repository::create_workspace_access(
-        executor,
-        user_id,
-        workspace_id,
-        role,
-    )
-    .await
-    .map_err(ErrorResponse::from)
-}
+        let mut workspace_access_list_response = Vec::new();
 
-pub async fn update_workspace_access<'a>(
-    executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
-    user_id: Uuid,
-    workspace_id: Uuid,
-    role: Option<rust_api::entities::workspace_access::model::Role>,
-) -> Result<WorkspaceAccess, ErrorResponse> {
-    rust_api::entities::workspace_access::repository::update_workspace_access(
-        executor,
-        user_id,
-        workspace_id,
-        role,
-    )
-    .await
-    .map_err(ErrorResponse::from)
+        for workspace_access in workspace_access_list {
+            let user = rust_api::entities::user::repository::find_by_id(
+                &app_state.postgres,
+                workspace_access.user_id,
+            )
+            .await?;
+            workspace_access_list_response.push(WorkspaceAccessResponse {
+                created_at: workspace_access.created_at,
+                updated_at: workspace_access.updated_at,
+                deleted_at: workspace_access.deleted_at,
+                id: workspace_access.id,
+                user,
+                role: workspace_access.role,
+            });
+        }
+
+        Ok(workspace_access_list_response)
+    }
 }

@@ -1,6 +1,9 @@
 use std::collections::HashMap;
 
-use axum::{extract::{Path, State}, Extension};
+use axum::{
+    extract::{Path, State},
+    Extension,
+};
 
 use error_handlers::{codes, handlers::ErrorResponse};
 
@@ -28,26 +31,27 @@ pub async fn get_workspace_access_list(
     axum::Json<Vec<crate::entities::workspace_access::dto::WorkspaceAccessResponse>>,
     ErrorResponse,
 > {
-    let user_workspace_access = crate::entities::workspace_access::service::get_workspace_access(
-        &state.postgres,
-        user_id,
-        workspace_id,
-    )
-    .await
-    .map_err(|e| {
-        if e.status_code == 404 {
-            return ErrorResponse::forbidden(
-                codes::ForbiddenErrorCode::InsufficientPermissions,
-                Some(HashMap::from([(
-                    "message".to_string(),
-                    "Insufficient permissions".to_string(),
-                )])),
-                None,
-            );
-        }
+    let user_workspace_access =
+        crate::entities::workspace_access::WorkspaceAccessService::get_workspace_access(
+            &state,
+            user_id,
+            workspace_id,
+        )
+        .await
+        .map_err(|e| {
+            if e.status_code == 404 {
+                return ErrorResponse::forbidden(
+                    codes::ForbiddenErrorCode::InsufficientPermissions,
+                    Some(HashMap::from([(
+                        "message".to_string(),
+                        "Insufficient permissions".to_string(),
+                    )])),
+                    None,
+                );
+            }
 
-        e
-    })?;
+            e
+        })?;
 
     if user_workspace_access.role < rust_api::entities::workspace_access::model::Role::Member {
         return Err(ErrorResponse::forbidden(
@@ -61,8 +65,8 @@ pub async fn get_workspace_access_list(
     }
 
     let workspace_access_list =
-        crate::entities::workspace_access::service::get_workspace_access_list(
-            &state.postgres,
+        crate::entities::workspace_access::WorkspaceAccessService::get_workspace_access_list(
+            &state,
             workspace_id,
         )
         .await

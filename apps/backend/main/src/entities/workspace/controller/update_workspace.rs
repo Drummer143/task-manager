@@ -8,7 +8,7 @@ use error_handlers::handlers::ErrorResponse;
 use rust_api::entities::workspace::dto::UpdateWorkspaceDto;
 use uuid::Uuid;
 
-use crate::entities::workspace::dto::WorkspaceResponse;
+use crate::{entities::workspace::dto::WorkspaceResponse, shared::traits::ServiceUpdateMethod};
 
 #[utoipa::path(
     put,
@@ -32,13 +32,9 @@ pub async fn update_workspace(
     Path(workspace_id): Path<Uuid>,
     Json(dto): Json<UpdateWorkspaceDto>,
 ) -> Result<WorkspaceResponse, ErrorResponse> {
-    let workspace = crate::entities::workspace::service::update_workspace(
-        &state.postgres,
-        workspace_id,
-        dto,
-    )
-    .await
-    .map(WorkspaceResponse::from)?;
+    let workspace = crate::entities::workspace::WorkspaceService::update(&state, workspace_id, dto)
+        .await
+        .map(WorkspaceResponse::from)?;
 
     let payload = HashMap::from([
         ("message", format!("workspace:{}", workspace.id)),

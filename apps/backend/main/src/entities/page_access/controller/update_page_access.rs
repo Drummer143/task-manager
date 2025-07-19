@@ -4,9 +4,13 @@ use axum::{
     extract::{Path, State},
     Extension, Json,
 };
+use error_handlers::handlers::ErrorResponse;
 use uuid::Uuid;
 
-use crate::entities::page_access::dto::PageAccessResponse;
+use crate::{
+    entities::page_access::dto::{PageAccessResponse, UpdatePageAccessDto},
+    shared::traits::ServiceUpdateMethod,
+};
 
 #[utoipa::path(
     put,
@@ -23,17 +27,17 @@ use crate::entities::page_access::dto::PageAccessResponse;
         ("workspace_id" = Uuid, Path, description = "Workspace ID"),
         ("page_id" = Uuid, Path, description = "Page ID"),
     ),
-    request_body = rust_api::entities::page_access::dto::UpdatePageAccessDto,
+    request_body = UpdatePageAccessDto,
     tags = ["Page Access"],
 )]
 pub async fn update_page_access(
     State(state): State<crate::types::app_state::AppState>,
     Extension(user_id): Extension<Uuid>,
     Path((_, page_id)): Path<(Uuid, Uuid)>,
-    Json(dto): Json<rust_api::entities::page_access::dto::UpdatePageAccessDto>,
-) -> impl axum::response::IntoResponse {
+    Json(dto): Json<UpdatePageAccessDto>,
+) -> Result<PageAccessResponse, ErrorResponse> {
     let user_page_access =
-        crate::entities::page_access::service::get_page_access(&state.postgres, user_id, page_id)
+        crate::entities::page_access::PageAccessService::get_page_access(&state, user_id, page_id)
             .await
             .map_err(|e| {
                 if e.status_code == 404 {
@@ -63,11 +67,14 @@ pub async fn update_page_access(
 
     // TODO: complete access checks
 
-    let page_access = crate::entities::page_access::service::update_page_access(
-        &state.postgres,
-        dto.user_id,
-        page_id,
-        dto.role,
+    let page_access = crate::entities::page_access::PageAccessService::update(
+        &state,
+        Uuid::nil(),
+        rust_api::entities::page_access::dto::UpdatePageAccessDto {
+            user_id: dto.user_id,
+            page_id,
+            role: dto.role,
+        },
     )
     .await?;
 

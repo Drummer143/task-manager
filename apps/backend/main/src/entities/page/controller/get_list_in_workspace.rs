@@ -15,7 +15,7 @@ use crate::{
         },
         workspace::dto::WorkspaceResponseWithoutInclude,
     },
-    shared::extractors::query::ValidatedQuery,
+    shared::{extractors::query::ValidatedQuery, traits::ServiceGetOneByIdMethod},
     types::app_state::AppState,
 };
 
@@ -78,7 +78,7 @@ pub async fn get_list_in_workspace(
     Path(workspace_id): Path<Uuid>,
 ) -> Result<Json<Vec<PageResponse>>, ErrorResponse> {
     let pages =
-        crate::entities::page::service::get_all_in_workspace(&state.postgres, workspace_id).await;
+        crate::entities::page::PageService::get_all_in_workspace(&state, workspace_id).await;
 
     if let Err(error) = pages {
         return Err(error);
@@ -107,7 +107,7 @@ pub async fn get_list_in_workspace(
                 text: page.text.map(crate::entities::page::dto::DocResponse::from),
                 owner: if include_owner {
                     Some(
-                        crate::entities::user::service::find_by_id(&state.postgres, page.owner_id)
+                        crate::entities::user::UserService::get_one_by_id(&state, page.owner_id)
                             .await?,
                     )
                 } else {
@@ -121,21 +121,25 @@ pub async fn get_list_in_workspace(
                     )
                     .await
                     .map_err(|e| match e {
-                        sqlx::Error::RowNotFound => {
-                            ErrorResponse::not_found(codes::NotFoundErrorCode::NotFound, None, Some(e.to_string()))
-                        }
+                        sqlx::Error::RowNotFound => ErrorResponse::not_found(
+                            codes::NotFoundErrorCode::NotFound,
+                            None,
+                            Some(e.to_string()),
+                        ),
                         error => ErrorResponse::internal_server_error(Some(error.to_string())),
                     })?
                     .role,
                 ),
                 workspace: if include_workspace {
                     Some(
-                        crate::entities::workspace::service::get_by_id(
-                            &state.postgres,
+                        crate::entities::workspace::WorkspaceService::get_one_by_id(
+                            &state,
                             page.workspace_id,
                         )
                         .await
-                        .map(WorkspaceResponseWithoutInclude::from)?,
+                        .map(|workspace_info| {
+                            WorkspaceResponseWithoutInclude::from(workspace_info.workspace)
+                        })?,
                     )
                 } else {
                     None

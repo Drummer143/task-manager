@@ -21,6 +21,8 @@ pub struct CreatePageDto {
     pub parent_page_id: Option<Uuid>,
     pub r#type: PageType,
     pub text: Option<PageTextDto>,
+    pub workspace_id: Uuid,
+    pub owner_id: Uuid,
 }
 
 #[derive(Debug, Deserialize, utoipa::ToSchema)]

@@ -12,6 +12,8 @@ pub struct CreateTaskDto {
     pub description: Option<serde_json::Value>,
     pub due_date: Option<DateTime<Utc>>,
     pub assignee_id: Option<Uuid>,
+    pub reporter_id: Uuid,
+    pub page_id: Uuid,
 }
 
 #[derive(Debug, Deserialize, utoipa::ToSchema)]

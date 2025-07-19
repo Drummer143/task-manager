@@ -34,9 +34,7 @@ pub async fn get_page_access_list<'a>(
 
 pub async fn create_page_access<'a>(
     executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
-    user_id: Uuid,
-    page_id: Uuid,
-    role: super::model::Role,
+    dto: super::dto::CreatePageAccessDto,
 ) -> Result<super::model::PageAccess, sqlx::Error> {
     sqlx::query_as::<_, super::model::PageAccess>(
         r#"
@@ -45,20 +43,18 @@ pub async fn create_page_access<'a>(
         RETURNING *
         "#,
     )
-    .bind(user_id)
-    .bind(page_id)
-    .bind(role)
+    .bind(dto.user_id)
+    .bind(dto.page_id)
+    .bind(dto.role)
     .fetch_one(executor)
     .await
 }
 
 pub async fn update_page_access<'a>(
     executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
-    user_id: Uuid,
-    page_id: Uuid,
-    role: Option<super::model::Role>,
+    dto: super::dto::UpdatePageAccessDto,
 ) -> Result<super::model::PageAccess, sqlx::Error> {
-    if role.is_none() {
+    if dto.role.is_none() {
         return sqlx::query_as::<_, super::model::PageAccess>(
             r#"
             DELETE FROM page_accesses
@@ -66,8 +62,8 @@ pub async fn update_page_access<'a>(
             RETURNING *
             "#,
         )
-        .bind(user_id)
-        .bind(page_id)
+        .bind(dto.user_id)
+        .bind(dto.page_id)
         .fetch_one(executor)
         .await;
     }
@@ -80,9 +76,9 @@ pub async fn update_page_access<'a>(
             RETURNING *
             "#,
     )
-    .bind(user_id)
-    .bind(page_id)
-    .bind(role)
+    .bind(dto.user_id)
+    .bind(dto.page_id)
+    .bind(dto.role)
     .fetch_one(executor)
     .await
 }

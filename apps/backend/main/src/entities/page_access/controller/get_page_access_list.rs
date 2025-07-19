@@ -28,8 +28,8 @@ pub async fn get_page_access_list(
     axum::Json<Vec<crate::entities::page_access::dto::PageAccessResponse>>,
     error_handlers::handlers::ErrorResponse,
 > {
-    let user_page_access = crate::entities::page_access::service::get_page_access(
-        &state.postgres,
+    let user_page_access = crate::entities::page_access::PageAccessService::get_page_access(
+        &state,
         user_id,
         page_id,
     )
@@ -57,8 +57,8 @@ pub async fn get_page_access_list(
     }
 
     let page_access_list =
-        crate::entities::page_access::service::get_page_access_list(
-            &state.postgres,
+        crate::entities::page_access::PageAccessService::get_page_access_list(
+            &state,
             page_id,
         )
         .await

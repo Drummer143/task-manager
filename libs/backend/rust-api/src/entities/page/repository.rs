@@ -52,16 +52,14 @@ pub async fn get_child_pages<'a>(
 
 pub async fn create<'a>(
     executor: impl Executor<'a, Database = Postgres>,
-    page: super::dto::CreatePageDto,
-    workspace_id: Uuid,
-    owner_id: Uuid,
+    dto: super::dto::CreatePageDto,
 ) -> Result<Page, sqlx::Error> {
     sqlx::query_as::<_, Page>("INSERT INTO pages (title, parent_page_id, type, workspace_id, owner_id) VALUES ($1, $2, $3, $4, $5) RETURNING *")
-        .bind(page.title)
-        .bind(page.parent_page_id)
-        .bind(page.r#type)
-        .bind(workspace_id)
-        .bind(owner_id)
+        .bind(dto.title)
+        .bind(dto.parent_page_id)
+        .bind(dto.r#type)
+        .bind(dto.workspace_id)
+        .bind(dto.owner_id)
         .fetch_one(executor)
         .await
 }

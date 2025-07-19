@@ -39,7 +39,7 @@ pub async fn page_access_guard(
     let page_id = page_id.unwrap();
 
     let page_access =
-        crate::entities::page_access::service::get_page_access(&state.postgres, user_id, page_id)
+        crate::entities::page_access::PageAccessService::get_page_access(&state, user_id, page_id)
             .await;
 
     if let Err(e) = page_access {

@@ -1,7 +1,10 @@
 use axum::{extract::State, Extension, Json};
 use error_handlers::handlers::ErrorResponse;
 
-use crate::entities::workspace::dto::{CreateWorkspaceDto, WorkspaceResponse};
+use crate::{
+    entities::workspace::dto::{CreateWorkspaceDto, WorkspaceResponse},
+    shared::traits::ServiceCreateMethod,
+};
 
 #[utoipa::path(
     post,
@@ -21,8 +24,8 @@ pub async fn create_workspace(
     Extension(user_id): Extension<uuid::Uuid>,
     Json(dto): Json<CreateWorkspaceDto>,
 ) -> Result<WorkspaceResponse, ErrorResponse> {
-    let workspace = crate::entities::workspace::service::create_workspace(
-        &state.postgres,
+    let workspace = crate::entities::workspace::WorkspaceService::create(
+        &state,
         rust_api::entities::workspace::dto::CreateWorkspaceDto {
             name: dto.name,
             owner_id: user_id,
