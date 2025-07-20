@@ -1,3 +1,4 @@
+use rust_api::shared::traits::PostgresqlRepositoryGetOneById;
 use uuid::Uuid;
 
 use error_handlers::handlers::ErrorResponse;
@@ -18,7 +19,7 @@ impl ServiceGetOneByIdMethod for UserService {
         app_state: &AppState,
         id: Uuid,
     ) -> Result<Self::Response, ErrorResponse> {
-        rust_api::entities::user::repository::find_by_id(&app_state.postgres, id)
+        rust_api::entities::user::UserRepository::get_one_by_id(&app_state.postgres, id)
             .await
             .map_err(ErrorResponse::from)
     }
@@ -39,7 +40,7 @@ impl ServiceGetAllWithPaginationMethod for UserService {
         let limit = limit.unwrap_or(rust_api::shared::constants::DEFAULT_LIMIT);
         let offset = offset.unwrap_or(rust_api::shared::constants::DEFAULT_OFFSET);
 
-        rust_api::entities::user::repository::get_list(
+        rust_api::entities::user::UserRepository::get_list(
             &app_state.postgres,
             limit,
             offset,

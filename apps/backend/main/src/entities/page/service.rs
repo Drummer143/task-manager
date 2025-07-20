@@ -1,11 +1,11 @@
 use error_handlers::handlers::ErrorResponse;
 use uuid::Uuid;
 
-use rust_api::entities::page::{
+use rust_api::{entities::page::{
     dto::{CreatePageDto, UpdatePageDto},
     model::{Doc, Page, PageType},
-    repository,
-};
+    PageRepository,
+}, shared::traits::{PostgresqlRepositoryCreate, PostgresqlRepositoryDelete, PostgresqlRepositoryGetOneById, PostgresqlRepositoryUpdate}};
 
 use crate::{
     shared::traits::{
@@ -37,7 +37,7 @@ impl ServiceCreateMethod for PageService {
 
         let owner_id = dto.owner_id.clone();
 
-        let page = repository::create(&mut *tx, dto)
+        let page = PageRepository::create(&mut *tx, dto)
             .await
             .map_err(ErrorResponse::from);
 
@@ -80,7 +80,7 @@ impl ServiceCreateMethod for PageService {
                 .mongo
                 .database(rust_api::shared::constants::PAGE_TEXT_COLLECTION);
 
-            let text = repository::update_page_text(&page_text_collection, doc)
+            let text = PageRepository::update_page_text(&page_text_collection, doc)
                 .await
                 .map_err(ErrorResponse::from);
 
@@ -115,11 +115,11 @@ impl ServiceUpdateMethod for PageService {
         let doc_dto = dto.text.clone();
 
         let mut page = if dto.title.is_some() {
-            repository::update(&mut *tx, id, dto)
+            PageRepository::update(&mut *tx, id, dto)
                 .await
                 .map_err(ErrorResponse::from)?
         } else {
-            repository::get_by_id(&mut *tx, id)
+            PageRepository::get_one_by_id(&mut *tx, id)
                 .await
                 .map_err(ErrorResponse::from)?
         };
@@ -140,7 +140,7 @@ impl ServiceUpdateMethod for PageService {
                     .mongo
                     .database(rust_api::shared::constants::PAGE_TEXT_COLLECTION);
 
-                let prev_doc = repository::get_page_text(&page_text_collection, page.id)
+                let prev_doc = PageRepository::get_page_text(&page_text_collection, page.id)
                     .await
                     .map_err(ErrorResponse::from)?;
 
@@ -150,7 +150,7 @@ impl ServiceUpdateMethod for PageService {
                     doc.version = 1;
                 }
 
-                let text = repository::update_page_text(&page_text_collection, doc)
+                let text = PageRepository::update_page_text(&page_text_collection, doc)
                     .await
                     .map_err(ErrorResponse::from);
 
@@ -174,7 +174,7 @@ impl ServiceGetOneByIdMethod for PageService {
         app_state: &AppState,
         id: Uuid,
     ) -> Result<Self::Response, ErrorResponse> {
-        let mut page = repository::get_by_id(&app_state.postgres, id)
+        let mut page = PageRepository::get_one_by_id(&app_state.postgres, id)
             .await
             .map_err(ErrorResponse::from)?;
 
@@ -183,7 +183,7 @@ impl ServiceGetOneByIdMethod for PageService {
                 .mongo
                 .database(rust_api::shared::constants::PAGE_TEXT_COLLECTION);
 
-            page.text = repository::get_page_text(&page_text_collection, page.id)
+            page.text = PageRepository::get_page_text(&page_text_collection, page.id)
                 .await
                 .map_err(ErrorResponse::from)?;
         }
@@ -200,7 +200,7 @@ impl ServiceDeleteMethod for PageService {
             .await
             .map_err(ErrorResponse::from)?;
 
-        let page = repository::delete(&mut *tx, id)
+        let page = PageRepository::delete(&mut *tx, id)
             .await
             .map_err(ErrorResponse::from)?;
 
@@ -209,7 +209,7 @@ impl ServiceDeleteMethod for PageService {
                 .mongo
                 .database(rust_api::shared::constants::PAGE_TEXT_COLLECTION);
 
-            repository::delete_page_text(&page_text_collection, page.id)
+            PageRepository::delete_page_text(&page_text_collection, page.id)
                 .await
                 .map_err(ErrorResponse::from)?;
         }
@@ -225,7 +225,7 @@ impl PageService {
         app_state: &AppState,
         workspace_id: Uuid,
     ) -> Result<Vec<Page>, ErrorResponse> {
-        repository::get_all_in_workspace(&app_state.postgres, workspace_id)
+        PageRepository::get_all_in_workspace(&app_state.postgres, workspace_id)
             .await
             .map_err(ErrorResponse::from)
     }
@@ -234,7 +234,7 @@ impl PageService {
         app_state: &AppState,
         page_id: Uuid,
     ) -> Result<Vec<Page>, ErrorResponse> {
-        repository::get_child_pages(&app_state.postgres, page_id)
+        PageRepository::get_child_pages(&app_state.postgres, page_id)
             .await
             .map_err(ErrorResponse::from)
     }

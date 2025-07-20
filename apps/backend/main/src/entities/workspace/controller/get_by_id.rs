@@ -3,6 +3,7 @@ use axum::{
     Extension,
 };
 use error_handlers::handlers::ErrorResponse;
+use rust_api::shared::traits::PostgresqlRepositoryGetOneById;
 
 use crate::{
     entities::{
@@ -40,7 +41,7 @@ pub async fn get_by_id(
 
     let owner = if include.contains(&Include::Owner) {
         Some(
-            rust_api::entities::user::repository::find_by_id(
+            rust_api::entities::user::UserRepository::get_one_by_id(
                 &state.postgres,
                 workspace.workspace.owner_id,
             )
@@ -64,7 +65,7 @@ pub async fn get_by_id(
         None
     };
 
-    let role = rust_api::entities::workspace_access::repository::get_workspace_access(
+    let role = rust_api::entities::workspace_access::WorkspaceAccessRepository::get_one(
         &state.postgres,
         user_id,
         workspace_id,

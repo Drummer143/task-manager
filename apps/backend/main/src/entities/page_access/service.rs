@@ -21,7 +21,7 @@ impl ServiceCreateMethod for PageAccessService {
         app_state: &crate::types::app_state::AppState,
         dto: Self::CreateDto,
     ) -> Result<Self::Response, ErrorResponse> {
-        rust_api::entities::page_access::repository::create_page_access(&app_state.postgres, dto)
+        rust_api::entities::page_access::PageAccessRepository::create(&app_state.postgres, dto)
             .await
             .map_err(|e| match e {
                 sqlx::Error::Database(e) => {
@@ -48,7 +48,7 @@ impl ServiceUpdateMethod for PageAccessService {
         _: Uuid,
         dto: Self::UpdateDto,
     ) -> Result<Self::Response, ErrorResponse> {
-        rust_api::entities::page_access::repository::update_page_access(&app_state.postgres, dto)
+        rust_api::entities::page_access::PageAccessRepository::update(&app_state.postgres, dto)
             .await
             .map_err(|e| match e {
                 sqlx::Error::RowNotFound => ErrorResponse::not_found(
@@ -67,7 +67,7 @@ impl PageAccessService {
         user_id: Uuid,
         page_id: Uuid,
     ) -> Result<PageAccessResponse, ErrorResponse> {
-        let page_access = rust_api::entities::page_access::repository::get_page_access(
+        let page_access = rust_api::entities::page_access::PageAccessRepository::get_one(
             &app_state.postgres,
             user_id,
             page_id,
@@ -100,7 +100,7 @@ impl PageAccessService {
         app_state: &crate::types::app_state::AppState,
         page_id: Uuid,
     ) -> Result<Vec<PageAccessResponse>, ErrorResponse> {
-        let page_access_list = rust_api::entities::page_access::repository::get_page_access_list(
+        let page_access_list = rust_api::entities::page_access::PageAccessRepository::get_list(
             &app_state.postgres,
             page_id,
         )

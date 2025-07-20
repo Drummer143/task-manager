@@ -1,6 +1,7 @@
 use error_handlers::codes;
 use error_handlers::handlers::ErrorResponse;
 use rust_api::entities::user::model::User;
+use rust_api::shared::traits::PostgresqlRepositoryCreate;
 
 use crate::shared::traits::ServiceCreateMethod;
 use crate::types::app_state::AppState;
@@ -13,22 +14,24 @@ impl AuthService {
         email: &str,
         password: &str,
     ) -> Result<User, ErrorResponse> {
-        let user = rust_api::entities::user::repository::find_by_email(&state.postgres, email)
-            .await
-            .map_err(|e| match e {
-                sqlx::Error::RowNotFound => ErrorResponse::unauthorized(
-                    codes::UnauthorizedErrorCode::InvalidCredentials,
-                    Some(e.to_string()),
-                ),
-                _ => ErrorResponse::internal_server_error(None),
-            })?;
+        let user =
+            rust_api::entities::user::UserRepository::get_one_by_email(&state.postgres, email)
+                .await
+                .map_err(|e| match e {
+                    sqlx::Error::RowNotFound => ErrorResponse::unauthorized(
+                        codes::UnauthorizedErrorCode::InvalidCredentials,
+                        Some(e.to_string()),
+                    ),
+                    _ => ErrorResponse::internal_server_error(None),
+                })?;
 
-        let is_valid = rust_api::entities::user_credentials::repository::verify_credentials(
-            &state.postgres,
-            user.id,
-            password,
-        )
-        .await;
+        let is_valid =
+            rust_api::entities::user_credentials::UserCredentialsRepository::verify_credentials(
+                &state.postgres,
+                user.id,
+                password,
+            )
+            .await;
 
         if !is_valid {
             return Err(ErrorResponse::unauthorized(
@@ -45,7 +48,8 @@ impl AuthService {
         dto: &super::dto::RegisterDto,
     ) -> Result<User, ErrorResponse> {
         let user =
-            rust_api::entities::user::repository::find_by_email(&state.postgres, &dto.email).await;
+            rust_api::entities::user::UserRepository::get_one_by_email(&state.postgres, &dto.email)
+                .await;
 
         if let Err(err) = user {
             if !matches!(err, sqlx::Error::RowNotFound) {
@@ -65,7 +69,7 @@ impl AuthService {
             .await
             .map_err(|error| ErrorResponse::internal_server_error(Some(error.to_string())))?;
 
-        let user = rust_api::entities::user::repository::create(
+        let user = rust_api::entities::user::UserRepository::create(
             &mut *tx,
             rust_api::entities::user::dto::CreateUserDto {
                 email: dto.email.clone(),
@@ -85,7 +89,7 @@ impl AuthService {
         let user = user.unwrap();
 
         let user_credentials =
-            rust_api::entities::user_credentials::repository::create_credentials(
+            rust_api::entities::user_credentials::UserCredentialsRepository::create_credentials(
                 &mut *tx,
                 user.id,
                 &dto.password,

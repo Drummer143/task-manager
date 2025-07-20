@@ -114,7 +114,7 @@ pub async fn get_list_in_workspace(
                     None
                 },
                 role: Some(
-                    rust_api::entities::page_access::repository::get_page_access(
+                    rust_api::entities::page_access::PageAccessRepository::get_one(
                         &state.postgres,
                         page.owner_id,
                         page.id,

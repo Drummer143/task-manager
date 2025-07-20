@@ -1,2 +1,4 @@
-pub mod repository;
 pub mod model;
+mod repository;
+
+pub use repository::UserCredentialsRepository;

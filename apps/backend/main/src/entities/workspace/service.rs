@@ -1,13 +1,15 @@
 use error_handlers::handlers::ErrorResponse;
 use rust_api::{
     entities::workspace::{dto::WorkspaceSortBy, model::Workspace},
-    shared::types::SortOrder,
+    shared::{traits::{PostgresqlRepositoryCreate, PostgresqlRepositoryGetOneById, PostgresqlRepositoryUpdate}, types::SortOrder},
 };
 use uuid::Uuid;
 
 use crate::{
     entities::page::dto::PageResponseWithoutInclude,
-    shared::traits::{ServiceBase, ServiceCreateMethod, ServiceGetOneByIdMethod, ServiceUpdateMethod},
+    shared::traits::{
+        ServiceBase, ServiceCreateMethod, ServiceGetOneByIdMethod, ServiceUpdateMethod,
+    },
     types::app_state::AppState,
 };
 
@@ -32,7 +34,7 @@ impl ServiceCreateMethod for WorkspaceService {
             .await
             .map_err(ErrorResponse::from)?;
 
-        let workspace = rust_api::entities::workspace::repository::create(&mut *tx, dto).await;
+        let workspace = rust_api::entities::workspace::WorkspaceRepository::create(&mut *tx, dto).await;
 
         if let Err(err) = workspace {
             let _ = tx.rollback().await;
@@ -42,7 +44,7 @@ impl ServiceCreateMethod for WorkspaceService {
         let workspace = workspace.unwrap();
 
         let workspace_access =
-            rust_api::entities::workspace_access::repository::create_workspace_access(
+            rust_api::entities::workspace_access::WorkspaceAccessRepository::create(
                 &mut *tx,
                 rust_api::entities::workspace_access::dto::CreateWorkspaceAccessDto {
                     user_id: workspace.owner_id,
@@ -77,7 +79,7 @@ impl ServiceUpdateMethod for WorkspaceService {
         dto: Self::UpdateDto,
     ) -> Result<Self::Response, ErrorResponse> {
         let workspace =
-            rust_api::entities::workspace::repository::update(&app_state.postgres, id, dto)
+            rust_api::entities::workspace::WorkspaceRepository::update(&app_state.postgres, id, dto)
                 .await
                 .map_err(ErrorResponse::from)?;
 
@@ -96,7 +98,7 @@ impl ServiceGetOneByIdMethod for WorkspaceService {
         id: Uuid,
     ) -> Result<Self::Response, ErrorResponse> {
         let workspace =
-            rust_api::entities::workspace::repository::get_by_id(&app_state.postgres, id)
+            rust_api::entities::workspace::WorkspaceRepository::get_one_by_id(&app_state.postgres, id)
                 .await
                 .map_err(ErrorResponse::from)?;
 
@@ -121,7 +123,7 @@ impl WorkspaceService {
         include_owner: bool,
         include_pages: bool,
     ) -> Result<(Vec<super::dto::WorkspaceInfo>, i64), ErrorResponse> {
-        let (rows, count) = rust_api::entities::workspace::repository::get_list(
+        let (rows, count) = rust_api::entities::workspace::WorkspaceRepository::get_list(
             &app_state.postgres,
             user_id,
             limit,
@@ -148,7 +150,7 @@ impl WorkspaceService {
                 role: Some(row.role),
                 owner: if include_owner {
                     Some(
-                        rust_api::entities::user::repository::find_by_id(
+                        rust_api::entities::user::UserRepository::get_one_by_id(
                             &app_state.postgres,
                             row.owner_id,
                         )
@@ -187,7 +189,7 @@ impl WorkspaceService {
         app_state: &AppState,
         workspace_id: Uuid,
     ) -> Result<(), ErrorResponse> {
-        rust_api::entities::workspace::repository::soft_delete(&app_state.postgres, workspace_id)
+        rust_api::entities::workspace::WorkspaceRepository::soft_delete(&app_state.postgres, workspace_id)
             .await
             .map_err(ErrorResponse::from)
     }
@@ -196,7 +198,7 @@ impl WorkspaceService {
         app_state: &AppState,
         workspace_id: Uuid,
     ) -> Result<(), ErrorResponse> {
-        rust_api::entities::workspace::repository::cancel_soft_delete(
+        rust_api::entities::workspace::WorkspaceRepository::cancel_soft_delete(
             &app_state.postgres,
             workspace_id,
         )
@@ -208,7 +210,7 @@ impl WorkspaceService {
         app_state: &AppState,
         user_id: Uuid,
     ) -> Result<Workspace, ErrorResponse> {
-        rust_api::entities::workspace::repository::get_any_workspace_user_has_access_to(
+        rust_api::entities::workspace::WorkspaceRepository::get_any_workspace_user_has_access_to(
             &app_state.postgres,
             user_id,
         )

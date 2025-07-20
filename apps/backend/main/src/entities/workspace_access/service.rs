@@ -1,5 +1,5 @@
 use error_handlers::handlers::ErrorResponse;
-use rust_api::entities::workspace_access::model::WorkspaceAccess;
+use rust_api::{entities::workspace_access::model::WorkspaceAccess, shared::traits::PostgresqlRepositoryGetOneById};
 use uuid::Uuid;
 
 use crate::{
@@ -19,7 +19,7 @@ impl ServiceCreateMethod for WorkspaceAccessService {
         app_state: &crate::types::app_state::AppState,
         dto: Self::CreateDto,
     ) -> Result<Self::Response, ErrorResponse> {
-        rust_api::entities::workspace_access::repository::create_workspace_access(
+        rust_api::entities::workspace_access::WorkspaceAccessRepository::create(
             &app_state.postgres,
             dto,
         )
@@ -36,7 +36,7 @@ impl ServiceUpdateMethod for WorkspaceAccessService {
         _: Uuid,
         dto: Self::UpdateDto,
     ) -> Result<Self::Response, ErrorResponse> {
-        rust_api::entities::workspace_access::repository::update_workspace_access(
+        rust_api::entities::workspace_access::WorkspaceAccessRepository::update(
             &app_state.postgres,
             dto,
         )
@@ -52,7 +52,7 @@ impl WorkspaceAccessService {
         workspace_id: Uuid,
     ) -> Result<WorkspaceAccessResponse, ErrorResponse> {
         let workspace_access =
-            rust_api::entities::workspace_access::repository::get_workspace_access(
+            rust_api::entities::workspace_access::WorkspaceAccessRepository::get_one(
                 &app_state.postgres,
                 user_id,
                 workspace_id,
@@ -60,7 +60,7 @@ impl WorkspaceAccessService {
             .await
             .map_err(ErrorResponse::from)?;
 
-        let user = rust_api::entities::user::repository::find_by_id(
+        let user = rust_api::entities::user::UserRepository::get_one_by_id(
             &app_state.postgres,
             workspace_access.user_id,
         )
@@ -81,7 +81,7 @@ impl WorkspaceAccessService {
         workspace_id: Uuid,
     ) -> Result<Vec<WorkspaceAccessResponse>, ErrorResponse> {
         let workspace_access_list =
-            rust_api::entities::workspace_access::repository::get_workspace_access_list(
+            rust_api::entities::workspace_access::WorkspaceAccessRepository::get_list(
                 &app_state.postgres,
                 workspace_id,
             )
@@ -91,7 +91,7 @@ impl WorkspaceAccessService {
         let mut workspace_access_list_response = Vec::new();
 
         for workspace_access in workspace_access_list {
-            let user = rust_api::entities::user::repository::find_by_id(
+            let user = rust_api::entities::user::UserRepository::get_one_by_id(
                 &app_state.postgres,
                 workspace_access.user_id,
             )

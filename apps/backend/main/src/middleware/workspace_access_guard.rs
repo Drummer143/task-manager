@@ -38,18 +38,19 @@ pub async fn workspace_access_guard(
     let user_id = user_id.unwrap().clone();
     let workspace_id = workspace_id.unwrap();
 
-    let workspace_access = rust_api::entities::workspace_access::repository::get_workspace_access(
-        &state.postgres,
-        user_id,
-        workspace_id,
-    )
-    .await;
+    let workspace_access =
+        rust_api::entities::workspace_access::WorkspaceAccessRepository::get_one(
+            &state.postgres,
+            user_id,
+            workspace_id,
+        )
+        .await;
 
     if workspace_access.is_err() {
         let body = serde_json::to_string(&ErrorResponse::forbidden(
             codes::ForbiddenErrorCode::InsufficientPermissions,
             None,
-            None
+            None,
         ))
         .unwrap();
 

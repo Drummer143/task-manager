@@ -4,6 +4,7 @@ use axum::{
     http::{header, HeaderMap, HeaderValue, StatusCode},
 };
 use error_handlers::{codes, handlers::ErrorResponse};
+use rust_api::shared::traits::PostgresqlRepositoryGetOneById;
 use std::path::PathBuf;
 use tokio::fs::File;
 use tokio::io::{AsyncReadExt, AsyncSeekExt};
@@ -35,7 +36,7 @@ pub async fn get_file(
     request: Request,
 ) -> Result<(StatusCode, HeaderMap, Body), ErrorResponse> {
     let asset =
-        rust_api::entities::asset::repository::get_asset_by_id(&app_state.postgres, file_id)
+        rust_api::entities::asset::AssetRepository::get_one_by_id(&app_state.postgres, file_id)
             .await
             .map_err(ErrorResponse::from)?;
 

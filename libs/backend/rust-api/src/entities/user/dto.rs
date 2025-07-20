@@ -3,26 +3,11 @@ use std::fmt;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use crate::shared::traits::UpdateDto;
-
 #[derive(Debug, Deserialize)]
 pub struct CreateUserDto {
     pub email: String,
     pub username: String,
     pub picture: Option<String>,
-}
-
-#[derive(Debug, Deserialize)]
-pub struct UpdateUserDto {
-    pub email: Option<String>,
-    pub username: Option<String>,
-    pub picture: Option<Option<String>>,
-}
-
-impl UpdateDto for UpdateUserDto {
-    fn is_empty(&self) -> bool {
-        self.email.is_none() && self.username.is_none() && self.picture.is_none()
-    }
 }
 
 /// The `query` field should be empty if there is an `email` or `username` field
