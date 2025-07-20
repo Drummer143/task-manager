@@ -1,7 +1,20 @@
 use chrono::{DateTime, Utc};
+use serde::Deserialize;
 use uuid::Uuid;
 
 use rust_api::entities::page_access::model::Role;
+
+#[derive(Debug, utoipa::ToSchema, Deserialize)]
+pub struct CreatePageAccessDto {
+    pub user_id: Uuid,
+    pub role: Role,
+}
+
+#[derive(Debug, utoipa::ToSchema, Deserialize)]
+pub struct UpdatePageAccessDto {
+    pub user_id: Uuid,
+    pub role: Option<Role>,
+}
 
 #[derive(Debug, serde::Serialize, utoipa::ToSchema, Clone)]
 pub struct PageAccessResponse {

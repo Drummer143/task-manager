@@ -4,7 +4,7 @@ use error_handlers::handlers::ErrorResponse;
 
 use crate::{
     entities::profile::dto::{GetProfileDto, GetProfileInclude, GetProfileQuery},
-    shared::extractors::query::ValidatedQuery,
+    shared::{extractors::query::ValidatedQuery, traits::ServiceGetOneByIdMethod},
     types::app_state::AppState,
 };
 
@@ -26,7 +26,7 @@ pub async fn get_profile(
     ValidatedQuery(query): ValidatedQuery<GetProfileQuery>,
     mut cookie_jar: axum_extra::extract::CookieJar,
 ) -> Result<impl axum::response::IntoResponse, ErrorResponse> {
-    let user = crate::entities::user::service::find_by_id(&state.postgres, user_id).await?;
+    let user = crate::entities::user::UserService::get_one_by_id(&state, user_id).await?;
 
     let mut profile_response = GetProfileDto {
         user,
@@ -46,11 +46,11 @@ pub async fn get_profile(
     let workspace_id = cookie_jar.get("workspace_id");
 
     if workspace_id.is_none() {
-        let workspace = crate::entities::workspace::service::get_any_workspace_user_has_access_to(
-            &state.postgres,
-            user_id,
-        )
-        .await?;
+        let workspace =
+            crate::entities::workspace::WorkspaceService::get_any_workspace_user_has_access_to(
+                &state, user_id,
+            )
+            .await?;
 
         let workspace_id = workspace.id;
 
@@ -65,9 +65,10 @@ pub async fn get_profile(
         let workspace_id = uuid::Uuid::parse_str(&workspace_id).unwrap();
 
         let workspace =
-            crate::entities::workspace::service::get_by_id(&state.postgres, workspace_id).await?;
+            crate::entities::workspace::WorkspaceService::get_one_by_id(&state, workspace_id)
+                .await?;
 
-        profile_response.workspace = Some(workspace);
+        profile_response.workspace = Some(workspace.workspace);
     }
 
     Ok((

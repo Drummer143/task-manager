@@ -1,8 +1,12 @@
-use axum::{extract::State, response::IntoResponse};
+use axum::extract::State;
 use error_handlers::handlers::ErrorResponse;
+use rust_api::entities::user::model::User;
 use uuid::Uuid;
 
-use crate::{shared::extractors::query::ValidatedQuery, types::app_state::AppState};
+use crate::{
+    shared::{extractors::query::ValidatedQuery, traits::ServiceGetAllWithPaginationMethod},
+    types::{app_state::AppState, pagination::Pagination},
+};
 
 #[derive(serde::Deserialize, Debug)]
 pub struct GetListQuery {
@@ -37,7 +41,7 @@ pub struct GetListQuery {
         ("sort_order" = Option<crate::types::pagination::SortOrder>, Query, description = "Sort order. Default: asc"),
     ),
     responses(
-        (status = 200, description = "List of users", body = crate::types::pagination::Pagination<rust_api::entities::user::model::User>),
+        (status = 200, description = "List of users", body = Pagination<User>),
         (status = 400, description = "Invalid query parameters", body = ErrorResponse),
         (status = 401, description = "Unauthorized", body = ErrorResponse),
         (status = 500, description = "Internal server error", body = ErrorResponse),
@@ -47,7 +51,7 @@ pub struct GetListQuery {
 pub async fn get_list(
     State(state): State<AppState>,
     ValidatedQuery(query): ValidatedQuery<GetListQuery>,
-) -> impl IntoResponse {
+) -> Result<Pagination<User>, ErrorResponse> {
     let filters = rust_api::entities::user::dto::UserFilterBy {
         email: query.email,
         username: query.username,
@@ -64,11 +68,12 @@ pub async fn get_list(
                 "You can't use all query with username or email filter at the same time"
                     .to_string(),
             )])),
+            None,
         ));
     }
 
-    let (users, total) = crate::entities::user::service::get_list(
-        &state.postgres,
+    let (users, total) = crate::entities::user::UserService::get_all_with_pagination(
+        &state,
         query.limit,
         query.offset,
         Some(filters),
@@ -77,7 +82,7 @@ pub async fn get_list(
     )
     .await?;
 
-    Ok(crate::types::pagination::Pagination::new(
+    Ok(Pagination::new(
         users,
         total,
         query

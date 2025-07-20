@@ -1,43 +1,108 @@
 use serde::{Deserialize, Serialize};
 
-/// Bad Request Error Codes
+/// 400 Bad Request Error Codes
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum BadRequestErrorCode {
     InvalidBody,
-    ValidationErrors,
-    UnsupportedField,
-    InvalidToken,
-    InvalidCredentials,
-    EmailTaken,
     InvalidParams,
     InvalidQueryParams,
-    NestedPage,
-    IncludeParamConflictOneOf,
-    AccessAlreadyGiven
 }
 
 impl std::fmt::Display for BadRequestErrorCode {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             BadRequestErrorCode::InvalidBody => write!(f, "invalid_body"),
-            BadRequestErrorCode::ValidationErrors => write!(f, "validation_errors"),
-            BadRequestErrorCode::UnsupportedField => write!(f, "unsupported_field"),
-            BadRequestErrorCode::InvalidToken => write!(f, "invalid_token"),
-            BadRequestErrorCode::InvalidCredentials => write!(f, "invalid_credentials"),
-            BadRequestErrorCode::EmailTaken => write!(f, "email_taken"),
             BadRequestErrorCode::InvalidParams => write!(f, "invalid_params"),
             BadRequestErrorCode::InvalidQueryParams => write!(f, "invalid_query_params"),
-            BadRequestErrorCode::NestedPage => write!(f, "nested_page"),
-            BadRequestErrorCode::IncludeParamConflictOneOf => {
-                write!(f, "include_param_conflict_one_of")
-            },
-            BadRequestErrorCode::AccessAlreadyGiven => write!(f, "access_already_given")
         }
     }
 }
 
-/// Field Error Codes
+/// 401 Unauthorized Errors
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum UnauthorizedErrorCode {
+    Unauthorized,
+    InvalidToken,
+    InvalidCredentials,
+}
+
+impl std::fmt::Display for UnauthorizedErrorCode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            UnauthorizedErrorCode::Unauthorized => write!(f, "unauthorized"),
+            UnauthorizedErrorCode::InvalidToken => write!(f, "invalid_token"),
+            UnauthorizedErrorCode::InvalidCredentials => write!(f, "invalid_credentials"),
+        }
+    }
+}
+
+/// 403 Forbidden Errors
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum ForbiddenErrorCode {
+    AccessDenied,
+    InsufficientPermissions,
+}
+
+impl std::fmt::Display for ForbiddenErrorCode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ForbiddenErrorCode::AccessDenied => write!(f, "access_denied"),
+            ForbiddenErrorCode::InsufficientPermissions => write!(f, "insufficient_permissions"),
+        }
+    }
+}
+
+/// 404 Not Found Errors
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum NotFoundErrorCode {
+    NotFound,
+}
+
+impl std::fmt::Display for NotFoundErrorCode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            NotFoundErrorCode::NotFound => write!(f, "not_found"),
+        }
+    }
+}
+
+/// 409 Conflict Errors
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum ConflictErrorCode {
+    EmailTaken,
+    AccessAlreadyGiven,
+}
+
+impl std::fmt::Display for ConflictErrorCode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            ConflictErrorCode::EmailTaken => write!(f, "email_taken"),
+            ConflictErrorCode::AccessAlreadyGiven => write!(f, "access_already_given"),
+        }
+    }
+}
+
+/// 422 Unprocessable Entity Error Codes
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "snake_case")]
+pub enum UnprocessableEntityErrorCode {
+    ValidationErrors,
+}
+
+impl std::fmt::Display for UnprocessableEntityErrorCode {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self {
+            UnprocessableEntityErrorCode::ValidationErrors => write!(f, "validation_errors"),
+        }
+    }
+}
+
+/// 422 Field Error Codes
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum FieldErrorCode {
@@ -76,54 +141,7 @@ impl std::fmt::Display for FieldErrorCode {
     }
 }
 
-/// Unauthorized Errors
-#[derive(Debug, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-pub enum UnauthorizedErrorCode {
-    Unauthorized,
-}
-
-impl std::fmt::Display for UnauthorizedErrorCode {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            UnauthorizedErrorCode::Unauthorized => write!(f, "unauthorized"),
-        }
-    }
-}
-
-/// Forbidden Errors
-#[derive(Debug, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-pub enum ForbiddenErrorCode {
-    AccessDenied,
-    InsufficientPermissions,
-}
-
-impl std::fmt::Display for ForbiddenErrorCode {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            ForbiddenErrorCode::AccessDenied => write!(f, "access_denied"),
-            ForbiddenErrorCode::InsufficientPermissions => write!(f, "insufficient_permissions"),
-        }
-    }
-}
-
-/// Not Found Errors
-#[derive(Debug, Serialize, Deserialize)]
-#[serde(rename_all = "snake_case")]
-pub enum NotFoundErrorCode {
-    NotFound,
-}
-
-impl std::fmt::Display for NotFoundErrorCode {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match self {
-            NotFoundErrorCode::NotFound => write!(f, "not_found"),
-        }
-    }
-}
-
-/// Internal Server Errors
+/// 500 Internal Server Errors
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum InternalServerErrorCode {

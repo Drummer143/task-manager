@@ -22,6 +22,7 @@ where
                 Err(ErrorResponse::bad_request(
                     codes::BadRequestErrorCode::InvalidParams,
                     None,
+                    Some(e.to_string()),
                 ))
             }
         }

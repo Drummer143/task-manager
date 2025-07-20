@@ -1,194 +1,241 @@
 use error_handlers::handlers::ErrorResponse;
-use sqlx::PgPool;
 use uuid::Uuid;
 
-use rust_api::entities::page::{
+use rust_api::{entities::page::{
     dto::{CreatePageDto, UpdatePageDto},
     model::{Doc, Page, PageType},
-    repository,
+    PageRepository,
+}, shared::traits::{PostgresqlRepositoryCreate, PostgresqlRepositoryDelete, PostgresqlRepositoryGetOneById, PostgresqlRepositoryUpdate}};
+
+use crate::{
+    shared::traits::{
+        ServiceBase, ServiceCreateMethod, ServiceDeleteMethod, ServiceGetOneByIdMethod, ServiceUpdateMethod,
+    },
+    types::app_state::AppState,
 };
 
-pub async fn get_by_id(
-    postgres: &PgPool,
-    mongodb: &mongodb::Database,
-    id: Uuid,
-) -> Result<Page, ErrorResponse> {
-    let mut page = repository::get_by_id(postgres, id)
-        .await
-        .map_err(ErrorResponse::from)?;
+pub struct PageService;
 
-    if page.r#type == PageType::Text {
-        page.text = repository::get_page_text(mongodb, page.id)
+impl ServiceBase for PageService {
+    type Response = Page;
+}
+
+impl ServiceCreateMethod for PageService {
+    type CreateDto = CreatePageDto;
+
+    async fn create(
+        app_state: &AppState,
+        dto: Self::CreateDto,
+    ) -> Result<Self::Response, ErrorResponse> {
+        let mut tx = app_state
+            .postgres
+            .begin()
             .await
             .map_err(ErrorResponse::from)?;
-    }
 
-    Ok(page)
-}
+        let doc_dto = dto.text.clone();
 
-pub async fn get_all_in_workspace(
-    db: &PgPool,
-    workspace_id: Uuid,
-) -> Result<Vec<Page>, ErrorResponse> {
-    repository::get_all_in_workspace(db, workspace_id)
-        .await
-        .map_err(ErrorResponse::from)
-}
+        let owner_id = dto.owner_id.clone();
 
-pub async fn get_child_pages(db: &PgPool, page_id: Uuid) -> Result<Vec<Page>, ErrorResponse> {
-    repository::get_child_pages(db, page_id)
-        .await
-        .map_err(ErrorResponse::from)
-}
+        let page = PageRepository::create(&mut *tx, dto)
+            .await
+            .map_err(ErrorResponse::from);
 
-pub async fn create(
-    db: &PgPool,
-    mongodb: &mongodb::Database,
-    dto: CreatePageDto,
-    workspace_id: Uuid,
-    owner_id: Uuid,
-) -> Result<Page, ErrorResponse> {
-    let mut tx = db.begin().await.map_err(ErrorResponse::from)?;
+        if let Err(e) = page {
+            let _ = tx.rollback().await;
+            return Err(e);
+        }
 
-    let doc_dto = dto.text.clone();
+        let mut page = page.unwrap();
 
-    let page = repository::create(&mut *tx, dto, workspace_id, owner_id)
+        let page_access = crate::entities::page_access::PageAccessService::create(
+            app_state,
+            rust_api::entities::page_access::dto::CreatePageAccessDto {
+                user_id: owner_id,
+                page_id: page.id,
+                role: rust_api::entities::page_access::model::Role::Owner,
+            },
+        )
         .await
         .map_err(ErrorResponse::from);
 
-    if let Err(e) = page {
-        let _ = tx.rollback().await;
-        return Err(e);
-    }
-
-    let mut page = page.unwrap();
-
-    let page_access = crate::entities::page_access::service::create_page_access(
-        &mut *tx,
-        owner_id,
-        page.id,
-        rust_api::entities::page_access::model::Role::Owner,
-    )
-    .await
-    .map_err(ErrorResponse::from);
-
-    if let Err(e) = page_access {
-        let _ = tx.rollback().await;
-        return Err(e);
-    }
-
-    if page.r#type == PageType::Text && doc_dto.is_some() {
-        let doc_dto = doc_dto.unwrap();
-        let doc = Doc {
-            page_id: Some(page.id.to_string()),
-            version: 1,
-            attrs: doc_dto.attrs,
-            content: doc_dto.content,
-            marks: doc_dto.marks,
-            r#type: doc_dto.r#type,
-            text: doc_dto.text,
-        };
-
-        let text = repository::update_page_text(&mongodb, doc)
-            .await
-            .map_err(ErrorResponse::from);
-
-        if let Ok(text) = text {
-            page.text = text;
-        } else {
+        if let Err(e) = page_access {
             let _ = tx.rollback().await;
-            return Err(text.unwrap_err());
+            return Err(e);
         }
+
+        if page.r#type == PageType::Text && doc_dto.is_some() {
+            let doc_dto = doc_dto.unwrap();
+            let doc = Doc {
+                page_id: Some(page.id.to_string()),
+                version: 1,
+                attrs: doc_dto.attrs,
+                content: doc_dto.content,
+                marks: doc_dto.marks,
+                r#type: doc_dto.r#type,
+                text: doc_dto.text,
+            };
+
+            let page_text_collection = app_state
+                .mongo
+                .database(rust_api::shared::constants::PAGE_TEXT_COLLECTION);
+
+            let text = PageRepository::update_page_text(&page_text_collection, doc)
+                .await
+                .map_err(ErrorResponse::from);
+
+            if let Ok(text) = text {
+                page.text = text;
+            } else {
+                let _ = tx.rollback().await;
+                return Err(text.unwrap_err());
+            }
+        }
+
+        tx.commit().await.map_err(ErrorResponse::from)?;
+
+        Ok(page)
     }
-
-    tx.commit().await.map_err(ErrorResponse::from)?;
-
-    Ok(page)
 }
 
-pub async fn update(
-    db: &PgPool,
-    mongodb: &mongodb::Database,
-    id: Uuid,
-    page: UpdatePageDto,
-) -> Result<Page, ErrorResponse> {
-    let mut tx = db.begin().await.map_err(ErrorResponse::from)?;
+impl ServiceUpdateMethod for PageService {
+    type UpdateDto = UpdatePageDto;
 
-    let doc_dto = page.text.clone();
-
-    let mut page = if page.title.is_some() {
-        repository::update(&mut *tx, id, page)
-            .await
-            .map_err(ErrorResponse::from)?
-    } else {
-        repository::get_by_id(&mut *tx, id)
-            .await
-            .map_err(ErrorResponse::from)?
-    };
-
-    println!(
-        "page type: {}. doc_dto.is_some(): {}",
-        page.r#type,
-        doc_dto.is_some()
-    );
-
-    if page.r#type == PageType::Text && doc_dto.is_some() {
-        let doc_dto = doc_dto.unwrap();
-        let mut doc = Doc {
-            page_id: Some(page.id.to_string()),
-            version: 1,
-            attrs: doc_dto.attrs,
-            content: doc_dto.content,
-            marks: doc_dto.marks,
-            r#type: doc_dto.r#type,
-            text: doc_dto.text,
-        };
-
-        let prev_doc = repository::get_page_text(mongodb, page.id)
+    async fn update(
+        app_state: &AppState,
+        id: Uuid,
+        dto: Self::UpdateDto,
+    ) -> Result<Self::Response, ErrorResponse> {
+        let mut tx = app_state
+            .postgres
+            .begin()
             .await
             .map_err(ErrorResponse::from)?;
 
-        if let Some(prev_doc) = prev_doc {
-            doc.version = prev_doc.version + 1;
+        let doc_dto = dto.text.clone();
+
+        let mut page = if dto.title.is_some() {
+            PageRepository::update(&mut *tx, id, dto)
+                .await
+                .map_err(ErrorResponse::from)?
         } else {
-            doc.version = 1;
+            PageRepository::get_one_by_id(&mut *tx, id)
+                .await
+                .map_err(ErrorResponse::from)?
+        };
+
+        if page.r#type == PageType::Text {
+            if let Some(Some(doc_dto)) = doc_dto {
+                let mut doc = Doc {
+                    page_id: Some(page.id.to_string()),
+                    version: 1,
+                    attrs: doc_dto.attrs,
+                    content: doc_dto.content,
+                    marks: doc_dto.marks,
+                    r#type: doc_dto.r#type,
+                    text: doc_dto.text,
+                };
+
+                let page_text_collection = app_state
+                    .mongo
+                    .database(rust_api::shared::constants::PAGE_TEXT_COLLECTION);
+
+                let prev_doc = PageRepository::get_page_text(&page_text_collection, page.id)
+                    .await
+                    .map_err(ErrorResponse::from)?;
+
+                if let Some(prev_doc) = prev_doc {
+                    doc.version = prev_doc.version + 1;
+                } else {
+                    doc.version = 1;
+                }
+
+                let text = PageRepository::update_page_text(&page_text_collection, doc)
+                    .await
+                    .map_err(ErrorResponse::from);
+
+                if let Ok(text) = text {
+                    page.text = text;
+                } else {
+                    let _ = tx.rollback().await;
+                    return Err(text.unwrap_err());
+                }
+            }
         }
 
-        let text = repository::update_page_text(&mongodb, doc)
-            .await
-            .map_err(ErrorResponse::from);
+        tx.commit().await.map_err(ErrorResponse::from)?;
 
-        if let Ok(text) = text {
-            page.text = text;
-        } else {
-            let _ = tx.rollback().await;
-            return Err(text.unwrap_err());
-        }
+        Ok(page)
     }
-
-    tx.commit().await.map_err(ErrorResponse::from)?;
-
-    Ok(page)
 }
 
-pub async fn delete(
-    db: &PgPool,
-    mongodb: &mongodb::Database,
-    id: Uuid,
-) -> Result<Page, ErrorResponse> {
-    let mut tx = db.begin().await.map_err(ErrorResponse::from)?;
-
-    let page = repository::delete(&mut *tx, id)
-        .await
-        .map_err(ErrorResponse::from)?;
-
-    if page.r#type == PageType::Text {
-        repository::delete_page_text(mongodb, page.id)
+impl ServiceGetOneByIdMethod for PageService {
+    async fn get_one_by_id(
+        app_state: &AppState,
+        id: Uuid,
+    ) -> Result<Self::Response, ErrorResponse> {
+        let mut page = PageRepository::get_one_by_id(&app_state.postgres, id)
             .await
             .map_err(ErrorResponse::from)?;
+
+        if page.r#type == PageType::Text {
+            let page_text_collection = app_state
+                .mongo
+                .database(rust_api::shared::constants::PAGE_TEXT_COLLECTION);
+
+            page.text = PageRepository::get_page_text(&page_text_collection, page.id)
+                .await
+                .map_err(ErrorResponse::from)?;
+        }
+
+        Ok(page)
+    }
+}
+
+impl ServiceDeleteMethod for PageService {
+    async fn delete(app_state: &AppState, id: Uuid) -> Result<Self::Response, ErrorResponse> {
+        let mut tx = app_state
+            .postgres
+            .begin()
+            .await
+            .map_err(ErrorResponse::from)?;
+
+        let page = PageRepository::delete(&mut *tx, id)
+            .await
+            .map_err(ErrorResponse::from)?;
+
+        if page.r#type == PageType::Text {
+            let page_text_collection = app_state
+                .mongo
+                .database(rust_api::shared::constants::PAGE_TEXT_COLLECTION);
+
+            PageRepository::delete_page_text(&page_text_collection, page.id)
+                .await
+                .map_err(ErrorResponse::from)?;
+        }
+
+        tx.commit().await.map_err(ErrorResponse::from)?;
+
+        Ok(page)
+    }
+}
+
+impl PageService {
+    pub async fn get_all_in_workspace(
+        app_state: &AppState,
+        workspace_id: Uuid,
+    ) -> Result<Vec<Page>, ErrorResponse> {
+        PageRepository::get_all_in_workspace(&app_state.postgres, workspace_id)
+            .await
+            .map_err(ErrorResponse::from)
     }
 
-    tx.commit().await.map_err(ErrorResponse::from)?;
-
-    Ok(page)
+    pub async fn get_child_pages(
+        app_state: &AppState,
+        page_id: Uuid,
+    ) -> Result<Vec<Page>, ErrorResponse> {
+        PageRepository::get_child_pages(&app_state.postgres, page_id)
+            .await
+            .map_err(ErrorResponse::from)
+    }
 }

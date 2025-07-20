@@ -5,7 +5,7 @@ use axum::{
 use error_handlers::handlers::ErrorResponse;
 use uuid::Uuid;
 
-use crate::entities::task::dto::TaskResponse;
+use crate::{entities::task::dto::TaskResponse, shared::traits::ServiceGetOneByIdMethod};
 
 #[utoipa::path(
     get,
@@ -26,15 +26,15 @@ pub async fn get_tasks_in_page(
     Path((_, page_id)): Path<(Uuid, Uuid)>,
 ) -> Result<Json<Vec<TaskResponse>>, ErrorResponse> {
     let tasks =
-        crate::entities::task::service::get_all_tasks_by_page_id(&state.postgres, page_id).await?;
+        crate::entities::task::TaskService::get_all_tasks_by_page_id(&state, page_id).await?;
 
     let mut task_responses = Vec::new();
 
     for task in tasks {
         let reporter =
-            crate::entities::user::service::find_by_id(&state.postgres, task.reporter_id).await?;
+            crate::entities::user::UserService::get_one_by_id(&state, task.reporter_id).await?;
         let assignee = if let Some(assignee_id) = task.assignee_id {
-            Some(crate::entities::user::service::find_by_id(&state.postgres, assignee_id).await?)
+            Some(crate::entities::user::UserService::get_one_by_id(&state, assignee_id).await?)
         } else {
             None
         };
