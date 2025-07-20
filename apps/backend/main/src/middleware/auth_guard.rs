@@ -16,6 +16,7 @@ pub async fn auth_guard(
     if token.is_none() {
         let body = serde_json::to_string(&ErrorResponse::unauthorized(
             codes::UnauthorizedErrorCode::Unauthorized,
+            None
         ))
         .unwrap();
 
@@ -29,9 +30,10 @@ pub async fn auth_guard(
 
     let user_id = crate::shared::utils::jwt::get_user_id_from_cookie(token, &state.jwt_secret);
 
-    if user_id.is_err() {
+    if let Err(e) = user_id {
         let body = serde_json::to_string(&ErrorResponse::unauthorized(
             codes::UnauthorizedErrorCode::Unauthorized,
+            Some(e.to_string())
         ))
         .unwrap();
 

@@ -36,12 +36,13 @@ pub async fn create_board_status(
     Json(dto): Json<CreateBoardStatusDto>,
 ) -> Result<Json<BoardStatusResponseDto>, ErrorResponse> {
     if dto.localizations.is_empty() || dto.localizations.get("en").is_none() {
-        return Err(ErrorResponse::bad_request(
-            codes::BadRequestErrorCode::ValidationErrors,
+        return Err(ErrorResponse::unprocessable_entity(
+            codes::UnprocessableEntityErrorCode::ValidationErrors,
             Some(HashMap::from([(
                 "localizations".to_string(),
                 "en localization is required".to_string(),
             )])),
+            None,
         ));
     }
 

@@ -38,6 +38,7 @@ where
             ErrorResponse::bad_request(
                 error_handlers::codes::BadRequestErrorCode::InvalidQueryParams,
                 Some(details),
+                Some(e.to_string()),
             )
         })?;
 

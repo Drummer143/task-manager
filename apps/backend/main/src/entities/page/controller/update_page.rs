@@ -6,7 +6,10 @@ use error_handlers::handlers::ErrorResponse;
 use rust_api::entities::page::dto::UpdatePageDto;
 use uuid::Uuid;
 
-use crate::{entities::page::dto::PageResponse, types::app_state::AppState};
+use crate::{
+    entities::page::dto::PageResponse, shared::traits::ServiceUpdateMethod,
+    types::app_state::AppState,
+};
 
 #[utoipa::path(
     put,
@@ -30,14 +33,7 @@ pub async fn update_page(
     Path((_, page_id)): Path<(Uuid, Uuid)>,
     Json(update_page_dto): Json<UpdatePageDto>,
 ) -> Result<PageResponse, ErrorResponse> {
-    crate::entities::page::service::update(
-        &state.postgres,
-        &state
-            .mongo
-            .database(rust_api::shared::constants::PAGE_DATABASE),
-        page_id,
-        update_page_dto,
-    )
-    .await
-    .map(PageResponse::from)
+    crate::entities::page::PageService::update(&state, page_id, update_page_dto)
+        .await
+        .map(PageResponse::from)
 }

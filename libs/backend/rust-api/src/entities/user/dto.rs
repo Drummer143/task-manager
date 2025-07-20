@@ -10,19 +10,6 @@ pub struct CreateUserDto {
     pub picture: Option<String>,
 }
 
-#[derive(Debug, Deserialize)]
-pub struct UpdateUserDto {
-    pub email: Option<String>,
-    pub username: Option<String>,
-    pub picture: Option<String>,
-}
-
-impl UpdateUserDto {
-    pub fn is_empty(&self) -> bool {
-        self.email.is_none() && self.username.is_none() && self.picture.is_none()
-    }
-}
-
 /// The `query` field should be empty if there is an `email` or `username` field
 #[derive(Debug, Serialize, Deserialize, utoipa::ToSchema)]
 pub struct UserFilterBy {

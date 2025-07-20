@@ -1,8 +1,8 @@
-use axum::{extract::State, response::IntoResponse};
+use axum::{extract::State, Json};
 use error_handlers::handlers::ErrorResponse;
 use rust_api::entities::user::model::User;
 
-use crate::shared::extractors::path::ValidatedPath;
+use crate::shared::{extractors::path::ValidatedPath, traits::ServiceGetOneByIdMethod};
 
 #[utoipa::path(
     get,
@@ -21,9 +21,8 @@ use crate::shared::extractors::path::ValidatedPath;
 pub async fn get_by_id(
     State(state): State<crate::types::app_state::AppState>,
     ValidatedPath(id): ValidatedPath<uuid::Uuid>,
-) -> impl axum::response::IntoResponse {
-    match crate::entities::user::service::find_by_id(&state.postgres, id).await {
-        Ok(user) => (axum::http::StatusCode::OK, axum::Json(user)).into_response(),
-        Err(error) => error.into_response(),
-    }
+) -> Result<Json<User>, ErrorResponse> {
+    let user = crate::entities::user::UserService::get_one_by_id(&state, id).await?;
+
+    Ok(Json(user))
 }

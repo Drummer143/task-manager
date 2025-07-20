@@ -3,10 +3,12 @@ use axum::{
     Json,
 };
 use error_handlers::handlers::ErrorResponse;
-use rust_api::entities::task::dto::CreateTaskDto;
 use uuid::Uuid;
 
-use crate::entities::task::dto::TaskResponse;
+use crate::{
+    entities::task::dto::{CreateTaskDto, TaskResponse},
+    shared::traits::ServiceCreateMethod,
+};
 
 #[utoipa::path(
     post,
@@ -29,7 +31,18 @@ pub async fn create_task(
     Path((_, page_id)): Path<(Uuid, Uuid)>,
     Json(dto): Json<CreateTaskDto>,
 ) -> Result<TaskResponse, ErrorResponse> {
-    crate::entities::task::service::create_task(&state.postgres, page_id, reporter_id, dto)
-        .await
-        .map(TaskResponse::from)
+    crate::entities::task::TaskService::create(
+        &state,
+        rust_api::entities::task::dto::CreateTaskDto {
+            title: dto.title,
+            status_id: dto.status_id,
+            description: dto.description,
+            due_date: dto.due_date,
+            assignee_id: dto.assignee_id,
+            reporter_id,
+            page_id,
+        },
+    )
+    .await
+    .map(TaskResponse::from)
 }

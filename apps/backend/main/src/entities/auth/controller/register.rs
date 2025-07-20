@@ -22,7 +22,7 @@ pub async fn register(
     State(state): State<crate::types::app_state::AppState>,
     Json(body): Json<auth::dto::RegisterDto>,
 ) -> impl IntoResponse {
-    match auth::service::register(&state.postgres, &body).await {
+    match auth::AuthService::register(&state, &body).await {
         Ok(user) => (axum::http::StatusCode::OK, axum::Json(user)).into_response(),
         Err(error) => error.into_response(),
     }

@@ -61,7 +61,7 @@ pub async fn upload(
             codes::FieldErrorCode::MissingField.to_string(),
             field_name.to_string(),
         )]);
-        ErrorResponse::bad_request(codes::BadRequestErrorCode::InvalidBody, Some(details))
+        ErrorResponse::bad_request(codes::BadRequestErrorCode::InvalidBody, Some(details), None)
     };
 
     let filename = filename.ok_or_else(|| throw_bad_request("file"))?;

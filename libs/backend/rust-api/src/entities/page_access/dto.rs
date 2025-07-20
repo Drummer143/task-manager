@@ -7,10 +7,12 @@ use super::model::Role;
 pub struct CreatePageAccessDto {
     pub user_id: Uuid,
     pub role: Role,
+    pub page_id: Uuid,
 }
 
 #[derive(Debug, Deserialize, utoipa::ToSchema)]
 pub struct UpdatePageAccessDto {
     pub user_id: Uuid,
     pub role: Option<Role>,
+    pub page_id: Uuid,
 }

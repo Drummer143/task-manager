@@ -8,6 +8,7 @@ use super::model::Role;
 pub struct CreateWorkspaceAccessDto {
     pub user_id: Uuid,
     pub role: Role,
+    pub workspace_id: Uuid,
 }
 
 #[derive(Debug, Deserialize, utoipa::ToSchema)]
@@ -15,4 +16,5 @@ pub struct CreateWorkspaceAccessDto {
 pub struct UpdateWorkspaceAccessDto {
     pub user_id: Uuid,
     pub role: Option<Role>,
+    pub workspace_id: Uuid,
 }

@@ -2,7 +2,7 @@ use std::str::FromStr;
 
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use sqlx::{FromRow, Postgres, Type};
+use sqlx::{prelude::FromRow, Postgres, Type};
 use uuid::Uuid;
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq, utoipa::ToSchema, PartialOrd)]
@@ -70,12 +70,10 @@ impl sqlx::Encode<'_, Postgres> for Role {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, FromRow)]
+#[derive(Debug, FromRow, Clone)]
 pub struct PageAccess {
     pub id: Uuid,
-    #[serde(skip_serializing)]
     pub user_id: Uuid,
-    #[serde(skip_serializing)]
     pub page_id: Uuid,
     pub role: Role,
     pub created_at: DateTime<Utc>,

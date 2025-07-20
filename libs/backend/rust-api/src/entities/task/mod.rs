@@ -1,3 +1,5 @@
-pub mod model;
-pub mod repository;
 pub mod dto;
+pub mod model;
+mod repository;
+
+pub use repository::TaskRepository;

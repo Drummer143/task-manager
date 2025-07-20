@@ -19,7 +19,7 @@ pub async fn login(
     Json(body): Json<crate::entities::auth::dto::LoginDto>,
 ) -> impl axum::response::IntoResponse {
     let user =
-        crate::entities::auth::service::login(&state.postgres, &body.email, &body.password).await?;
+        crate::entities::auth::AuthService::login(&state, &body.email, &body.password).await?;
 
     let token = crate::shared::utils::jwt::create_jwt(&user.id, &state.jwt_secret);
 

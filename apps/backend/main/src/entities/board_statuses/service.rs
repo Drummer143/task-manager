@@ -192,16 +192,14 @@ pub async fn delete_board_status(
         .map_err(ErrorResponse::from)?;
 
     if target_status.initial {
-        return Err(ErrorResponse {
-            status_code: 409,
-            error_code: None,
-            details: Some(HashMap::from([(
+        return Err(ErrorResponse::conflict(
+            error_handlers::codes::ConflictErrorCode::EntityCannotBeRemoved,
+            Some(HashMap::from([(
                 "message".to_string(),
                 "Before deleting status, you must set another status as initial".to_string(),
             )])),
-            dev_details: None,
-            error: "Conflict".to_string(),
-        });
+            None,
+        ));
     }
 
     let mut tx = db.begin().await.map_err(ErrorResponse::from)?;

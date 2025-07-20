@@ -2,7 +2,7 @@ use axum::extract::{Path, State};
 use error_handlers::handlers::ErrorResponse;
 use uuid::Uuid;
 
-use crate::{entities::page::dto::PageResponse, types::app_state::AppState};
+use crate::{entities::page::dto::PageResponse, shared::traits::ServiceDeleteMethod, types::app_state::AppState};
 
 #[utoipa::path(
     delete,
@@ -23,13 +23,7 @@ pub async fn delete_page(
     State(state): State<AppState>,
     Path((_, page_id)): Path<(Uuid, Uuid)>,
 ) -> Result<PageResponse, ErrorResponse> {
-    crate::entities::page::service::delete(
-        &state.postgres,
-        &state
-            .mongo
-            .database(rust_api::shared::constants::PAGE_DATABASE),
-        page_id,
-    )
-    .await
-    .map(PageResponse::from)
+    crate::entities::page::PageService::delete(&state, page_id)
+        .await
+        .map(PageResponse::from)
 }

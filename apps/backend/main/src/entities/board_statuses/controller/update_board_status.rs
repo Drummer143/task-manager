@@ -35,12 +35,13 @@ pub async fn update_board_status(
 ) -> Result<Json<FullBoardStatusResponseDto>, ErrorResponse> {
     if let Some(localizations) = &dto.localizations {
         if localizations.is_empty() || localizations.get("en").is_none() {
-            return Err(ErrorResponse::bad_request(
-                error_handlers::codes::BadRequestErrorCode::ValidationErrors,
+            return Err(ErrorResponse::unprocessable_entity(
+                error_handlers::codes::UnprocessableEntityErrorCode::ValidationErrors,
                 Some(HashMap::from([(
                     "localizations".to_string(),
                     "en localization is required".to_string(),
                 )])),
+                None,
             ));
         }
     }
@@ -48,7 +49,7 @@ pub async fn update_board_status(
     crate::entities::board_statuses::service::update_board_status(
         &app_state.postgres,
         status_id,
-        dto
+        dto,
     )
     .await
     .map(|status| {

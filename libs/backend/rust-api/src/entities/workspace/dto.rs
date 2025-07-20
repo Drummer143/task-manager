@@ -1,22 +1,24 @@
 use serde::Deserialize;
 use uuid::Uuid;
 
-#[derive(Debug, Deserialize)]
+use crate::shared::traits::UpdateDto;
+
+#[derive(Debug, Deserialize, utoipa::ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct UpdateWorkspaceDto {
-    pub name: String,
+    pub name: Option<String>,
 }
 
-#[derive(Debug, Deserialize)]
-#[serde(rename_all = "camelCase")]
+impl UpdateDto for UpdateWorkspaceDto {
+    fn is_empty(&self) -> bool {
+        self.name.is_none()
+    }
+}
+
+#[derive(Debug)]
 pub struct CreateWorkspaceDto {
     pub name: String,
     pub owner_id: Uuid,
-}
-
-#[derive(Debug, Deserialize, utoipa::ToSchema)]
-pub struct WorkspaceRequestDto {
-    pub name: String,
 }
 
 #[derive(Debug, Deserialize, utoipa::ToSchema)]

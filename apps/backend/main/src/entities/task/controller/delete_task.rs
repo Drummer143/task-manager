@@ -2,7 +2,7 @@ use axum::extract::{Path, State};
 use error_handlers::handlers::ErrorResponse;
 use uuid::Uuid;
 
-use crate::entities::task::dto::TaskResponse;
+use crate::{entities::task::dto::TaskResponse, shared::traits::ServiceDeleteMethod};
 
 #[utoipa::path(
     delete,
@@ -23,7 +23,7 @@ pub async fn delete_task<'a>(
     State(state): State<crate::types::app_state::AppState>,
     Path((_, _, task_id)): Path<(Uuid, Uuid, Uuid)>,
 ) -> Result<TaskResponse, ErrorResponse> {
-    crate::entities::task::service::delete_task(&state.postgres, task_id)
+    crate::entities::task::TaskService::delete(&state, task_id)
         .await
         .map(TaskResponse::from)
 }
