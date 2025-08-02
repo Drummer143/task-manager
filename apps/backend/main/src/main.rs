@@ -12,9 +12,9 @@ mod types;
 
 #[tokio::main]
 async fn main() {
-    tracing_subscriber::registry()
-        .with(tracing_subscriber::fmt::layer())
-        .init();
+    // tracing_subscriber::registry()
+    //     .with(tracing_subscriber::fmt::layer())
+    //     .init();
 
     let _ = dotenvy::dotenv();
 
@@ -82,6 +82,7 @@ async fn main() {
     let port = std::env::var("PORT").unwrap_or("3000".to_string());
     let addr = format!("0.0.0.0:{}", port);
 
+    println!("Listening on {}", addr);
     tracing::info!("Listening on {}", addr);
 
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();

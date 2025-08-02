@@ -26,3 +26,5 @@ ALTER TABLE tasks DROP COLUMN status;
 ALTER TABLE tasks ADD COLUMN status_id UUID NOT NULL;
 
 ALTER TABLE tasks ADD FOREIGN KEY (status_id) REFERENCES board_statuses (id);
+
+ALTER TABLE tasks ADD COLUMN position INT NOT NULL CHECK (position > 0);

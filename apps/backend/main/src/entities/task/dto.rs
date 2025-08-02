@@ -23,6 +23,7 @@ pub struct TaskResponse {
     pub description: Option<serde_json::Value>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub due_date: Option<DateTime<Utc>>,
+    pub position: i32,
 
     pub status: Option<BoardStatusResponseDto>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -43,6 +44,7 @@ impl From<Task> for TaskResponse {
             title: value.title,
             description: None,
             due_date: value.due_date,
+            position: value.position,
             status: None,
             reporter: None,
             assignee: None,

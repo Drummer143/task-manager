@@ -1,8 +1,11 @@
 use uuid::Uuid;
 
-use crate::shared::traits::{
-    PostgresqlRepositoryCreate, PostgresqlRepositoryDelete, PostgresqlRepositoryGetOneById,
-    PostgresqlRepositoryUpdate, RepositoryBase,
+use crate::shared::{
+    traits::{
+        PostgresqlRepositoryCreate, PostgresqlRepositoryDelete, PostgresqlRepositoryGetOneById,
+        PostgresqlRepositoryUpdate, RepositoryBase,
+    },
+    types::ShiftAction,
 };
 
 use super::model::Task;
@@ -20,9 +23,10 @@ impl PostgresqlRepositoryCreate for TaskRepository {
         executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
         dto: Self::CreateDto,
     ) -> Result<Self::Response, sqlx::Error> {
-        sqlx::query_as::<_, Task>("INSERT INTO tasks (title, status_id, due_date, assignee_id, page_id, reporter_id) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *")
+        sqlx::query_as::<_, Task>("INSERT INTO tasks (title, status_id, position, due_date, assignee_id, page_id, reporter_id) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *")
             .bind(dto.title)
             .bind(dto.status_id)
+            .bind(dto.position)
             .bind(dto.due_date)
             .bind(dto.assignee_id)
             .bind(dto.page_id)
@@ -48,16 +52,28 @@ impl PostgresqlRepositoryUpdate for TaskRepository {
             separated.push("title = ").push_bind_unseparated(title);
         }
 
+        if let Some(position) = dto.position {
+            separated
+                .push("position = ")
+                .push_bind_unseparated(position);
+        }
+
         if let Some(status_id) = dto.status_id {
-            separated.push("status_id = ").push_bind_unseparated(status_id);
+            separated
+                .push("status_id = ")
+                .push_bind_unseparated(status_id);
         }
 
         if let Some(due_date) = dto.due_date {
-            separated.push("due_date = ").push_bind_unseparated(due_date);
+            separated
+                .push("due_date = ")
+                .push_bind_unseparated(due_date);
         }
 
         if let Some(assignee_id) = dto.assignee_id {
-            separated.push("assignee_id = ").push_bind_unseparated(assignee_id);
+            separated
+                .push("assignee_id = ")
+                .push_bind_unseparated(assignee_id);
         }
 
         query_builder
@@ -96,24 +112,58 @@ impl PostgresqlRepositoryDelete for TaskRepository {
 
 impl TaskRepository {
     pub async fn get_all_tasks_by_page_id<'a>(
-        db: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
+        executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
         page_id: Uuid,
     ) -> Result<Vec<Task>, sqlx::Error> {
-        sqlx::query_as::<_, Task>("SELECT * FROM tasks WHERE page_id = $1")
+        sqlx::query_as::<_, Task>("SELECT * FROM tasks WHERE page_id = $1 ORDER BY position ASC")
             .bind(page_id)
-            .fetch_all(db)
+            .fetch_all(executor)
             .await
     }
 
     pub async fn change_status<'a>(
-        db: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
+        executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
         id: Uuid,
         status_id: Uuid,
     ) -> Result<Task, sqlx::Error> {
         sqlx::query_as::<_, Task>("UPDATE tasks SET status_id = $1 WHERE id = $2 RETURNING *")
             .bind(status_id)
             .bind(id)
-            .fetch_one(db)
+            .fetch_one(executor)
             .await
+    }
+
+    pub async fn get_last_position<'a>(
+        executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
+        status_id: Uuid,
+    ) -> Result<Option<i32>, sqlx::Error> {
+        sqlx::query_scalar::<_, Option<i32>>("SELECT MAX(position) FROM tasks WHERE status_id = $1")
+            .bind(status_id)
+            .fetch_one(executor)
+            .await
+    }
+
+    pub async fn shift_tasks_position<'a>(
+        executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
+        status_id: Uuid,
+        start_position: Option<i32>,
+        end_position: Option<i32>,
+        action: ShiftAction,
+    ) -> Result<(), sqlx::Error> {
+        let mut query =
+            sqlx::query_builder::QueryBuilder::new("UPDATE tasks SET position = position ");
+
+        query
+            .push(action.to_string())
+            .push(" 1 WHERE status_id = ")
+            .push_bind(status_id)
+            .push(" AND position >= ")
+            .push_bind(start_position.unwrap_or(1));
+
+        if let Some(end_position) = end_position {
+            query.push(" AND position <= ").push_bind(end_position);
+        }
+
+        query.build().execute(executor).await.map(|_| ())
     }
 }

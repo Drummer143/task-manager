@@ -9,6 +9,7 @@ pub struct Task {
     pub status_id: Uuid,
     pub description: Option<String>,
     pub due_date: Option<DateTime<Utc>>,
+    pub position: i32,
     pub page_id: Uuid,
     pub assignee_id: Option<Uuid>,
     pub reporter_id: Uuid,
