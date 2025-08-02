@@ -57,8 +57,8 @@ impl ServiceCreateMethod for PageService {
 
         let mut page = page.unwrap();
 
-        let page_access = crate::entities::page_access::PageAccessService::create(
-            app_state,
+        let page_access = rust_api::entities::page_access::PageAccessRepository::create(
+            &mut *tx,
             rust_api::entities::page_access::dto::CreatePageAccessDto {
                 user_id: owner_id,
                 page_id: page.id,

@@ -6,9 +6,9 @@ import { BoardStatus, Task } from "@task-manager/api";
 import { Button, Typography } from "antd";
 
 import { useStyles } from "./styles";
+import TaskList from "./ui/TaskList";
 
-import { isTaskSource, TaskTargetData } from "../../utils";
-import TaskList from "../TaskList";
+import { isTaskSource, TaskTargetData } from "../../shared/dnd/board";
 
 interface TaskColumnProps {
 	status: BoardStatus;

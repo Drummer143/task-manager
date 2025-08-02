@@ -40,24 +40,24 @@ impl PostgresqlRepositoryUpdate for TaskRepository {
         id: Uuid,
         dto: Self::UpdateDto,
     ) -> Result<Self::Response, sqlx::Error> {
-        let mut query_builder = sqlx::QueryBuilder::new("UPDATE tasks SET");
+        let mut query_builder = sqlx::QueryBuilder::new("UPDATE tasks SET ");
 
         let mut separated = query_builder.separated(", ");
 
         if let Some(title) = dto.title {
-            separated.push("title = ").push_bind(title);
+            separated.push("title = ").push_bind_unseparated(title);
         }
 
         if let Some(status_id) = dto.status_id {
-            separated.push("status_id = ").push_bind(status_id);
+            separated.push("status_id = ").push_bind_unseparated(status_id);
         }
 
         if let Some(due_date) = dto.due_date {
-            separated.push("due_date = ").push_bind(due_date);
+            separated.push("due_date = ").push_bind_unseparated(due_date);
         }
 
         if let Some(assignee_id) = dto.assignee_id {
-            separated.push("assignee_id = ").push_bind(assignee_id);
+            separated.push("assignee_id = ").push_bind_unseparated(assignee_id);
         }
 
         query_builder

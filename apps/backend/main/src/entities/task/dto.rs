@@ -6,6 +6,7 @@ use uuid::Uuid;
 use crate::entities::board_statuses::dto::BoardStatusResponseDto;
 
 #[derive(Debug, Deserialize, utoipa::ToSchema)]
+#[serde(rename_all = "camelCase")]
 pub struct CreateTaskDto {
     pub title: String,
     pub status_id: Uuid,
