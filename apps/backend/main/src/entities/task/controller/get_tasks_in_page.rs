@@ -5,7 +5,7 @@ use axum::{
 use error_handlers::handlers::ErrorResponse;
 use uuid::Uuid;
 
-use crate::entities::{board_statuses::dto::BoardStatusResponseDto, task::dto::TaskResponse};
+use crate::{entities::{board_statuses::dto::BoardStatusResponseDto, task::dto::TaskResponse}, shared::traits::ServiceGetOneByIdMethod};
 
 #[utoipa::path(
     get,
@@ -27,7 +27,7 @@ pub async fn get_tasks_in_page(
     headers: axum::http::header::HeaderMap,
 ) -> Result<Json<Vec<TaskResponse>>, ErrorResponse> {
     let tasks =
-        crate::entities::task::service::get_all_tasks_by_page_id(&state.postgres, page_id).await?;
+        crate::entities::task::TaskService::get_all_tasks_by_page_id(&state, page_id).await?;
 
     let mut task_responses = Vec::new();
     let lang = headers
@@ -35,9 +35,8 @@ pub async fn get_tasks_in_page(
         .map(|h| h.to_str().unwrap_or("en"))
         .unwrap_or("en");
 
-    let board_statuses = crate::entities::board_statuses::service::get_board_statuses_by_page_id(
-        &state.postgres,
-        page_id,
+    let board_statuses = crate::entities::board_statuses::BoardStatusService::get_board_statuses_by_page_id(
+        &state, page_id,
     )
     .await?
     .iter()
@@ -53,9 +52,9 @@ pub async fn get_tasks_in_page(
 
     for task in tasks {
         let reporter =
-            crate::entities::user::service::find_by_id(&state.postgres, task.reporter_id).await?;
+            crate::entities::user::UserService::get_one_by_id(&state, task.reporter_id).await?;
         let assignee = if let Some(assignee_id) = task.assignee_id {
-            Some(crate::entities::user::service::find_by_id(&state.postgres, assignee_id).await?)
+            Some(crate::entities::user::UserService::get_one_by_id(&state, assignee_id).await?)
         } else {
             None
         };

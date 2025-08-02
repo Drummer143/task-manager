@@ -10,7 +10,7 @@ use crate::{
         task::dto::TaskResponse,
         workspace::dto::WorkspaceResponseWithoutInclude,
     },
-    shared::extractors::query::ValidatedQuery,
+    shared::{extractors::query::ValidatedQuery, traits::ServiceGetOneByIdMethod},
     types::app_state::AppState,
 };
 
@@ -36,14 +36,7 @@ pub async fn get_page(
     Path((_, page_id)): Path<(Uuid, Uuid)>,
     headers: axum::http::header::HeaderMap,
 ) -> Result<PageResponse, ErrorResponse> {
-    let page = crate::entities::page::service::get_by_id(
-        &state.postgres,
-        &state
-            .mongo
-            .database(rust_api::shared::constants::PAGE_DATABASE),
-        page_id,
-    )
-    .await?;
+    let page = crate::entities::page::PageService::get_one_by_id(&state, page_id).await?;
 
     let mut include_owner = false;
     let mut include_workspace = false;
@@ -64,46 +57,45 @@ pub async fn get_page(
     let mut page_response = PageResponse::from(page.clone());
 
     page_response.role = Some(
-        rust_api::entities::page_access::repository::get_page_access(
+        rust_api::entities::page_access::PageAccessRepository::get_one(
             &state.postgres,
             page.owner_id,
             page.id,
         )
         .await
         .map_err(|e| match e {
-            sqlx::Error::RowNotFound => {
-                ErrorResponse::not_found(codes::NotFoundErrorCode::NotFound, None)
-            }
-            _ => ErrorResponse::internal_server_error(None),
+            sqlx::Error::RowNotFound => ErrorResponse::not_found(
+                codes::NotFoundErrorCode::NotFound,
+                None,
+                Some(e.to_string()),
+            ),
+            error => ErrorResponse::internal_server_error(Some(error.to_string())),
         })?
         .role,
     );
 
     if include_owner {
         page_response.owner = Some(
-            crate::entities::user::service::find_by_id(&state.postgres, page.owner_id.clone())
+            crate::entities::user::UserService::get_one_by_id(&state, page.owner_id.clone())
                 .await?,
         );
     }
 
     if include_workspace {
         page_response.workspace = Some(
-            crate::entities::workspace::service::get_by_id(
-                &state.postgres,
+            crate::entities::workspace::WorkspaceService::get_one_by_id(
+                &state,
                 page.workspace_id.clone(),
             )
             .await
-            .map(|w| WorkspaceResponseWithoutInclude::from(w))?,
+            .map(|w| WorkspaceResponseWithoutInclude::from(w.workspace))?,
         );
     }
 
     if include_parent_page && page.parent_page_id.is_some() {
-        let database = state.mongo.database("typingapp");
-
         page_response.parent_page = Some(
-            crate::entities::page::service::get_by_id(
-                &state.postgres,
-                &database,
+            crate::entities::page::PageService::get_one_by_id(
+                &state,
                 page.parent_page_id.unwrap().clone(),
             )
             .await
@@ -113,7 +105,7 @@ pub async fn get_page(
 
     if include_child_pages {
         page_response.child_pages = Some(
-            crate::entities::page::service::get_child_pages(&state.postgres, page.id.clone())
+            crate::entities::page::PageService::get_child_pages(&state, page.id.clone())
                 .await
                 .map(|pages| pages.into_iter().map(ChildPageResponse::from).collect())?,
         );
@@ -121,12 +113,9 @@ pub async fn get_page(
 
     if include_tasks {
         page_response.tasks = Some(
-            crate::entities::task::service::get_all_tasks_by_page_id(
-                &state.postgres,
-                page.id.clone(),
-            )
-            .await
-            .map(|tasks| tasks.into_iter().map(TaskResponse::from).collect())?,
+            crate::entities::task::TaskService::get_all_tasks_by_page_id(&state, page.id.clone())
+                .await
+                .map(|tasks| tasks.into_iter().map(TaskResponse::from).collect())?,
         );
     }
 
@@ -137,8 +126,8 @@ pub async fn get_page(
             .unwrap_or("en");
 
         page_response.board_statuses = Some(
-            crate::entities::board_statuses::service::get_board_statuses_by_page_id(
-                &state.postgres,
+            crate::entities::board_statuses::BoardStatusService::get_board_statuses_by_page_id(
+                &state,
                 page.id.clone(),
             )
             .await

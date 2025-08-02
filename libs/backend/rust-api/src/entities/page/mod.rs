@@ -1,3 +1,5 @@
 pub mod model;
 pub mod dto;
-pub mod repository;
+mod repository;
+
+pub use repository::PageRepository;

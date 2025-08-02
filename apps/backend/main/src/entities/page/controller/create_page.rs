@@ -3,10 +3,13 @@ use axum::{
     Extension, Json,
 };
 use error_handlers::handlers::ErrorResponse;
-use rust_api::entities::page::dto::CreatePageDto;
 use uuid::Uuid;
 
-use crate::{entities::page::dto::PageResponse, types::app_state::AppState};
+use crate::{
+    entities::page::dto::{CreatePageDto, PageResponse},
+    shared::traits::ServiceCreateMethod,
+    types::app_state::AppState,
+};
 
 #[utoipa::path(
     post,
@@ -29,14 +32,16 @@ pub async fn create_page(
     Path(workspace_id): Path<Uuid>,
     Json(create_page_dto): Json<CreatePageDto>,
 ) -> Result<PageResponse, ErrorResponse> {
-    crate::entities::page::service::create(
-        &state.postgres,
-        &state
-            .mongo
-            .database(rust_api::shared::constants::PAGE_DATABASE),
-        create_page_dto,
-        workspace_id,
-        user_id,
+    crate::entities::page::PageService::create(
+        &state,
+        rust_api::entities::page::dto::CreatePageDto {
+            title: create_page_dto.title,
+            r#type: create_page_dto.r#type,
+            parent_page_id: create_page_dto.parent_page_id,
+            text: create_page_dto.text,
+            workspace_id,
+            owner_id: user_id,
+        },
     )
     .await
     .map(PageResponse::from)

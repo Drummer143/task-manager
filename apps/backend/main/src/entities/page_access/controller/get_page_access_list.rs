@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use axum::{extract::{Path, State}, Extension};
 use uuid::Uuid;
 
@@ -26,8 +28,8 @@ pub async fn get_page_access_list(
     axum::Json<Vec<crate::entities::page_access::dto::PageAccessResponse>>,
     error_handlers::handlers::ErrorResponse,
 > {
-    let user_page_access = crate::entities::page_access::service::get_page_access(
-        &state.postgres,
+    let user_page_access = crate::entities::page_access::PageAccessService::get_page_access(
+        &state,
         user_id,
         page_id,
     )
@@ -36,6 +38,7 @@ pub async fn get_page_access_list(
         if e.status_code == 404 {
             return error_handlers::handlers::ErrorResponse::forbidden(
                 error_handlers::codes::ForbiddenErrorCode::InsufficientPermissions,
+                Some(HashMap::from([("message".to_string(), "Insufficient permissions".to_string())])),
                 None,
             );
         }
@@ -47,14 +50,15 @@ pub async fn get_page_access_list(
         return Err(
             error_handlers::handlers::ErrorResponse::forbidden(
                 error_handlers::codes::ForbiddenErrorCode::InsufficientPermissions,
+                Some(HashMap::from([("message".to_string(), "Insufficient permissions".to_string())])),
                 None,
             ),
         );
     }
 
     let page_access_list =
-        crate::entities::page_access::service::get_page_access_list(
-            &state.postgres,
+        crate::entities::page_access::PageAccessService::get_page_access_list(
+            &state,
             page_id,
         )
         .await
@@ -62,6 +66,7 @@ pub async fn get_page_access_list(
             if e.status_code == 404 {
                 return error_handlers::handlers::ErrorResponse::forbidden(
                 error_handlers::codes::ForbiddenErrorCode::InsufficientPermissions,
+                Some(HashMap::from([("message".to_string(), "Insufficient permissions".to_string())])),
                 None,
             );
             }

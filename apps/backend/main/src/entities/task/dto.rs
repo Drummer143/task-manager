@@ -1,9 +1,18 @@
 use chrono::{DateTime, Utc};
 use rust_api::entities::{task::model::Task, user::model::User};
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 use crate::entities::board_statuses::dto::BoardStatusResponseDto;
+
+#[derive(Debug, Deserialize, utoipa::ToSchema)]
+pub struct CreateTaskDto {
+    pub title: String,
+    pub status_id: Uuid,
+    pub description: Option<serde_json::Value>,
+    pub due_date: Option<DateTime<Utc>>,
+    pub assignee_id: Option<Uuid>,
+}
 
 #[derive(Debug, Serialize, utoipa::ToSchema, Clone)]
 pub struct TaskResponse {

@@ -25,6 +25,7 @@ pub async fn page_access_guard(
     if user_id.is_none() {
         let body = serde_json::to_string(&ErrorResponse::unauthorized(
             codes::UnauthorizedErrorCode::Unauthorized,
+            Some("User is not authorized".to_string()),
         ))
         .unwrap();
 
@@ -37,15 +38,23 @@ pub async fn page_access_guard(
     let user_id = user_id.unwrap().clone();
     let page_id = page_id.unwrap();
 
-    let page_access =
-        crate::entities::page_access::service::get_page_access(&state.postgres, user_id, page_id)
-            .await;
+    let page_access = rust_api::entities::page_access::PageAccessRepository::get_one(
+        &state.postgres,
+        user_id,
+        page_id,
+    )
+    .await;
 
-    if let Err(e) = page_access {
-        let body = serde_json::to_string(&e).unwrap();
+    if page_access.is_err() {
+        let body = serde_json::to_string(&ErrorResponse::forbidden(
+            codes::ForbiddenErrorCode::InsufficientPermissions,
+            None,
+            None,
+        ))
+        .unwrap();
 
         return axum::response::Response::builder()
-            .status(e.status_code)
+            .status(axum::http::StatusCode::FORBIDDEN)
             .body(axum::body::Body::from(body))
             .unwrap();
     }

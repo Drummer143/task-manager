@@ -3,13 +3,14 @@ use axum::{
     Extension,
 };
 use error_handlers::handlers::ErrorResponse;
+use rust_api::shared::traits::PostgresqlRepositoryGetOneById;
 
 use crate::{
     entities::{
         page::dto::PageResponseWithoutInclude,
         workspace::dto::{Include, WorkspaceResponse},
     },
-    shared::extractors::query::ValidatedQuery,
+    shared::{extractors::query::ValidatedQuery, traits::ServiceGetOneByIdMethod},
 };
 
 #[utoipa::path(
@@ -36,13 +37,16 @@ pub async fn get_by_id(
     let include = query.include.unwrap_or_default();
 
     let workspace =
-        crate::entities::workspace::service::get_by_id(&state.postgres, workspace_id).await?;
+        crate::entities::workspace::WorkspaceService::get_one_by_id(&state, workspace_id).await?;
 
     let owner = if include.contains(&Include::Owner) {
         Some(
-            rust_api::entities::user::repository::find_by_id(&state.postgres, workspace.owner_id)
-                .await
-                .map_err(ErrorResponse::from)?,
+            rust_api::entities::user::UserRepository::get_one_by_id(
+                &state.postgres,
+                workspace.workspace.owner_id,
+            )
+            .await
+            .map_err(ErrorResponse::from)?,
         )
     } else {
         None
@@ -50,7 +54,7 @@ pub async fn get_by_id(
 
     let pages = if include.contains(&Include::Pages) {
         Some(
-            crate::entities::page::service::get_all_in_workspace(&state.postgres, workspace_id)
+            crate::entities::page::PageService::get_all_in_workspace(&state, workspace_id)
                 .await
                 .map_err(ErrorResponse::from)?
                 .iter()
@@ -61,7 +65,7 @@ pub async fn get_by_id(
         None
     };
 
-    let role = rust_api::entities::workspace_access::repository::get_workspace_access(
+    let role = rust_api::entities::workspace_access::WorkspaceAccessRepository::get_one(
         &state.postgres,
         user_id,
         workspace_id,

@@ -2,6 +2,18 @@ use chrono::{DateTime, Utc};
 use rust_api::entities::workspace_access::model::Role;
 use uuid::Uuid;
 
+#[derive(Debug, serde::Deserialize, utoipa::ToSchema)]
+pub struct CreateWorkspaceAccessDto {
+    pub user_id: Uuid,
+    pub role: Role,
+}
+
+#[derive(Debug, serde::Deserialize, utoipa::ToSchema)]
+pub struct UpdateWorkspaceAccessDto {
+    pub user_id: Uuid,
+    pub role: Option<Role>,
+}
+
 #[derive(Debug, serde::Serialize, utoipa::ToSchema, Clone)]
 pub struct WorkspaceAccessResponse {
     pub id: Uuid,

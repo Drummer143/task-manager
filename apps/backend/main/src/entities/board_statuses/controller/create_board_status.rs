@@ -9,8 +9,9 @@ use uuid::Uuid;
 use crate::{
     entities::board_statuses::{
         dto::{BoardStatusResponseDto, CreateBoardStatusDto},
-        service,
+        BoardStatusService,
     },
+    shared::traits::ServiceCreateMethod,
     types::app_state::AppState,
 };
 
@@ -35,8 +36,8 @@ pub async fn create_board_status(
     Path((_, page_id)): Path<(Uuid, Uuid)>,
     Json(dto): Json<CreateBoardStatusDto>,
 ) -> Result<Json<BoardStatusResponseDto>, ErrorResponse> {
-    service::create_board_status(
-        &app_state.postgres,
+    BoardStatusService::create(
+        &app_state,
         rust_api::entities::board_statuses::dto::CreateBoardStatusDto {
             code: dto.code,
             r#type: dto.r#type,

@@ -2,7 +2,7 @@ use axum::extract::{Path, State};
 use error_handlers::handlers::ErrorResponse;
 use uuid::Uuid;
 
-use crate::entities::{board_statuses::dto::BoardStatusResponseDto, task::dto::TaskResponse};
+use crate::{entities::{board_statuses::dto::BoardStatusResponseDto, task::dto::TaskResponse}, shared::traits::ServiceGetOneByIdMethod};
 
 #[utoipa::path(
     get,
@@ -24,12 +24,13 @@ pub async fn get_task<'a>(
     Path((_, _, task_id)): Path<(Uuid, Uuid, Uuid)>,
     headers: axum::http::header::HeaderMap,
 ) -> Result<TaskResponse, ErrorResponse> {
-    let task = crate::entities::task::service::get_task_by_id(&state.postgres, task_id).await?;
+    let task = crate::entities::task::TaskService::get_one_by_id(&state, task_id)
+        .await?;
 
     let reporter =
-        crate::entities::user::service::find_by_id(&state.postgres, task.reporter_id).await?;
+        crate::entities::user::UserService::get_one_by_id(&state, task.reporter_id).await?;
     let assignee = if let Some(assignee_id) = task.assignee_id {
-        Some(crate::entities::user::service::find_by_id(&state.postgres, assignee_id).await?)
+        Some(crate::entities::user::UserService::get_one_by_id(&state, assignee_id).await?)
     } else {
         None
     };
@@ -39,9 +40,8 @@ pub async fn get_task<'a>(
         .map(|h| h.to_str().unwrap_or("en"))
         .unwrap_or("en");
 
-    let board_status = crate::entities::board_statuses::service::get_board_status_by_id(
-        &state.postgres,
-        task.status_id,
+    let board_status = crate::entities::board_statuses::BoardStatusService::get_one_by_id(
+        &state, task.status_id,
     )
     .await?;
 

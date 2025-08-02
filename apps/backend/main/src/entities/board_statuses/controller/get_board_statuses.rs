@@ -1,6 +1,7 @@
 use axum::{
     extract::{Path, State},
-    http::header::HeaderMap, Json,
+    http::header::HeaderMap,
+    Json,
 };
 use error_handlers::handlers::ErrorResponse;
 use uuid::Uuid;
@@ -31,9 +32,8 @@ pub async fn get_board_statuses(
         .map(|lang| lang.to_str().unwrap_or("en"))
         .unwrap_or("en");
 
-    crate::entities::board_statuses::service::get_board_statuses_by_page_id(
-        &state.postgres,
-        page_id,
+    crate::entities::board_statuses::BoardStatusService::get_board_statuses_by_page_id(
+        &state, page_id,
     )
     .await
     .map(|statuses| {

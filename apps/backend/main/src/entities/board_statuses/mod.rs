@@ -1,4 +1,6 @@
 pub mod controller;
 pub mod dto;
 pub mod router;
-pub mod service;
+mod service;
+
+pub use service::BoardStatusService;
