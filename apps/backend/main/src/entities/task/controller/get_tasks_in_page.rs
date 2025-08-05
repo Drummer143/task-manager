@@ -5,7 +5,10 @@ use axum::{
 use error_handlers::handlers::ErrorResponse;
 use uuid::Uuid;
 
-use crate::{entities::{board_statuses::dto::BoardStatusResponseDto, task::dto::TaskResponse}, shared::traits::ServiceGetOneByIdMethod};
+use crate::{
+    entities::{board_statuses::dto::BoardStatusResponseDto, task::dto::TaskResponse},
+    shared::traits::ServiceGetOneByIdMethod,
+};
 
 #[utoipa::path(
     get,
@@ -35,20 +38,18 @@ pub async fn get_tasks_in_page(
         .map(|h| h.to_str().unwrap_or("en"))
         .unwrap_or("en");
 
-    let board_statuses = crate::entities::board_statuses::BoardStatusService::get_board_statuses_by_page_id(
-        &state, page_id,
-    )
-    .await?
-    .iter()
-    .map(|status| BoardStatusResponseDto {
-        id: status.id,
-        code: status.code.clone(),
-        title: status.localizations.get(lang).unwrap().to_string(),
-        initial: status.initial,
-        position: status.position,
-        r#type: status.r#type.clone(),
-    })
-    .collect::<Vec<_>>();
+    let board_statuses =
+        crate::entities::board_statuses::BoardStatusService::get_board_statuses_by_page_id(
+            &state, page_id,
+        )
+        .await?
+        .iter()
+        .map(|status| BoardStatusResponseDto {
+            id: status.id,
+            title: status.localizations.get(lang).unwrap().to_string(),
+            initial: status.initial,
+        })
+        .collect::<Vec<_>>();
 
     for task in tasks {
         let reporter =

@@ -113,11 +113,9 @@ impl ServiceCreateMethod for PageService {
                     &mut *tx,
                     rust_api::entities::board_statuses::dto::CreateBoardStatusDto {
                         page_id: page.id,
-                        code: status.code.to_string(),
                         position: status.position,
-                        parent_status_id: None,
+                        // parent_status_id: None,
                         initial: Some(status.initial),
-                        r#type: status.r#type,
                         localizations: sqlx::types::Json(localizations),
                     },
                 )

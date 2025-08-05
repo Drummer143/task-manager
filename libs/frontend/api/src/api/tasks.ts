@@ -67,7 +67,9 @@ export const createTask = async ({ workspaceId, pageId, task }: CreateTaskArgs) 
 interface UpdateTaskArgs extends Ids {
 	taskId: string;
 
-	body: Partial<CreateTaskArgs["task"]>;
+	body: Partial<CreateTaskArgs["task"]> & {
+		position?: number
+	};
 }
 
 export const updateTask = async ({ taskId, pageId, workspaceId, body }: UpdateTaskArgs) =>

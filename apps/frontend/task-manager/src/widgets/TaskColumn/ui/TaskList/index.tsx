@@ -22,8 +22,8 @@ const TaskList: React.FC<TaskListProps> = ({ tasks, draggable, onTaskClick }) =>
 
 	return (
 		<div className={styles.taskList}>
-			{tasks?.map(task => (
-				<TaskItem draggable={draggable} onClick={onTaskClick} key={task.id} task={task} />
+			{tasks?.map((task, index) => (
+				<TaskItem draggable={draggable} onClick={onTaskClick} task={task} key={task.id} />
 			))}
 		</div>
 	);

@@ -39,8 +39,6 @@ pub async fn create_task(
     .map_err(ErrorResponse::from)?
     .unwrap_or_default();
 
-    println!("last_position: {last_position}");
-
     crate::entities::task::TaskService::create(
         &state,
         rust_api::entities::task::dto::CreateTaskDto {

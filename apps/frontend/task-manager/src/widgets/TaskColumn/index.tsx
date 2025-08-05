@@ -8,7 +8,7 @@ import { Button, Typography } from "antd";
 import { useStyles } from "./styles";
 import TaskList from "./ui/TaskList";
 
-import { isTaskSource, TaskTargetData } from "../../shared/dnd/board";
+import { ColumnTargetData, isTaskSource } from "../../shared/dnd/board";
 
 interface TaskColumnProps {
 	status: BoardStatus;
@@ -44,8 +44,8 @@ const TaskColumn: React.FC<TaskColumnProps> = ({
 			return;
 		}
 
-		const targetData: TaskTargetData = {
-			type: "task",
+		const targetData: ColumnTargetData = {
+			type: "column-target",
 			status: status.id
 		};
 

@@ -125,7 +125,7 @@ pub async fn get_page(
             .map(|v| v.to_str().unwrap_or("en"))
             .unwrap_or("en");
 
-        page_response.board_statuses = Some(
+        let statuses =
             crate::entities::board_statuses::BoardStatusService::get_board_statuses_by_page_id(
                 &state,
                 page.id.clone(),
@@ -136,15 +136,40 @@ pub async fn get_page(
                     .into_iter()
                     .map(|status| BoardStatusResponseDto {
                         id: status.id,
-                        code: status.code,
-                        r#type: status.r#type,
                         initial: status.initial,
-                        position: status.position,
                         title: status.localizations.get(lang).unwrap().to_string(),
                     })
-                    .collect()
-            })?,
-        );
+                    .collect::<Vec<BoardStatusResponseDto>>()
+            })?;
+
+        // for status in statuses.iter_mut() {
+        //     let child_statuses = rust_api::entities::board_statuses::BoardStatusRepository::get_child_statuses_by_parent_status_id(
+        //             &state.postgres, status.status.id,
+        //         )
+        //         .await
+        //         .map(|statuses| {
+        //             statuses
+        //                 .iter()
+        //                 .map(|status| ChildBoardStatusResponseDto {
+        //                     code: status.code.clone(),
+        //                     title: status
+        //                         .localizations
+        //                         .get(lang)
+        //                         .unwrap_or(&status.localizations["en"])
+        //                         .to_string(),
+        //                     id: status.id,
+        //                     position: status.position,
+        //                     initial: status.initial,
+        //                 })
+        //                 .collect::<Vec<ChildBoardStatusResponseDto>>()
+        //         })?;
+
+        //     if !child_statuses.is_empty() {
+        //         status.child_statuses = Some(child_statuses);
+        //     }
+        // }
+
+        page_response.board_statuses = Some(statuses);
     }
 
     Ok(page_response)

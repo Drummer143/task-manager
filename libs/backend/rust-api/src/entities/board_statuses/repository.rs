@@ -3,7 +3,7 @@ use uuid::Uuid;
 use crate::entities::board_statuses::{dto, model::BoardStatus};
 use crate::shared::traits::{
     PostgresqlRepositoryCreate, PostgresqlRepositoryDelete, PostgresqlRepositoryGetOneById,
-    PostgresqlRepositoryUpdate, RepositoryBase,
+    PostgresqlRepositoryUpdate, RepositoryBase, UpdateDto,
 };
 
 pub struct BoardStatusRepository;
@@ -21,17 +21,16 @@ impl PostgresqlRepositoryCreate for BoardStatusRepository {
     ) -> Result<Self::Response, sqlx::Error> {
         sqlx::query_as::<_, BoardStatus>(
             r#"
-            INSERT INTO board_statuses (page_id, code, type, position, localizations, initial)
-            VALUES ($1, $2, $3, $4, $5, $6)
+            INSERT INTO board_statuses (page_id, position, localizations, initial)
+            VALUES ($1, $2, $3, $4)
             RETURNING *
             "#,
         )
         .bind(dto.page_id)
-        .bind(dto.code)
-        .bind(dto.r#type)
         .bind(dto.position)
         .bind(dto.localizations)
         .bind(dto.initial)
+        // .bind(dto.parent_status_id)
         .fetch_one(executor)
         .await
     }
@@ -45,20 +44,45 @@ impl PostgresqlRepositoryUpdate for BoardStatusRepository {
         status_id: Uuid,
         dto: dto::UpdateBoardStatusDto,
     ) -> Result<Self::Response, sqlx::Error> {
-        sqlx::query_as::<_, BoardStatus>(
-            r#"
-            UPDATE board_statuses
-            SET position = $1, localizations = $2, initial = $3
-        WHERE id = $4
-        RETURNING *
-        "#,
-        )
-        .bind(dto.position)
-        .bind(dto.localizations)
-        .bind(dto.initial)
-        .bind(status_id)
-        .fetch_one(executor)
-        .await
+        if dto.is_empty() {
+            return sqlx::query_as::<_, BoardStatus>("SELECT * FROM board_statuses WHERE id = $1")
+                .bind(status_id)
+                .fetch_one(executor)
+                .await;
+        }
+
+        let mut query = sqlx::query_builder::QueryBuilder::new("UPDATE board_statuses SET");
+        let mut separated = query.separated(", ");
+
+        if let Some(position) = dto.position {
+            separated
+                .push("position = ")
+                .push_bind_unseparated(position);
+        }
+
+        if let Some(localizations) = dto.localizations {
+            separated
+                .push("localizations = ")
+                .push_bind_unseparated(localizations);
+        }
+
+        if let Some(initial) = dto.initial {
+            separated.push("initial = ").push_bind_unseparated(initial);
+        }
+
+        // if let Some(parent_status_id) = dto.parent_status_id {
+        //     separated
+        //         .push("parent_status_id = ")
+        //         .push_bind_unseparated(parent_status_id);
+        // }
+
+        query
+            .push("WHERE id = ")
+            .push_bind(status_id)
+            .push("RETURNING *")
+            .build_query_as::<BoardStatus>()
+            .fetch_one(executor)
+            .await
     }
 }
 
@@ -91,13 +115,21 @@ impl BoardStatusRepository {
         executor: impl sqlx::Executor<'_, Database = sqlx::Postgres>,
         page_id: Uuid,
     ) -> Result<Vec<BoardStatus>, sqlx::Error> {
-        sqlx::query_as::<_, BoardStatus>(
-            "SELECT * FROM board_statuses WHERE page_id = $1 ORDER BY position ASC",
-        )
-        .bind(page_id)
-        .fetch_all(executor)
-        .await
+        sqlx::query_as::<_, BoardStatus>("SELECT * FROM board_statuses WHERE page_id = $1 ORDER BY position ASC")
+            .bind(page_id)
+            .fetch_all(executor)
+            .await
     }
+
+    // pub async fn get_child_statuses_by_parent_status_id(
+    //     executor: impl sqlx::Executor<'_, Database = sqlx::Postgres>,
+    //     parent_status_id: Uuid,
+    // ) -> Result<Vec<BoardStatus>, sqlx::Error> {
+    //     sqlx::query_as::<_, BoardStatus>("SELECT * FROM board_statuses WHERE parent_status_id = $1")
+    //         .bind(parent_status_id)
+    //         .fetch_all(executor)
+    //         .await
+    // }
 
     pub async fn get_initial_board_status_by_page_id(
         executor: impl sqlx::Executor<'_, Database = sqlx::Postgres>,

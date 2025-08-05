@@ -62,6 +62,7 @@ impl ServiceCreateMethod for BoardStatusService {
                             initial: Some(false),
                             localizations: None,
                             position: None,
+                            // parent_status_id: None,
                         },
                     )
                     .await
@@ -143,6 +144,7 @@ impl ServiceUpdateMethod for BoardStatusService {
                                 initial: Some(false),
                                 localizations: None,
                                 position: None,
+                                // parent_status_id: None,
                             },
                         )
                         .await

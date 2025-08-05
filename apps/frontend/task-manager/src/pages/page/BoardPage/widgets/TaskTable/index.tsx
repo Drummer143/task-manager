@@ -1,15 +1,21 @@
 import React, { memo, useCallback, useEffect } from "react";
 
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
+import { extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { BoardStatus, changeStatus, getTaskList, Task } from "@task-manager/api";
+import { BoardStatus, getTaskList, Task, updateTask } from "@task-manager/api";
 import { App } from "antd";
 import { useNavigate } from "react-router";
 
 import { useStyles } from "./styles";
 
 import { useAuthStore } from "../../../../../app/store/auth";
-import { isTaskSource, isTaskTarget, TaskSourceData } from "../../../../../shared/dnd/board";
+import {
+	isColumnTarget,
+	isTaskSource,
+	isTaskTarget,
+	TaskSourceData
+} from "../../../../../shared/dnd/board";
 import TaskColumn from "../../../../../widgets/TaskColumn";
 
 interface TaskTableProps {
@@ -46,12 +52,23 @@ const TaskTable: React.FC<TaskTableProps> = ({ pageId, statuses }) => {
 	});
 
 	const { mutateAsync: changeTaskStatus } = useMutation({
-		mutationFn: ({ taskId, statusId }: { taskId: string; statusId: string }) =>
-			changeStatus({
+		mutationFn: ({
+			taskId,
+			statusId,
+			position
+		}: {
+			taskId: string;
+			statusId?: string;
+			position?: number;
+		}) =>
+			updateTask({
 				workspaceId: useAuthStore.getState().user.workspace.id,
 				pageId,
 				taskId,
-				statusId
+				body: {
+					statusId,
+					position
+				}
 			}),
 		onSuccess: () => queryClient.invalidateQueries({ queryKey: [pageId] }),
 		onError: error => message.error(error.message ?? "Failed to change task status")
@@ -72,15 +89,44 @@ const TaskTable: React.FC<TaskTableProps> = ({ pageId, statuses }) => {
 		return monitorForElements({
 			canMonitor: args => isTaskSource(args.source.data),
 			onDrop: args => {
+				const payload: {
+					taskId: string;
+					statusId?: string;
+					position?: number;
+				} = {
+					taskId: (args.source.data as unknown as TaskSourceData).task.id
+				};
+
+				const target = args.location.current.dropTargets[0].data;
+				const source = args.source.data as unknown as TaskSourceData;
+
+				if (isColumnTarget(target) && target.status !== source.task.status.id) {
+					payload.statusId = target.status;
+				}
+
+				if (isTaskTarget(target) && source.task.id !== target.task.id) {
+					const edge = extractClosestEdge(target);
+
+					if (target.task.position > source.task.position) {
+						if (edge === "top") {
+							payload.position = target.task.position - 1;
+						} else {
+							payload.position = target.task.position;
+						}
+					} else if (target.task.position < source.task.position) {
+						if (edge === "top") {
+							payload.position = target.task.position;
+						} else {
+							payload.position = target.task.position + 1;
+						}
+					}
+				}
+
 				if (
-					isTaskTarget(args.location.current.dropTargets[0].data) &&
-					args.location.current.dropTargets[0].data.status !==
-						(args.source.data as unknown as TaskSourceData).task.status.id
+					(payload.statusId && payload.statusId !== source.task.status.id) ||
+					(payload.position && payload.position !== source.task.position)
 				) {
-					changeTaskStatus({
-						taskId: (args.source.data as unknown as TaskSourceData).task.id,
-						statusId: args.location.current.dropTargets[0].data.status
-					});
+					changeTaskStatus(payload);
 				}
 			}
 		});

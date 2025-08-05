@@ -39,9 +39,7 @@ pub async fn create_board_status(
     BoardStatusService::create(
         &app_state,
         rust_api::entities::board_statuses::dto::CreateBoardStatusDto {
-            code: dto.code,
-            r#type: dto.r#type,
-            parent_status_id: dto.parent_status_id,
+            // parent_status_id: dto.parent_status_id,
             page_id,
             initial: dto.initial,
             position: dto.position,
@@ -55,15 +53,12 @@ pub async fn create_board_status(
             .map(|h| h.to_str().unwrap_or("en"))
             .unwrap_or("en");
 
-        let title = status.localizations.get(lang).unwrap();
+        let title = status.localizations.get(lang).unwrap().to_string();
 
         return Json(BoardStatusResponseDto {
             id: status.id,
-            code: status.code,
-            r#type: status.r#type,
-            position: status.position,
-            title: title.clone(),
             initial: status.initial,
+            title,
         });
     })
 }

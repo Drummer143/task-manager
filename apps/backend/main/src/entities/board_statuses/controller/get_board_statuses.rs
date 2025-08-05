@@ -6,7 +6,10 @@ use axum::{
 use error_handlers::handlers::ErrorResponse;
 use uuid::Uuid;
 
-use crate::{entities::board_statuses::dto::BoardStatusResponseDto, types::app_state::AppState};
+use crate::{
+    entities::board_statuses::dto::BoardStatusResponseDto,
+    types::app_state::AppState,
+};
 
 #[utoipa::path(
     get,
@@ -28,7 +31,7 @@ pub async fn get_board_statuses(
     headers: HeaderMap,
 ) -> Result<Json<Vec<BoardStatusResponseDto>>, ErrorResponse> {
     let lang = headers
-        .get("Accept-Language")
+        .get("User-Language")
         .map(|lang| lang.to_str().unwrap_or("en"))
         .unwrap_or("en");
 
@@ -40,19 +43,39 @@ pub async fn get_board_statuses(
         let statuses = statuses
             .iter()
             .map(|status| BoardStatusResponseDto {
-                code: status.code.clone(),
-                title: status
-                    .localizations
-                    .get(lang)
-                    .unwrap_or(&status.localizations["en"])
-                    .to_string(),
                 id: status.id,
-                r#type: status.r#type.clone(),
-                position: status.position,
                 initial: status.initial,
+                title: status.localizations.get(lang).unwrap().to_string(),
             })
             .collect::<Vec<BoardStatusResponseDto>>();
 
         Json(statuses)
     })
+
+    // for status in statuses.iter_mut() {
+    //     let child_statuses: Vec<ChildBoardStatusResponseDto> = rust_api::entities::board_statuses::BoardStatusRepository::get_child_statuses_by_parent_status_id(
+    //         &state.postgres, status.status.id,
+    //     )
+    //     .await
+    //     .map(|statuses| {
+    //             statuses
+    //                 .iter()
+    //                 .map(|status| ChildBoardStatusResponseDto {
+    //                     code: status.code.clone(),
+    //                     title: status
+    //                         .localizations
+    //                         .get(lang)
+    //                         .unwrap_or(&status.localizations["en"])
+    //                         .to_string(),
+    //                     id: status.id,
+    //                     position: status.position,
+    //                     initial: status.initial,
+    //                 })
+    //                 .collect::<Vec<ChildBoardStatusResponseDto>>()
+    //         })?;
+
+    //     if !child_statuses.is_empty() {
+    //         status.child_statuses = Some(child_statuses);
+    //     }
+    // }
 }

@@ -73,7 +73,8 @@ async fn main() {
         .merge(entities::board_statuses::router::init(app_state.clone()))
         .merge(
             utoipa_swagger_ui::SwaggerUi::new("/api")
-                .url("/api/openapi.json", swagger::ApiDoc::openapi()),
+                .url("/api/openapi.json", swagger::ApiDoc::openapi())
+                .config(utoipa_swagger_ui::Config::default().doc_expansion("none")),
         )
         .with_state(app_state)
         .layer(cors)
