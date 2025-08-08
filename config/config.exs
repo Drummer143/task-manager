@@ -7,12 +7,12 @@
 # General application configuration
 import Config
 
-config :socket_server,
+config :notifications,
   ecto_repos: [SocketServer.Repo],
   generators: [timestamp_type: :utc_datetime]
 
 # Configures the endpoint
-config :socket_server, SocketServerWeb.Endpoint,
+config :notifications, SocketServerWeb.Endpoint,
   url: [host: "localhost"],
   adapter: Bandit.PhoenixAdapter,
   render_errors: [
@@ -29,7 +29,7 @@ config :socket_server, SocketServerWeb.Endpoint,
 #
 # For production it's recommended to configure a different adapter
 # at the `config/runtime.exs`.
-config :socket_server, SocketServer.Mailer, adapter: Swoosh.Adapters.Local
+config :notifications, SocketServer.Mailer, adapter: Swoosh.Adapters.Local
 
 # Configures Elixir's Logger
 config :logger, :console,

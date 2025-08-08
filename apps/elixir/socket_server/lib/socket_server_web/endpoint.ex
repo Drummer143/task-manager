@@ -1,12 +1,12 @@
 defmodule SocketServerWeb.Endpoint do
-  use Phoenix.Endpoint, otp_app: :socket_server
+  use Phoenix.Endpoint, otp_app: :notifications
 
   # The session will be stored in the cookie and signed,
   # this means its contents can be read but not tampered with.
   # Set :encryption_salt if you would also like to encrypt it.
   @session_options [
     store: :cookie,
-    key: "_socket_server_key",
+    key: "_notifications_key",
     signing_salt: "Rrq7eCgX",
     same_site: "Lax"
   ]
@@ -25,7 +25,7 @@ defmodule SocketServerWeb.Endpoint do
   # when deploying your static files in production.
   plug Plug.Static,
     at: "/",
-    from: :socket_server,
+    from: :notifications,
     gzip: false,
     only: SocketServerWeb.static_paths()
 
@@ -33,7 +33,7 @@ defmodule SocketServerWeb.Endpoint do
   # :code_reloader configuration of your endpoint.
   if code_reloading? do
     plug Phoenix.CodeReloader
-    plug Phoenix.Ecto.CheckRepoStatus, otp_app: :socket_server
+    plug Phoenix.Ecto.CheckRepoStatus, otp_app: :notifications
   end
 
   plug Phoenix.LiveDashboard.RequestLogger,

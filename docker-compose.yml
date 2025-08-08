@@ -150,7 +150,7 @@ services:
             context: .
             dockerfile: Dockerfile.backend-elixir
             args:
-                APP_NAME: socket_server
+                APP_NAME: notifications
         environment:
             RABBITMQ_URL: ${RABBITMQ_URL}
             DATABASE_URL: ${DATABASE_URL}

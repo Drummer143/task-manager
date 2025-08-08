@@ -6,7 +6,6 @@ use uuid::Uuid;
 #[derive(utoipa::ToSchema, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CreateBoardStatusDto {
-    pub code: String,
     pub position: i32,
     pub localizations: HashMap<String, String>,
     // pub parent_status_id: Option<Uuid>,

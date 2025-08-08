@@ -11,7 +11,7 @@ defmodule SocketServer.Application do
       SocketServerWeb.Telemetry,
       SocketServer.Repo,
       SocketServer.Consumer,
-      {DNSCluster, query: Application.get_env(:socket_server, :dns_cluster_query) || :ignore},
+      {DNSCluster, query: Application.get_env(:notifications, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: SocketServer.PubSub},
       # Start the Finch HTTP client for sending emails
       {Finch, name: SocketServer.Finch},

@@ -1,6 +1,6 @@
 use error_handlers::handlers::ErrorResponse;
 use rust_api::{
-    entities::task::{model::Task, TaskRepository},
+    entities::task::{TaskRepository, model::Task},
     shared::{
         traits::{
             PostgresqlRepositoryCreate, PostgresqlRepositoryDelete, PostgresqlRepositoryGetOneById,
@@ -55,64 +55,62 @@ impl ServiceUpdateMethod for TaskService {
             .await
             .map_err(ErrorResponse::from)?;
 
-        if let Some(status_id) = dto.status_id.clone() {
-            if status_id != current_task.status_id {
-                if let Some(position) = dto.position.clone() {
-                    if position > current_task.position {
-                        let shift_tasks_position = TaskRepository::shift_tasks_position(
-                            &mut *tx,
-                            status_id,
-                            Some(position),
-                            None,
-                            ShiftAction::Plus,
-                        )
-                        .await
-                        .map_err(ErrorResponse::from);
+        if let Some(status_id) = dto.status_id.clone()
+            && status_id != current_task.status_id
+            && let Some(position) = dto.position.clone()
+            && position > current_task.position
+        {
+            let shift_tasks_position = TaskRepository::shift_tasks_position(
+                &mut *tx,
+                status_id,
+                Some(position),
+                None,
+                ShiftAction::Plus,
+            )
+            .await
+            .map_err(ErrorResponse::from);
 
-                        if let Err(e) = shift_tasks_position {
-                            tx.rollback().await?;
-                            return Err(e);
-                        }
-
-                        let shift_tasks_position = TaskRepository::shift_tasks_position(
-                            &mut *tx,
-                            status_id,
-                            Some(2),
-                            Some(current_task.position - 1),
-                            ShiftAction::Minus,
-                        )
-                        .await
-                        .map_err(ErrorResponse::from);
-
-                        if let Err(e) = shift_tasks_position {
-                            tx.rollback().await?;
-                            return Err(e);
-                        }
-                    }
-                }
+            if let Err(e) = shift_tasks_position {
+                tx.rollback().await?;
+                return Err(e);
             }
-        } else if let Some(position) = dto.position.clone() {
-            if position != current_task.position {
-                let (start, end, action) = if position > current_task.position {
-                    (current_task.position + 1, position, ShiftAction::Minus)
-                } else {
-                    (position, current_task.position - 1, ShiftAction::Plus)
-                };
 
-                let shift_tasks_position = TaskRepository::shift_tasks_position(
-                    &mut *tx,
-                    current_task.status_id,
-                    Some(start),
-                    Some(end),
-                    action,
-                )
-                .await
-                .map_err(ErrorResponse::from);
+            let shift_tasks_position = TaskRepository::shift_tasks_position(
+                &mut *tx,
+                status_id,
+                Some(2),
+                Some(current_task.position - 1),
+                ShiftAction::Minus,
+            )
+            .await
+            .map_err(ErrorResponse::from);
 
-                if let Err(e) = shift_tasks_position {
-                    tx.rollback().await?;
-                    return Err(e);
-                }
+            if let Err(e) = shift_tasks_position {
+                tx.rollback().await?;
+                return Err(e);
+            }
+        } else if let Some(position) = dto.position.clone()
+            && position != current_task.position
+        {
+            let (start, end, action) = if position > current_task.position {
+                (current_task.position + 1, position, ShiftAction::Minus)
+            } else {
+                (position, current_task.position - 1, ShiftAction::Plus)
+            };
+
+            let shift_tasks_position = TaskRepository::shift_tasks_position(
+                &mut *tx,
+                current_task.status_id,
+                Some(start),
+                Some(end),
+                action,
+            )
+            .await
+            .map_err(ErrorResponse::from);
+
+            if let Err(e) = shift_tasks_position {
+                tx.rollback().await?;
+                return Err(e);
             }
         }
 
