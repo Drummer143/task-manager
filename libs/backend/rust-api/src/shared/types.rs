@@ -23,3 +23,19 @@ impl fmt::Display for SortOrder {
         }
     }
 }
+
+#[derive(Debug, Serialize, Deserialize, utoipa::ToSchema)]
+pub enum ShiftAction {
+    Plus,
+    Minus,
+}
+
+impl ToString for ShiftAction {
+    fn to_string(&self) -> String {
+        match self {
+            ShiftAction::Plus => "+".to_string(),
+            ShiftAction::Minus => "-".to_string(),
+        }
+    }
+}
+

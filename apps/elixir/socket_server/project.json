@@ -2,7 +2,7 @@
 	"$schema": "../../../node_modules/nx/schemas/project-schema.json",
 	"name": "socket-server",
 	"projectType": "application",
-	"sourceRoot": "apps/elixir/socket_server/src",
+	"sourceRoot": "apps/elixir/notifications/src",
 	"targets": {
 		"dev": {
 			"executor": "nx:run-commands",

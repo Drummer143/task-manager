@@ -4,7 +4,7 @@ import { axiosInstance } from "./base";
 
 import { Page, PageType } from "../types";
 
-type GetPageIncludes = "tasks" | "owner" | "childPages" | "parentPage" | "workspace";
+type GetPageIncludes = "tasks" | "owner" | "childPages" | "parentPage" | "workspace" | "boardStatuses";
 
 interface Ids {
 	workspaceId: string;

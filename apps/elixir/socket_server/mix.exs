@@ -3,13 +3,13 @@ defmodule SocketServer.MixProject do
 
   def project do
     [
-      app: :socket_server,
+      app: :notifications,
       version: "0.1.0",
       elixir: "~> 1.14",
       elixirc_paths: elixirc_paths(Mix.env()),
       start_permanent: Mix.env() == :prod,
       aliases: aliases(),
-      build_path: "../../../dist/apps/socket_server",
+      build_path: "../../../dist/apps/notifications",
       config_path: "../../../config/config.exs",
       deps_path: "../../../deps",
       lockfile: "../../../mix.lock",

@@ -1,19 +1,19 @@
 import React, { useMemo } from "react";
 
-import { getUserList, User } from "@task-manager/api";
+import { useQuery } from "@tanstack/react-query";
+import { getBoardStatuses, getUserList, User } from "@task-manager/api";
 import { lazySuspense } from "@task-manager/react-utils";
-import { Alert, Button, DatePicker, Form, Input, Select, Space } from "antd";
+import { Alert, Button, DatePicker, Form, FormProps, Input, Select, Space } from "antd";
 import { DefaultOptionType } from "antd/es/select";
 
-import { TaskFormProps } from "./types";
-import { initialValues, requiredRule, statusSelectOptions } from "./utils";
+import { FormValues, TaskFormProps } from "./types";
+import { requiredRule } from "./utils";
 
 import { useAuthStore } from "../../../../../app/store/auth";
 import { today } from "../../../../../shared/constants";
 import FullSizeLoader from "../../../../../shared/ui/FullSizeLoader";
 import Drawer from "../../../../../widgets/Drawer";
 import SelectWithInfiniteScroll from "../../../../../widgets/SelectWithInfiniteScroll";
-import UserCard from "../../../../../widgets/UserCard";
 
 const MDEditor = lazySuspense(() => import("../../../../../widgets/MDEditor"), <FullSizeLoader />);
 
@@ -29,15 +29,31 @@ const TaskForm: React.FC<TaskFormProps> = ({
 	pageError,
 	initialValues: propsInitialValues,
 	submitError,
-	extraHeader
+	extraHeader,
+	pageId
 }) => {
 	const workspaceId = useAuthStore(state => state.user.workspace.id);
+
+	const { data: statuses, isLoading: statusesLoading } = useQuery({
+		queryKey: ["statuses", workspaceId, pageId],
+		enabled: open,
+		queryFn: () => getBoardStatuses({ workspaceId, pageId })
+	});
+
+	const statusSelectOptions = useMemo(
+		() =>
+			statuses?.map(status => ({
+				value: status.id,
+				label: status.title,
+				title: status.title
+			})) || [],
+		[statuses]
+	);
 
 	const memoizedAssigneeSelectProps = useMemo(
 		() => ({
 			queryKey: ["users", workspaceId],
 			extraQueryParams: { workspaceId },
-			optionRender: (user: User) => <UserCard user={user} hideOpenLink />,
 			transformItem: (user: User): DefaultOptionType => ({
 				value: user.id,
 				label: user.username,
@@ -45,6 +61,18 @@ const TaskForm: React.FC<TaskFormProps> = ({
 			})
 		}),
 		[workspaceId]
+	);
+
+	const formProps = useMemo<FormProps<FormValues>>(
+		() => ({
+			className: "h-full",
+			initialValues: propsInitialValues,
+			onFinish: onSubmit,
+			form,
+			layout: "horizontal",
+			colon: false
+		}),
+		[propsInitialValues, onSubmit, form]
 	);
 
 	return (
@@ -57,19 +85,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
 			onOk={onSubmit}
 			okLoading={isSubmitting}
 			okText="Cancel"
-			form={
-				!formLoading && !pageError
-					? {
-							className: "h-full",
-							initialValues: propsInitialValues ?? initialValues,
-							onFinish: onSubmit,
-							form,
-							layout: "horizontal",
-							colon: false
-						}
-					: undefined
-			}
-			destroyOnClose={type === "edit"}
+			form={!formLoading && !pageError ? formProps : undefined}
 			extra={
 				!pageError && (
 					<Space>
@@ -105,8 +121,12 @@ const TaskForm: React.FC<TaskFormProps> = ({
 						<Input placeholder="Enter task title" />
 					</Form.Item>
 
-					<Form.Item label="Status" name="status" rules={requiredRule}>
-						<Select placeholder="Select task status" options={statusSelectOptions} />
+					<Form.Item label="Status" name="statusId" rules={requiredRule}>
+						<Select
+							placeholder="Select task status"
+							loading={statusesLoading}
+							options={statusSelectOptions}
+						/>
 					</Form.Item>
 
 					<Form.Item label="Assignee" name="assigneeId">
@@ -114,6 +134,7 @@ const TaskForm: React.FC<TaskFormProps> = ({
 							placeholder="Select task assignee"
 							fetchItems={getUserList}
 							allowClear
+							enabled={open && !formLoading}
 							filterQueryName="query"
 							{...memoizedAssigneeSelectProps}
 						/>

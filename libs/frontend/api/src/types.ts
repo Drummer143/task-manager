@@ -4,8 +4,6 @@ export type UserRole = "guest" | "commentator" | "member" | "admin" | "owner";
 
 export type PageType = "board" | "text" | "group";
 
-export type TaskStatus = "not_done" | "in_progress" | "done";
-
 export interface Timestamps {
 	createdAt: string;
 	updatedAt: string;
@@ -48,7 +46,22 @@ export interface Workspace extends Timestamps {
 	pages: Page[];
 }
 
+// export type Workspace<T extends "owner" | "pages" | never = never> = Omit<
+// 	FullWorkspace,
+// 	Exclude<"owner" | "pages", T>
+// >;
+
 export type WorkspaceAccess = EntityAccess;
+
+export type Type = "mainStatus" | "subStatus";
+
+export interface BoardStatus extends Timestamps {
+	id: string;
+	code: string;
+	type: Type;
+	position: number;
+	title: string;
+}
 
 export interface Page extends Timestamps {
 	id: string;
@@ -58,6 +71,7 @@ export interface Page extends Timestamps {
 
 	text?: JSONContent;
 
+	boardStatuses: BoardStatus[];
 	owner: User;
 	parentPage: Page;
 	childPages?: Page[];
@@ -70,7 +84,8 @@ export type PageAccess = EntityAccess;
 export interface Task extends Timestamps {
 	id: string;
 	title: string;
-	status: TaskStatus;
+	status: BoardStatus;
+	position: number;
 
 	dueDate?: string;
 	description?: string;
@@ -129,3 +144,4 @@ export interface TaskChatMessage {
 	text: string;
 	createdAt: string;
 }
+

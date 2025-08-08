@@ -31,16 +31,25 @@ pub async fn create_task(
     Path((_, page_id)): Path<(Uuid, Uuid)>,
     Json(dto): Json<CreateTaskDto>,
 ) -> Result<TaskResponse, ErrorResponse> {
+    let last_position = rust_api::entities::task::TaskRepository::get_last_position(
+        &state.postgres,
+        dto.status_id,
+    )
+    .await
+    .map_err(ErrorResponse::from)?
+    .unwrap_or_default();
+
     crate::entities::task::TaskService::create(
         &state,
         rust_api::entities::task::dto::CreateTaskDto {
             title: dto.title,
-            status: dto.status,
+            status_id: dto.status_id,
             description: dto.description,
             due_date: dto.due_date,
             assignee_id: dto.assignee_id,
             reporter_id,
             page_id,
+            position: last_position + 1,
         },
     )
     .await

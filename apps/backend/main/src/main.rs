@@ -10,15 +10,13 @@ mod shared;
 mod swagger;
 mod types;
 
-const MIGRATOR: sqlx::migrate::Migrator = sqlx::migrate!("./migrations");
-
 #[tokio::main]
 async fn main() {
-    let _ = dotenvy::dotenv();
+    // tracing_subscriber::registry()
+    //     .with(tracing_subscriber::fmt::layer())
+    //     .init();
 
-    tracing_subscriber::registry()
-        .with(tracing_subscriber::fmt::layer())
-        .init();
+    let _ = dotenvy::dotenv();
 
     let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL not found");
     let jwt_secret = std::env::var("JWT_SECRET").expect("JWT_SECRET not found");
@@ -28,7 +26,7 @@ async fn main() {
     let (postgres, mongo, rabbitmq) =
         db_connections::init_databases(&db_url, &mongo_url, &rabbitmq_url).await;
 
-    MIGRATOR
+    rust_api::migration::MIGRATOR
         .run(&postgres)
         .await
         .expect("Failed to run migrations");
@@ -72,9 +70,11 @@ async fn main() {
         .merge(entities::page::router::init(app_state.clone()))
         .merge(entities::page_access::router::init(app_state.clone()))
         .merge(entities::task::router::init(app_state.clone()))
+        .merge(entities::board_statuses::router::init(app_state.clone()))
         .merge(
             utoipa_swagger_ui::SwaggerUi::new("/api")
-                .url("/api/openapi.json", swagger::ApiDoc::openapi()),
+                .url("/api/openapi.json", swagger::ApiDoc::openapi())
+                .config(utoipa_swagger_ui::Config::default().doc_expansion("none")),
         )
         .with_state(app_state)
         .layer(cors)
@@ -83,6 +83,7 @@ async fn main() {
     let port = std::env::var("PORT").unwrap_or("3000".to_string());
     let addr = format!("0.0.0.0:{}", port);
 
+    println!("Listening on {}", addr);
     tracing::info!("Listening on {}", addr);
 
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();

@@ -1,15 +1,24 @@
+use std::collections::HashMap;
+
 use error_handlers::handlers::ErrorResponse;
 use uuid::Uuid;
 
-use rust_api::{entities::page::{
-    dto::{CreatePageDto, UpdatePageDto},
-    model::{Doc, Page, PageType},
-    PageRepository,
-}, shared::traits::{PostgresqlRepositoryCreate, PostgresqlRepositoryDelete, PostgresqlRepositoryGetOneById, PostgresqlRepositoryUpdate}};
+use rust_api::{
+    entities::page::{
+        dto::{CreatePageDto, UpdatePageDto},
+        model::{Doc, Page, PageType},
+        PageRepository,
+    },
+    shared::traits::{
+        PostgresqlRepositoryCreate, PostgresqlRepositoryDelete, PostgresqlRepositoryGetOneById,
+        PostgresqlRepositoryUpdate,
+    },
+};
 
 use crate::{
     shared::traits::{
-        ServiceBase, ServiceCreateMethod, ServiceDeleteMethod, ServiceGetOneByIdMethod, ServiceUpdateMethod,
+        ServiceBase, ServiceCreateMethod, ServiceDeleteMethod, ServiceGetOneByIdMethod,
+        ServiceUpdateMethod,
     },
     types::app_state::AppState,
 };
@@ -48,8 +57,8 @@ impl ServiceCreateMethod for PageService {
 
         let mut page = page.unwrap();
 
-        let page_access = crate::entities::page_access::PageAccessService::create(
-            app_state,
+        let page_access = rust_api::entities::page_access::PageAccessRepository::create(
+            &mut *tx,
             rust_api::entities::page_access::dto::CreatePageAccessDto {
                 user_id: owner_id,
                 page_id: page.id,
@@ -89,6 +98,29 @@ impl ServiceCreateMethod for PageService {
             } else {
                 let _ = tx.rollback().await;
                 return Err(text.unwrap_err());
+            }
+        }
+
+        if page.r#type == PageType::Board {
+            for status in crate::shared::constants::INIT_BOARD_STATUSES {
+                let localizations = status
+                    .localizations
+                    .iter()
+                    .map(|(k, v)| (k.to_string(), v.to_string()))
+                    .collect::<HashMap<String, String>>();
+
+                rust_api::entities::board_statuses::BoardStatusRepository::create(
+                    &mut *tx,
+                    rust_api::entities::board_statuses::dto::CreateBoardStatusDto {
+                        page_id: page.id,
+                        position: status.position,
+                        // parent_status_id: None,
+                        initial: Some(status.initial),
+                        localizations: sqlx::types::Json(localizations),
+                    },
+                )
+                .await
+                .map_err(ErrorResponse::from)?;
             }
         }
 

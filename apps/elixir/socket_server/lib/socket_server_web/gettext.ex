@@ -21,5 +21,5 @@ defmodule SocketServerWeb.Gettext do
 
   See the [Gettext Docs](https://hexdocs.pm/gettext) for detailed usage.
   """
-  use Gettext.Backend, otp_app: :socket_server
+  use Gettext.Backend, otp_app: :notifications
 end

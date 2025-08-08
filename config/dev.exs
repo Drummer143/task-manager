@@ -1,8 +1,8 @@
 import Config
 
 # Configure your database
-config :socket_server, SocketServer.Repo,
-  url: System.get_env("DATABASE_URL") || "ecto://postgres:postgres@localhost:1234/socket_server_dev",
+config :notifications, SocketServer.Repo,
+  url: System.get_env("DATABASE_URL") || "ecto://postgres:postgres@localhost:1234/notifications_dev",
   stacktrace: true,
   show_sensitive_data_on_connection_error: true,
   pool_size: 10
@@ -13,7 +13,7 @@ config :socket_server, SocketServer.Repo,
 # The watchers configuration can be used to run external
 # watchers to your application. For example, we can use it
 # to bundle .js and .css sources.
-config :socket_server, SocketServerWeb.Endpoint,
+config :notifications, SocketServerWeb.Endpoint,
   # Binding to loopback ipv4 address prevents access from other machines.
   # Change to `ip: {0, 0, 0, 0}` to allow access from other machines.
   http: [ip: {127, 0, 0, 1}, port: 8079],
@@ -47,7 +47,7 @@ config :socket_server, SocketServerWeb.Endpoint,
 # different ports.
 
 # Enable dev routes for dashboard and mailbox
-config :socket_server, dev_routes: true
+config :notifications, dev_routes: true
 
 # Do not include metadata nor timestamps in development logs
 config :logger, :console, format: "[$level] $message\n"

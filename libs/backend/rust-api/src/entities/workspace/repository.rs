@@ -48,7 +48,7 @@ impl PostgresqlRepositoryUpdate for WorkspaceRepository {
         let mut separated = builder.separated(", ");
 
         if let Some(name) = dto.name {
-            separated.push("name = ").push_bind(name);
+            separated.push("name = ").push_bind_unseparated(name);
         }
 
         builder

@@ -26,7 +26,7 @@ const EditTaskForm: React.FC = () => {
 
 	const handleClose = useCallback(() => navigate(`/pages/${pageId}`), [pageId, navigate]);
 
-	const { isLoading, data } = useQuery({
+	const { isLoading, data: taskInitialValues } = useQuery({
 		queryKey: [taskId],
 		enabled: !!taskId,
 		queryFn: async (): Promise<FormValues> => {
@@ -38,7 +38,7 @@ const EditTaskForm: React.FC = () => {
 			});
 
 			return {
-				status: result.status,
+				statusId: result.status.id,
 				title: result.title,
 				description: result.description,
 				assigneeId: result.assignee?.id,
@@ -72,7 +72,7 @@ const EditTaskForm: React.FC = () => {
 
 	return (
 		<TaskForm
-			initialValues={data}
+			initialValues={taskInitialValues}
 			isSubmitting={isPending}
 			formLoading={isLoading}
 			onSubmit={handleSubmit}
@@ -80,6 +80,7 @@ const EditTaskForm: React.FC = () => {
 			onClose={handleClose}
 			open={!!taskId}
 			type="edit"
+			pageId={pageId}
 			// extraHeader={
 			// 	<Flex gap={"var(--ant-margin-xxs)"}>
 			// 		<TaskChat />

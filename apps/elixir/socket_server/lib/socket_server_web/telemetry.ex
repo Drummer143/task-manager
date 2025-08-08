@@ -53,23 +53,23 @@ defmodule SocketServerWeb.Telemetry do
       ),
 
       # Database Metrics
-      summary("socket_server.repo.query.total_time",
+      summary("notifications.repo.query.total_time",
         unit: {:native, :millisecond},
         description: "The sum of the other measurements"
       ),
-      summary("socket_server.repo.query.decode_time",
+      summary("notifications.repo.query.decode_time",
         unit: {:native, :millisecond},
         description: "The time spent decoding the data received from the database"
       ),
-      summary("socket_server.repo.query.query_time",
+      summary("notifications.repo.query.query_time",
         unit: {:native, :millisecond},
         description: "The time spent executing the query"
       ),
-      summary("socket_server.repo.query.queue_time",
+      summary("notifications.repo.query.queue_time",
         unit: {:native, :millisecond},
         description: "The time spent waiting for a database connection"
       ),
-      summary("socket_server.repo.query.idle_time",
+      summary("notifications.repo.query.idle_time",
         unit: {:native, :millisecond},
         description:
           "The time the connection spent waiting before being checked out for the query"

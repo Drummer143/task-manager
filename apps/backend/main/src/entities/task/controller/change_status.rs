@@ -27,6 +27,7 @@ use crate::entities::task::dto::TaskResponse;
     ),
     tag = "Tasks",
 )]
+#[deprecated]
 pub async fn change_status(
     State(state): State<crate::types::app_state::AppState>,
     Path((_, _, task_id)): Path<(Uuid, Uuid, Uuid)>,

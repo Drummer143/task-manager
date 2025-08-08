@@ -18,8 +18,9 @@ const BoardPage: React.FC<BoardPageProps> = ({ page }) => (
 
 		<EditTaskForm />
 
-		<TaskTable pageId={page.id} />
+		<TaskTable pageId={page.id} statuses={page.boardStatuses} />
 	</>
 );
 
 export default BoardPage;
+

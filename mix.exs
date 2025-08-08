@@ -13,8 +13,8 @@ defmodule TaskManager.MixProject do
 
   defp releases do
     [
-      socket_server: [
-        applications: [socket_server: :permanent],
+      notifications: [
+        applications: [notifications: :permanent],
         include_executables_for: [:unix]
       ]
     ]
