@@ -1,0 +1,16 @@
+{
+	"name": "chat",
+	"$schema": "../../../node_modules/nx/schemas/project-schema.json",
+	"sourceRoot": "libs/frontend/chat/src",
+	"projectType": "library",
+	"tags": [],
+	"// targets": "to see all targets run: nx show project chat --web",
+	"targets": {
+		"storybook": {
+			"executor": "@nx/storybook:storybook",
+			"options": {
+				"configDir": "{projectRoot}/.storybook"
+			}
+		}
+	}
+}
