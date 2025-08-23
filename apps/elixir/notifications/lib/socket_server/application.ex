@@ -1,4 +1,4 @@
-defmodule SocketServer.Application do
+defmodule Notifications.Application do
   # See https://hexdocs.pm/elixir/Application.html
   # for more information on OTP Applications
   @moduledoc false
@@ -8,22 +8,22 @@ defmodule SocketServer.Application do
   @impl true
   def start(_type, _args) do
     children = [
-      SocketServerWeb.Telemetry,
-      SocketServer.Repo,
-      SocketServer.Consumer,
+      NotificationsWeb.Telemetry,
+      Notifications.Repo,
+      Notifications.Consumer,
       {DNSCluster, query: Application.get_env(:notifications, :dns_cluster_query) || :ignore},
-      {Phoenix.PubSub, name: SocketServer.PubSub},
+      {Phoenix.PubSub, name: Notifications.PubSub},
       # Start the Finch HTTP client for sending emails
-      {Finch, name: SocketServer.Finch},
-      # Start a worker by calling: SocketServer.Worker.start_link(arg)
-      # {SocketServer.Worker, arg},
+      {Finch, name: Notifications.Finch},
+      # Start a worker by calling: Notifications.Worker.start_link(arg)
+      # {Notifications.Worker, arg},
       # Start to serve requests, typically the last entry
-      SocketServerWeb.Endpoint
+      NotificationsWeb.Endpoint
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
-    opts = [strategy: :one_for_one, name: SocketServer.Supervisor]
+    opts = [strategy: :one_for_one, name: Notifications.Supervisor]
     Supervisor.start_link(children, opts)
   end
 
@@ -31,7 +31,7 @@ defmodule SocketServer.Application do
   # whenever the application is updated.
   @impl true
   def config_change(changed, _new, removed) do
-    SocketServerWeb.Endpoint.config_change(changed, removed)
+    NotificationsWeb.Endpoint.config_change(changed, removed)
     :ok
   end
 end

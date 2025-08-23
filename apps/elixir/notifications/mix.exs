@@ -1,4 +1,4 @@
-defmodule SocketServer.MixProject do
+defmodule Notifications.MixProject do
   use Mix.Project
 
   def project do
@@ -22,7 +22,7 @@ defmodule SocketServer.MixProject do
   # Type `mix help compile.app` for more information.
   def application do
     [
-      mod: {SocketServer.Application, []},
+      mod: {Notifications.Application, []},
       extra_applications: [:logger, :runtime_tools]
     ]
   end

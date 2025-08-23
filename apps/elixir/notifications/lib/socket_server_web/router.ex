@@ -1,11 +1,11 @@
-defmodule SocketServerWeb.Router do
-  use SocketServerWeb, :router
+defmodule NotificationsWeb.Router do
+  use NotificationsWeb, :router
 
   pipeline :api do
     plug :accepts, ["json"]
   end
 
-  scope "/api", SocketServerWeb do
+  scope "/api", NotificationsWeb do
     pipe_through :api
   end
 
@@ -21,7 +21,7 @@ defmodule SocketServerWeb.Router do
     scope "/dev" do
       pipe_through [:fetch_session, :protect_from_forgery]
 
-      live_dashboard "/dashboard", metrics: SocketServerWeb.Telemetry
+      live_dashboard "/dashboard", metrics: NotificationsWeb.Telemetry
       forward "/mailbox", Plug.Swoosh.MailboxPreview
     end
   end
