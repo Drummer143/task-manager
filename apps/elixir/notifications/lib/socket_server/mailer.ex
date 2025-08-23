@@ -1,3 +1,3 @@
-defmodule SocketServer.Mailer do
+defmodule Notifications.Mailer do
   use Swoosh.Mailer, otp_app: :notifications
 end

@@ -1,4 +1,4 @@
-defmodule SocketServer.Consumer do
+defmodule Notifications.Consumer do
   use GenServer
   require Logger
   use AMQP
@@ -56,7 +56,7 @@ defmodule SocketServer.Consumer do
           %{"raw_message" => payload}
       end
 
-      SocketServerWeb.Endpoint.broadcast("signals", "refresh", decoded_payload)
+      NotificationsWeb.Endpoint.broadcast("signals", "refresh", decoded_payload)
 
       Logger.info("Message processed successfully, tag: #{tag}")
       :ok

@@ -1,4 +1,4 @@
-# SocketServer
+# Notifications
 
 To start your Phoenix server:
 

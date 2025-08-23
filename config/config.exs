@@ -8,18 +8,18 @@
 import Config
 
 config :notifications,
-  ecto_repos: [SocketServer.Repo],
+  ecto_repos: [Notifications.Repo],
   generators: [timestamp_type: :utc_datetime]
 
 # Configures the endpoint
-config :notifications, SocketServerWeb.Endpoint,
+config :notifications, NotificationsWeb.Endpoint,
   url: [host: "localhost"],
   adapter: Bandit.PhoenixAdapter,
   render_errors: [
-    formats: [json: SocketServerWeb.ErrorJSON],
+    formats: [json: NotificationsWeb.ErrorJSON],
     layout: false
   ],
-  pubsub_server: SocketServer.PubSub,
+  pubsub_server: Notifications.PubSub,
   live_view: [signing_salt: "yUUSxSH1"]
 
 # Configures the mailer
@@ -29,7 +29,7 @@ config :notifications, SocketServerWeb.Endpoint,
 #
 # For production it's recommended to configure a different adapter
 # at the `config/runtime.exs`.
-config :notifications, SocketServer.Mailer, adapter: Swoosh.Adapters.Local
+config :notifications, Notifications.Mailer, adapter: Swoosh.Adapters.Local
 
 # Configures Elixir's Logger
 config :logger, :console,

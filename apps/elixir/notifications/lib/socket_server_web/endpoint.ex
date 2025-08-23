@@ -1,4 +1,4 @@
-defmodule SocketServerWeb.Endpoint do
+defmodule NotificationsWeb.Endpoint do
   use Phoenix.Endpoint, otp_app: :notifications
 
   # The session will be stored in the cookie and signed,
@@ -15,7 +15,7 @@ defmodule SocketServerWeb.Endpoint do
     websocket: [connect_info: [session: @session_options]],
     longpoll: [connect_info: [session: @session_options]]
 
-  socket "/socket", SocketServer.UserSocket,
+  socket "/socket", Notifications.UserSocket,
     websocket: [connect_info: [session: @session_options]],
     longpoll: false
 
@@ -27,7 +27,7 @@ defmodule SocketServerWeb.Endpoint do
     at: "/",
     from: :notifications,
     gzip: false,
-    only: SocketServerWeb.static_paths()
+    only: NotificationsWeb.static_paths()
 
   # Code reloading can be explicitly enabled under the
   # :code_reloader configuration of your endpoint.
@@ -51,5 +51,5 @@ defmodule SocketServerWeb.Endpoint do
   plug Plug.MethodOverride
   plug Plug.Head
   plug Plug.Session, @session_options
-  plug SocketServerWeb.Router
+  plug NotificationsWeb.Router
 end

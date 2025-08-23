@@ -1,4 +1,4 @@
-# defmodule SocketServer.TaskChatChannel do
+# defmodule Notifications.TaskChatChannel do
 #   use Phoenix.Channel
 
 #   def join("chat:" <> _task_id, _payload, socket) do

@@ -1,12 +1,12 @@
-defmodule SocketServerWeb do
+defmodule NotificationsWeb do
   @moduledoc """
   The entrypoint for defining your web interface, such
   as controllers, components, channels, and so on.
 
   This can be used in your application as:
 
-      use SocketServerWeb, :controller
-      use SocketServerWeb, :html
+      use NotificationsWeb, :controller
+      use NotificationsWeb, :html
 
   The definitions below will be executed for every controller,
   component, etc, so keep them short and clean, focused
@@ -39,9 +39,9 @@ defmodule SocketServerWeb do
     quote do
       use Phoenix.Controller,
         formats: [:html, :json],
-        layouts: [html: SocketServerWeb.Layouts]
+        layouts: [html: NotificationsWeb.Layouts]
 
-      use Gettext, backend: SocketServerWeb.Gettext
+      use Gettext, backend: NotificationsWeb.Gettext
 
       import Plug.Conn
 
@@ -52,9 +52,9 @@ defmodule SocketServerWeb do
   def verified_routes do
     quote do
       use Phoenix.VerifiedRoutes,
-        endpoint: SocketServerWeb.Endpoint,
-        router: SocketServerWeb.Router,
-        statics: SocketServerWeb.static_paths()
+        endpoint: NotificationsWeb.Endpoint,
+        router: NotificationsWeb.Router,
+        statics: NotificationsWeb.static_paths()
     end
   end
 

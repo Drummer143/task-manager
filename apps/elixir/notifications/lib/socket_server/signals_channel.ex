@@ -1,4 +1,4 @@
-defmodule SocketServer.SignalsChannel do
+defmodule Notifications.SignalsChannel do
   use Phoenix.Channel
 
   def join("signals", _params, socket), do: {:ok, socket}

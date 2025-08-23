@@ -1,8 +1,8 @@
-defmodule SocketServer.UserSocket do
+defmodule Notifications.UserSocket do
   require Logger
   use Phoenix.Socket
 
-  channel("signals", SocketServer.SignalsChannel)
+  channel("signals", Notifications.SignalsChannel)
 
   def connect(_params, socket, _connect_info) do
     socket = assign(socket, :user_id, "user_id")
