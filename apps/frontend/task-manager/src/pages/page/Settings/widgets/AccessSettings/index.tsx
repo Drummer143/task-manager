@@ -1,9 +1,10 @@
-import React, { useCallback, useMemo, useState } from "react";
+import React, { useMemo, useState } from "react";
 
 import { PlusOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import {
 	ApiError,
+	createPageAccess,
 	getPageAccess,
 	getUserList,
 	Page,
@@ -52,9 +53,14 @@ const AccessSettings: React.FC<AccessSettingsProps> = ({ page }) => {
 		variables,
 		isPending
 	} = useMutation({
-		mutationFn: updatePageAccess,
+		mutationFn: ({ userId, role }: { userId: string; role?: string }) =>
+			updatePageAccess({
+				pageId: page.id,
+				workspaceId: currentUser.workspace.id,
+				body: { userId, role }
+			}),
 		retry: (_, error) => (error.response?.status || 0) > 499,
-		onSuccess: (_, { body: { role, userId } }) => {
+		onSuccess: (_, { role, userId }) => {
 			setNewAddedUser(undefined);
 
 			if (userId === currentUser.id && role !== "admin" && role !== "owner") {
@@ -67,18 +73,23 @@ const AccessSettings: React.FC<AccessSettingsProps> = ({ page }) => {
 			message.error(error.response?.data?.errorCode ?? "Failed to update page settings")
 	});
 
-	const parsedError = useMemo(() => error && parseApiError(error), [error]);
-
-	const handleRoleChange = useCallback(
-		(body: { userId: string; role?: string }) => {
-			updateAccess({
+	const { mutateAsync: createAccess } = useMutation({
+		mutationFn: ({ userId, role }: { userId: string; role?: string }) =>
+			createPageAccess({
 				pageId: page.id,
 				workspaceId: currentUser.workspace.id,
-				body
-			});
+				body: { userId, role }
+			}),
+		retry: (_, error) => (error.response?.status || 0) > 499,
+		onSuccess: () => {
+			setNewAddedUser(undefined);
+			queryClient.invalidateQueries({ queryKey: [page.id] });
 		},
-		[currentUser.workspace.id, page.id, updateAccess]
-	);
+		onError: (error: AxiosError<ApiError>) =>
+			message.error(error.response?.data?.errorCode ?? "Failed to update page settings")
+	});
+
+	const parsedError = useMemo(() => error && parseApiError(error), [error]);
 
 	return (
 		<SettingsSection title="Access settings" error={parsedError}>
@@ -89,9 +100,9 @@ const AccessSettings: React.FC<AccessSettingsProps> = ({ page }) => {
 						user={item.user}
 						role={item.role}
 						editable
-						onDelete={handleRoleChange}
-						onRoleChange={handleRoleChange}
-						isPending={isPending && variables?.body.userId === item.user.id}
+						onDelete={updateAccess}
+						onRoleChange={updateAccess}
+						isPending={isPending && variables?.userId === item.user.id}
 					/>
 				)}
 			/>
@@ -99,8 +110,9 @@ const AccessSettings: React.FC<AccessSettingsProps> = ({ page }) => {
 			{newAddedUser && (
 				<AccessListItem
 					user={newAddedUser}
-					onRoleChange={handleRoleChange}
-					isPending={isPending && variables?.body.userId === newAddedUser.id}
+					onRoleChange={createAccess}
+					editable
+					isPending={isPending && variables?.userId === newAddedUser.id}
 				/>
 			)}
 

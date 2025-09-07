@@ -22,3 +22,8 @@ interface UpdatePageAccessArgs extends GetPageAccessArgs {
 export const updatePageAccess = async ({ pageId, body, workspaceId }: UpdatePageAccessArgs) =>
 	(await axiosInstance.put<"Success">(`/workspaces/${workspaceId}/pages/${pageId}/access`, body))
 		.data;
+
+export const createPageAccess = async ({ pageId, body, workspaceId }: UpdatePageAccessArgs) =>
+	(await axiosInstance.post<"Success">(`/workspaces/${workspaceId}/pages/${pageId}/access`, body))
+		.data;
+
