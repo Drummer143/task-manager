@@ -1,22 +1,17 @@
 import { createStyles } from "antd-style";
 
-// interface StyleProps {
-
-// }
-
 export const useStyles = createStyles(({ css }) => ({
-	textareaWrapper: css`
-		--font-size-xs: 11px;
+	wrapper: css`
+		width: 100%;
+		height: 100%;
 
-		position: relative;
+		display: flex;
+		flex-direction: column;
+
+		overflow: hidden;
 	`,
-	sendButton: css`
-		position: absolute;
-		bottom: 2px;
-		right: 2px;
-	`,
-	textarea: css`
-        padding-right: 36px;
-    `
+    messageList: css`
+        flex: 1;
+    `,
 }));
 

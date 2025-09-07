@@ -2,12 +2,12 @@ import React, { useCallback } from "react";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { getTask, updateTask } from "@task-manager/api";
-import { App } from "antd";
+import { App, Flex } from "antd";
 import dayjs from "dayjs";
 import { useNavigate, useParams, useSearchParams } from "react-router";
 
 import { useAuthStore } from "../../../../../app/store/auth";
-// import TaskChat from "../TaskChat";
+import TaskChat from "../TaskChat";
 import TaskForm from "../TaskForm";
 import { FormValues } from "../TaskForm/types";
 // import TaskHistory from "../TaskHistory";
@@ -81,12 +81,12 @@ const EditTaskForm: React.FC = () => {
 			open={!!taskId}
 			type="edit"
 			pageId={pageId}
-			// extraHeader={
-			// 	<Flex gap={"var(--ant-margin-xxs)"}>
-			// 		<TaskChat />
-			// 		{/* <TaskHistory taskId={taskId!} pageId={pageId} /> */}
-			// 	</Flex>
-			// }
+			extraHeader={
+				<Flex gap="var(--ant-margin-xxs)">
+					<TaskChat />
+					{/* <TaskHistory taskId={taskId!} pageId={pageId} /> */}
+				</Flex>
+			}
 		/>
 	);
 };

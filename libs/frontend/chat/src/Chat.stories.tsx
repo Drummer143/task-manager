@@ -1,7 +1,8 @@
 import { Meta, StoryObj } from "@storybook/react";
 import { App } from "antd";
 
-import Chat, { ChatProps, MessageData } from "./Chat";
+import Chat from "./Chat";
+import { ChatProps, MessageData } from "./types";
 
 const mocks: MessageData[] = [
 	{
