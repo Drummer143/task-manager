@@ -1,4 +1,4 @@
-defmodule Notifications.Application do
+defmodule Chat.Application do
   # See https://hexdocs.pm/elixir/Application.html
   # for more information on OTP Applications
   @moduledoc false
@@ -8,20 +8,19 @@ defmodule Notifications.Application do
   @impl true
   def start(_type, _args) do
     children = [
-      NotificationsWeb.Telemetry,
-      Notifications.Repo,
-      Notifications.Consumer,
-      {DNSCluster, query: Application.get_env(:notifications, :dns_cluster_query) || :ignore},
-      {Phoenix.PubSub, name: Notifications.PubSub},
-      # Start a worker by calling: Notifications.Worker.start_link(arg)
-      # {Notifications.Worker, arg},
+      ChatWeb.Telemetry,
+      Chat.Repo,
+      {DNSCluster, query: Application.get_env(:chat, :dns_cluster_query) || :ignore},
+      {Phoenix.PubSub, name: Chat.PubSub},
+      # Start a worker by calling: Chat.Worker.start_link(arg)
+      # {Chat.Worker, arg},
       # Start to serve requests, typically the last entry
-      NotificationsWeb.Endpoint
+      ChatWeb.Endpoint
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
-    opts = [strategy: :one_for_one, name: Notifications.Supervisor]
+    opts = [strategy: :one_for_one, name: Chat.Supervisor]
     Supervisor.start_link(children, opts)
   end
 
@@ -29,7 +28,7 @@ defmodule Notifications.Application do
   # whenever the application is updated.
   @impl true
   def config_change(changed, _new, removed) do
-    NotificationsWeb.Endpoint.config_change(changed, removed)
+    ChatWeb.Endpoint.config_change(changed, removed)
     :ok
   end
 end

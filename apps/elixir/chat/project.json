@@ -1,8 +1,8 @@
 {
 	"$schema": "../../../node_modules/nx/schemas/project-schema.json",
-	"name": "notifications",
+	"name": "chat-service",
 	"projectType": "application",
-	"sourceRoot": "apps/elixir/notifications/src",
+	"sourceRoot": "apps/elixir/chat/src",
 	"targets": {
 		"dev": {
 			"executor": "nx:run-commands",

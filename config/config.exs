@@ -22,6 +22,21 @@ config :notifications, NotificationsWeb.Endpoint,
   pubsub_server: Notifications.PubSub,
   live_view: [signing_salt: "yUUSxSH1"]
 
+config :chat,
+  ecto_repos: [Chat.Repo],
+  generators: [timestamp_type: :utc_datetime]
+
+# Configures the endpoint
+config :chat, ChatWeb.Endpoint,
+  url: [host: "localhost"],
+  adapter: Bandit.PhoenixAdapter,
+  render_errors: [
+    formats: [json: ChatWeb.ErrorJSON],
+    layout: false
+  ],
+  pubsub_server: Chat.PubSub,
+  live_view: [signing_salt: "4aDsZyKR"]
+
 # Configures the mailer
 #
 # By default it uses the "Local" adapter which stores the emails
