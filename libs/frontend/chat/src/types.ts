@@ -1,5 +1,3 @@
-import { Socket } from "phoenix";
-
 export interface MessageData {
 	id: string;
 	text: string;
@@ -7,14 +5,17 @@ export interface MessageData {
 	sender: {
 		id: string;
 		name: string;
-		avatarUrl?: string;
+		avatar?: string;
 	};
 }
 
 export interface ChatProps {
-	socket: Socket;
-	chatId: string;
 	currentUserId: string;
+
+	subscribe: (cb: (newMessage: MessageData) => void) => void;
+	sendMessage: (text: string) => void;
+	getAllMessages: (cb: (messages: MessageData[]) => void) => void;
 
 	onUserClick?: (userId: string) => void;
 }
+

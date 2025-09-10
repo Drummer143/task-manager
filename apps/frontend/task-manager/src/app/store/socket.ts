@@ -1,7 +1,7 @@
 import { Channel, Socket } from "phoenix";
 import { create } from "zustand";
 
-type ChannelName = "signals" | "chat";
+type ChannelName = "signals" | `chat:${string}`;
 
 export type SignalEntity = "workspace";
 

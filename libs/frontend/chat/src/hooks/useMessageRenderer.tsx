@@ -47,7 +47,7 @@ export const useMessageRenderer = (
 						marginBottom={nextMessageSameSender ? "large" : "small"}
 						sentByCurrentUser={message.sender.id === currentUserId}
 						senderName={prevMessageSameSender ? message.sender.name : undefined}
-						avatarUrl={nextMessageSameSender ? message.sender.avatarUrl : undefined}
+						avatarUrl={nextMessageSameSender ? message.sender.avatar : undefined}
 						onSenderClick={
 							onUserClick ? () => onUserClick(message.sender.id) : undefined
 						}

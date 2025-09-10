@@ -5,7 +5,7 @@ import { lazySuspense } from "@task-manager/react-utils";
 import { useNavigate } from "react-router";
 
 import { useAuthStore } from "../../app/store/auth";
-import { useChatSocketStore, useNotificationSocketStore } from "../../app/store/socket";
+import { useChatSocketStore } from "../../app/store/socket";
 import FullSizeLoader from "../../shared/ui/FullSizeLoader";
 
 const DesktopLayout = lazySuspense(() => import("./Desktop"), <FullSizeLoader />);
@@ -32,15 +32,15 @@ const Layout: React.FC = () => {
 	}, [mutateAsync]);
 
 	useEffect(() => {
-		const signalsChannel = useNotificationSocketStore.getState().getChannel("signals");
+		// const signalsChannel = useNotificationSocketStore.getState().getChannel("signals");
 
-		signalsChannel.on("message", console.log);
+		// signalsChannel.on("message", console.log);
 
 		useChatSocketStore.getState().getSocket();
 
 		return () => {
 			useChatSocketStore.getState().closeSocket();
-			useNotificationSocketStore.getState().closeSocket();
+			// useNotificationSocketStore.getState().closeSocket();
 		};
 	}, []);
 

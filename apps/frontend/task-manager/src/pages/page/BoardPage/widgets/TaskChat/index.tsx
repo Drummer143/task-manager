@@ -1,10 +1,13 @@
-import React from "react";
+import React, { useCallback, useEffect, useState } from "react";
 
 import { MessageOutlined } from "@ant-design/icons";
 import Chat from "@task-manager/chat";
+import { type ChatProps } from "@task-manager/chat";
 import { useDisclosure } from "@task-manager/react-utils";
 import { Button } from "antd";
 import { createStyles } from "antd-style";
+import { Channel } from "phoenix";
+import { useSearchParams } from "react-router";
 
 import { useAuthStore } from "../../../../../app/store/auth";
 import { useChatSocketStore } from "../../../../../app/store/socket";
@@ -29,13 +32,67 @@ const useStyles = createStyles(({ css }) => ({
 }));
 
 const TaskChat: React.FC = () => {
+	const [channel, setChannel] = useState<Channel | null>(null);
+
 	const userId = useAuthStore.getState().user.id;
+
+	const taskId = useSearchParams()[0].get("taskId")!;
 
 	const { open, onOpen, onClose } = useDisclosure();
 
 	const { drawerBody, drawer } = useStyles().styles;
 
-	const chatSocket = useChatSocketStore().getSocket();
+	const socket = useChatSocketStore().getSocket();
+
+	const getAllMessages: ChatProps["getAllMessages"] = useCallback(
+		cb => {
+			if (channel?.state !== "joined") {
+				return channel?.on("join", () => {
+					channel?.push("get_all", {}).receive("ok", cb);
+				});
+			}
+
+			return channel?.push("get_all", {}).receive("ok", cb);
+		},
+		[channel]
+	);
+
+	const sendMessage: ChatProps["sendMessage"] = useCallback(
+		text => {
+			return channel?.push("create", { text });
+		},
+		[channel]
+	);
+
+	const subscribe: ChatProps["subscribe"] = useCallback(
+		cb => {
+			const ref = channel?.on("new", (message) => {
+				console.debug("new", { message });
+				cb(message);
+			});
+
+			return () => {
+				channel?.off("new", ref);
+			};
+		},
+		[channel]
+	);
+
+	useEffect(() => {
+		if (!taskId) {
+			return;
+		}
+
+		const chatChannel = socket.channel(`chat:${taskId}`, { user_id: userId });
+
+		chatChannel.join().receive("ok", () => console.debug("Joined"));
+
+		setChannel(chatChannel);
+
+		return () => {
+			chatChannel.leave();
+		};
+	}, [socket, taskId, userId]);
 
 	return (
 		<>
@@ -47,7 +104,12 @@ const TaskChat: React.FC = () => {
 				title="Discussion"
 				classNames={{ body: drawerBody, wrapper: drawer }}
 			>
-				<Chat currentUserId={userId} socket={chatSocket} chatId="asd" />
+				<Chat
+					currentUserId={userId}
+					subscribe={subscribe}
+					sendMessage={sendMessage}
+					getAllMessages={getAllMessages}
+				/>
 			</Drawer>
 		</>
 	);
