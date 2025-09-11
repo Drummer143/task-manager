@@ -1,5 +1,6 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
+import { useIntersectionObserver } from "@task-manager/react-utils";
 import { Button, List } from "antd";
 
 import { useMessageRenderer } from "./hooks/useMessageRenderer";
@@ -10,7 +11,7 @@ import NewMessageInput from "./ui/NewMessageInput";
 const Chat: React.FC<ChatProps> = ({
 	currentUserId,
 	onUserClick,
-	getAllMessages,
+	loadMessages,
 	sendMessage,
 	subscribe
 }) => {
@@ -22,6 +23,15 @@ const Chat: React.FC<ChatProps> = ({
 	const styles = useStyles().styles;
 
 	const listRef = useRef<HTMLDivElement | null>(null);
+	const sentinelRef = useRef<HTMLDivElement | null>(null);
+
+	const intersectionOptions = useMemo(
+		() => ({
+			root: listRef.current,
+			rootMargin: "200px"
+		}),
+		[]
+	);
 
 	const scrollToBottom = useCallback(() => {
 		listRef.current?.scrollTo({
@@ -34,9 +44,43 @@ const Chat: React.FC<ChatProps> = ({
 		scrollToBottom();
 	}, [scrollToBottom]);
 
+	const handleIntersection = useCallback<IntersectionObserverCallback>(
+		([entry]) => {
+			const scrollBottom = listRef.current
+				? listRef.current.scrollHeight - listRef.current.scrollTop
+				: undefined;
+
+			if (entry.isIntersecting) {
+				loadMessages(messages => {
+					if (!messages.length) {
+						return;
+					}
+
+					setMessages(prev => [...messages, ...prev]);
+
+					requestAnimationFrame(() => {
+						if (scrollBottom) {
+							listRef.current?.scrollTo({
+								top: listRef.current.scrollHeight - scrollBottom
+							});
+						}
+					});
+				}, messages[0].createdAt);
+			}
+		},
+		[messages]
+	);
+
+	useIntersectionObserver({
+		target: sentinelRef.current,
+		onIntersection: handleIntersection,
+		options: intersectionOptions
+	});
+
 	useEffect(() => {
-		getAllMessages(messages => {
+		loadMessages(messages => {
 			setMessages(messages);
+			requestAnimationFrame(scrollToBottom);
 		});
 
 		return subscribe(message => {
@@ -47,7 +91,7 @@ const Chat: React.FC<ChatProps> = ({
 			}
 			setMessages(messages => [...messages, message]);
 		});
-	}, [currentUserId, subscribe, getAllMessages, scrollToBottom]);
+	}, [currentUserId, subscribe, loadMessages, scrollToBottom]);
 
 	return (
 		<div className={styles.wrapper}>
@@ -56,6 +100,7 @@ const Chat: React.FC<ChatProps> = ({
 				className={styles.messageList}
 				dataSource={messages}
 				renderItem={renderMessage}
+				loadMore={<div className={styles.sentinel} ref={sentinelRef} />}
 			/>
 
 			<div className={styles.bottomContent}>
@@ -74,5 +119,5 @@ const Chat: React.FC<ChatProps> = ({
 	);
 };
 
-export default Chat;
+export default memo(Chat);
 

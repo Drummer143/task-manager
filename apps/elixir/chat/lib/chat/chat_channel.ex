@@ -7,9 +7,9 @@ defmodule Chat.ChatChannel do
     {:ok, assign(socket, :chat_id, chat_id)}
   end
 
-  def handle_in("get_all", _params, socket) do
+  def handle_in("get_all", params, socket) do
     try do
-      messages = Chat.Repo.get_chat_messages_by_task_id(socket.assigns.chat_id)
+      messages = Chat.Repo.get_chat_messages_by_task_id(socket.assigns.chat_id, params)
 
       {:reply, {:ok, messages}, socket}
     rescue

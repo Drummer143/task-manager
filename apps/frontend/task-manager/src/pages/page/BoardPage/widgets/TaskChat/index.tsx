@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useState } from "react";
 
 import { MessageOutlined } from "@ant-design/icons";
-import Chat from "@task-manager/chat";
+import Chat, { MessageData } from "@task-manager/chat";
 import { type ChatProps } from "@task-manager/chat";
 import { useDisclosure } from "@task-manager/react-utils";
 import { Button } from "antd";
@@ -36,7 +36,7 @@ const TaskChat: React.FC = () => {
 
 	const userId = useAuthStore.getState().user.id;
 
-	const taskId = useSearchParams()[0].get("taskId")!;
+	const taskId = useSearchParams()[0].get("taskId");
 
 	const { open, onOpen, onClose } = useDisclosure();
 
@@ -44,15 +44,17 @@ const TaskChat: React.FC = () => {
 
 	const socket = useChatSocketStore().getSocket();
 
-	const getAllMessages: ChatProps["getAllMessages"] = useCallback(
-		cb => {
-			if (channel?.state !== "joined") {
-				return channel?.on("join", () => {
-					channel?.push("get_all", {}).receive("ok", cb);
-				});
+	const loadMessages = useCallback(
+		(cb: (messages: MessageData[]) => void, before?: string) => {
+			const requestMessages = () => {
+				channel?.push("get_all", { before, limit: 15 }).receive("ok", cb);
+			};
+
+			if (channel?.state === "joined") {
+				return requestMessages();
 			}
 
-			return channel?.push("get_all", {}).receive("ok", cb);
+			channel?.on("join", requestMessages);
 		},
 		[channel]
 	);
@@ -66,10 +68,7 @@ const TaskChat: React.FC = () => {
 
 	const subscribe: ChatProps["subscribe"] = useCallback(
 		cb => {
-			const ref = channel?.on("new", (message) => {
-				console.debug("new", { message });
-				cb(message);
-			});
+			const ref = channel?.on("new", cb);
 
 			return () => {
 				channel?.off("new", ref);
@@ -85,7 +84,7 @@ const TaskChat: React.FC = () => {
 
 		const chatChannel = socket.channel(`chat:${taskId}`, { user_id: userId });
 
-		chatChannel.join().receive("ok", () => console.debug("Joined"));
+		chatChannel.join();
 
 		setChannel(chatChannel);
 
@@ -108,7 +107,7 @@ const TaskChat: React.FC = () => {
 					currentUserId={userId}
 					subscribe={subscribe}
 					sendMessage={sendMessage}
-					getAllMessages={getAllMessages}
+					loadMessages={loadMessages}
 				/>
 			</Drawer>
 		</>
