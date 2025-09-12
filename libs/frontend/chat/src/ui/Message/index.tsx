@@ -1,17 +1,22 @@
-import React, { useMemo } from "react";
+import React, { memo, useMemo } from "react";
 
 import { Avatar, Flex, Typography } from "antd";
 
 import { useStyles } from "./styles";
 
+import { getPlaceholderAvatarUrl } from "../../utils";
+
 export interface MessageProps {
 	text: string;
 	createdAt: string;
+	senderName: string;
 	sentByCurrentUser: boolean;
 
+	last?: boolean;
 	avatarUrl?: string;
-	senderName?: string;
-	marginBottom?: "small" | "large";
+	showAvatar?: boolean;
+	paddingBottom?: "small" | "large";
+	showSenderName?: boolean;
 
 	onSenderClick?: () => void;
 }
@@ -23,7 +28,10 @@ const Message: React.FC<MessageProps> = ({
 	onSenderClick,
 	senderName,
 	avatarUrl,
-	marginBottom = "small"
+	paddingBottom = "small",
+	last,
+	showAvatar = true,
+	showSenderName = true
 }) => {
 	const formattedDate = useMemo(
 		() => new Date(createdAt).toLocaleString(undefined, { hour: "2-digit", minute: "2-digit" }),
@@ -44,7 +52,8 @@ const Message: React.FC<MessageProps> = ({
 	const styles = useStyles({
 		sentByCurrentUser,
 		senderClickable: !!handleSenderClick,
-		marginBottom
+		paddingBottom,
+		last
 	}).styles;
 
 	return (
@@ -55,11 +64,11 @@ const Message: React.FC<MessageProps> = ({
 			gap="var(--ant-padding-xs)"
 		>
 			{!sentByCurrentUser &&
-				(avatarUrl ? (
+				(showAvatar ? (
 					<Avatar
 						size="small"
 						className={styles.avatar}
-						src={avatarUrl}
+						src={avatarUrl ?? getPlaceholderAvatarUrl(senderName)}
 						onClick={handleSenderClick}
 					/>
 				) : (
@@ -67,7 +76,7 @@ const Message: React.FC<MessageProps> = ({
 				))}
 
 			<div className={styles.messageBody}>
-				{!sentByCurrentUser && senderName && (
+				{!sentByCurrentUser && showSenderName && (
 					<Typography.Text
 						type="secondary"
 						className={styles.senderName}
@@ -79,6 +88,7 @@ const Message: React.FC<MessageProps> = ({
 
 				<Flex justify="space-between" wrap gap="var(--ant-padding-xs)">
 					<Typography.Text>{text}</Typography.Text>
+
 					<Typography.Text type="secondary" className={styles.date}>
 						{formattedDate}
 					</Typography.Text>
@@ -88,5 +98,5 @@ const Message: React.FC<MessageProps> = ({
 	);
 };
 
-export default Message;
+export default memo(Message);
 

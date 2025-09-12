@@ -4,7 +4,8 @@ export interface MessageData {
 	createdAt: string;
 	sender: {
 		id: string;
-		name: string;
+		username: string;
+
 		avatar?: string;
 	};
 }
@@ -18,4 +19,19 @@ export interface ChatProps {
 
 	onUserClick?: (userId: string) => void;
 }
+
+export interface MessageListItemMessage {
+	type: "message";
+	message: MessageData;
+	prevMessageSameSender: boolean;
+	nextMessageSameSender: boolean;
+}
+
+export interface MessageListItemDivider {
+	type: "divider";
+	date: Date;
+	renderYear: boolean;
+}
+
+export type MessageListItem = { id: string } & (MessageListItemMessage | MessageListItemDivider);
 

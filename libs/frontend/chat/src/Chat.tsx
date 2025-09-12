@@ -5,8 +5,9 @@ import { Button, List } from "antd";
 
 import { useMessageRenderer } from "./hooks/useMessageRenderer";
 import { useStyles } from "./styles";
-import { ChatProps, MessageData } from "./types";
+import { ChatProps, MessageListItem, MessageListItemMessage } from "./types";
 import NewMessageInput from "./ui/NewMessageInput";
+import { prepareMessagesBeforeRender, transformSingleMessage } from "./utils";
 
 const Chat: React.FC<ChatProps> = ({
 	currentUserId,
@@ -15,10 +16,10 @@ const Chat: React.FC<ChatProps> = ({
 	sendMessage,
 	subscribe
 }) => {
-	const [messages, setMessages] = useState<MessageData[]>([]);
-	const [showScrollBottomButton, setShowScrollBottomButton] = useState(false);
+	const [listItems, setListItems] = useState<MessageListItem[]>([]);
+	// const [showScrollBottomButton, setShowScrollBottomButton] = useState(false);
 
-	const renderMessage = useMessageRenderer(messages, currentUserId, onUserClick);
+	const renderMessage = useMessageRenderer(listItems, currentUserId, onUserClick);
 
 	const styles = useStyles().styles;
 
@@ -39,10 +40,10 @@ const Chat: React.FC<ChatProps> = ({
 		});
 	}, []);
 
-	const handleSeeNewMessagesClick = useCallback(() => {
-		setShowScrollBottomButton(false);
-		scrollToBottom();
-	}, [scrollToBottom]);
+	// const handleSeeNewMessagesClick = useCallback(() => {
+	// 	setShowScrollBottomButton(false);
+	// 	scrollToBottom();
+	// }, [scrollToBottom]);
 
 	const handleIntersection = useCallback<IntersectionObserverCallback>(
 		([entry]) => {
@@ -56,7 +57,11 @@ const Chat: React.FC<ChatProps> = ({
 						return;
 					}
 
-					setMessages(prev => [...messages, ...prev]);
+					setListItems(prev => {
+						messages.push((prev[0] as MessageListItemMessage).message);
+
+						return [...prepareMessagesBeforeRender(messages), ...prev.slice(1)];
+					});
 
 					requestAnimationFrame(() => {
 						if (scrollBottom) {
@@ -65,10 +70,10 @@ const Chat: React.FC<ChatProps> = ({
 							});
 						}
 					});
-				}, messages[0].createdAt);
+				}, (listItems[0] as MessageListItemMessage).message.createdAt);
 			}
 		},
-		[messages]
+		[loadMessages, listItems]
 	);
 
 	useIntersectionObserver({
@@ -79,17 +84,26 @@ const Chat: React.FC<ChatProps> = ({
 
 	useEffect(() => {
 		loadMessages(messages => {
-			setMessages(messages);
+			setListItems(prepareMessagesBeforeRender(messages));
 			requestAnimationFrame(scrollToBottom);
 		});
 
 		return subscribe(message => {
 			if (message.sender.id === currentUserId) {
 				requestAnimationFrame(scrollToBottom);
-			} else {
-				setShowScrollBottomButton(true);
+				// } else {
+				// 	setShowScrollBottomButton(true);
 			}
-			setMessages(messages => [...messages, message]);
+
+			setListItems(prev => {
+				return [
+					...prev,
+					...transformSingleMessage(
+						message,
+						(prev[prev.length - 1] as MessageListItemMessage).message
+					)
+				];
+			});
 		});
 	}, [currentUserId, subscribe, loadMessages, scrollToBottom]);
 
@@ -98,12 +112,12 @@ const Chat: React.FC<ChatProps> = ({
 			<List
 				ref={listRef}
 				className={styles.messageList}
-				dataSource={messages}
+				dataSource={listItems}
 				renderItem={renderMessage}
 				loadMore={<div className={styles.sentinel} ref={sentinelRef} />}
 			/>
 
-			<div className={styles.bottomContent}>
+			{/* <div className={styles.bottomContent}>
 				{showScrollBottomButton && (
 					<Button
 						className={styles.seeNewMessagesButton}
@@ -111,10 +125,10 @@ const Chat: React.FC<ChatProps> = ({
 					>
 						See new messages
 					</Button>
-				)}
+				)} */}
 
-				<NewMessageInput onSend={sendMessage} />
-			</div>
+			<NewMessageInput onSend={sendMessage} />
+			{/* </div> */}
 		</div>
 	);
 };

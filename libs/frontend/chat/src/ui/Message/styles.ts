@@ -4,22 +4,21 @@ interface StyleProps {
 	sentByCurrentUser: boolean;
 	senderClickable: boolean;
 
-	marginBottom: "small" | "large";
+	paddingBottom: "small" | "large";
+	last?: boolean;
 }
 
-const marginBottomMap = {
+const paddingBottomMap = {
 	small: "2px",
 	large: "6px"
 };
 
 export const useStyles = createStyles(
-	({ css }, { sentByCurrentUser, senderClickable, marginBottom }: StyleProps) => {
+	({ css }, { sentByCurrentUser, senderClickable, paddingBottom, last }: StyleProps) => {
 		const wrapper = css`
 			width: 100%;
 
-			&:not(:last-child) {
-				margin-bottom: ${marginBottomMap[marginBottom]};
-			}
+			${!last && `padding-bottom: ${paddingBottomMap[paddingBottom]};`}
 		`;
 
 		return {
@@ -44,6 +43,7 @@ export const useStyles = createStyles(
 			`,
 			avatarPlaceholder: css`
 				width: 24px;
+				height: 24px;
 				pointer-events: none;
 			`,
 			senderName: css`
