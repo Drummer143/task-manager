@@ -1,12 +1,12 @@
 import React, { useCallback, useEffect, useState } from "react";
 
 import { MessageOutlined } from "@ant-design/icons";
-import Chat, { MessageData } from "@task-manager/chat";
+import Chat, { MessageData, PresenceInfo, UserInfo } from "@task-manager/chat";
 import { type ChatProps } from "@task-manager/chat";
 import { useDisclosure } from "@task-manager/react-utils";
 import { Button } from "antd";
 import { createStyles } from "antd-style";
-import { Channel } from "phoenix";
+import { Channel, Presence } from "phoenix";
 import { useSearchParams } from "react-router";
 
 import { useAuthStore } from "../../../../../app/store/auth";
@@ -31,8 +31,22 @@ const useStyles = createStyles(({ css }) => ({
 	`
 }));
 
+interface RawPresenceInfo {
+	[key: string]: {
+		metas: Array<{
+			user_id: string;
+			typing: boolean;
+			id: string;
+			avatar: string | null;
+			username: string;
+			joined_at: number;
+		}>;
+	};
+}
+
 const TaskChat: React.FC = () => {
-	const [channel, setChannel] = useState<Channel | null>(null);
+	const [presence, setPresence] = useState<PresenceInfo | undefined>(undefined);
+	const [channel, setConnection] = useState<Channel | undefined>(undefined);
 
 	const userId = useAuthStore.getState().user.id;
 
@@ -54,7 +68,10 @@ const TaskChat: React.FC = () => {
 				return requestMessages();
 			}
 
-			channel?.on("join", requestMessages);
+			const joinRef = channel?.on("join", () => {
+				channel?.off("join", joinRef);
+				requestMessages();
+			});
 		},
 		[channel]
 	);
@@ -77,19 +94,58 @@ const TaskChat: React.FC = () => {
 		[channel]
 	);
 
+	const handleTypingChange = useCallback(() => {
+		channel?.push("typing", {});
+	}, [channel]);
+
 	useEffect(() => {
 		if (!taskId) {
 			return;
 		}
 
-		const chatChannel = socket.channel(`chat:${taskId}`, { user_id: userId });
+		const channel = socket.channel(`chat:${taskId}`, { user_id: userId });
+		let presences: RawPresenceInfo = {};
 
-		chatChannel.join();
+		const handleRawPresenceInfo = (info: RawPresenceInfo) => {
+			const typingUsers = Object.entries(info).reduce((acc, [key, value]) => {
+				if (key === userId) {
+					return acc;
+				}
 
-		setChannel(chatChannel);
+				const typingIndex = value.metas.findIndex(meta => meta.typing);
+
+				if (typingIndex !== -1) {
+					acc.push({
+						id: key,
+						username: value.metas[typingIndex].username,
+						avatar: value.metas[typingIndex].avatar
+					});
+				}
+
+				return acc;
+			}, [] as UserInfo[]);
+
+			setPresence({ typingUsers });
+		};
+
+		channel.on("presence_diff", diff => {
+			presences = Presence.syncDiff(presences, diff);
+			handleRawPresenceInfo(presences);
+		});
+
+		const presenceStateRef = channel.on("presence_state", state => {
+			presences = Presence.syncState(presences, state);
+			channel.off("presence_state", presenceStateRef);
+			handleRawPresenceInfo(presences);
+		});
+
+		channel.join();
+
+		setConnection(channel);
 
 		return () => {
-			chatChannel.leave();
+			setConnection(undefined);
+			channel?.leave();
 		};
 	}, [socket, taskId, userId]);
 
@@ -104,6 +160,8 @@ const TaskChat: React.FC = () => {
 				classNames={{ body: drawerBody, wrapper: drawer }}
 			>
 				<Chat
+					presence={presence}
+					onTypingChange={handleTypingChange}
 					currentUserId={userId}
 					subscribe={subscribe}
 					sendMessage={sendMessage}

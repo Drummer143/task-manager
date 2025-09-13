@@ -1,10 +1,10 @@
 import { createStyles } from "antd-style";
 
-// interface StyleProps {
+interface StyleProps {
+	hasTopBar?: boolean;
+}
 
-// }
-
-export const useStyles = createStyles(({ css }) => ({
+export const useStyles = createStyles(({ css }, { hasTopBar }: StyleProps) => ({
 	textareaWrapper: css`
 		--font-size-xs: 11px;
 
@@ -16,7 +16,16 @@ export const useStyles = createStyles(({ css }) => ({
 		right: 2px;
 	`,
 	textarea: css`
-        padding-right: 36px;
-    `
+		padding-right: 36px;
+
+		transition: border-radius var(--ant-motion-duration-fast) var(--ant-motion-ease-out-circ)
+			var(--ant-motion-duration-fast);
+
+		${hasTopBar &&
+		css`
+			border-top-right-radius: 0;
+			border-top-left-radius: 0;
+		`}
+	`
 }));
 

@@ -9,7 +9,6 @@ export const useStyles = createStyles(({ css }) => ({
 
 		display: flex;
 		flex-direction: column;
-		gap: var(--ant-padding-sm);
 
 		overflow: hidden;
 	`,
@@ -24,17 +23,19 @@ export const useStyles = createStyles(({ css }) => ({
 	messageList: css`
 		flex: 1;
 
+		padding-bottom: var(--ant-padding-lg);
+
 		overflow-y: auto;
 	`,
 	bottomContent: css`
 		position: relative;
-	`,
-	seeNewMessagesButton: css`
-		position: absolute;
-		top: calc(-1 * var(--ant-padding-sm));
-		left: 50%;
-
-		transform: translate(-50%, -100%);
 	`
+	// seeNewMessagesButton: css`
+	// 	position: absolute;
+	// 	top: calc(-1 * var(--ant-padding-sm));
+	// 	left: 50%;
+
+	// 	transform: translate(-50%, -100%);
+	// `
 }));
 

@@ -1,12 +1,14 @@
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useIntersectionObserver } from "@task-manager/react-utils";
-import { Button, List } from "antd";
+import { List } from "antd";
+import { AnimatePresence, motion } from "framer-motion";
 
 import { useMessageRenderer } from "./hooks/useMessageRenderer";
 import { useStyles } from "./styles";
 import { ChatProps, MessageListItem, MessageListItemMessage } from "./types";
 import NewMessageInput from "./ui/NewMessageInput";
+import TypingBar from "./ui/TypingBar";
 import { prepareMessagesBeforeRender, transformSingleMessage } from "./utils";
 
 const Chat: React.FC<ChatProps> = ({
@@ -14,7 +16,9 @@ const Chat: React.FC<ChatProps> = ({
 	onUserClick,
 	loadMessages,
 	sendMessage,
-	subscribe
+	subscribe,
+	presence,
+	onTypingChange
 }) => {
 	const [listItems, setListItems] = useState<MessageListItem[]>([]);
 	// const [showScrollBottomButton, setShowScrollBottomButton] = useState(false);
@@ -52,25 +56,28 @@ const Chat: React.FC<ChatProps> = ({
 				: undefined;
 
 			if (entry.isIntersecting) {
-				loadMessages(messages => {
-					if (!messages.length) {
-						return;
-					}
-
-					setListItems(prev => {
-						messages.push((prev[0] as MessageListItemMessage).message);
-
-						return [...prepareMessagesBeforeRender(messages), ...prev.slice(1)];
-					});
-
-					requestAnimationFrame(() => {
-						if (scrollBottom) {
-							listRef.current?.scrollTo({
-								top: listRef.current.scrollHeight - scrollBottom
-							});
+				loadMessages(
+					messages => {
+						if (!messages.length) {
+							return;
 						}
-					});
-				}, (listItems[0] as MessageListItemMessage).message.createdAt);
+
+						setListItems(prev => {
+							messages.push((prev[0] as MessageListItemMessage).message);
+
+							return [...prepareMessagesBeforeRender(messages), ...prev.slice(1)];
+						});
+
+						requestAnimationFrame(() => {
+							if (scrollBottom) {
+								listRef.current?.scrollTo({
+									top: listRef.current.scrollHeight - scrollBottom
+								});
+							}
+						});
+					},
+					(listItems[0] as MessageListItemMessage).message.createdAt
+				);
 			}
 		},
 		[loadMessages, listItems]
@@ -117,8 +124,8 @@ const Chat: React.FC<ChatProps> = ({
 				loadMore={<div className={styles.sentinel} ref={sentinelRef} />}
 			/>
 
-			{/* <div className={styles.bottomContent}>
-				{showScrollBottomButton && (
+			<div className={styles.bottomContent}>
+				{/* {showScrollBottomButton && (
 					<Button
 						className={styles.seeNewMessagesButton}
 						onClick={handleSeeNewMessagesClick}
@@ -127,8 +134,29 @@ const Chat: React.FC<ChatProps> = ({
 					</Button>
 				)} */}
 
-			<NewMessageInput onSend={sendMessage} />
-			{/* </div> */}
+				<AnimatePresence>
+					{!!presence?.typingUsers?.length && (
+					<motion.div
+						key="typing-bar"
+						initial={{ y: 30 }}
+						animate={{ y: 0 }}
+						exit={{ y: 30 }}
+						transition={{ duration: 0.05 }}
+					>
+						<TypingBar
+							typingUsers={[{ id: "1", username: "user1", avatar: null }]}
+							onUserClick={onUserClick}
+						/>
+					</motion.div>
+					)}
+				</AnimatePresence>
+
+				<NewMessageInput
+					hasTopBar={!!presence?.typingUsers?.length}
+					onTypingChange={onTypingChange}
+					onSend={sendMessage}
+				/>
+			</div>
 		</div>
 	);
 };

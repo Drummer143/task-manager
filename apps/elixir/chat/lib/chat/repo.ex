@@ -44,4 +44,16 @@ defmodule Chat.Repo do
     })
     |> insert(returning: true)
   end
+
+  @spec get_user_by_id(binary()) :: UserModel.t() | nil
+  def get_user_by_id(id) do
+    UserModel
+    |> where([u], u.id == ^id)
+    |> select([u], %{
+      id: u.id,
+      username: u.username,
+      avatar: u.picture
+    })
+    |> one()
+  end
 end

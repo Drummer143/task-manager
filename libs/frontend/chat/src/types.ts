@@ -1,23 +1,32 @@
+export interface UserInfo {
+	id: string;
+	username: string;
+
+	avatar?: string | null;
+}
+
 export interface MessageData {
 	id: string;
 	text: string;
 	createdAt: string;
-	sender: {
-		id: string;
-		username: string;
+	sender: UserInfo;
+}
 
-		avatar?: string;
-	};
+export interface PresenceInfo {
+	typingUsers?: UserInfo[];
 }
 
 export interface ChatProps {
 	currentUserId: string;
+
+	presence?: PresenceInfo;
 
 	subscribe: (cb: (newMessage: MessageData) => void) => void;
 	sendMessage: (text: string) => void;
 	loadMessages: (cb: (messages: MessageData[]) => void, before?: string) => void;
 
 	onUserClick?: (userId: string) => void;
+	onTypingChange?: () => void;
 }
 
 export interface MessageListItemMessage {
