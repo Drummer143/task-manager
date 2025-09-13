@@ -13,7 +13,7 @@ export interface MessageProps {
 	sentByCurrentUser: boolean;
 
 	last?: boolean;
-	avatarUrl?: string;
+	avatarUrl?: string | null;
 	showAvatar?: boolean;
 	paddingBottom?: "small" | "large";
 	showSenderName?: boolean;

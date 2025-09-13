@@ -9,7 +9,11 @@ import { useStyles } from "./styles";
 import { ChatProps, MessageListItem, MessageListItemMessage } from "./types";
 import NewMessageInput from "./ui/NewMessageInput";
 import TypingBar from "./ui/TypingBar";
-import { prepareMessagesBeforeRender, transformSingleMessage } from "./utils";
+import {
+	prepareMessagesBeforeRender,
+	transformSingleMessage,
+	updateMessageByNextMessage
+} from "./utils";
 
 const Chat: React.FC<ChatProps> = ({
 	currentUserId,
@@ -96,21 +100,23 @@ const Chat: React.FC<ChatProps> = ({
 		});
 
 		return subscribe(message => {
+			setListItems(prev => {
+				const lastMessage = prev[prev.length - 1] as MessageListItemMessage;
+
+				const transformedMessage = transformSingleMessage(message, lastMessage.message);
+
+				return [
+					...prev.slice(0, prev.length - 1),
+					updateMessageByNextMessage(lastMessage, message),
+					...transformedMessage
+				];
+			});
+
 			if (message.sender.id === currentUserId) {
 				requestAnimationFrame(scrollToBottom);
 				// } else {
 				// 	setShowScrollBottomButton(true);
 			}
-
-			setListItems(prev => {
-				return [
-					...prev,
-					...transformSingleMessage(
-						message,
-						(prev[prev.length - 1] as MessageListItemMessage).message
-					)
-				];
-			});
 		});
 	}, [currentUserId, subscribe, loadMessages, scrollToBottom]);
 
@@ -136,18 +142,18 @@ const Chat: React.FC<ChatProps> = ({
 
 				<AnimatePresence>
 					{!!presence?.typingUsers?.length && (
-					<motion.div
-						key="typing-bar"
-						initial={{ y: 30 }}
-						animate={{ y: 0 }}
-						exit={{ y: 30 }}
-						transition={{ duration: 0.05 }}
-					>
-						<TypingBar
-							typingUsers={[{ id: "1", username: "user1", avatar: null }]}
-							onUserClick={onUserClick}
-						/>
-					</motion.div>
+						<motion.div
+							key="typing-bar"
+							initial={{ y: 30 }}
+							animate={{ y: 0 }}
+							exit={{ y: 30 }}
+							transition={{ duration: 0.05 }}
+						>
+							<TypingBar
+								typingUsers={[{ id: "1", username: "user1", avatar: null }]}
+								onUserClick={onUserClick}
+							/>
+						</motion.div>
 					)}
 				</AnimatePresence>
 

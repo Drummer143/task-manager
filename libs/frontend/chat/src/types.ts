@@ -1,3 +1,6 @@
+import { DividerProps } from "./ui/Divider";
+import { MessageProps } from "./ui/Message";
+
 export interface UserInfo {
 	id: string;
 	username: string;
@@ -29,18 +32,20 @@ export interface ChatProps {
 	onTypingChange?: () => void;
 }
 
-export interface MessageListItemMessage {
+interface DefaultListItemParams {
+	id: string;
+}
+
+export interface MessageListItemMessage extends DefaultListItemParams {
 	type: "message";
 	message: MessageData;
-	prevMessageSameSender: boolean;
-	nextMessageSameSender: boolean;
+	uiProps: Pick<MessageProps, "paddingBottom" | "showSenderName" | "showAvatar">;
 }
 
-export interface MessageListItemDivider {
+export interface MessageListItemDivider extends DefaultListItemParams {
 	type: "divider";
-	date: Date;
-	renderYear: boolean;
+	props: DividerProps;
 }
 
-export type MessageListItem = { id: string } & (MessageListItemMessage | MessageListItemDivider);
+export type MessageListItem = MessageListItemMessage | MessageListItemDivider;
 

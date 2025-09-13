@@ -4,7 +4,7 @@ import { Typography } from "antd";
 
 import { useStyles } from "./styles";
 
-interface DividerProps {
+export interface DividerProps {
 	date: Date;
 	renderYear?: boolean;
 }

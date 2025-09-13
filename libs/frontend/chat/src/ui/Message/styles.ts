@@ -1,20 +1,28 @@
 import { createStyles } from "antd-style";
 
 interface StyleProps {
-	sentByCurrentUser: boolean;
-	senderClickable: boolean;
-
 	paddingBottom: "small" | "large";
+	senderClickable: boolean;
+	sentByCurrentUser: boolean;
+
 	last?: boolean;
 }
 
 const paddingBottomMap = {
-	small: "2px",
+	small: "3px",
 	large: "6px"
 };
 
 export const useStyles = createStyles(
-	({ css }, { sentByCurrentUser, senderClickable, paddingBottom, last }: StyleProps) => {
+	(
+		{ css },
+		{
+			sentByCurrentUser,
+			senderClickable,
+			paddingBottom,
+			last
+		}: StyleProps
+	) => {
 		const wrapper = css`
 			width: 100%;
 

@@ -13,18 +13,19 @@ export const useMessageRenderer = (
 		(item: MessageListItem, index: number) => {
 			switch (item.type) {
 				case "divider":
-					return <Divider date={item.date} renderYear={item.renderYear} />;
+					return <Divider key={item.id} {...item.props} />;
 				case "message":
 					return (
 						<Message
+							key={item.id}
 							createdAt={item.message.createdAt}
 							text={item.message.text}
 							last={index === messages.length - 1}
-							paddingBottom={item.nextMessageSameSender ? "large" : "small"}
+							paddingBottom={item.uiProps.paddingBottom}
 							sentByCurrentUser={item.message.sender.id === currentUserId}
 							senderName={item.message.sender.username}
-							showSenderName={item.prevMessageSameSender}
-							showAvatar={item.nextMessageSameSender}
+							showSenderName={item.uiProps.showSenderName}
+							showAvatar={item.uiProps.showAvatar}
 							avatarUrl={item.message.sender.avatar}
 							onSenderClick={
 								onUserClick ? () => onUserClick(item.message.sender.id) : undefined
