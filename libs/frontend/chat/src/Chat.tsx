@@ -22,6 +22,7 @@ const Chat: React.FC<ChatProps> = ({
 	sendMessage,
 	subscribe,
 	presence,
+	className,
 	onTypingChange
 }) => {
 	const [listItems, setListItems] = useState<MessageListItem[]>([]);
@@ -29,7 +30,7 @@ const Chat: React.FC<ChatProps> = ({
 
 	const renderMessage = useMessageRenderer(listItems, currentUserId, onUserClick);
 
-	const styles = useStyles().styles;
+	const { styles, cx } = useStyles();
 
 	const listRef = useRef<HTMLDivElement | null>(null);
 	const sentinelRef = useRef<HTMLDivElement | null>(null);
@@ -121,7 +122,7 @@ const Chat: React.FC<ChatProps> = ({
 	}, [currentUserId, subscribe, loadMessages, scrollToBottom]);
 
 	return (
-		<div className={styles.wrapper}>
+		<div className={cx(styles.wrapper, className)}>
 			<List
 				ref={listRef}
 				className={styles.messageList}

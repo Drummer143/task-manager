@@ -23,6 +23,7 @@ export interface ChatProps {
 	currentUserId: string;
 
 	presence?: PresenceInfo;
+	className?: string;
 
 	subscribe: (cb: (newMessage: MessageData) => void) => void;
 	sendMessage: (text: string) => void;

@@ -1,10 +1,11 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 import { MessageOutlined } from "@ant-design/icons";
 import Chat, { MessageData, PresenceInfo, UserInfo } from "@task-manager/chat";
 import { type ChatProps } from "@task-manager/chat";
 import { useDisclosure } from "@task-manager/react-utils";
 import { Button } from "antd";
+import { DrawerClassNames } from "antd/es/drawer/DrawerPanel";
 import { createStyles } from "antd-style";
 import { Channel, Presence } from "phoenix";
 import { useSearchParams } from "react-router";
@@ -28,6 +29,9 @@ const useStyles = createStyles(({ css }) => ({
 		flex-direction: column;
 
 		padding: 0 !important;
+	`,
+	chat: css`
+		padding: 0 var(--ant-padding-xs) var(--ant-padding-xs);
 	`
 }));
 
@@ -54,9 +58,14 @@ const TaskChat: React.FC = () => {
 
 	const { open, onOpen, onClose } = useDisclosure();
 
-	const { drawerBody, drawer } = useStyles().styles;
+	const styles = useStyles().styles;
 
 	const socket = useChatSocketStore().getSocket();
+
+	const drawerClassnames = useMemo<DrawerClassNames>(() => ({
+		body: styles.drawerBody,
+		wrapper: styles.drawer
+	}), [styles]);
 
 	const loadMessages = useCallback(
 		(cb: (messages: MessageData[]) => void, before?: string) => {
@@ -157,9 +166,10 @@ const TaskChat: React.FC = () => {
 				open={open}
 				onClose={onClose}
 				title="Discussion"
-				classNames={{ body: drawerBody, wrapper: drawer }}
+				classNames={drawerClassnames}
 			>
 				<Chat
+					className={styles.chat}
 					presence={presence}
 					onTypingChange={handleTypingChange}
 					currentUserId={userId}
