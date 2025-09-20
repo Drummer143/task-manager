@@ -14,7 +14,7 @@ defmodule Chat.Repo do
 
     query =
       ChatMessageModel
-      |> where([m], m.task_id == ^task_id and is_nil(m.deleted_at))
+      # |> where([m], m.task_id == ^task_id and is_nil(m.deleted_at))
       |> join(:inner, [m], u in UserModel, on: m.user_id == u.id)
       |> select([m, u], %{
         id: m.id,
@@ -33,7 +33,7 @@ defmodule Chat.Repo do
     query = if before, do: query |> where([m], m.created_at < ^before), else: query
     query = if after_, do: query |> where([m], m.created_at > ^after_), else: query
 
-    query |> all() |> Enum.reverse()
+    query |> all()
   end
 
   def create_message(task_id, user_id, text) do

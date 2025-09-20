@@ -2,37 +2,26 @@ import { MessageData, MessageListItem, MessageListItemMessage } from "../types";
 
 export const transformSingleMessage = (
 	message: MessageData,
-	prevMessage?: MessageData
+	nextMessage?: MessageData
 ): MessageListItem[] => {
 	const result: MessageListItem[] = [];
 
-	const prevMessageSameSender = prevMessage?.sender.id === message.sender.id;
+	const nextMessageSameSender = nextMessage?.sender.id === message.sender.id;
 	const currentDate = new Date(message.createdAt);
-	let prevMessageSameDay = false,
-		prevMessageSameYear = false;
+	let nextMessageSameDay = false,
+		nextMessageSameYear = false;
 
-	if (prevMessage) {
-		const prevDate = new Date(prevMessage.createdAt);
+	if (nextMessage) {
+		const nextDate = new Date(nextMessage.createdAt);
 
-		prevMessageSameYear = prevDate.getFullYear() === currentDate.getFullYear();
-		prevMessageSameDay =
-			prevDate.getDate() === currentDate.getDate() &&
-			prevDate.getMonth() === currentDate.getMonth() &&
-			prevMessageSameYear;
+		nextMessageSameYear = nextDate.getFullYear() === currentDate.getFullYear();
+		nextMessageSameDay =
+			nextDate.getDate() === currentDate.getDate() &&
+			nextDate.getMonth() === currentDate.getMonth() &&
+			nextMessageSameYear;
 	}
 
-	if (!prevMessageSameDay && prevMessage) {
-		result.push({
-			id: `divider-${message.id}`,
-			type: "divider",
-			props: {
-				date: new Date(message.createdAt),
-				renderYear: prevMessageSameYear
-			}
-		});
-	}
-
-	const showUserInfo = !prevMessageSameSender || !prevMessageSameDay;
+	const showUserInfo = !nextMessageSameSender || !nextMessageSameDay;
 
 	result.push({
 		id: message.id,
@@ -42,6 +31,17 @@ export const transformSingleMessage = (
 			showUserInfo
 		}
 	});
+
+	if (!nextMessageSameDay && nextMessage) {
+		result.push({
+			id: `divider-${message.id}`,
+			type: "divider",
+			props: {
+				date: new Date(message.createdAt),
+				renderYear: nextMessageSameYear
+			}
+		});
+	}
 
 	return result;
 };
@@ -73,7 +73,7 @@ export const prepareMessagesBeforeRender = (messages: MessageData[]): MessageLis
 	const result: MessageListItem[] = [];
 
 	messages.forEach((message, index) => {
-		result.push(...transformSingleMessage(message, messages[index - 1]));
+		result.push(...transformSingleMessage(message, messages[index + 1]));
 	});
 
 	return result;
@@ -86,10 +86,10 @@ export const removeMessageById = (items: MessageListItem[], id: string): Message
 		return items;
 	}
 
-	let nextMessageIdx = idx + 1;
+	let nextMessageIdx = idx - 1;
 	let nextMessage: MessageData | undefined;
 
-	while (nextMessageIdx < items.length) {
+	while (nextMessageIdx >= 0) {
 		const item = items[nextMessageIdx];
 
 		if (item.type === "message") {
@@ -97,17 +97,17 @@ export const removeMessageById = (items: MessageListItem[], id: string): Message
 			break;
 		}
 
-		nextMessageIdx++;
+		nextMessageIdx--;
 	}
 
 	if (!nextMessage) {
 		return items;
 	}
 
-	let prevMessageIdx = idx - 1;
+	let prevMessageIdx = idx + 1;
 	let prevMessage: MessageData | undefined;
 
-	while (prevMessageIdx >= 0) {
+	while (prevMessageIdx < items.length) {
 		const item = items[prevMessageIdx];
 
 		if (item.type === "message") {
@@ -115,17 +115,13 @@ export const removeMessageById = (items: MessageListItem[], id: string): Message
 			break;
 		}
 
-		prevMessageIdx--;
+		prevMessageIdx++;
 	}
 
 	const transformedNextMessage = transformSingleMessage(nextMessage, prevMessage);
 	const result = [...items];
 
-	result.splice(
-		prevMessageIdx + 1,
-		nextMessageIdx - prevMessageIdx,
-		...transformedNextMessage
-	);
+	result.splice(nextMessageIdx, prevMessageIdx - nextMessageIdx, ...transformedNextMessage);
 
 	return result;
 };

@@ -1,8 +1,9 @@
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { useIntersectionObserver } from "@task-manager/react-utils";
-import { App, List } from "antd";
+import { App } from "antd";
 import { AnimatePresence, motion } from "framer-motion";
+import "react-loading-skeleton/dist/skeleton.css";
+import { LogLevel, Virtuoso, VirtuosoHandle } from "react-virtuoso";
 
 import { useMessageRenderer } from "./hooks/useMessageRenderer";
 import { useStyles } from "./styles";
@@ -16,6 +17,8 @@ import {
 	transformSingleMessage,
 	updateMessageByNextMessage
 } from "./utils";
+
+const debugMode = import.meta.env.DEV ? LogLevel.DEBUG : LogLevel.ERROR;
 
 const Chat: React.FC<ChatProps> = ({
 	currentUserId,
@@ -34,33 +37,12 @@ const Chat: React.FC<ChatProps> = ({
 	const modal = App.useApp().modal;
 
 	const [listItems, setListItems] = useState<MessageListItem[]>([]);
-	// const [showScrollBottomButton, setShowScrollBottomButton] = useState(false);
 
 	const renderMessage = useMessageRenderer(currentUserId, onUserClick);
 
 	const { styles, cx } = useStyles();
 
-	const listRef = useRef<HTMLDivElement | null>(null);
-	const sentinelRef = useRef<HTMLDivElement | null>(null);
-
-	const intersectionOptions = useMemo(
-		() => ({
-			root: listRef.current,
-			rootMargin: "200px"
-		}),
-		[]
-	);
-
-	const scrollToBottom = useCallback(() => {
-		listRef.current?.scrollTo({
-			top: listRef.current.scrollHeight
-		});
-	}, []);
-
-	// const handleSeeNewMessagesClick = useCallback(() => {
-	// 	setShowScrollBottomButton(false);
-	// 	scrollToBottom();
-	// }, [scrollToBottom]);
+	const virtuosoRef = useRef<VirtuosoHandle>(null);
 
 	const handleDeleteMessage = useMemo(() => {
 		if (!deleteMessage) {
@@ -76,71 +58,49 @@ const Chat: React.FC<ChatProps> = ({
 		};
 	}, [deleteMessage, modal]);
 
-	const handleIntersection = useCallback<IntersectionObserverCallback>(
-		([entry]) => {
-			const scrollBottom = listRef.current
-				? listRef.current.scrollHeight - listRef.current.scrollTop
-				: undefined;
+	const handleLoadMoreMessage = useCallback(() => {
+		loadMessages(
+			messages => {
+				if (!messages.length) {
+					return;
+				}
 
-			if (!entry.isIntersecting) {
-				return;
-			}
+				setListItems(prev => {
+					messages.unshift((prev.at(-1) as MessageListItemMessage).message);
 
-			loadMessages(
-				messages => {
-					if (!messages.length) {
-						return;
-					}
+					return [...prev.slice(0, -1), ...prepareMessagesBeforeRender(messages)];
+				});
+			},
+			(listItems.at(-1) as MessageListItemMessage).message.createdAt
+		);
+	}, [loadMessages, listItems]);
 
-					setListItems(prev => {
-						messages.push((prev[0] as MessageListItemMessage).message);
-
-						return [...prepareMessagesBeforeRender(messages), ...prev.slice(1)];
-					});
-
-					requestAnimationFrame(() => {
-						if (scrollBottom) {
-							listRef.current?.scrollTo({
-								top: listRef.current.scrollHeight - scrollBottom
-							});
-						}
-					});
-				},
-				(listItems[0] as MessageListItemMessage).message.createdAt
-			);
-		},
-		[loadMessages, listItems]
-	);
-
-	useIntersectionObserver({
-		target: sentinelRef.current,
-		onIntersection: handleIntersection,
-		options: intersectionOptions
-	});
+	const computeItemKey = useCallback((_: unknown, item: MessageListItem) => item.id, []);
 
 	useEffect(() => {
-		loadMessages(messages => {
-			setListItems(prepareMessagesBeforeRender(messages));
-			requestAnimationFrame(scrollToBottom);
-		});
+		loadMessages(messages => setListItems(prepareMessagesBeforeRender(messages)));
 
 		const unsubscribeFromNewMessage = subscribeToNewMessages(message => {
 			setListItems(prev => {
-				const lastMessage = prev[prev.length - 1] as MessageListItemMessage;
+				const lastMessage = prev[0] as MessageListItemMessage;
 
 				const transformedMessage = transformSingleMessage(message, lastMessage.message);
 
 				return [
-					...prev.slice(0, prev.length - 1),
+					...transformedMessage,
 					updateMessageByNextMessage(lastMessage, message),
-					...transformedMessage
+					...prev.slice(1)
 				];
 			});
 
 			if (message.sender.id === currentUserId) {
-				requestAnimationFrame(scrollToBottom);
-				// } else {
-				// 	setShowScrollBottomButton(true);
+				requestAnimationFrame(() => {
+					virtuosoRef.current?.scrollToIndex({
+						index: 0,
+						align: "end",
+						behavior: "smooth"
+					});
+				});
 			}
 		});
 
@@ -183,7 +143,6 @@ const Chat: React.FC<ChatProps> = ({
 		currentUserId,
 		subscribeToNewMessages,
 		loadMessages,
-		scrollToBottom,
 		subscribeToDeletedMessages,
 		subscribeToUpdatedMessages
 	]);
@@ -196,26 +155,27 @@ const Chat: React.FC<ChatProps> = ({
 				handleDeleteMessage={handleDeleteMessage}
 				handleUpdateMessage={updateMessage}
 			>
-				<List
-					ref={listRef}
+				<Virtuoso
 					className={styles.messageList}
-					dataSource={listItems}
-					style={{ overflowY: "hidden" }}
-					renderItem={renderMessage}
-					loadMore={<div className={styles.sentinel} ref={sentinelRef} />}
+					data={listItems}
+					ref={virtuosoRef}
+					computeItemKey={computeItemKey}
+					itemContent={renderMessage}
+					alignToBottom
+					logLevel={debugMode}
+					endReached={handleLoadMoreMessage}
+					defaultItemHeight={32}
+					// scrollSeekConfiguration={{
+					// 	enter: velocity => Math.abs(velocity) > 200,
+					// 	exit: velocity => Math.abs(velocity) < 50,
+					// 	change: (velocity, state) => {
+					// 		console.log(velocity, state);
+					// 	}
+					// }}
 				/>
 			</ContextMenu>
 
 			<div className={styles.bottomContent}>
-				{/* {showScrollBottomButton && (
-					<Button
-						className={styles.seeNewMessagesButton}
-						onClick={handleSeeNewMessagesClick}
-					>
-						See new messages
-					</Button>
-				)} */}
-
 				<AnimatePresence>
 					{!!presence?.typingUsers?.length && (
 						<motion.div

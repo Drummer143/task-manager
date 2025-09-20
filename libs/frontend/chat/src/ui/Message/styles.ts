@@ -14,8 +14,10 @@ export const useStyles = createStyles(
 
 			padding: var(--ant-padding-xxs)
 				${showUserInfo && "var(--ant-padding-xs) var(--ant-padding-xs)"};
+
 			transition: background-color var(--ant-motion-duration-fast)
 				var(--ant-motion-ease-out-circ);
+			transform: scaleY(-1);
 
 			${contextMenuOpened
 				? "background-color: var(--ant-control-item-bg-active);"

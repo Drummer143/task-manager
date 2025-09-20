@@ -1,7 +1,7 @@
 {
 	"extends": "../../../tsconfig.base.json",
 	"compilerOptions": {
-		"module": "commonjs",
+		"module": "esnext",
 		"forceConsistentCasingInFileNames": true,
 		"strict": true,
 		"importHelpers": true,
@@ -9,7 +9,7 @@
 		"noImplicitReturns": true,
 		"esModuleInterop": true,
 		"noFallthroughCasesInSwitch": true,
-		"noPropertyAccessFromIndexSignature": true
+		"noPropertyAccessFromIndexSignature": true,
 	},
 	"files": [],
 	"include": [],

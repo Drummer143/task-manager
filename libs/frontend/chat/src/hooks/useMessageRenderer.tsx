@@ -9,7 +9,7 @@ export const useMessageRenderer = (
 	onUserClick?: (userId: string) => void
 ) => {
 	return useCallback(
-		(item: MessageListItem, index: number) => {
+		(index: number, item: MessageListItem) => {
 			switch (item.type) {
 				case "divider":
 					return <Divider key={item.id} {...item.props} />;

@@ -10,6 +10,8 @@ export const useStyles = createStyles(({ css }) => ({
 
 		padding: var(--ant-padding) 0;
 
+		transform: scaleY(-1);
+
 		&::before,
 		&::after {
 			content: "";

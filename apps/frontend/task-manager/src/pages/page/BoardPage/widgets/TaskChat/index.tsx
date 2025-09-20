@@ -70,7 +70,7 @@ const TaskChat: React.FC = () => {
 	const loadMessages = useCallback(
 		(cb: (messages: MessageData[]) => void, before?: string) => {
 			const requestMessages = () => {
-				channel?.push("get_all", { before, limit: 15 }).receive("ok", cb);
+				channel?.push("get_all", { before, limit: 25 }).receive("ok", cb);
 			};
 
 			if (channel?.state === "joined") {

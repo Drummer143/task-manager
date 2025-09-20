@@ -146,7 +146,11 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 			open={ctxOpen && !!contextMenuItems}
 			onOpenChange={handleContextMenuClose}
 		>
-			<div onContextMenuCapture={handleContextMenuOpen} className={styles.contextMenuWrapper}>
+			<div
+				onContextMenuCapture={handleContextMenuOpen}
+				style={{ transform: "scaleY(-1)" }}
+				className={styles.contextMenuWrapper}
+			>
 				{children}
 			</div>
 		</Dropdown>
