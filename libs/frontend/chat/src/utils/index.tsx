@@ -35,7 +35,7 @@ export const transformSingleMessage = (
 	const showUserInfo = !prevMessageSameSender || !prevMessageSameDay;
 
 	result.push({
-		id: `message-${message.id}`,
+		id: message.id,
 		type: "message",
 		message,
 		uiProps: {
@@ -75,6 +75,57 @@ export const prepareMessagesBeforeRender = (messages: MessageData[]): MessageLis
 	messages.forEach((message, index) => {
 		result.push(...transformSingleMessage(message, messages[index - 1]));
 	});
+
+	return result;
+};
+
+export const removeMessageById = (items: MessageListItem[], id: string): MessageListItem[] => {
+	const idx = items.findIndex(item => item.id === id);
+
+	if (idx === -1 || idx === items.length - 1) {
+		return items;
+	}
+
+	let nextMessageIdx = idx + 1;
+	let nextMessage: MessageData | undefined;
+
+	while (nextMessageIdx < items.length) {
+		const item = items[nextMessageIdx];
+
+		if (item.type === "message") {
+			nextMessage = item.message;
+			break;
+		}
+
+		nextMessageIdx++;
+	}
+
+	if (!nextMessage) {
+		return items;
+	}
+
+	let prevMessageIdx = idx - 1;
+	let prevMessage: MessageData | undefined;
+
+	while (prevMessageIdx >= 0) {
+		const item = items[prevMessageIdx];
+
+		if (item.type === "message") {
+			prevMessage = item.message;
+			break;
+		}
+
+		prevMessageIdx--;
+	}
+
+	const transformedNextMessage = transformSingleMessage(nextMessage, prevMessage);
+	const result = [...items];
+
+	result.splice(
+		prevMessageIdx + 1,
+		nextMessageIdx - prevMessageIdx,
+		...transformedNextMessage
+	);
 
 	return result;
 };

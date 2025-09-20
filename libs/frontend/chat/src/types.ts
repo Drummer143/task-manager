@@ -25,11 +25,14 @@ export interface ChatProps {
 	presence?: PresenceInfo;
 	className?: string;
 
-	subscribe: (cb: (newMessage: MessageData) => void) => void;
 	sendMessage: (text: string) => void;
 	loadMessages: (cb: (messages: MessageData[]) => void, before?: string) => void;
 
+	subscribeToNewMessages: (cb: (newMessage: MessageData) => void) => () => void;
+	subscribeToDeletedMessages: (cb: (params: { id: string }) => void) => () => void;
+
 	onUserClick?: (userId: string) => void;
+	deleteMessage?: (id: string) => void;
 	onTypingChange?: () => void;
 }
 

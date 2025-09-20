@@ -92,12 +92,23 @@ const TaskChat: React.FC = () => {
 		[channel]
 	);
 
-	const subscribe: ChatProps["subscribe"] = useCallback(
+	const subscribeToNewMessages: ChatProps["subscribeToNewMessages"] = useCallback(
 		cb => {
-			const ref = channel?.on("new", cb);
+			const refNewMessage = channel?.on("new", cb);
 
 			return () => {
-				channel?.off("new", ref);
+				channel?.off("new", refNewMessage);
+			};
+		},
+		[channel]
+	);
+
+	const subscribeToDeletedMessages: ChatProps["subscribeToDeletedMessages"] = useCallback(
+		cb => {
+			const refDeleteMessage = channel?.on("delete", cb);
+
+			return () => {
+				channel?.off("delete", refDeleteMessage);
 			};
 		},
 		[channel]
@@ -106,6 +117,15 @@ const TaskChat: React.FC = () => {
 	const handleTypingChange = useCallback(() => {
 		channel?.push("typing", {});
 	}, [channel]);
+
+	const handleDeleteMessage: NonNullable<ChatProps["deleteMessage"]> = useCallback(
+		async id => {
+			return new Promise<void>((resolve, reject) => {
+				channel?.push("delete", { id });
+			});
+		},
+		[channel]
+	);
 
 	useEffect(() => {
 		if (!taskId) {
@@ -167,9 +187,11 @@ const TaskChat: React.FC = () => {
 					presence={presence}
 					onTypingChange={handleTypingChange}
 					currentUserId={userId}
-					subscribe={subscribe}
+					subscribeToNewMessages={subscribeToNewMessages}
+					subscribeToDeletedMessages={subscribeToDeletedMessages}
 					sendMessage={sendMessage}
 					loadMessages={loadMessages}
+					deleteMessage={handleDeleteMessage}
 				/>
 			</Drawer>
 		</>

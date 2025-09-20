@@ -2,6 +2,8 @@ defmodule Chat.ChatChannel do
   use Phoenix.Channel
   alias Chat.Presence
 
+  import Ecto.Query, only: [from: 2]
+
   def join("chat:" <> chat_id, %{"user_id" => user_id}, socket) do
     case Chat.Repo.get_user_by_id(user_id) do
       nil ->
@@ -33,6 +35,14 @@ defmodule Chat.ChatChannel do
     {:noreply, socket}
   end
 
+  def handle_info("stop_typing", socket) do
+    Presence.update(socket, socket.assigns.user.id, fn meta ->
+      Map.put(meta, :typing, false)
+    end)
+
+    {:noreply, assign(socket, "typing_timer_ref", nil)}
+  end
+
   def handle_in("typing", _payload, socket) do
     Presence.update(socket, socket.assigns.user.id, fn meta ->
       Map.put(meta, :typing, true)
@@ -47,14 +57,6 @@ defmodule Chat.ChatChannel do
     {:noreply, assign(socket, "typing_timer_ref", ref)}
   end
 
-  def handle_info("stop_typing", socket) do
-    Presence.update(socket, socket.assigns.user.id, fn meta ->
-      Map.put(meta, :typing, false)
-    end)
-
-    {:noreply, assign(socket, "typing_timer_ref", nil)}
-  end
-
   def handle_in("get_all", params, socket) do
     try do
       messages = Chat.Repo.get_chat_messages_by_task_id(socket.assigns.chat_id, params)
@@ -64,8 +66,6 @@ defmodule Chat.ChatChannel do
       e -> {:reply, {:error, e}, socket}
     end
   end
-
-  import Ecto.Query, only: [from: 2]
 
   def handle_in("create", %{"text" => text}, socket) do
     chat_id = socket.assigns.chat_id
@@ -99,6 +99,29 @@ defmodule Chat.ChatChannel do
 
       {:error, changeset} ->
         {:reply, {:error, %{errors: changeset}}, socket}
+    end
+  end
+
+  def handle_in("delete", %{"id" => id}, socket) do
+    user_id = socket.assigns.user.id
+
+    case Chat.Repo.get_message_by_id(id) do
+      nil ->
+        {:reply, {:error, %{reason: "Message not found"}}, socket}
+
+      message ->
+        if message.user_id != user_id do
+          {:reply, {:error, %{reason: "You can delete only your own messages"}}, socket}
+        else
+          case Chat.Repo.delete_message(id) do
+            {1, _} ->
+              broadcast!(socket, "delete", %{id: id})
+              {:noreply, socket}
+
+            _ ->
+              {:reply, {:error, %{reason: "Message not found"}}, socket}
+          end
+        end
     end
   end
 end

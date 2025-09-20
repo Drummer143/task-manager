@@ -1,16 +1,18 @@
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useIntersectionObserver } from "@task-manager/react-utils";
-import { Dropdown, List, MenuProps } from "antd";
+import { App, List, MenuProps } from "antd";
 import { AnimatePresence, motion } from "framer-motion";
 
 import { useMessageRenderer } from "./hooks/useMessageRenderer";
 import { useStyles } from "./styles";
 import { ChatProps, MessageListItem, MessageListItemMessage } from "./types";
+import ContextMenu from "./ui/ContextMenu";
 import NewMessageInput from "./ui/NewMessageInput";
 import TypingBar from "./ui/TypingBar";
 import {
 	prepareMessagesBeforeRender,
+	removeMessageById,
 	transformSingleMessage,
 	updateMessageByNextMessage
 } from "./utils";
@@ -20,12 +22,15 @@ const Chat: React.FC<ChatProps> = ({
 	onUserClick,
 	loadMessages,
 	sendMessage,
-	subscribe,
+	subscribeToNewMessages,
+	subscribeToDeletedMessages,
 	presence,
 	className,
-	onTypingChange
+	onTypingChange,
+	deleteMessage
 }) => {
-	const [ctxOpen, setCtxOpen] = useState(false);
+	const modal = App.useApp().modal;
+
 	const [listItems, setListItems] = useState<MessageListItem[]>([]);
 	const [contextMenuParams, setContextMenuParams] = useState<
 		{ idx: number; menu: MenuProps } | undefined
@@ -58,36 +63,54 @@ const Chat: React.FC<ChatProps> = ({
 	// 	scrollToBottom();
 	// }, [scrollToBottom]);
 
+	const handleDeleteMessage = useMemo(() => {
+		if (!deleteMessage) {
+			return;
+		}
+
+		return async (id: string) => {
+			modal.confirm({
+				title: "Delete message",
+				content: "Are you sure you want to delete this message?",
+				onOk: () => {
+					deleteMessage(id);
+				}
+			});
+		};
+	}, [deleteMessage, modal]);
+
 	const handleIntersection = useCallback<IntersectionObserverCallback>(
 		([entry]) => {
 			const scrollBottom = listRef.current
 				? listRef.current.scrollHeight - listRef.current.scrollTop
 				: undefined;
 
-			if (entry.isIntersecting) {
-				loadMessages(
-					messages => {
-						if (!messages.length) {
-							return;
-						}
-
-						setListItems(prev => {
-							messages.push((prev[0] as MessageListItemMessage).message);
-
-							return [...prepareMessagesBeforeRender(messages), ...prev.slice(1)];
-						});
-
-						requestAnimationFrame(() => {
-							if (scrollBottom) {
-								listRef.current?.scrollTo({
-									top: listRef.current.scrollHeight - scrollBottom
-								});
-							}
-						});
-					},
-					(listItems[0] as MessageListItemMessage).message.createdAt
-				);
+			if (!entry.isIntersecting) {
+				return;
 			}
+
+			loadMessages(
+				messages => {
+					if (!messages.length) {
+						return;
+					}
+
+					setListItems(prev => {
+						messages.push((prev[0] as MessageListItemMessage).message);
+
+						return [...prepareMessagesBeforeRender(messages), ...prev.slice(1)];
+					});
+
+					requestAnimationFrame(() => {
+						if (scrollBottom) {
+							listRef.current?.scrollTo({
+								top: listRef.current.scrollHeight - scrollBottom
+							});
+						}
+					});
+				},
+				(listItems[0] as MessageListItemMessage).message.createdAt
+			);
 		},
 		[loadMessages, listItems]
 	);
@@ -104,7 +127,7 @@ const Chat: React.FC<ChatProps> = ({
 			requestAnimationFrame(scrollToBottom);
 		});
 
-		return subscribe(message => {
+		const unsubscribeFromNewMessage = subscribeToNewMessages(message => {
 			setListItems(prev => {
 				const lastMessage = prev[prev.length - 1] as MessageListItemMessage;
 
@@ -123,72 +146,44 @@ const Chat: React.FC<ChatProps> = ({
 				// 	setShowScrollBottomButton(true);
 			}
 		});
-	}, [currentUserId, subscribe, loadMessages, scrollToBottom]);
 
-	const handleContextMenuOpen = useCallback<React.MouseEventHandler<HTMLDivElement>>(
-		e => {
-			const ctxTarget = (e.target as HTMLElement | null)?.closest(
-				'[data-contextmenu="true"]'
-			);
-			const index = Number(ctxTarget?.getAttribute("data-contextmenu-message-idx"));
+		const unsubscribeFromDeletedMessage = subscribeToDeletedMessages(({ id }) => {
+			setListItems(prev => {
+				const newList = removeMessageById(prev, id);
 
-			if (!ctxTarget || isNaN(index)) {
-				setCtxOpen(false);
-				e.preventDefault();
-				e.stopPropagation();
-
-				return;
-			}
-
-			const item = listItems[index];
-
-			if (!item || item?.type !== "message") {
-				setCtxOpen(false);
-				e.preventDefault();
-				e.stopPropagation();
-
-				return;
-			}
-
-			setContextMenuParams({
-				idx: index,
-				menu: {
-					items: [{ key: item.message.text, label: item.message.text }]
-				}
+				return newList;
 			});
-		},
-		[listItems]
-	);
+		});
 
-	const handleContextMenuClose = useCallback((open: boolean) => {
-		setCtxOpen(open);
-
-		if (!open) {
-			setContextMenuParams(undefined);
-		}
-	}, []);
+		return () => {
+			unsubscribeFromNewMessage();
+			unsubscribeFromDeletedMessage();
+		};
+	}, [
+		currentUserId,
+		subscribeToNewMessages,
+		loadMessages,
+		scrollToBottom,
+		subscribeToDeletedMessages
+	]);
 
 	return (
 		<div className={cx(styles.wrapper, className)}>
-			<Dropdown
-				menu={contextMenuParams?.menu}
-				trigger={["contextMenu"]}
-				open={ctxOpen && !!contextMenuParams}
-				onOpenChange={handleContextMenuClose}
+			<ContextMenu
+				listItems={listItems}
+				currentUserId={currentUserId}
+				contextMenuParams={contextMenuParams}
+				setContextMenuParams={setContextMenuParams}
+				handleDeleteMessage={handleDeleteMessage}
 			>
-				<div
-					onContextMenuCapture={handleContextMenuOpen}
-					className={styles.listContextMenuWrapper}
-				>
-					<List
-						ref={listRef}
-						className={styles.messageList}
-						dataSource={listItems}
-						renderItem={renderMessage}
-						loadMore={<div className={styles.sentinel} ref={sentinelRef} />}
-					/>
-				</div>
-			</Dropdown>
+				<List
+					ref={listRef}
+					className={styles.messageList}
+					dataSource={listItems}
+					renderItem={renderMessage}
+					loadMore={<div className={styles.sentinel} ref={sentinelRef} />}
+				/>
+			</ContextMenu>
 
 			<div className={styles.bottomContent}>
 				{/* {showScrollBottomButton && (

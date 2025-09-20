@@ -45,7 +45,6 @@ defmodule Chat.Repo do
     |> insert(returning: true)
   end
 
-  @spec get_user_by_id(binary()) :: UserModel.t() | nil
   def get_user_by_id(id) do
     UserModel
     |> where([u], u.id == ^id)
@@ -55,5 +54,16 @@ defmodule Chat.Repo do
       avatar: u.picture
     })
     |> one()
+  end
+
+  def get_message_by_id(id) do
+    ChatMessageModel
+    |> where([m], m.id == ^id)
+    |> one()
+  end
+
+  def delete_message(id) do
+    from(m in ChatMessageModel, where: m.id == ^id)
+    |> delete_all()
   end
 end
