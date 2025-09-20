@@ -29,9 +29,6 @@ const useStyles = createStyles(({ css }) => ({
 		flex-direction: column;
 
 		padding: 0 !important;
-	`,
-	chat: css`
-		padding: 0 var(--ant-padding-xs) var(--ant-padding-xs);
 	`
 }));
 
@@ -62,10 +59,13 @@ const TaskChat: React.FC = () => {
 
 	const socket = useChatSocketStore().getSocket();
 
-	const drawerClassnames = useMemo<DrawerClassNames>(() => ({
-		body: styles.drawerBody,
-		wrapper: styles.drawer
-	}), [styles]);
+	const drawerClassnames = useMemo<DrawerClassNames>(
+		() => ({
+			body: styles.drawerBody,
+			wrapper: styles.drawer
+		}),
+		[styles]
+	);
 
 	const loadMessages = useCallback(
 		(cb: (messages: MessageData[]) => void, before?: string) => {
@@ -162,14 +162,8 @@ const TaskChat: React.FC = () => {
 		<>
 			<Button type="text" icon={<MessageOutlined />} onClick={onOpen} />
 
-			<Drawer
-				open={open}
-				onClose={onClose}
-				title="Discussion"
-				classNames={drawerClassnames}
-			>
+			<Drawer open={open} onClose={onClose} title="Discussion" classNames={drawerClassnames}>
 				<Chat
-					className={styles.chat}
 					presence={presence}
 					onTypingChange={handleTypingChange}
 					currentUserId={userId}

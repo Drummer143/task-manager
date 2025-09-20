@@ -5,12 +5,12 @@ import Divider from "../ui/Divider";
 import Message from "../ui/Message";
 
 export const useMessageRenderer = (
-	messages: MessageListItem[],
 	currentUserId: string,
-	onUserClick?: (userId: string) => void
+	onUserClick?: (userId: string) => void,
+	selection?: string[]
 ) => {
 	return useCallback(
-		(item: MessageListItem, index: number) => {
+		(item: MessageListItem) => {
 			switch (item.type) {
 				case "divider":
 					return <Divider key={item.id} {...item.props} />;
@@ -18,18 +18,15 @@ export const useMessageRenderer = (
 					return (
 						<Message
 							key={item.id}
+							id={item.id}
 							createdAt={item.message.createdAt}
 							text={item.message.text}
-							last={index === messages.length - 1}
-							paddingBottom={item.uiProps.paddingBottom}
 							sentByCurrentUser={item.message.sender.id === currentUserId}
 							senderName={item.message.sender.username}
-							showSenderName={item.uiProps.showSenderName}
-							showAvatar={item.uiProps.showAvatar}
+							showUserInfo={item.uiProps.showUserInfo}
 							avatarUrl={item.message.sender.avatar}
-							onSenderClick={
-								onUserClick ? () => onUserClick(item.message.sender.id) : undefined
-							}
+							onSenderClick={onUserClick}
+							selected={selection?.includes(item.id)}
 						/>
 					);
 				default:
@@ -38,7 +35,7 @@ export const useMessageRenderer = (
 					);
 			}
 		},
-		[messages, currentUserId, onUserClick]
+		[currentUserId, onUserClick, selection]
 	);
 };
 

@@ -40,7 +40,7 @@ interface DefaultListItemParams {
 export interface MessageListItemMessage extends DefaultListItemParams {
 	type: "message";
 	message: MessageData;
-	uiProps: Pick<MessageProps, "paddingBottom" | "showSenderName" | "showAvatar">;
+	uiProps: Pick<MessageProps, "showUserInfo">;
 }
 
 export interface MessageListItemDivider extends DefaultListItemParams {

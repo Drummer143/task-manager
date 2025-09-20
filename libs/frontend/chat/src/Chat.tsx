@@ -28,7 +28,7 @@ const Chat: React.FC<ChatProps> = ({
 	const [listItems, setListItems] = useState<MessageListItem[]>([]);
 	// const [showScrollBottomButton, setShowScrollBottomButton] = useState(false);
 
-	const renderMessage = useMessageRenderer(listItems, currentUserId, onUserClick);
+	const renderMessage = useMessageRenderer(currentUserId, onUserClick, selection);
 
 	const { styles, cx } = useStyles();
 

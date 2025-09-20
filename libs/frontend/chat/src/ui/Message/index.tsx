@@ -7,31 +7,29 @@ import { useStyles } from "./styles";
 import { getPlaceholderAvatarUrl } from "../../utils";
 
 export interface MessageProps {
+	id: string;
 	text: string;
 	createdAt: string;
 	senderName: string;
 	sentByCurrentUser: boolean;
 
-	last?: boolean;
+	selected?: boolean;
 	avatarUrl?: string | null;
-	showAvatar?: boolean;
-	paddingBottom?: "small" | "large";
-	showSenderName?: boolean;
+	showUserInfo: boolean;
 
-	onSenderClick?: () => void;
+	onSenderClick?: (id: string) => void;
 }
 
 const Message: React.FC<MessageProps> = ({
+	id,
 	createdAt,
 	sentByCurrentUser,
 	text,
 	onSenderClick,
 	senderName,
 	avatarUrl,
-	paddingBottom = "small",
-	last,
-	showAvatar = true,
-	showSenderName = true
+	selected,
+	showUserInfo
 }) => {
 	const formattedDate = useMemo(
 		() => new Date(createdAt).toLocaleString(undefined, { hour: "2-digit", minute: "2-digit" }),
@@ -43,56 +41,51 @@ const Message: React.FC<MessageProps> = ({
 			onSenderClick && !sentByCurrentUser
 				? (e?: React.MouseEvent<HTMLElement>) => {
 						e?.stopPropagation();
-						onSenderClick();
+						onSenderClick(id);
 					}
 				: undefined,
-		[onSenderClick, sentByCurrentUser]
+		[id, onSenderClick, sentByCurrentUser]
 	);
 
-	const styles = useStyles({
+	const { styles } = useStyles({
 		sentByCurrentUser,
 		senderClickable: !!handleSenderClick,
-		paddingBottom,
-		last
-	}).styles;
+		showUserInfo,
+		selected
+	});
 
 	return (
-		<Flex
-			className={styles.wrapper}
-			align="flex-end"
-			justify={sentByCurrentUser ? "flex-end" : undefined}
-			gap="var(--ant-padding-xs)"
-		>
-			{!sentByCurrentUser &&
-				(showAvatar ? (
+		<Flex className={styles.wrapper} gap="var(--ant-padding-xs)">
+			<div className={styles.leftContentContainer}>
+				{showUserInfo ? (
 					<Avatar
-						size="small"
 						className={styles.avatar}
-						src={avatarUrl ?? getPlaceholderAvatarUrl(senderName)}
-						onClick={handleSenderClick}
+						size="small"
+						src={
+							showUserInfo
+								? (avatarUrl ?? getPlaceholderAvatarUrl(senderName))
+								: undefined
+						}
 					/>
 				) : (
-					<div className={styles.avatarPlaceholder} />
-				))}
+					<Typography.Text type="secondary" className={styles.date}>
+						{formattedDate}
+					</Typography.Text>
+				)}
+			</div>
 
-			<div className={styles.messageBody}>
-				{!sentByCurrentUser && showSenderName && (
+			<div>
+				{showUserInfo && (
 					<Typography.Text
 						type="secondary"
-						className={styles.senderName}
+						// className={styles.senderName}
 						onClick={handleSenderClick}
 					>
 						{senderName}
 					</Typography.Text>
 				)}
 
-				<Flex justify="space-between" wrap gap="var(--ant-padding-xs)">
-					<Typography.Text>{text}</Typography.Text>
-
-					<Typography.Text type="secondary" className={styles.date}>
-						{formattedDate}
-					</Typography.Text>
-				</Flex>
+				<Typography.Paragraph className={styles.messageBody}>{text}</Typography.Paragraph>
 			</div>
 		</Flex>
 	);

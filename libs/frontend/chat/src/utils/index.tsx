@@ -2,17 +2,14 @@ import { MessageData, MessageListItem, MessageListItemMessage } from "../types";
 
 export const transformSingleMessage = (
 	message: MessageData,
-	prevMessage?: MessageData,
-	nextMessage?: MessageData
+	prevMessage?: MessageData
 ): MessageListItem[] => {
 	const result: MessageListItem[] = [];
 
 	const prevMessageSameSender = prevMessage?.sender.id === message.sender.id;
-	const nextMessageSameSender = nextMessage?.sender.id === message.sender.id;
 	const currentDate = new Date(message.createdAt);
 	let prevMessageSameDay = false,
-		prevMessageSameYear = false,
-		nextMessageSameDay = false;
+		prevMessageSameYear = false;
 
 	if (prevMessage) {
 		const prevDate = new Date(prevMessage.createdAt);
@@ -22,15 +19,6 @@ export const transformSingleMessage = (
 			prevDate.getDate() === currentDate.getDate() &&
 			prevDate.getMonth() === currentDate.getMonth() &&
 			prevMessageSameYear;
-	}
-
-	if (nextMessage) {
-		const nextDate = new Date(nextMessage.createdAt);
-
-		nextMessageSameDay =
-			nextDate.getDate() === currentDate.getDate() &&
-			nextDate.getMonth() === currentDate.getMonth() &&
-			nextDate.getFullYear() === currentDate.getFullYear();
 	}
 
 	if (!prevMessageSameDay && prevMessage) {
@@ -44,14 +32,14 @@ export const transformSingleMessage = (
 		});
 	}
 
+	const showUserInfo = !prevMessageSameSender || !prevMessageSameDay;
+
 	result.push({
 		id: `message-${message.id}`,
 		type: "message",
 		message,
 		uiProps: {
-			paddingBottom: nextMessageSameSender ? "small" : "large",
-			showSenderName: !prevMessageSameSender || !prevMessageSameDay,
-			showAvatar: !nextMessageSameSender || (nextMessage && !nextMessageSameDay)
+			showUserInfo
 		}
 	});
 
@@ -71,12 +59,12 @@ export const updateMessageByNextMessage = (
 		nextDate.getMonth() === currentDate.getMonth() &&
 		nextDate.getFullYear() === currentDate.getFullYear();
 
+	const showUserInfo = !nextMessageSameSender || !nextMessageSameDay;
+
 	return {
 		...message,
 		uiProps: {
-			paddingBottom: nextMessageSameSender ? "small" : "large",
-			showSenderName: !nextMessageSameSender || !nextMessageSameDay,
-			showAvatar: !nextMessageSameSender || (nextMessage && !nextMessageSameDay)
+			showUserInfo
 		}
 	};
 };
@@ -85,7 +73,7 @@ export const prepareMessagesBeforeRender = (messages: MessageData[]): MessageLis
 	const result: MessageListItem[] = [];
 
 	messages.forEach((message, index) => {
-		result.push(...transformSingleMessage(message, messages[index - 1], messages[index + 1]));
+		result.push(...transformSingleMessage(message, messages[index - 1]));
 	});
 
 	return result;

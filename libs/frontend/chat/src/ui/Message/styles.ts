@@ -1,71 +1,41 @@
 import { createStyles } from "antd-style";
 
 interface StyleProps {
-	paddingBottom: "small" | "large";
 	senderClickable: boolean;
 	sentByCurrentUser: boolean;
 
-	last?: boolean;
+	selected?: boolean;
+	showUserInfo?: boolean;
 }
 
-const paddingBottomMap = {
-	small: "3px",
-	large: "6px"
-};
-
 export const useStyles = createStyles(
-	(
-		{ css },
-		{
-			sentByCurrentUser,
-			senderClickable,
-			paddingBottom,
-			last
-		}: StyleProps
-	) => {
+	({ css }, { sentByCurrentUser, senderClickable, showUserInfo, selected }: StyleProps) => {
 		const wrapper = css`
 			width: 100%;
 
-			${!last && `padding-bottom: ${paddingBottomMap[paddingBottom]};`}
+			padding: var(--ant-padding-xxs)
+				${showUserInfo && "var(--ant-padding-xs) var(--ant-padding-xs)"};
+			transition: background-color var(--ant-motion-duration-fast)
+				var(--ant-motion-ease-out-circ);
+
+			&:hover {
+				background-color: var(--ant-color-bg-text-hover);
+			}
 		`;
 
 		return {
 			wrapper,
-			messageBody: css`
-				max-width: 75%;
+			leftContentContainer: css`
+				max-width: var(--ant-control-height-sm);
+				flex-shrink: 0;
 
-				display: flex;
-				flex-direction: column;
-				gap: var(--ant-padding-xxs);
-				word-break: break-word;
-
-				padding: var(--ant-padding-xs);
-
-				border-radius: ${sentByCurrentUser
-					? "var(--ant-border-radius) var(--ant-border-radius) 0 var(--ant-border-radius)"
-					: "var(--ant-border-radius) var(--ant-border-radius) var(--ant-border-radius) 0"};
-				background-color: var(--ant-color-primary-bg);
+				padding-top: ${showUserInfo ? "var(--ant-padding-xs);" : "var(--ant-padding-xxs);"};
 			`,
 			avatar: css`
 				${senderClickable && "cursor: pointer !important;"}
 			`,
-			avatarPlaceholder: css`
-				width: 24px;
-				height: 24px;
-				pointer-events: none;
-			`,
-			senderName: css`
-				font-size: 11px;
-				line-height: 1;
-
-				${senderClickable &&
-				css`
-					cursor: pointer;
-
-					&:hover {
-						text-decoration: underline;
-					}
-				`}
+			messageBody: css`
+				margin: 0 !important;
 			`,
 			date: css`
 				align-self: flex-end;
@@ -74,7 +44,7 @@ export const useStyles = createStyles(
 
 				margin-left: auto;
 
-				font-size: 11px;
+				font-size: 10px;
 				opacity: 0;
 				line-height: 1;
 				transition: opacity var(--ant-motion-duration-fast) var(--ant-motion-ease-out-circ);
