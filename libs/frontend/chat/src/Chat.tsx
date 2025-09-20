@@ -32,12 +32,9 @@ const Chat: React.FC<ChatProps> = ({
 	const modal = App.useApp().modal;
 
 	const [listItems, setListItems] = useState<MessageListItem[]>([]);
-	const [contextMenuParams, setContextMenuParams] = useState<
-		{ idx: number; menu: MenuProps } | undefined
-	>(undefined);
 	// const [showScrollBottomButton, setShowScrollBottomButton] = useState(false);
 
-	const renderMessage = useMessageRenderer(currentUserId, onUserClick, contextMenuParams?.idx);
+	const renderMessage = useMessageRenderer(currentUserId, onUserClick);
 
 	const { styles, cx } = useStyles();
 
@@ -72,9 +69,7 @@ const Chat: React.FC<ChatProps> = ({
 			modal.confirm({
 				title: "Delete message",
 				content: "Are you sure you want to delete this message?",
-				onOk: () => {
-					deleteMessage(id);
-				}
+				onOk: () => deleteMessage(id)
 			});
 		};
 	}, [deleteMessage, modal]);
@@ -172,8 +167,6 @@ const Chat: React.FC<ChatProps> = ({
 			<ContextMenu
 				listItems={listItems}
 				currentUserId={currentUserId}
-				contextMenuParams={contextMenuParams}
-				setContextMenuParams={setContextMenuParams}
 				handleDeleteMessage={handleDeleteMessage}
 			>
 				<List

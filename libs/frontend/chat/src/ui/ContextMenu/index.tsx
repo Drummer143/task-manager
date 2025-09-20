@@ -11,34 +11,28 @@ interface ContextMenuProps {
 	children: React.ReactNode;
 	listItems: MessageListItem[];
 	currentUserId: string;
-	contextMenuParams: { idx: number; menu: MenuProps } | undefined;
 
 	handleDeleteMessage?: (id: string) => void;
-
-	setContextMenuParams: React.Dispatch<
-		React.SetStateAction<{ idx: number; menu: MenuProps } | undefined>
-	>;
 }
 
 const ContextMenu: React.FC<ContextMenuProps> = ({
 	children,
-	setContextMenuParams,
 	listItems,
 	currentUserId,
-	handleDeleteMessage,
-	contextMenuParams
+	handleDeleteMessage
 }) => {
 	const [ctxOpen, setCtxOpen] = useState(false);
+	const [contextMenuItems, setContextMenuItems] = useState<MenuProps | undefined>(undefined);
 
-	const ctxParams = useRef<{ idx: number; menu: MenuProps } | undefined>(undefined);
+	const ctxParams = useRef<MenuProps | undefined>(undefined);
 
 	const styles = useStyles().styles;
 
 	const closeContextMenu = useCallback(() => {
-		setContextMenuParams(undefined);
+		setContextMenuItems(undefined);
 		setCtxOpen(false);
 		ctxParams.current = undefined;
-	}, [setContextMenuParams]);
+	}, []);
 
 	const handleContextMenuOpen = useCallback<React.MouseEventHandler<HTMLDivElement>>(
 		e => {
@@ -79,17 +73,14 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 
 			if (ctxMenu.length) {
 				ctxParams.current = {
-					idx: index,
-					menu: {
-						items: ctxMenu
-					}
+					items: ctxMenu
 				};
-				setContextMenuParams(ctxParams.current);
+				setContextMenuItems(ctxParams.current);
 			} else {
 				closeContextMenu();
 			}
 		},
-		[listItems, currentUserId, handleDeleteMessage, closeContextMenu, setContextMenuParams]
+		[listItems, currentUserId, handleDeleteMessage, closeContextMenu, setContextMenuItems]
 	);
 
 	const handleContextMenuClose = useCallback(
@@ -99,23 +90,20 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 			}
 
 			if (!open) {
-				setContextMenuParams(undefined);
+				setContextMenuItems(undefined);
 			}
 		},
-		[setContextMenuParams]
+		[setContextMenuItems]
 	);
 
 	return (
 		<Dropdown
-			menu={contextMenuParams?.menu}
+			menu={contextMenuItems}
 			trigger={["contextMenu"]}
-			open={ctxOpen && !!contextMenuParams}
+			open={ctxOpen && !!contextMenuItems}
 			onOpenChange={handleContextMenuClose}
 		>
-			<div
-				onContextMenuCapture={handleContextMenuOpen}
-				className={styles.contextMenuWrapper}
-			>
+			<div onContextMenuCapture={handleContextMenuOpen} className={styles.contextMenuWrapper}>
 				{children}
 			</div>
 		</Dropdown>
