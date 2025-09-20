@@ -20,8 +20,13 @@ export const useStyles = createStyles(({ css }) => ({
 		width: 1px;
 		opacity: 0;
 	`,
-	messageList: css`
+	listContextMenuWrapper: css`
 		flex: 1;
+
+		overflow-y: hidden;
+	`,
+	messageList: css`
+		max-height: 100%;
 
 		padding-bottom: var(--ant-padding-lg);
 

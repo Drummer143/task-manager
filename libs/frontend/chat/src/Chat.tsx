@@ -1,7 +1,7 @@
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useIntersectionObserver } from "@task-manager/react-utils";
-import { List } from "antd";
+import { Dropdown, List, MenuProps } from "antd";
 import { AnimatePresence, motion } from "framer-motion";
 
 import { useMessageRenderer } from "./hooks/useMessageRenderer";
@@ -25,10 +25,14 @@ const Chat: React.FC<ChatProps> = ({
 	className,
 	onTypingChange
 }) => {
+	const [ctxOpen, setCtxOpen] = useState(false);
 	const [listItems, setListItems] = useState<MessageListItem[]>([]);
+	const [contextMenuParams, setContextMenuParams] = useState<
+		{ idx: number; menu: MenuProps } | undefined
+	>(undefined);
 	// const [showScrollBottomButton, setShowScrollBottomButton] = useState(false);
 
-	const renderMessage = useMessageRenderer(currentUserId, onUserClick, selection);
+	const renderMessage = useMessageRenderer(currentUserId, onUserClick, contextMenuParams?.idx);
 
 	const { styles, cx } = useStyles();
 
@@ -121,15 +125,70 @@ const Chat: React.FC<ChatProps> = ({
 		});
 	}, [currentUserId, subscribe, loadMessages, scrollToBottom]);
 
+	const handleContextMenuOpen = useCallback<React.MouseEventHandler<HTMLDivElement>>(
+		e => {
+			const ctxTarget = (e.target as HTMLElement | null)?.closest(
+				'[data-contextmenu="true"]'
+			);
+			const index = Number(ctxTarget?.getAttribute("data-contextmenu-message-idx"));
+
+			if (!ctxTarget || isNaN(index)) {
+				setCtxOpen(false);
+				e.preventDefault();
+				e.stopPropagation();
+
+				return;
+			}
+
+			const item = listItems[index];
+
+			if (!item || item?.type !== "message") {
+				setCtxOpen(false);
+				e.preventDefault();
+				e.stopPropagation();
+
+				return;
+			}
+
+			setContextMenuParams({
+				idx: index,
+				menu: {
+					items: [{ key: item.message.text, label: item.message.text }]
+				}
+			});
+		},
+		[listItems]
+	);
+
+	const handleContextMenuClose = useCallback((open: boolean) => {
+		setCtxOpen(open);
+
+		if (!open) {
+			setContextMenuParams(undefined);
+		}
+	}, []);
+
 	return (
 		<div className={cx(styles.wrapper, className)}>
-			<List
-				ref={listRef}
-				className={styles.messageList}
-				dataSource={listItems}
-				renderItem={renderMessage}
-				loadMore={<div className={styles.sentinel} ref={sentinelRef} />}
-			/>
+			<Dropdown
+				menu={contextMenuParams?.menu}
+				trigger={["contextMenu"]}
+				open={ctxOpen && !!contextMenuParams}
+				onOpenChange={handleContextMenuClose}
+			>
+				<div
+					onContextMenuCapture={handleContextMenuOpen}
+					className={styles.listContextMenuWrapper}
+				>
+					<List
+						ref={listRef}
+						className={styles.messageList}
+						dataSource={listItems}
+						renderItem={renderMessage}
+						loadMore={<div className={styles.sentinel} ref={sentinelRef} />}
+					/>
+				</div>
+			</Dropdown>
 
 			<div className={styles.bottomContent}>
 				{/* {showScrollBottomButton && (

@@ -2,14 +2,13 @@ import { createStyles } from "antd-style";
 
 interface StyleProps {
 	senderClickable: boolean;
-	sentByCurrentUser: boolean;
 
-	selected?: boolean;
 	showUserInfo?: boolean;
+	contextMenuOpened?: boolean;
 }
 
 export const useStyles = createStyles(
-	({ css }, { sentByCurrentUser, senderClickable, showUserInfo, selected }: StyleProps) => {
+	({ css }, { senderClickable, showUserInfo, contextMenuOpened }: StyleProps) => {
 		const wrapper = css`
 			width: 100%;
 
@@ -18,9 +17,13 @@ export const useStyles = createStyles(
 			transition: background-color var(--ant-motion-duration-fast)
 				var(--ant-motion-ease-out-circ);
 
-			&:hover {
-				background-color: var(--ant-color-bg-text-hover);
-			}
+			${contextMenuOpened
+				? "background-color: var(--ant-control-item-bg-active);"
+				: `
+				&:hover {
+					background-color: var(--ant-control-item-bg-hover);
+				}
+			`}
 		`;
 
 		return {

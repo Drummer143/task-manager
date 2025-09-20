@@ -9,27 +9,29 @@ import { getPlaceholderAvatarUrl } from "../../utils";
 export interface MessageProps {
 	id: string;
 	text: string;
+	index: number;
 	createdAt: string;
 	senderName: string;
 	sentByCurrentUser: boolean;
 
-	selected?: boolean;
 	avatarUrl?: string | null;
 	showUserInfo: boolean;
+	contextMenuOpened?: boolean;
 
 	onSenderClick?: (id: string) => void;
 }
 
 const Message: React.FC<MessageProps> = ({
 	id,
+	index,
 	createdAt,
 	sentByCurrentUser,
 	text,
 	onSenderClick,
 	senderName,
 	avatarUrl,
-	selected,
-	showUserInfo
+	showUserInfo,
+	contextMenuOpened
 }) => {
 	const formattedDate = useMemo(
 		() => new Date(createdAt).toLocaleString(undefined, { hour: "2-digit", minute: "2-digit" }),
@@ -48,14 +50,19 @@ const Message: React.FC<MessageProps> = ({
 	);
 
 	const { styles } = useStyles({
-		sentByCurrentUser,
 		senderClickable: !!handleSenderClick,
 		showUserInfo,
-		selected
+		contextMenuOpened
 	});
 
 	return (
-		<Flex className={styles.wrapper} gap="var(--ant-padding-xs)">
+		<Flex
+			className={styles.wrapper}
+			gap="var(--ant-padding-xs)"
+			data-contextmenu="true"
+			data-contextmenu-type="message"
+			data-contextmenu-message-idx={index}
+		>
 			<div className={styles.leftContentContainer}>
 				{showUserInfo ? (
 					<Avatar

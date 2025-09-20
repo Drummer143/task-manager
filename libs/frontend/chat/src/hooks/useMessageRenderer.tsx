@@ -7,10 +7,10 @@ import Message from "../ui/Message";
 export const useMessageRenderer = (
 	currentUserId: string,
 	onUserClick?: (userId: string) => void,
-	selection?: string[]
+	contextMenuOnItem?: number
 ) => {
 	return useCallback(
-		(item: MessageListItem) => {
+		(item: MessageListItem, index: number) => {
 			switch (item.type) {
 				case "divider":
 					return <Divider key={item.id} {...item.props} />;
@@ -26,7 +26,8 @@ export const useMessageRenderer = (
 							showUserInfo={item.uiProps.showUserInfo}
 							avatarUrl={item.message.sender.avatar}
 							onSenderClick={onUserClick}
-							selected={selection?.includes(item.id)}
+							index={index}
+							contextMenuOpened={contextMenuOnItem === index}
 						/>
 					);
 				default:
@@ -35,7 +36,7 @@ export const useMessageRenderer = (
 					);
 			}
 		},
-		[currentUserId, onUserClick, selection]
+		[currentUserId, onUserClick, contextMenuOnItem]
 	);
 };
 
