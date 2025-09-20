@@ -53,3 +53,5 @@ export interface MessageListItemDivider extends DefaultListItemParams {
 
 export type MessageListItem = MessageListItemMessage | MessageListItemDivider;
 
+export type ListItemType = MessageListItem["type"];
+

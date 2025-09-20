@@ -6,6 +6,10 @@ import { Dropdown, MenuProps } from "antd";
 import { useStyles } from "./styles";
 
 import { MessageListItem } from "../../types";
+import {
+	getClosestInteractiveListItem,
+	getDataAttribute
+} from "../../utils/listItemDataAttributes";
 
 interface ContextMenuProps {
 	children: React.ReactNode;
@@ -36,12 +40,9 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 
 	const handleContextMenuOpen = useCallback<React.MouseEventHandler<HTMLDivElement>>(
 		e => {
-			const ctxTarget = (e.target as HTMLElement | null)?.closest(
-				'[data-contextmenu="true"]'
-			);
-			const index = Number(ctxTarget?.getAttribute("data-contextmenu-message-idx"));
+			const ctxTarget = getClosestInteractiveListItem(e.target as Element | null | undefined);
 
-			if (!ctxTarget || isNaN(index)) {
+			if (!ctxTarget || !getDataAttribute(ctxTarget, "data-interactive")) {
 				e.preventDefault();
 				e.stopPropagation();
 				closeContextMenu();
@@ -49,6 +50,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 				return;
 			}
 
+			const index = getDataAttribute(ctxTarget, "data-item-idx");
 			const item = listItems[index];
 
 			if (!item || item?.type !== "message") {

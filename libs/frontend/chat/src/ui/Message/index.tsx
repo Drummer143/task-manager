@@ -5,6 +5,7 @@ import { Avatar, Flex, Typography } from "antd";
 import { useStyles } from "./styles";
 
 import { getPlaceholderAvatarUrl } from "../../utils";
+import { generateListItemDataAttributes } from "../../utils/listItemDataAttributes";
 
 export interface MessageProps {
 	id: string;
@@ -59,9 +60,7 @@ const Message: React.FC<MessageProps> = ({
 		<Flex
 			className={styles.wrapper}
 			gap="var(--ant-padding-xs)"
-			data-contextmenu="true"
-			data-contextmenu-type="message"
-			data-contextmenu-message-idx={index}
+			{...generateListItemDataAttributes(index)}
 		>
 			<div className={styles.leftContentContainer}>
 				{showUserInfo ? (
