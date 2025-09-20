@@ -18,7 +18,7 @@ defmodule Chat.Models.ChatMessageModel do
 
   def changeset(chat_message, attrs) do
     chat_message
-    |> cast(attrs, [:text, :user_id, :task_id])
+    |> cast(attrs, [:text, :user_id, :task_id, :updated_at])
     |> validate_required([:text, :user_id, :task_id])
   end
 end

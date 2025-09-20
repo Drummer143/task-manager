@@ -1,10 +1,11 @@
 import React, { memo, useCallback, useRef, useState } from "react";
 
-import { DeleteOutlined } from "@ant-design/icons";
+import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
 import { Dropdown, MenuProps } from "antd";
 
 import { useStyles } from "./styles";
 
+import { useChatStore } from "../../store";
 import { MessageListItem } from "../../types";
 import {
 	getClosestInteractiveListItem,
@@ -17,18 +18,22 @@ interface ContextMenuProps {
 	currentUserId: string;
 
 	handleDeleteMessage?: (id: string) => void;
+	handleUpdateMessage?: (id: string, text: string) => void;
 }
 
 const ContextMenu: React.FC<ContextMenuProps> = ({
 	children,
 	listItems,
 	currentUserId,
-	handleDeleteMessage
+	handleDeleteMessage,
+	handleUpdateMessage
 }) => {
 	const [ctxOpen, setCtxOpen] = useState(false);
 	const [contextMenuItems, setContextMenuItems] = useState<MenuProps | undefined>(undefined);
 
 	const ctxParams = useRef<MenuProps | undefined>(undefined);
+
+	const { setSelectedItems, setEditingItemInfo, clearEditingItemInfo } = useChatStore();
 
 	const styles = useStyles().styles;
 
@@ -36,7 +41,8 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 		setContextMenuItems(undefined);
 		setCtxOpen(false);
 		ctxParams.current = undefined;
-	}, []);
+		setSelectedItems(undefined);
+	}, [setSelectedItems]);
 
 	const handleContextMenuOpen = useCallback<React.MouseEventHandler<HTMLDivElement>>(
 		e => {
@@ -63,15 +69,40 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 
 			const ctxMenu: NonNullable<MenuProps["items"]> = [];
 
-			if (item.message.sender.id === currentUserId && handleDeleteMessage) {
-				ctxMenu.push({
-					key: "delete",
-					label: "Delete",
-					icon: <DeleteOutlined />,
-					danger: true,
-					onClick: () => handleDeleteMessage(item.message.id)
-				});
+			if (item.message.sender.id === currentUserId) {
+				if (handleUpdateMessage) {
+					ctxMenu.push({
+						key: "edit",
+						label: "Edit",
+						icon: <EditOutlined />,
+						onClick: () =>
+							setEditingItemInfo(index, text => {
+								handleUpdateMessage(item.message.id, text);
+								clearEditingItemInfo();
+							}),
+						dashed: true
+					});
+				}
+
+				if (handleDeleteMessage) {
+					if (handleUpdateMessage) {
+						ctxMenu.push({
+							key: "div-1",
+							type: "divider"
+						});
+					}
+
+					ctxMenu.push({
+						key: "delete",
+						label: "Delete",
+						icon: <DeleteOutlined />,
+						danger: true,
+						onClick: () => handleDeleteMessage(item.message.id)
+					});
+				}
 			}
+
+			setSelectedItems([item.id]);
 
 			if (ctxMenu.length) {
 				ctxParams.current = {
@@ -82,7 +113,16 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 				closeContextMenu();
 			}
 		},
-		[listItems, currentUserId, handleDeleteMessage, closeContextMenu, setContextMenuItems]
+		[
+			listItems,
+			currentUserId,
+			setSelectedItems,
+			closeContextMenu,
+			handleUpdateMessage,
+			handleDeleteMessage,
+			setEditingItemInfo,
+			clearEditingItemInfo
+		]
 	);
 
 	const handleContextMenuClose = useCallback(
@@ -93,9 +133,10 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 
 			if (!open) {
 				setContextMenuItems(undefined);
+				setSelectedItems(undefined);
 			}
 		},
-		[setContextMenuItems]
+		[setContextMenuItems, setSelectedItems]
 	);
 
 	return (

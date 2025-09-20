@@ -11,8 +11,10 @@ export interface UserInfo {
 export interface MessageData {
 	id: string;
 	text: string;
-	createdAt: string;
 	sender: UserInfo;
+	createdAt: string;
+
+	updatedAt?: string | null;
 }
 
 export interface PresenceInfo {
@@ -29,11 +31,13 @@ export interface ChatProps {
 	loadMessages: (cb: (messages: MessageData[]) => void, before?: string) => void;
 
 	subscribeToNewMessages: (cb: (newMessage: MessageData) => void) => () => void;
+	subscribeToUpdatedMessages: (cb: (updatedMessage: Omit<MessageData, "sender">) => void) => () => void;
 	subscribeToDeletedMessages: (cb: (params: { id: string }) => void) => () => void;
 
 	onUserClick?: (userId: string) => void;
 	deleteMessage?: (id: string) => void;
 	onTypingChange?: () => void;
+	updateMessage?: (id: string, text: string) => void;
 }
 
 interface DefaultListItemParams {

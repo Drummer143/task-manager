@@ -34,18 +34,22 @@ export const useStyles = createStyles(
 
 				padding-top: ${showUserInfo ? "var(--ant-padding-xs);" : "var(--ant-padding-xxs);"};
 			`,
+			body: css`
+				flex: 1;
+			`,
 			avatar: css`
 				${senderClickable && "cursor: pointer !important;"}
 			`,
-			messageBody: css`
+			text: css`
+				width: 100%;
+				left: 0 !important;
+
 				margin: 0 !important;
 			`,
 			date: css`
 				align-self: flex-end;
 
 				display: block;
-
-				margin-left: auto;
 
 				font-size: 10px;
 				opacity: 0;
@@ -55,6 +59,22 @@ export const useStyles = createStyles(
 				.acss-${wrapper.name}:hover & {
 					opacity: 1;
 				}
+			`,
+			editButtons: css`
+				margin-top: var(--ant-padding-xs);
+			`,
+			senderName: css`
+				font-weight: var(--ant-font-weight-strong);
+				font-size: var(--ant-font-size-lg);
+			`,
+			secondaryText: css`
+				font-size: var(--ant-font-size-xs);
+			`,
+			editedText: css`
+				display: flex;
+				justify-content: flex-end;
+
+				margin-top: var(--ant-padding-xxs);
 			`
 		};
 	}

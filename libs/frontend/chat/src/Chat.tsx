@@ -1,7 +1,7 @@
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { useIntersectionObserver } from "@task-manager/react-utils";
-import { App, List, MenuProps } from "antd";
+import { App, List } from "antd";
 import { AnimatePresence, motion } from "framer-motion";
 
 import { useMessageRenderer } from "./hooks/useMessageRenderer";
@@ -24,10 +24,12 @@ const Chat: React.FC<ChatProps> = ({
 	sendMessage,
 	subscribeToNewMessages,
 	subscribeToDeletedMessages,
+	subscribeToUpdatedMessages,
 	presence,
 	className,
 	onTypingChange,
-	deleteMessage
+	deleteMessage,
+	updateMessage
 }) => {
 	const modal = App.useApp().modal;
 
@@ -150,16 +152,40 @@ const Chat: React.FC<ChatProps> = ({
 			});
 		});
 
+		const unsubscribeFromUpdatedMessage = subscribeToUpdatedMessages(updatedMessage => {
+			setListItems(prev => {
+				const updatedIdx = prev.findIndex(item => item.id === updatedMessage.id);
+
+				if (updatedIdx === -1) {
+					return prev;
+				}
+
+				const copy = [...prev];
+
+				(copy[updatedIdx] as MessageListItemMessage).message = {
+					...(copy[updatedIdx] as MessageListItemMessage).message,
+					...updatedMessage,
+					sender: {
+						...(copy[updatedIdx] as MessageListItemMessage).message.sender
+					}
+				};
+
+				return copy;
+			});
+		});
+
 		return () => {
 			unsubscribeFromNewMessage();
 			unsubscribeFromDeletedMessage();
+			unsubscribeFromUpdatedMessage();
 		};
 	}, [
 		currentUserId,
 		subscribeToNewMessages,
 		loadMessages,
 		scrollToBottom,
-		subscribeToDeletedMessages
+		subscribeToDeletedMessages,
+		subscribeToUpdatedMessages
 	]);
 
 	return (
@@ -168,11 +194,13 @@ const Chat: React.FC<ChatProps> = ({
 				listItems={listItems}
 				currentUserId={currentUserId}
 				handleDeleteMessage={handleDeleteMessage}
+				handleUpdateMessage={updateMessage}
 			>
 				<List
 					ref={listRef}
 					className={styles.messageList}
 					dataSource={listItems}
+					style={{ overflowY: "hidden" }}
 					renderItem={renderMessage}
 					loadMore={<div className={styles.sentinel} ref={sentinelRef} />}
 				/>

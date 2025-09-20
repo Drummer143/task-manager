@@ -62,6 +62,12 @@ defmodule Chat.Repo do
     |> one()
   end
 
+  def update_message(id, text) do
+    get_message_by_id(id)
+    |> ChatMessageModel.changeset(%{text: text, updated_at: DateTime.utc_now()})
+    |> update()
+  end
+
   def delete_message(id) do
     from(m in ChatMessageModel, where: m.id == ^id)
     |> delete_all()

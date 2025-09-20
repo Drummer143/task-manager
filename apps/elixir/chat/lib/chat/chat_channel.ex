@@ -102,6 +102,35 @@ defmodule Chat.ChatChannel do
     end
   end
 
+  def handle_in("update", %{"id" => id, "text" => text}, socket) do
+    user_id = socket.assigns.user.id
+
+    case Chat.Repo.get_message_by_id(id) do
+      nil ->
+        {:reply, {:error, %{reason: "Message not found"}}, socket}
+
+      message ->
+        if message.user_id != user_id do
+          {:reply, {:error, %{reason: "You can edit only your own messages"}}, socket}
+        else
+          case Chat.Repo.update_message(id, text) do
+            {:ok, message} ->
+              payload = %{
+                id: message.id,
+                text: message.text,
+                updatedAt: message.updated_at
+              }
+
+              broadcast!(socket, "update", payload)
+              {:noreply, socket}
+
+            {:error, _changeset} ->
+              {:reply, {:error, %{reason: "Failed to update message"}}, socket}
+          end
+        end
+    end
+  end
+
   def handle_in("delete", %{"id" => id}, socket) do
     user_id = socket.assigns.user.id
 

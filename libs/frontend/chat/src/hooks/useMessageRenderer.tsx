@@ -1,6 +1,5 @@
 import { useCallback } from "react";
 
-import { useStoreStore } from "../store";
 import { MessageListItem } from "../types";
 import Divider from "../ui/Divider";
 import Message from "../ui/Message";
@@ -9,8 +8,6 @@ export const useMessageRenderer = (
 	currentUserId: string,
 	onUserClick?: (userId: string) => void
 ) => {
-	const selectedItems = useStoreStore(state => state.selectedItems);
-
 	return useCallback(
 		(item: MessageListItem, index: number) => {
 			switch (item.type) {
@@ -29,7 +26,7 @@ export const useMessageRenderer = (
 							avatarUrl={item.message.sender.avatar}
 							onSenderClick={onUserClick}
 							index={index}
-							contextMenuOpened={selectedItems?.includes(item.id)}
+							updatedAt={item.message.updatedAt}
 						/>
 					);
 				default:
@@ -38,7 +35,7 @@ export const useMessageRenderer = (
 					);
 			}
 		},
-		[currentUserId, onUserClick, selectedItems]
+		[currentUserId, onUserClick]
 	);
 };
 

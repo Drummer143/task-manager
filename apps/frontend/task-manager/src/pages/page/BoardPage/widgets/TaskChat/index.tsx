@@ -114,16 +114,28 @@ const TaskChat: React.FC = () => {
 		[channel]
 	);
 
+	const subscribeToUpdatedMessages: ChatProps["subscribeToUpdatedMessages"] = useCallback(
+		cb => {
+			const refUpdateMessage = channel?.on("update", cb);
+
+			return () => {
+				channel?.off("update", refUpdateMessage);
+			};
+		},
+		[channel]
+	);
+
 	const handleTypingChange = useCallback(() => {
 		channel?.push("typing", {});
 	}, [channel]);
 
 	const handleDeleteMessage: NonNullable<ChatProps["deleteMessage"]> = useCallback(
-		async id => {
-			return new Promise<void>((resolve, reject) => {
-				channel?.push("delete", { id });
-			});
-		},
+		id => channel?.push("delete", { id }),
+		[channel]
+	);
+
+	const handleUpdateMessage: NonNullable<ChatProps["updateMessage"]> = useCallback(
+		(id, text) => channel?.push("update", { id, text }),
 		[channel]
 	);
 
@@ -182,16 +194,24 @@ const TaskChat: React.FC = () => {
 		<>
 			<Button type="text" icon={<MessageOutlined />} onClick={onOpen} />
 
-			<Drawer open={open} onClose={onClose} title="Discussion" classNames={drawerClassnames}>
+			<Drawer
+				keyboard={false}
+				open={open}
+				onClose={onClose}
+				title="Discussion"
+				classNames={drawerClassnames}
+			>
 				<Chat
 					presence={presence}
 					onTypingChange={handleTypingChange}
 					currentUserId={userId}
 					subscribeToNewMessages={subscribeToNewMessages}
 					subscribeToDeletedMessages={subscribeToDeletedMessages}
+					subscribeToUpdatedMessages={subscribeToUpdatedMessages}
 					sendMessage={sendMessage}
 					loadMessages={loadMessages}
 					deleteMessage={handleDeleteMessage}
+					updateMessage={handleUpdateMessage}
 				/>
 			</Drawer>
 		</>
