@@ -2,10 +2,10 @@ import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from "
 
 import { App } from "antd";
 import { AnimatePresence, motion } from "framer-motion";
-import "react-loading-skeleton/dist/skeleton.css";
 import { LogLevel, Virtuoso, VirtuosoHandle } from "react-virtuoso";
 
 import { useMessageRenderer } from "./hooks/useMessageRenderer";
+import { useChatStore } from "./store";
 import { useStyles } from "./styles";
 import { ChatProps, MessageListItem, MessageListItemMessage } from "./types";
 import ContextMenu from "./ui/ContextMenu";
@@ -18,7 +18,7 @@ import {
 	updateMessageByNextMessage
 } from "./utils";
 
-const debugMode = import.meta.env.DEV ? LogLevel.DEBUG : LogLevel.ERROR;
+const debugMode = /*import.meta.env.DEV ? LogLevel.DEBUG : */ LogLevel.ERROR;
 
 const Chat: React.FC<ChatProps> = ({
 	currentUserId,
@@ -76,6 +76,15 @@ const Chat: React.FC<ChatProps> = ({
 	}, [loadMessages, listItems]);
 
 	const computeItemKey = useCallback((_: unknown, item: MessageListItem) => item.id, []);
+
+	const handleScroll = useCallback(
+		(isScrolling: boolean) => {
+			if (isScrolling) {
+				useChatStore.setState({ ctxMenuIdx: undefined, ctxOpen: false });
+			}
+		},
+		[]
+	);
 
 	useEffect(() => {
 		loadMessages(messages => setListItems(prepareMessagesBeforeRender(messages)));
@@ -159,19 +168,13 @@ const Chat: React.FC<ChatProps> = ({
 					className={styles.messageList}
 					data={listItems}
 					ref={virtuosoRef}
+					isScrolling={handleScroll}
 					computeItemKey={computeItemKey}
 					itemContent={renderMessage}
 					alignToBottom
 					logLevel={debugMode}
 					endReached={handleLoadMoreMessage}
 					defaultItemHeight={32}
-					// scrollSeekConfiguration={{
-					// 	enter: velocity => Math.abs(velocity) > 200,
-					// 	exit: velocity => Math.abs(velocity) < 50,
-					// 	change: (velocity, state) => {
-					// 		console.log(velocity, state);
-					// 	}
-					// }}
 				/>
 			</ContextMenu>
 
