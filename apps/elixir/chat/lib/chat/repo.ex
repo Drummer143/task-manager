@@ -14,7 +14,7 @@ defmodule Chat.Repo do
 
     query =
       ChatMessageModel
-      # |> where([m], m.task_id == ^task_id and is_nil(m.deleted_at))
+      |> where([m], m.task_id == ^task_id and is_nil(m.deleted_at))
       |> join(:inner, [m], u in UserModel, on: m.user_id == u.id)
       |> select([m, u], %{
         id: m.id,
