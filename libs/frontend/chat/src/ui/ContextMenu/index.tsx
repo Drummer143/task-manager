@@ -28,12 +28,12 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 	handleDeleteMessage,
 	handleUpdateMessage
 }) => {
-	const [ctxOpen, setCtxOpen] = useState(false);
 	const [contextMenuItems, setContextMenuItems] = useState<MenuProps | undefined>(undefined);
 
 	const ctxParams = useRef<MenuProps | undefined>(undefined);
 
-	const { setSelectedItems, setEditingItemInfo, clearEditingItemInfo } = useChatStore();
+	const { setCtxMenuIdx, setEditingItemInfo, clearEditingItemInfo, setCtxOpen, ctxOpen } =
+		useChatStore();
 
 	const styles = useStyles().styles;
 
@@ -41,8 +41,8 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 		setContextMenuItems(undefined);
 		setCtxOpen(false);
 		ctxParams.current = undefined;
-		setSelectedItems(undefined);
-	}, [setSelectedItems]);
+		setCtxMenuIdx(undefined);
+	}, [setCtxMenuIdx, setCtxOpen]);
 
 	const handleContextMenuOpen = useCallback<React.MouseEventHandler<HTMLDivElement>>(
 		e => {
@@ -102,7 +102,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 				}
 			}
 
-			setSelectedItems([item.id]);
+			setCtxMenuIdx(index);
 
 			if (ctxMenu.length) {
 				ctxParams.current = {
@@ -116,7 +116,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 		[
 			listItems,
 			currentUserId,
-			setSelectedItems,
+			setCtxMenuIdx,
 			closeContextMenu,
 			handleUpdateMessage,
 			handleDeleteMessage,
@@ -133,10 +133,10 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 
 			if (!open) {
 				setContextMenuItems(undefined);
-				setSelectedItems(undefined);
+				setCtxMenuIdx(undefined);
 			}
 		},
-		[setContextMenuItems, setSelectedItems]
+		[setCtxOpen, setCtxMenuIdx]
 	);
 
 	return (

@@ -1,24 +1,25 @@
 import { create } from "zustand";
 
 interface ChatStoreState {
-	selectedItems?: string[];
+	ctxOpen?: boolean;
+	ctxMenuIdx?: number;
 	editingItemIdx?: number;
 	editSubmitHandler?: (text: string) => void;
 
-	setSelectedItems: (selectedItems: string[] | undefined) => void;
-	setEditingItemInfo: (
-		editingItemIdx: number,
-		editSubmitHandler: (text: string) => void
-	) => void;
+	setCtxOpen: (ctxOpen: boolean) => void;
+	setCtxMenuIdx: (ctxMenuIdx: number | undefined) => void;
+	setEditingItemInfo: (editingItemIdx: number, editSubmitHandler: (text: string) => void) => void;
 	clearEditingItemInfo: () => void;
 }
 
 export const useChatStore = create<ChatStoreState>((set, get) => ({
-	setSelectedItems: selectedItems => set({ selectedItems }),
+	setCtxMenuIdx: ctxMenuIdx => set({ ctxMenuIdx }),
 
 	setEditingItemInfo: (editingItemIdx, editSubmitHandler) =>
 		set({ editingItemIdx, editSubmitHandler }),
 
-	clearEditingItemInfo: () => set({ editingItemIdx: undefined, editSubmitHandler: undefined })
+	clearEditingItemInfo: () => set({ editingItemIdx: undefined, editSubmitHandler: undefined }),
+
+	setCtxOpen: ctxOpen => set({ ctxOpen })
 }));
 

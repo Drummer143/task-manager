@@ -70,8 +70,7 @@ const Message: React.FC<MessageProps> = ({
 		});
 	}, [updatedAt]);
 
-	const { selectedItems, editingItemIdx, clearEditingItemInfo, editSubmitHandler } =
-		useChatStore();
+	const { ctxMenuIdx, editingItemIdx, clearEditingItemInfo, editSubmitHandler } = useChatStore();
 
 	const handleSenderClick = useMemo(
 		() =>
@@ -87,7 +86,7 @@ const Message: React.FC<MessageProps> = ({
 	const { styles, cx } = useStyles({
 		senderClickable: !!handleSenderClick,
 		showUserInfo,
-		contextMenuOpened: selectedItems?.includes(id)
+		contextMenuOpened: ctxMenuIdx === index
 	});
 
 	const editing = editingItemIdx === index && !!editSubmitHandler;
