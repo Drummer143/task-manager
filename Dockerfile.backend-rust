@@ -14,7 +14,7 @@ COPY libs/ ./libs/
 
 RUN cargo build -p ${APP_NAME} --release
 
-FROM debian:bullseye-slim as runner
+FROM rust:1.88.0 as runner
 
 ARG APP_NAME
 

@@ -10,9 +10,6 @@ services:
                 limits:
                     memory: 256M
                     cpus: "0.5"
-                reservations:
-                    memory: 128M
-                    cpus: "0.25"
         environment:
             POSTGRES_USER: ${POSTGRES_USER}
             POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
@@ -25,40 +22,14 @@ services:
         networks:
             - net
 
-    mongo:
-        image: mongo:latest
-        # restart: always
-        container_name: mongo
-        mem_limit: 256M
-        cpus: "0.5"
-        deploy:
-            resources:
-                limits:
-                    memory: 256M
-                    cpus: "0.5"
-                reservations:
-                    memory: 128M
-                    cpus: "0.25"
-        ports:
-            - 27017:27017
-        volumes:
-            - mongo_data:/data/db
-        networks:
-            - net
-
     rmq:
         image: rabbitmq:management-alpine
         container_name: rmq
-        mem_limit: 256M
-        cpus: "0.5"
         deploy:
             resources:
                 limits:
                     memory: 256M
                     cpus: "0.5"
-                reservations:
-                    memory: 128M
-                    cpus: "0.25"
         ports:
             - 5672:5672
             - 15672:15672
@@ -82,7 +53,12 @@ services:
             - net
         depends_on:
             - postgres
-            - mongo
+            - rmq
+        deploy:
+            resources:
+                limits:
+                    memory: 256M
+                    cpus: "0.5"
         build:
             context: .
             dockerfile: Dockerfile.backend-rust
@@ -95,26 +71,6 @@ services:
             MONGODB_URL: ${MONGODB_URL}
             RABBITMQ_URL: ${RABBITMQ_URL}
 
-    # mailer-service:
-    #     # restart: always
-    #     container_name: mailer-service
-    #     image: mailer-service:latest
-    #     ports:
-    #         - 8081:8081
-    #     depends_on:
-    #         - postgres
-    #     build:
-    #         context: ./apps/backend/mailer
-    #     environment:
-    #         GIN_MODE: release
-    #         SELF_PORT: 8081
-    #         EMAIL_ADDRESS: ${EMAIL_ADDRESS}
-    #         EMAIL_PASSWORD: ${EMAIL_PASSWORD}
-    #         CONFIRM_EMAIL_URL: ${CONFIRM_EMAIL_URL}
-    #         RESET_PASSWORD_EMAIL_URL: ${RESET_PASSWORD_EMAIL_URL}
-    #     networks:
-    #         - net
-
     storage-service:
         # restart: always
         container_name: storage-service
@@ -123,6 +79,11 @@ services:
             - 8082:8082
         depends_on:
             - postgres
+        deploy:
+            resources:
+                limits:
+                    memory: 256M
+                    cpus: "0.5"
         build:
             context: .
             dockerfile: Dockerfile.backend-rust
@@ -138,21 +99,52 @@ services:
         volumes:
             - storage:/static
 
-    socket-service:
+    notifications-service:
         # restart: always
-        container_name: socket-service
-        image: socket-service:latest
+        container_name: notifications-service
+        image: notifications-service:latest
         ports:
             - 8079:8079
         depends_on:
             - rmq
+        deploy:
+            resources:
+                limits:
+                    memory: 256M
+                    cpus: "0.5"
         build:
             context: .
             dockerfile: Dockerfile.backend-elixir
             args:
                 APP_NAME: notifications
         environment:
+            PORT: 8078
             RABBITMQ_URL: ${RABBITMQ_URL}
+            DATABASE_URL: ${DATABASE_URL}
+            SECRET_KEY_BASE: ${SECRET_KEY_BASE}
+        networks:
+            - net
+
+    chat-service:
+        # restart: always
+        container_name: chat-service
+        image: chat-service:latest
+        ports:
+            - 8078:8078
+        depends_on:
+            - postgres
+        deploy:
+            resources:
+                limits:
+                    memory: 256M
+                    cpus: "0.5"
+        build:
+            context: .
+            dockerfile: Dockerfile.backend-elixir
+            args:
+                APP_NAME: chat
+        environment:
+            PORT: 8078
             DATABASE_URL: ${DATABASE_URL}
             SECRET_KEY_BASE: ${SECRET_KEY_BASE}
         networks:
@@ -169,6 +161,11 @@ services:
         image: task-manager:latest
         ports:
             - 1346:80
+        deploy:
+            resources:
+                limits:
+                    memory: 256M
+                    cpus: "0.5"
         networks:
             - net
 
@@ -177,7 +174,7 @@ networks:
 
 volumes:
     pgdata:
-    mongo_data:
     storage:
     rmqdata:
+    elasticsearchdata:
 

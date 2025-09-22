@@ -21,8 +21,6 @@ COPY mix.exs mix.lock ./
 COPY config/ ./config/
 COPY apps/elixir/ ./apps/elixir/
 
-RUN ls ./
-
 RUN mix local.hex --force && \
     mix local.rebar --force
 
