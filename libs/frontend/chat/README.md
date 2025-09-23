@@ -10,8 +10,8 @@
 ### Enhanced Messaging
 
 - **Message Drafts**
-    - [ ] Auto-save message drafts
-    - [ ] Restore drafts when returning to chat
+    - [x] Auto-save message drafts
+    - [x] Restore drafts when returning to chat
 
 ### Navigation & Context
 

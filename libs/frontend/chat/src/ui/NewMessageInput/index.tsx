@@ -1,12 +1,14 @@
 import React, { useCallback, useMemo } from "react";
 
 import { SendOutlined } from "@ant-design/icons";
+import { useLocalStorage } from "@task-manager/react-utils";
 import { Button, Form, Input } from "antd";
 import { throttle } from "throttle-debounce";
 
 import { useStyles } from "./styles";
 
 interface NewMessageInputProps {
+	chatId?: string;
 	hasTopBar?: boolean;
 
 	onSend: (message: string) => void;
@@ -18,10 +20,19 @@ interface FormValues {
 	message: string;
 }
 
-const NewMessageInput: React.FC<NewMessageInputProps> = ({ onSend, onTypingChange, hasTopBar }) => {
+const NewMessageInput: React.FC<NewMessageInputProps> = ({
+	onSend,
+	onTypingChange,
+	hasTopBar,
+	chatId
+}) => {
 	const styles = useStyles({ hasTopBar }).styles;
 
+	const [draft, setDraft] = useLocalStorage(`chat:${chatId}:draft`, "");
+
 	const [form] = Form.useForm<FormValues>();
+
+	const initialValues = useMemo(() => ({ message: draft }), [draft]);
 
 	const handleSubmit = useCallback(
 		(values: FormValues) => {
@@ -43,16 +54,18 @@ const NewMessageInput: React.FC<NewMessageInputProps> = ({ onSend, onTypingChang
 		[form]
 	);
 
-	const handleTypingChange = useMemo(() => {
-		if (!onTypingChange) {
-			return;
-		}
-
-		return throttle(750, onTypingChange);
-	}, [onTypingChange]);
+	const handleTypingChange = useMemo(
+		() =>
+			throttle(750, () => {
+				onTypingChange?.();
+				setDraft(form.getFieldValue("message"));
+			}),
+		[onTypingChange, form, setDraft]
+	);
 
 	return (
 		<Form
+			initialValues={initialValues}
 			form={form}
 			className={styles.textareaWrapper}
 			onValuesChange={handleTypingChange}

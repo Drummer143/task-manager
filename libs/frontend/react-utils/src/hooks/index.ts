@@ -4,3 +4,4 @@ export * from "./useWindowResize";
 export * from "./useDebouncedEffect";
 export * from "./useFunctionWithFeedback";
 export * from "./useIntersectionObserver";
+export * from "./useLocalStorage";
