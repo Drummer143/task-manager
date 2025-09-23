@@ -20,6 +20,8 @@ import {
 
 const debugMode = /*import.meta.env.DEV ? LogLevel.DEBUG : */ LogLevel.ERROR;
 
+const computeItemKey = (_: unknown, item: MessageListItem) => item.id;
+
 const Chat: React.FC<ChatProps> = ({
 	currentUserId,
 	onUserClick,
@@ -75,9 +77,7 @@ const Chat: React.FC<ChatProps> = ({
 		);
 	}, [loadMessages, listItems]);
 
-	const computeItemKey = useCallback((_: unknown, item: MessageListItem) => item.id, []);
-
-	const handleScroll = useCallback(
+	const handleIsScrolling = useCallback(
 		(isScrolling: boolean) => {
 			if (isScrolling) {
 				useChatStore.setState({ ctxMenuIdx: undefined, ctxOpen: false });
@@ -168,7 +168,7 @@ const Chat: React.FC<ChatProps> = ({
 					className={styles.messageList}
 					data={listItems}
 					ref={virtuosoRef}
-					isScrolling={handleScroll}
+					isScrolling={handleIsScrolling}
 					computeItemKey={computeItemKey}
 					itemContent={renderMessage}
 					alignToBottom
