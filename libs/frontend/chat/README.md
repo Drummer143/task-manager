@@ -1,4 +1,5 @@
-### Phase 1: Core Messaging (Current)
+### Core Messaging
+
 - [x] Basic message operations (send, edit, delete)
 - [x] Pagination with virtualization
 - [x] Typing indicators
@@ -6,45 +7,55 @@
 - [ ] Basic message status indicators
     - [ ] Sent
 
-### Phase 2: Enhanced Messaging (In Progress)
-- [ ] **Message Drafts**
-  - Auto-save message drafts
-  - Restore drafts when returning to chat
+### Enhanced Messaging
 
-- [ ] **Message Formatting**
-  - Basic markdown support (bold, italic, code)
-  - Inline code blocks
-  - Task and user mentions
+- **Message Drafts**
+    - [ ] Auto-save message drafts
+    - [ ] Restore drafts when returning to chat
 
-### Phase 3: Navigation & Context
-- [ ] **Message Navigation**
-  - "Jump to new messages" button
-  - Scroll to specific dates
-  - Message search (basic)
+### Navigation & Context
 
-- [ ] **Message References**
-  - Inline message replies
-  - Message threading (basic)
-  - Link to specific messages
+- **Message Navigation**
+    - [ ] "Jump to new messages" button
+    - [ ] Scroll to specific dates
 
-### Phase 4: Task Integration
-- [ ] **Task Activity Logging**
-  - Automatic status change notifications
-  - Assignment and due date updates
-  - File attachment activity
+- **Message References**
+    - [ ] Inline message replies
+    - [ ] Message threading (basic)
+    - [ ] Link to specific messages
 
-- [ ] **Task Context**
-  - Task details in chat header
-  - Quick action buttons
-  - Related task suggestions
+### Advanced Features
 
-### Phase 5: Advanced Features
-- [ ] **Message Management**
-  - Pinned messages
-  - Message reactions
-  - Message edit history
+- **Message Management**
+    - [ ] Pinned messages
+    - [ ] Message reactions
 
-- [ ] **Integration**
-  - File attachments
-  - Code snippets with syntax highlighting
-  - Task reference cards
+BLOCKED:
+
+- **Message Formatting**
+    - [ ] Basic markdown support (bold, italic, code)
+    - [ ] Inline code blocks
+    - [ ] Task and user mentions(need markdown support)
+
+- **Message Navigation**
+    - [ ] Message search. Need elasticsearch integration
+
+- **Task Activity Logging**
+    - [ ] Automatic status change notifications
+    - [ ] Assignment and due date updates
+    - [ ] File attachment activity
+
+- **Task Context**
+    - [ ] Task details in chat header
+    - [ ] Quick action buttons
+    - [ ] Related task suggestions
+
+- **Integration**(markdown required)
+
+    - [ ] File attachments
+    - [ ] Code snippets with syntax highlighting
+    - [ ] Task reference cards
+
+- **Message Management**
+    - [ ] Message edit history
+
