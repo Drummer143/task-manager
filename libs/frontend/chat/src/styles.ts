@@ -12,14 +12,6 @@ export const useStyles = createStyles(({ css }) => ({
 
 		overflow: hidden;
 	`,
-	sentinel: css`
-		position: absolute;
-		top: 0;
-		left: 0;
-		height: 1px;
-		width: 1px;
-		opacity: 0;
-	`,
 	messageList: css`
 		max-height: 100%;
 
@@ -30,12 +22,5 @@ export const useStyles = createStyles(({ css }) => ({
 	bottomContent: css`
 		position: relative;
 	`
-	// seeNewMessagesButton: css`
-	// 	position: absolute;
-	// 	top: calc(-1 * var(--ant-padding-sm));
-	// 	left: 50%;
-
-	// 	transform: translate(-50%, -100%);
-	// `
 }));
 

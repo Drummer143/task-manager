@@ -1,10 +1,12 @@
 import React, { memo, useEffect, useMemo, useRef } from "react";
 
+import { PushpinOutlined } from "@ant-design/icons";
 import { Avatar, Button, Flex, Tooltip, Typography } from "antd";
 
 import { useStyles } from "./styles";
 
 import { useChatStore } from "../../store";
+import { UserInfo } from "../../types";
 import { getPlaceholderAvatarUrl } from "../../utils";
 import { generateListItemDataAttributes } from "../../utils/listItemDataAttributes";
 
@@ -17,6 +19,7 @@ export interface MessageProps {
 	showUserInfo: boolean;
 	sentByCurrentUser: boolean;
 
+	pinnedBy?: UserInfo | null;
 	avatarUrl?: string | null;
 	updatedAt?: string | null;
 
@@ -26,10 +29,11 @@ export interface MessageProps {
 const Message: React.FC<MessageProps> = ({
 	id,
 	index,
+	pinnedBy,
 	createdAt,
 	sentByCurrentUser,
 	text,
-	onSenderClick,
+	onSenderClick: onUserClick,
 	senderName,
 	avatarUrl,
 	showUserInfo,
@@ -74,13 +78,13 @@ const Message: React.FC<MessageProps> = ({
 
 	const handleSenderClick = useMemo(
 		() =>
-			onSenderClick && !sentByCurrentUser
+			onUserClick && !sentByCurrentUser
 				? (e?: React.MouseEvent<HTMLElement>) => {
 						e?.stopPropagation();
-						onSenderClick(id);
+						onUserClick(id);
 					}
 				: undefined,
-		[id, onSenderClick, sentByCurrentUser]
+		[id, onUserClick, sentByCurrentUser]
 	);
 
 	const { styles, cx } = useStyles({
@@ -122,8 +126,22 @@ const Message: React.FC<MessageProps> = ({
 			</div>
 
 			<div className={styles.body}>
+				{pinnedBy && (
+					<Typography.Text type="secondary" className={styles.secondaryText}>
+						Pinned by{" "}
+						{onUserClick ? (
+							<Button type="link" onClick={() => onUserClick(pinnedBy.id)}>
+								{pinnedBy.username}
+							</Button>
+						) : (
+							pinnedBy.username
+						)}{" "}
+						<PushpinOutlined style={{ fontSize: 10 }} />
+					</Typography.Text>
+				)}
+
 				{showUserInfo && (
-					<Flex gap="var(--ant-padding-xxs)" align="flex-end">
+					<Flex gap="var(--ant-padding-xxs)" align="center">
 						<Typography.Text className={styles.senderName} onClick={handleSenderClick}>
 							{senderName}
 						</Typography.Text>

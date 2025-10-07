@@ -1,6 +1,6 @@
 import React, { memo, useCallback, useRef, useState } from "react";
 
-import { DeleteOutlined, EditOutlined } from "@ant-design/icons";
+import { DeleteOutlined, EditOutlined, PushpinOutlined } from "@ant-design/icons";
 import { Dropdown, MenuProps } from "antd";
 
 import { useStyles } from "./styles";
@@ -17,6 +17,7 @@ interface ContextMenuProps {
 	listItems: MessageListItem[];
 	currentUserId: string;
 
+	handlePinMessage?: (id: string) => void;
 	handleDeleteMessage?: (id: string) => void;
 	handleUpdateMessage?: (id: string, text: string) => void;
 }
@@ -25,6 +26,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 	children,
 	listItems,
 	currentUserId,
+	handlePinMessage,
 	handleDeleteMessage,
 	handleUpdateMessage
 }) => {
@@ -69,6 +71,15 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 
 			const ctxMenu: NonNullable<MenuProps["items"]> = [];
 
+			if (handlePinMessage) {
+				ctxMenu.push({
+					key: "pin",
+					label: item.message.pinnedBy ? "Unpin" : "Pin",
+					icon: <PushpinOutlined />,
+					onClick: () => handlePinMessage(item.message.id)
+				});
+			}
+
 			if (item.message.sender.id === currentUserId) {
 				if (handleUpdateMessage) {
 					ctxMenu.push({
@@ -79,15 +90,14 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 							setEditingItemInfo(index, text => {
 								handleUpdateMessage(item.message.id, text);
 								clearEditingItemInfo();
-							}),
-						dashed: true
+							})
 					});
 				}
 
 				if (handleDeleteMessage) {
-					if (handleUpdateMessage) {
+					if (ctxMenu.length) {
 						ctxMenu.push({
-							key: "div-1",
+							key: "div-2",
 							type: "divider"
 						});
 					}
@@ -115,6 +125,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 		},
 		[
 			listItems,
+			handlePinMessage,
 			currentUserId,
 			setCtxMenuIdx,
 			closeContextMenu,

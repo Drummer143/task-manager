@@ -18,6 +18,7 @@ export const useMessageRenderer = (
 						<Message
 							key={item.id}
 							id={item.id}
+							pinnedBy={item.message.pinnedBy}
 							createdAt={item.message.createdAt}
 							text={item.message.text}
 							sentByCurrentUser={item.message.sender.id === currentUserId}

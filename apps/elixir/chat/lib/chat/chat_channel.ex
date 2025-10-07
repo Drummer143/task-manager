@@ -115,10 +115,19 @@ defmodule Chat.ChatChannel do
         else
           case Chat.Repo.update_message(id, text) do
             {:ok, message} ->
+              sender = Chat.Repo.get_user_by_id(message.user_id)
+
               payload = %{
-                id: message.id,
-                text: message.text,
-                updatedAt: message.updated_at
+                action: "edit",
+                message: %{
+                  id: message.id,
+                  text: message.text,
+                  taskId: message.task_id,
+                  pinnedBy: message.pinned_by,
+                  createdAt: message.created_at,
+                  updatedAt: message.updated_at,
+                  sender: sender
+                }
               }
 
               broadcast!(socket, "update", payload)
@@ -128,6 +137,43 @@ defmodule Chat.ChatChannel do
               {:reply, {:error, %{reason: "Failed to update message"}}, socket}
           end
         end
+    end
+  end
+
+  def handle_in("pin", %{"id" => id}, socket) do
+    case Chat.Repo.toggle_pinned(id, socket.assigns.user.id) do
+      {:ok, message} ->
+        sender = Chat.Repo.get_user_by_id(message.user_id)
+        pinned_by = if message.pinned_by, do: Chat.Repo.get_user_by_id(message.pinned_by), else: nil
+
+        payload = %{
+          action: if(message.pinned_by, do: "pin", else: "unpin"),
+          message: %{
+            id: message.id,
+            text: message.text,
+            taskId: message.task_id,
+            pinnedBy: pinned_by,
+            createdAt: message.created_at,
+            updatedAt: message.updated_at,
+            sender: sender
+          }
+        }
+
+        broadcast!(socket, "update", payload)
+        {:noreply, socket}
+
+      {:error, _changeset} ->
+        {:reply, {:error, %{reason: "Failed to pin message"}}, socket}
+    end
+  end
+
+  def handle_in("get_pinned", _params, socket) do
+    case Chat.Repo.get_pinned_messages(socket.assigns.chat_id) do
+      nil ->
+        {:reply, {:error, %{reason: "Task not found"}}, socket}
+
+      pinned_messages ->
+        {:reply, {:ok, pinned_messages}, socket}
     end
   end
 

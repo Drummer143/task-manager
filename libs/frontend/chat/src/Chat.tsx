@@ -7,7 +7,7 @@ import { LogLevel, Virtuoso, VirtuosoHandle } from "react-virtuoso";
 import { useMessageRenderer } from "./hooks/useMessageRenderer";
 import { useChatStore } from "./store";
 import { useStyles } from "./styles";
-import { ChatProps, MessageListItem, MessageListItemMessage } from "./types";
+import { ChatProps, MessageData, MessageListItem, MessageListItemMessage } from "./types";
 import ContextMenu from "./ui/ContextMenu";
 import NewMessageInput from "./ui/NewMessageInput";
 import TypingBar from "./ui/TypingBar";
@@ -22,6 +22,8 @@ const debugMode = /*import.meta.env.DEV ? LogLevel.DEBUG : */ LogLevel.ERROR;
 
 const computeItemKey = (_: unknown, item: MessageListItem) => item.id;
 
+const LIMIT = 25;
+
 const Chat: React.FC<ChatProps> = ({
 	currentUserId,
 	onUserClick,
@@ -34,11 +36,14 @@ const Chat: React.FC<ChatProps> = ({
 	className,
 	onTypingChange,
 	deleteMessage,
-	updateMessage
+	updateMessage,
+	pinMessage,
+	loadPins
 }) => {
 	const modal = App.useApp().modal;
 
 	const [listItems, setListItems] = useState<MessageListItem[]>([]);
+	const [pins, setPins] = useState<MessageData[]>([]);
 
 	const renderMessage = useMessageRenderer(currentUserId, onUserClick);
 
@@ -73,21 +78,25 @@ const Chat: React.FC<ChatProps> = ({
 					return [...prev.slice(0, -1), ...prepareMessagesBeforeRender(messages)];
 				});
 			},
-			(listItems.at(-1) as MessageListItemMessage).message.createdAt
+			{
+				before: (listItems.at(-1) as MessageListItemMessage).message.createdAt,
+				limit: LIMIT
+			}
 		);
 	}, [loadMessages, listItems]);
 
-	const handleIsScrolling = useCallback(
-		(isScrolling: boolean) => {
-			if (isScrolling) {
-				useChatStore.setState({ ctxMenuIdx: undefined, ctxOpen: false });
-			}
-		},
-		[]
-	);
+	const handleIsScrolling = useCallback((isScrolling: boolean) => {
+		if (isScrolling) {
+			useChatStore.setState({ ctxMenuIdx: undefined, ctxOpen: false });
+		}
+	}, []);
 
 	useEffect(() => {
-		loadMessages(messages => setListItems(prepareMessagesBeforeRender(messages)));
+		loadMessages(messages => setListItems(prepareMessagesBeforeRender(messages)), {
+			limit: LIMIT
+		});
+
+		loadPins?.(setPins);
 
 		const unsubscribeFromNewMessage = subscribeToNewMessages(message => {
 			setListItems(prev => {
@@ -121,9 +130,27 @@ const Chat: React.FC<ChatProps> = ({
 			});
 		});
 
-		const unsubscribeFromUpdatedMessage = subscribeToUpdatedMessages(updatedMessage => {
+		const unsubscribeFromUpdatedMessage = subscribeToUpdatedMessages(({ action, message }) => {
+			if (action === "pin") {
+				setPins(prev => {
+					const updatedIdx = prev.findIndex(item => item.id === message.id);
+
+					if (updatedIdx === -1) {
+						return prev.concat(message);
+					}
+
+					const copy = [...prev];
+
+					copy.splice(updatedIdx + 1, 0, message);
+
+					return copy;
+				});
+			} else if (action === "unpin") {
+				setPins(prev => prev.filter(item => item.id !== message.id));
+			}
+
 			setListItems(prev => {
-				const updatedIdx = prev.findIndex(item => item.id === updatedMessage.id);
+				const updatedIdx = prev.findIndex(item => item.id === message.id);
 
 				if (updatedIdx === -1) {
 					return prev;
@@ -133,10 +160,7 @@ const Chat: React.FC<ChatProps> = ({
 
 				(copy[updatedIdx] as MessageListItemMessage).message = {
 					...(copy[updatedIdx] as MessageListItemMessage).message,
-					...updatedMessage,
-					sender: {
-						...(copy[updatedIdx] as MessageListItemMessage).message.sender
-					}
+					...message
 				};
 
 				return copy;
@@ -153,16 +177,21 @@ const Chat: React.FC<ChatProps> = ({
 		subscribeToNewMessages,
 		loadMessages,
 		subscribeToDeletedMessages,
-		subscribeToUpdatedMessages
+		subscribeToUpdatedMessages,
+		loadPins
 	]);
+
+	console.debug({ pins });
 
 	return (
 		<div className={cx(styles.wrapper, className)}>
+			{pins.length > 0 && <div>{pins.length}</div>}
 			<ContextMenu
 				listItems={listItems}
 				currentUserId={currentUserId}
 				handleDeleteMessage={handleDeleteMessage}
 				handleUpdateMessage={updateMessage}
+				handlePinMessage={pinMessage}
 			>
 				<Virtuoso
 					className={styles.messageList}

@@ -12,8 +12,7 @@ export const useStyles = createStyles(
 		const wrapper = css`
 			width: 100%;
 
-			padding: var(--ant-padding-xxs)
-				${showUserInfo && "var(--ant-padding-xs) var(--ant-padding-xs)"};
+			padding: var(--ant-padding-xxs);
 
 			transition: background-color var(--ant-motion-duration-fast)
 				var(--ant-motion-ease-out-circ);
@@ -34,7 +33,7 @@ export const useStyles = createStyles(
 				max-width: var(--ant-control-height-sm);
 				flex-shrink: 0;
 
-				padding-top: ${showUserInfo ? "var(--ant-padding-xs);" : "var(--ant-padding-xxs);"};
+				padding-top: var(--ant-padding-${showUserInfo ? "xs" : "xxs"});
 			`,
 			body: css`
 				flex: 1;

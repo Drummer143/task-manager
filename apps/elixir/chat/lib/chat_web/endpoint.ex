@@ -16,7 +16,7 @@ defmodule ChatWeb.Endpoint do
     longpoll: [connect_info: [session: @session_options]]
 
   socket "/socket", Chat.UserSocket,
-    websocket: [connect_info: [session: @session_options]],
+    websocket: [connect_info: [session: @session_options], compress: true],
     longpoll: false
 
   # Serve at "/" the static files from "priv/static" directory.
@@ -26,7 +26,7 @@ defmodule ChatWeb.Endpoint do
   plug Plug.Static,
     at: "/",
     from: :chat,
-    gzip: false,
+    gzip: true,
     only: ChatWeb.static_paths()
 
   # Code reloading can be explicitly enabled under the

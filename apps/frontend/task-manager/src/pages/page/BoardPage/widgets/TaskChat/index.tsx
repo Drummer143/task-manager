@@ -68,9 +68,12 @@ const TaskChat: React.FC = () => {
 	);
 
 	const loadMessages = useCallback(
-		(cb: (messages: MessageData[]) => void, before?: string) => {
+		(
+			cb: (messages: MessageData[]) => void,
+			query: { before?: string; after?: string; limit?: number }
+		) => {
 			const requestMessages = () => {
-				channel?.push("get_all", { before, limit: 25 }).receive("ok", cb);
+				channel?.push("get_all", query).receive("ok", cb);
 			};
 
 			if (channel?.state === "joined") {
@@ -136,6 +139,18 @@ const TaskChat: React.FC = () => {
 
 	const handleUpdateMessage: NonNullable<ChatProps["updateMessage"]> = useCallback(
 		(id, text) => channel?.push("update", { id, text }),
+		[channel]
+	);
+
+	const handlePinMessage: NonNullable<ChatProps["pinMessage"]> = useCallback(
+		id => channel?.push("pin", { id }),
+		[channel]
+	);
+
+	const handleGetPinnedMessages = useCallback<NonNullable<ChatProps["loadPins"]>>(
+		cb => {
+			channel?.push("get_pinned", {}).receive("ok", cb);
+		},
 		[channel]
 	);
 
@@ -212,6 +227,8 @@ const TaskChat: React.FC = () => {
 					loadMessages={loadMessages}
 					deleteMessage={handleDeleteMessage}
 					updateMessage={handleUpdateMessage}
+					pinMessage={handlePinMessage}
+					loadPins={handleGetPinnedMessages}
 				/>
 			</Drawer>
 		</>
