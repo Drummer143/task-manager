@@ -2,10 +2,8 @@ defmodule Chat.ChatChannel do
   use Phoenix.Channel
   alias Chat.Presence
 
-  import Ecto.Query, only: [from: 2]
-
   def join("chat:" <> chat_id, %{"user_id" => user_id}, socket) do
-    case Chat.Repo.get_user_by_id(user_id) do
+    case Chat.Users.get_user_by_id(user_id) do
       nil ->
         {:error, %{reason: "User not found"}}
 
@@ -59,7 +57,7 @@ defmodule Chat.ChatChannel do
 
   def handle_in("get_all", params, socket) do
     try do
-      messages = Chat.Repo.get_chat_messages_by_task_id(socket.assigns.chat_id, params)
+      messages = Chat.Messages.get_chat_messages_by_task_id(socket.assigns.chat_id, params)
 
       {:reply, {:ok, messages}, socket}
     rescue
@@ -71,19 +69,9 @@ defmodule Chat.ChatChannel do
     chat_id = socket.assigns.chat_id
     user_id = socket.assigns.user.id
 
-    case Chat.Repo.create_message(chat_id, user_id, text) do
+    case Chat.Messages.create_message(chat_id, user_id, text) do
       {:ok, message} ->
-        sender_query =
-          from u in Chat.Models.UserModel,
-            where: u.id == ^user_id,
-            select: %{
-              id: u.id,
-              email: u.email,
-              username: u.username,
-              picture: u.picture
-            }
-
-        sender = Chat.Repo.one(sender_query)
+        sender = Chat.Users.get_user_by_id(user_id)
 
         payload = %{
           id: message.id,
@@ -105,7 +93,7 @@ defmodule Chat.ChatChannel do
   def handle_in("update", %{"id" => id, "text" => text}, socket) do
     user_id = socket.assigns.user.id
 
-    case Chat.Repo.get_message_by_id(id) do
+    case Chat.Messages.get_message_by_id(id) do
       nil ->
         {:reply, {:error, %{reason: "Message not found"}}, socket}
 
@@ -113,9 +101,9 @@ defmodule Chat.ChatChannel do
         if message.user_id != user_id do
           {:reply, {:error, %{reason: "You can edit only your own messages"}}, socket}
         else
-          case Chat.Repo.update_message(id, text) do
+          case Chat.Messages.update_message(id, text) do
             {:ok, message} ->
-              sender = Chat.Repo.get_user_by_id(message.user_id)
+              sender = Chat.Users.get_user_by_id(message.user_id)
 
               payload = %{
                 action: "edit",
@@ -141,10 +129,12 @@ defmodule Chat.ChatChannel do
   end
 
   def handle_in("pin", %{"id" => id}, socket) do
-    case Chat.Repo.toggle_pinned(id, socket.assigns.user.id) do
+    case Chat.Messages.toggle_pinned(id, socket.assigns.user.id) do
       {:ok, message} ->
-        sender = Chat.Repo.get_user_by_id(message.user_id)
-        pinned_by = if message.pinned_by, do: Chat.Repo.get_user_by_id(message.pinned_by), else: nil
+        sender = Chat.Users.get_user_by_id(message.user_id)
+
+        pinned_by =
+          if message.pinned_by, do: Chat.Users.get_user_by_id(message.pinned_by), else: nil
 
         payload = %{
           action: if(message.pinned_by, do: "pin", else: "unpin"),
@@ -168,7 +158,7 @@ defmodule Chat.ChatChannel do
   end
 
   def handle_in("get_pinned", _params, socket) do
-    case Chat.Repo.get_pinned_messages(socket.assigns.chat_id) do
+    case Chat.Messages.get_pinned_messages(socket.assigns.chat_id) do
       nil ->
         {:reply, {:error, %{reason: "Task not found"}}, socket}
 
@@ -180,7 +170,7 @@ defmodule Chat.ChatChannel do
   def handle_in("delete", %{"id" => id}, socket) do
     user_id = socket.assigns.user.id
 
-    case Chat.Repo.get_message_by_id(id) do
+    case Chat.Messages.get_message_by_id(id) do
       nil ->
         {:reply, {:error, %{reason: "Message not found"}}, socket}
 
@@ -188,7 +178,7 @@ defmodule Chat.ChatChannel do
         if message.user_id != user_id do
           {:reply, {:error, %{reason: "You can delete only your own messages"}}, socket}
         else
-          case Chat.Repo.delete_message(id) do
+          case Chat.Messages.delete_message(id) do
             {1, _} ->
               broadcast!(socket, "delete", %{id: id})
               {:noreply, socket}
