@@ -10,6 +10,7 @@ import { useStyles } from "./styles";
 import { ChatProps, MessageData, MessageListItem, MessageListItemMessage } from "./types";
 import ContextMenu from "./ui/ContextMenu";
 import NewMessageInput from "./ui/NewMessageInput";
+import PinnedBar from "./ui/PinnedBar";
 import TypingBar from "./ui/TypingBar";
 import {
 	prepareMessagesBeforeRender,
@@ -133,7 +134,11 @@ const Chat: React.FC<ChatProps> = ({
 		const unsubscribeFromUpdatedMessage = subscribeToUpdatedMessages(({ action, message }) => {
 			if (action === "pin") {
 				setPins(prev => {
-					const updatedIdx = prev.findIndex(item => item.id === message.id);
+					const messageCreatedAt = new Date(message.createdAt).getTime();
+
+					const updatedIdx = prev.findIndex(
+						item => messageCreatedAt > new Date(item.createdAt).getTime()
+					);
 
 					if (updatedIdx === -1) {
 						return prev.concat(message);
@@ -141,7 +146,7 @@ const Chat: React.FC<ChatProps> = ({
 
 					const copy = [...prev];
 
-					copy.splice(updatedIdx + 1, 0, message);
+					copy.splice(updatedIdx - 1, 0, message);
 
 					return copy;
 				});
@@ -181,11 +186,10 @@ const Chat: React.FC<ChatProps> = ({
 		loadPins
 	]);
 
-	console.debug({ pins });
-
 	return (
 		<div className={cx(styles.wrapper, className)}>
-			{pins.length > 0 && <div>{pins.length}</div>}
+			<PinnedBar pins={pins} />
+
 			<ContextMenu
 				listItems={listItems}
 				currentUserId={currentUserId}

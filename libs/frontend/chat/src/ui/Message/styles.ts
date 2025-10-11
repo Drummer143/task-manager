@@ -42,8 +42,13 @@ export const useStyles = createStyles(
 				${senderClickable && "cursor: pointer !important;"}
 			`,
 			text: css`
-				width: 100%;
 				left: 0 !important;
+
+				width: 100%;
+
+				display: flex;
+				justify-content: space-between;
+				flex-wrap: wrap;
 
 				margin: 0 !important;
 			`,
@@ -72,6 +77,8 @@ export const useStyles = createStyles(
 				font-size: var(--ant-font-size-xs);
 			`,
 			editedText: css`
+				flex: 1;
+
 				display: flex;
 				justify-content: flex-end;
 

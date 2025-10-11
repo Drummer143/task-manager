@@ -128,15 +128,14 @@ const Message: React.FC<MessageProps> = ({
 			<div className={styles.body}>
 				{pinnedBy && (
 					<Typography.Text type="secondary" className={styles.secondaryText}>
-						Pinned by{" "}
+						<PushpinOutlined style={{ fontSize: 10 }} /> Pinned by{" "}
 						{onUserClick ? (
 							<Button type="link" onClick={() => onUserClick(pinnedBy.id)}>
 								{pinnedBy.username}
 							</Button>
 						) : (
 							pinnedBy.username
-						)}{" "}
-						<PushpinOutlined style={{ fontSize: 10 }} />
+						)}
 					</Typography.Text>
 				)}
 
