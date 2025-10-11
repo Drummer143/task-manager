@@ -12,18 +12,15 @@ import ContextMenu from "./ui/ContextMenu";
 import NewMessageInput from "./ui/NewMessageInput";
 import PinnedBar from "./ui/PinnedBar";
 import TypingBar from "./ui/TypingBar";
-import {
-	prepareMessagesBeforeRender,
-	removeMessageById,
-	transformSingleMessage,
-	updateMessageByNextMessage
-} from "./utils";
+import { prepareMessagesBeforeRender, removeMessageById, transformSingleMessage } from "./utils";
 
 const debugMode = /*import.meta.env.DEV ? LogLevel.DEBUG : */ LogLevel.ERROR;
 
 const computeItemKey = (_: unknown, item: MessageListItem) => item.id;
 
 const LIMIT = 25;
+
+let a = false;
 
 const Chat: React.FC<ChatProps> = ({
 	currentUserId,
@@ -66,25 +63,36 @@ const Chat: React.FC<ChatProps> = ({
 		};
 	}, [deleteMessage, modal]);
 
-	const handleLoadMoreMessage = useCallback(() => {
-		loadMessages(
-			messages => {
-				if (!messages.length) {
-					return;
-				}
-
-				setListItems(prev => {
-					messages.unshift((prev.at(-1) as MessageListItemMessage).message);
-
-					return [...prev.slice(0, -1), ...prepareMessagesBeforeRender(messages)];
-				});
-			},
-			{
-				before: (listItems.at(-1) as MessageListItemMessage).message.createdAt,
-				limit: LIMIT
+	const handleLoadMoreMessage = useCallback(
+		(startReached: boolean) => {
+			if (!a) {
+				a = true;
+				return;
 			}
-		);
-	}, [loadMessages, listItems]);
+			if (!startReached) {
+				return;
+			}
+
+			loadMessages(
+				messages => {
+					if (!messages.length) {
+						return;
+					}
+
+					setListItems(prev => {
+						messages.push((prev.at(0) as MessageListItemMessage).message);
+
+						return [...prepareMessagesBeforeRender(messages), ...prev.slice(1)];
+					});
+				},
+				{
+					before: (listItems[0] as MessageListItemMessage).message.createdAt,
+					limit: LIMIT
+				}
+			);
+		},
+		[loadMessages, listItems]
+	);
 
 	const handleIsScrolling = useCallback((isScrolling: boolean) => {
 		if (isScrolling) {
@@ -93,29 +101,45 @@ const Chat: React.FC<ChatProps> = ({
 	}, []);
 
 	useEffect(() => {
-		loadMessages(messages => setListItems(prepareMessagesBeforeRender(messages)), {
-			limit: LIMIT
-		});
+		loadMessages(
+			messages => {
+				const preparedMessages = prepareMessagesBeforeRender(messages);
+
+				setListItems(preparedMessages);
+
+				requestAnimationFrame(() => {
+					virtuosoRef.current?.scrollToIndex({
+						index: preparedMessages.length - 1,
+						align: "end"
+					});
+				});
+			},
+			{
+				limit: LIMIT
+			}
+		);
 
 		loadPins?.(setPins);
 
 		const unsubscribeFromNewMessage = subscribeToNewMessages(message => {
+			let idx = 0;
+
 			setListItems(prev => {
-				const lastMessage = prev[0] as MessageListItemMessage;
+				const lastMessage = prev.at(-1) as MessageListItemMessage;
 
 				const transformedMessage = transformSingleMessage(message, lastMessage.message);
 
-				return [
-					...transformedMessage,
-					updateMessageByNextMessage(lastMessage, message),
-					...prev.slice(1)
-				];
+				const result = [...prev, ...transformedMessage];
+
+				idx = result.length - 1;
+
+				return result;
 			});
 
 			if (message.sender.id === currentUserId) {
 				requestAnimationFrame(() => {
 					virtuosoRef.current?.scrollToIndex({
-						index: 0,
+						index: idx,
 						align: "end",
 						behavior: "smooth"
 					});
@@ -204,9 +228,10 @@ const Chat: React.FC<ChatProps> = ({
 					isScrolling={handleIsScrolling}
 					computeItemKey={computeItemKey}
 					itemContent={renderMessage}
+					reversed
 					alignToBottom
 					logLevel={debugMode}
-					endReached={handleLoadMoreMessage}
+					atTopStateChange={handleLoadMoreMessage}
 					defaultItemHeight={32}
 				/>
 			</ContextMenu>
@@ -222,7 +247,7 @@ const Chat: React.FC<ChatProps> = ({
 							transition={{ duration: 0.05 }}
 						>
 							<TypingBar
-								typingUsers={[{ id: "1", username: "user1", avatar: null }]}
+								typingUsers={presence?.typingUsers}
 								onUserClick={onUserClick}
 							/>
 						</motion.div>

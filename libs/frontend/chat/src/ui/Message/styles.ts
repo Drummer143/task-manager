@@ -16,7 +16,6 @@ export const useStyles = createStyles(
 
 			transition: background-color var(--ant-motion-duration-fast)
 				var(--ant-motion-ease-out-circ);
-			transform: scaleY(-1);
 
 			${contextMenuOpened
 				? "background-color: var(--ant-control-item-bg-active);"

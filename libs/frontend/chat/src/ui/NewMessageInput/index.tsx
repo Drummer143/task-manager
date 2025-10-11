@@ -40,10 +40,13 @@ const NewMessageInput: React.FC<NewMessageInputProps> = ({
 
 			if (!message) return;
 
+			setDraft("");
+
 			onSend(message);
-			form.resetFields();
+
+			queueMicrotask(() => form.resetFields());
 		},
-		[onSend, form]
+		[onSend, form, setDraft]
 	);
 
 	const handleTextareaPressEnter: React.KeyboardEventHandler<HTMLTextAreaElement> = useCallback(
