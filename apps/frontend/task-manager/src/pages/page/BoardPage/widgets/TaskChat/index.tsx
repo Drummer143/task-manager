@@ -214,6 +214,7 @@ const TaskChat: React.FC = () => {
 				open={open}
 				onClose={onClose}
 				title="Discussion"
+				destroyOnClose
 				classNames={drawerClassnames}
 			>
 				<Chat
