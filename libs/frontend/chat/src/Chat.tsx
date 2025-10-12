@@ -1,8 +1,8 @@
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { App } from "antd";
+import { App, Flex, Spin } from "antd";
 import { AnimatePresence, motion } from "framer-motion";
-import { LogLevel, Virtuoso, VirtuosoHandle } from "react-virtuoso";
+import { Virtuoso, VirtuosoHandle } from "react-virtuoso";
 
 import { useMessageRenderer } from "./hooks/useMessageRenderer";
 import { useChatStore } from "./store";
@@ -12,14 +12,7 @@ import ContextMenu from "./ui/ContextMenu";
 import NewMessageInput from "./ui/NewMessageInput";
 import PinnedBar from "./ui/PinnedBar";
 import TypingBar from "./ui/TypingBar";
-import {
-	prepareMessagesBeforeRender,
-	removeMessageById,
-	transformSingleMessage,
-	updateMessageByNextMessage
-} from "./utils";
-
-const debugMode = /*import.meta.env.DEV ? LogLevel.DEBUG : */ LogLevel.ERROR;
+import { prepareMessagesBeforeRender, removeMessageById, transformSingleMessage } from "./utils";
 
 const computeItemKey = (_: unknown, item: MessageListItem) => item.id;
 
@@ -45,6 +38,7 @@ const Chat: React.FC<ChatProps> = ({
 
 	const [listItems, setListItems] = useState<MessageListItem[]>([]);
 	const [pins, setPins] = useState<MessageData[]>([]);
+	const [firstItemIndex, setFirstItemIndex] = useState(Number.MAX_SAFE_INTEGER - LIMIT);
 
 	const renderMessage = useMessageRenderer(currentUserId, onUserClick);
 
@@ -73,14 +67,15 @@ const Chat: React.FC<ChatProps> = ({
 					return;
 				}
 
+				setFirstItemIndex(prev => prev - LIMIT);
 				setListItems(prev => {
-					messages.unshift((prev.at(-1) as MessageListItemMessage).message);
+					messages.push((prev.at(0) as MessageListItemMessage).message);
 
-					return [...prev.slice(0, -1), ...prepareMessagesBeforeRender(messages)];
+					return [...prepareMessagesBeforeRender(messages), ...prev.slice(1)];
 				});
 			},
 			{
-				before: (listItems.at(-1) as MessageListItemMessage).message.createdAt,
+				before: (listItems[0] as MessageListItemMessage).message.createdAt,
 				limit: LIMIT
 			}
 		);
@@ -100,22 +95,24 @@ const Chat: React.FC<ChatProps> = ({
 		loadPins?.(setPins);
 
 		const unsubscribeFromNewMessage = subscribeToNewMessages(message => {
+			let idx = 0;
+
 			setListItems(prev => {
-				const lastMessage = prev[0] as MessageListItemMessage;
+				const lastMessage = prev.at(-1) as MessageListItemMessage;
 
 				const transformedMessage = transformSingleMessage(message, lastMessage.message);
 
-				return [
-					...transformedMessage,
-					updateMessageByNextMessage(lastMessage, message),
-					...prev.slice(1)
-				];
+				const result = [...prev, ...transformedMessage];
+
+				idx = result.length - 1;
+
+				return result;
 			});
 
 			if (message.sender.id === currentUserId) {
 				requestAnimationFrame(() => {
 					virtuosoRef.current?.scrollToIndex({
-						index: 0,
+						index: idx,
 						align: "end",
 						behavior: "smooth"
 					});
@@ -204,10 +201,11 @@ const Chat: React.FC<ChatProps> = ({
 					isScrolling={handleIsScrolling}
 					computeItemKey={computeItemKey}
 					itemContent={renderMessage}
+					initialTopMostItemIndex={LIMIT - 1}
 					alignToBottom
-					logLevel={debugMode}
-					endReached={handleLoadMoreMessage}
+					startReached={handleLoadMoreMessage}
 					defaultItemHeight={32}
+					firstItemIndex={firstItemIndex}
 				/>
 			</ContextMenu>
 
@@ -222,7 +220,7 @@ const Chat: React.FC<ChatProps> = ({
 							transition={{ duration: 0.05 }}
 						>
 							<TypingBar
-								typingUsers={[{ id: "1", username: "user1", avatar: null }]}
+								typingUsers={presence?.typingUsers}
 								onUserClick={onUserClick}
 							/>
 						</motion.div>

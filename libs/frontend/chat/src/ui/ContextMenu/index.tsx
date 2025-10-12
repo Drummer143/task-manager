@@ -159,7 +159,6 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 		>
 			<div
 				onContextMenuCapture={handleContextMenuOpen}
-				style={{ transform: "scaleY(-1)" }}
 				className={styles.contextMenuWrapper}
 			>
 				{children}

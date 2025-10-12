@@ -57,7 +57,10 @@ defmodule Chat.ChatChannel do
 
   def handle_in("get_all", params, socket) do
     try do
-      messages = Chat.Messages.get_chat_messages_by_task_id(socket.assigns.chat_id, params)
+      messages =
+        Chat.Messages.get_chat_messages_by_task_id(socket.assigns.chat_id, params)
+        |> Enum.reverse()
+        |> Enum.map(&Chat.Messages.Mappers.to_response/1)
 
       {:reply, {:ok, messages}, socket}
     rescue
@@ -163,7 +166,7 @@ defmodule Chat.ChatChannel do
         {:reply, {:error, %{reason: "Task not found"}}, socket}
 
       pinned_messages ->
-        {:reply, {:ok, pinned_messages}, socket}
+        {:reply, {:ok, Enum.map(pinned_messages, &Chat.Messages.Mappers.to_response/1)}, socket}
     end
   end
 
