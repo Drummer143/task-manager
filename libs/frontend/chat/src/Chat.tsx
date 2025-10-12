@@ -1,6 +1,6 @@
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { App, Flex, Spin } from "antd";
+import { App } from "antd";
 import { AnimatePresence, motion } from "framer-motion";
 import { Virtuoso, VirtuosoHandle } from "react-virtuoso";
 
@@ -17,6 +17,7 @@ import { prepareMessagesBeforeRender, removeMessageById, transformSingleMessage 
 const computeItemKey = (_: unknown, item: MessageListItem) => item.id;
 
 const LIMIT = 25;
+const INITIAL_MAX_ITEMS = 1_000_000;
 
 const Chat: React.FC<ChatProps> = ({
 	currentUserId,
@@ -38,7 +39,7 @@ const Chat: React.FC<ChatProps> = ({
 
 	const [listItems, setListItems] = useState<MessageListItem[]>([]);
 	const [pins, setPins] = useState<MessageData[]>([]);
-	const [firstItemIndex, setFirstItemIndex] = useState(Number.MAX_SAFE_INTEGER - LIMIT);
+	const [firstItemIndex, setFirstItemIndex] = useState(INITIAL_MAX_ITEMS - LIMIT);
 
 	const renderMessage = useMessageRenderer(currentUserId, onUserClick);
 
@@ -83,7 +84,7 @@ const Chat: React.FC<ChatProps> = ({
 
 	const handleIsScrolling = useCallback((isScrolling: boolean) => {
 		if (isScrolling) {
-			useChatStore.setState({ ctxMenuIdx: undefined, ctxOpen: false });
+			useChatStore.setState({ ctxMenuId: undefined, ctxOpen: false });
 		}
 	}, []);
 

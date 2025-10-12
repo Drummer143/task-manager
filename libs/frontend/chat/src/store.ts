@@ -2,23 +2,23 @@ import { create } from "zustand";
 
 interface ChatStoreState {
 	ctxOpen?: boolean;
-	ctxMenuIdx?: number;
-	editingItemIdx?: number;
+	ctxMenuId?: string;
+	editingItemId?: string;
 	editSubmitHandler?: (text: string) => void;
 
 	setCtxOpen: (ctxOpen: boolean) => void;
-	setCtxMenuIdx: (ctxMenuIdx: number | undefined) => void;
-	setEditingItemInfo: (editingItemIdx: number, editSubmitHandler: (text: string) => void) => void;
+	setCtxMenuId: (ctxMenuId: string | undefined) => void;
+	setEditingItemId: (editingItemId: string, editSubmitHandler: (text: string) => void) => void;
 	clearEditingItemInfo: () => void;
 }
 
 export const useChatStore = create<ChatStoreState>((set, get) => ({
-	setCtxMenuIdx: ctxMenuIdx => set({ ctxMenuIdx }),
+	setCtxMenuId: ctxMenuId => set({ ctxMenuId }),
 
-	setEditingItemInfo: (editingItemIdx, editSubmitHandler) =>
-		set({ editingItemIdx, editSubmitHandler }),
+	setEditingItemId: (editingItemId, editSubmitHandler) =>
+		set({ editingItemId, editSubmitHandler }),
 
-	clearEditingItemInfo: () => set({ editingItemIdx: undefined, editSubmitHandler: undefined }),
+	clearEditingItemInfo: () => set({ editingItemId: undefined, editSubmitHandler: undefined }),
 
 	setCtxOpen: ctxOpen => set({ ctxOpen })
 }));

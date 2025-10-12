@@ -34,7 +34,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 
 	const ctxParams = useRef<MenuProps | undefined>(undefined);
 
-	const { setCtxMenuIdx, setEditingItemInfo, clearEditingItemInfo, setCtxOpen, ctxOpen } =
+	const { setCtxMenuId, setEditingItemId, clearEditingItemInfo, setCtxOpen, ctxOpen } =
 		useChatStore();
 
 	const styles = useStyles().styles;
@@ -43,8 +43,8 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 		setContextMenuItems(undefined);
 		setCtxOpen(false);
 		ctxParams.current = undefined;
-		setCtxMenuIdx(undefined);
-	}, [setCtxMenuIdx, setCtxOpen]);
+		setCtxMenuId(undefined);
+	}, [setCtxMenuId, setCtxOpen]);
 
 	const handleContextMenuOpen = useCallback<React.MouseEventHandler<HTMLDivElement>>(
 		e => {
@@ -58,8 +58,9 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 				return;
 			}
 
-			const index = getDataAttribute(ctxTarget, "data-item-idx");
-			const item = listItems[index];
+			const id = getDataAttribute(ctxTarget, "data-item-id");
+			const index = listItems.findIndex(item => item.id === id);
+			const item = listItems.at(index);
 
 			if (!item || item?.type !== "message") {
 				e.preventDefault();
@@ -87,7 +88,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 						label: "Edit",
 						icon: <EditOutlined />,
 						onClick: () =>
-							setEditingItemInfo(index, text => {
+							setEditingItemId(item.message.id, text => {
 								handleUpdateMessage(item.message.id, text);
 								clearEditingItemInfo();
 							})
@@ -112,7 +113,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 				}
 			}
 
-			setCtxMenuIdx(index);
+			setCtxMenuId(item.message.id);
 
 			if (ctxMenu.length) {
 				ctxParams.current = {
@@ -127,11 +128,11 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 			listItems,
 			handlePinMessage,
 			currentUserId,
-			setCtxMenuIdx,
+			setCtxMenuId,
 			closeContextMenu,
 			handleUpdateMessage,
 			handleDeleteMessage,
-			setEditingItemInfo,
+			setEditingItemId,
 			clearEditingItemInfo
 		]
 	);
@@ -144,10 +145,10 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 
 			if (!open) {
 				setContextMenuItems(undefined);
-				setCtxMenuIdx(undefined);
+				setCtxMenuId(undefined);
 			}
 		},
-		[setCtxOpen, setCtxMenuIdx]
+		[setCtxOpen, setCtxMenuId]
 	);
 
 	return (

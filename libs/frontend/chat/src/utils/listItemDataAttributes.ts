@@ -1,19 +1,19 @@
 interface ListItemDataAttributes {
 	"data-interactive": boolean;
-	"data-item-idx": number;
+	"data-item-id": string;
 }
 
 interface DataAttributes {
 	interactive: boolean;
-	itemIdx?: number;
+	itemId?: string;
 }
 
 export const generateListItemDataAttributes = (
-	idx: number,
+	idx: string,
 	interactive = true
 ): ListItemDataAttributes => ({
 	"data-interactive": interactive,
-	"data-item-idx": idx
+	"data-item-id": idx
 });
 
 export const getDataAttribute = <T extends keyof ListItemDataAttributes>(
@@ -25,17 +25,15 @@ export const getDataAttribute = <T extends keyof ListItemDataAttributes>(
 	switch (attr) {
 		case "data-interactive":
 			return (value === "true") as ListItemDataAttributes[T];
-		case "data-item-idx": {
-			const num = Number(value);
-
-			return (isNaN(num) ? undefined : num) as ListItemDataAttributes[T];
+		case "data-item-id": {
+			return value as ListItemDataAttributes[T];
 		}
 	}
 };
 
 export const getDataAttributes = (el: Element): DataAttributes | undefined => ({
 	interactive: getDataAttribute(el, "data-interactive"),
-	itemIdx: getDataAttribute(el, "data-item-idx")
+	itemId: getDataAttribute(el, "data-item-id")
 });
 
 export const getClosestInteractiveListItem = (

@@ -74,7 +74,7 @@ const Message: React.FC<MessageProps> = ({
 		});
 	}, [updatedAt]);
 
-	const { ctxMenuIdx, editingItemIdx, clearEditingItemInfo, editSubmitHandler } = useChatStore();
+	const { ctxMenuId, editingItemId, clearEditingItemInfo, editSubmitHandler } = useChatStore();
 
 	const handleSenderClick = useMemo(
 		() =>
@@ -90,10 +90,10 @@ const Message: React.FC<MessageProps> = ({
 	const { styles, cx } = useStyles({
 		senderClickable: !!handleSenderClick,
 		showUserInfo,
-		contextMenuOpened: ctxMenuIdx === index
+		contextMenuOpened: ctxMenuId === id
 	});
 
-	const editing = editingItemIdx === index && !!editSubmitHandler;
+	const editing = editingItemId === id && !!editSubmitHandler;
 
 	useEffect(() => {
 		inputValue.current = text;
@@ -103,7 +103,7 @@ const Message: React.FC<MessageProps> = ({
 		<Flex
 			className={styles.wrapper}
 			gap="var(--ant-padding-xs)"
-			{...generateListItemDataAttributes(index)}
+			{...generateListItemDataAttributes(id)}
 		>
 			<div className={styles.leftContentContainer}>
 				{showUserInfo ? (
