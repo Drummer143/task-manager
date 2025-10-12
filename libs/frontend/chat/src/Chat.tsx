@@ -68,12 +68,19 @@ const Chat: React.FC<ChatProps> = ({
 					return;
 				}
 
-				setFirstItemIndex(prev => prev - LIMIT);
-				setListItems(prev => {
-					messages.push((prev.at(0) as MessageListItemMessage).message);
+				setTimeout(() => {
+					setListItems(prev => {
+						messages.push((prev.at(0) as MessageListItemMessage).message);
 
-					return [...prepareMessagesBeforeRender(messages), ...prev.slice(1)];
-				});
+						const preparedMessages = prepareMessagesBeforeRender(messages);
+
+						const newItems = [...preparedMessages, ...prev.slice(1)];
+
+						setFirstItemIndex(prev => prev - preparedMessages.length + 1);
+
+						return newItems;
+					});
+				}, 2000);
 			},
 			{
 				before: (listItems[0] as MessageListItemMessage).message.createdAt,
