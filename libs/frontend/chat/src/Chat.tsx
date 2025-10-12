@@ -1,3 +1,4 @@
+/* eslint-disable max-lines */
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { App } from "antd";
@@ -37,14 +38,17 @@ const Chat: React.FC<ChatProps> = ({
 }) => {
 	const modal = App.useApp().modal;
 
-	const [listItems, setListItems] = useState<MessageListItem[]>([]);
 	const [pins, setPins] = useState<MessageData[]>([]);
+	const [listItems, setListItems] = useState<MessageListItem[]>([]);
+	const [isScrolling, setIsScrolling] = useState(false);
 	const [firstItemIndex, setFirstItemIndex] = useState(INITIAL_MAX_ITEMS - LIMIT);
 
 	const renderMessage = useMessageRenderer(currentUserId, onUserClick);
 
 	const { styles, cx } = useStyles();
 
+	const queuedLoadMore = useRef(false);
+	const isProgrammaticScrolling = useRef(false);
 	const virtuosoRef = useRef<VirtuosoHandle>(null);
 
 	const handleDeleteMessage = useMemo(() => {
@@ -62,6 +66,11 @@ const Chat: React.FC<ChatProps> = ({
 	}, [deleteMessage, modal]);
 
 	const handleLoadMoreMessage = useCallback(() => {
+		if (isProgrammaticScrolling.current) {
+			queuedLoadMore.current = true;
+			return;
+		}
+
 		loadMessages(
 			messages => {
 				if (!messages.length) {
@@ -90,10 +99,33 @@ const Chat: React.FC<ChatProps> = ({
 	}, [loadMessages, listItems]);
 
 	const handleIsScrolling = useCallback((isScrolling: boolean) => {
+		setIsScrolling(isScrolling);
+
 		if (isScrolling) {
 			useChatStore.setState({ ctxMenuId: undefined, ctxOpen: false });
 		}
 	}, []);
+
+	const handleScrollToMessage = useCallback(
+		(message: MessageData) => {
+			isProgrammaticScrolling.current = true;
+
+			const idx = listItems.findIndex(item => item.id === message.id);
+
+			if (idx === -1) {
+				return console.debug("Message is not the current portion of the list");
+			}
+
+			useChatStore.setState({ highlightedItemId: message.id });
+
+			virtuosoRef.current?.scrollToIndex({
+				index: idx,
+				align: "center",
+				behavior: "smooth"
+			});
+		},
+		[listItems]
+	);
 
 	useEffect(() => {
 		loadMessages(messages => setListItems(prepareMessagesBeforeRender(messages)), {
@@ -191,9 +223,20 @@ const Chat: React.FC<ChatProps> = ({
 		loadPins
 	]);
 
+	useEffect(() => {
+		if (!isScrolling && isProgrammaticScrolling.current) {
+			isProgrammaticScrolling.current = false;
+
+			if (queuedLoadMore.current) {
+				queuedLoadMore.current = false;
+				setTimeout(handleLoadMoreMessage, 500);
+			}
+		}
+	}, [handleLoadMoreMessage, isScrolling]);
+
 	return (
 		<div className={cx(styles.wrapper, className)}>
-			<PinnedBar pins={pins} />
+			<PinnedBar pins={pins} onPinClick={handleScrollToMessage} />
 
 			<ContextMenu
 				listItems={listItems}

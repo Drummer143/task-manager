@@ -4,11 +4,14 @@ interface ChatStoreState {
 	ctxOpen?: boolean;
 	ctxMenuId?: string;
 	editingItemId?: string;
+	highlightedItemId?: string;
+
 	editSubmitHandler?: (text: string) => void;
 
 	setCtxOpen: (ctxOpen: boolean) => void;
 	setCtxMenuId: (ctxMenuId: string | undefined) => void;
 	setEditingItemId: (editingItemId: string, editSubmitHandler: (text: string) => void) => void;
+	setHighlightedItemId: (highlightedItemId: string | undefined) => void;
 	clearEditingItemInfo: () => void;
 }
 
@@ -17,6 +20,8 @@ export const useChatStore = create<ChatStoreState>((set, get) => ({
 
 	setEditingItemId: (editingItemId, editSubmitHandler) =>
 		set({ editingItemId, editSubmitHandler }),
+
+	setHighlightedItemId: highlightedItemId => set({ highlightedItemId }),
 
 	clearEditingItemInfo: () => set({ editingItemId: undefined, editSubmitHandler: undefined }),
 

@@ -10,6 +10,8 @@ import { MessageData } from "../../types";
 
 interface PinnedBarProps {
 	pins: MessageData[];
+
+	onPinClick: (pin: MessageData) => void;
 }
 
 const pinTextEllipsis: EllipsisConfig = {
@@ -17,7 +19,7 @@ const pinTextEllipsis: EllipsisConfig = {
 	expandable: false
 };
 
-const PinnedBar: React.FC<PinnedBarProps> = ({ pins }) => {
+const PinnedBar: React.FC<PinnedBarProps> = ({ pins, onPinClick }) => {
 	const [visiblePinIdx, setVisiblePinIdx] = React.useState<number>(() =>
 		Math.max(pins.length - 1, 0)
 	);
@@ -45,15 +47,16 @@ const PinnedBar: React.FC<PinnedBarProps> = ({ pins }) => {
 			gap="var(--ant-padding-xs)"
 			className={styles.wrapper}
 		>
-			<Button type="text" className={styles.pinTextWrapper}>
+			<Button
+				type="text"
+				className={styles.pinTextWrapper}
+				onClick={() => onPinClick(lastPinned)}
+			>
 				<Typography.Paragraph className={styles.senderName}>
 					{lastPinned.sender.username}
 				</Typography.Paragraph>
 
-				<Typography.Paragraph
-					ellipsis={pinTextEllipsis}
-					className={styles.pinText}
-				>
+				<Typography.Paragraph ellipsis={pinTextEllipsis} className={styles.pinText}>
 					{lastPinned.text}
 				</Typography.Paragraph>
 			</Button>

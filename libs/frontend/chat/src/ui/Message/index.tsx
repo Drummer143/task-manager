@@ -2,6 +2,7 @@ import React, { memo, useEffect, useMemo, useRef } from "react";
 
 import { PushpinOutlined } from "@ant-design/icons";
 import { Avatar, Button, Flex, Tooltip, Typography } from "antd";
+import { motion, Variants } from "framer-motion";
 
 import { useStyles } from "./styles";
 
@@ -26,6 +27,15 @@ export interface MessageProps {
 	onSenderClick?: (id: string) => void;
 }
 
+const messageVariants = {
+	initial: {
+		"--highlight-opacity": 0
+	},
+	highlighted: {
+		"--highlight-opacity": 0.2
+	}
+};
+
 const Message: React.FC<MessageProps> = ({
 	id,
 	index,
@@ -40,6 +50,15 @@ const Message: React.FC<MessageProps> = ({
 	updatedAt
 }) => {
 	const inputValue = useRef(text);
+
+	const {
+		ctxMenuId,
+		editingItemId,
+		highlightedItemId,
+		clearEditingItemInfo,
+		editSubmitHandler,
+		setHighlightedItemId
+	} = useChatStore();
 
 	const createdAtFormattedDates = useMemo(() => {
 		const date = new Date(createdAt);
@@ -74,8 +93,6 @@ const Message: React.FC<MessageProps> = ({
 		});
 	}, [updatedAt]);
 
-	const { ctxMenuId, editingItemId, clearEditingItemInfo, editSubmitHandler } = useChatStore();
-
 	const handleSenderClick = useMemo(
 		() =>
 			onUserClick && !sentByCurrentUser
@@ -94,15 +111,31 @@ const Message: React.FC<MessageProps> = ({
 	});
 
 	const editing = editingItemId === id && !!editSubmitHandler;
+	const highlighted = highlightedItemId === id;
 
 	useEffect(() => {
 		inputValue.current = text;
 	}, [text]);
 
+	useEffect(() => {
+		if (!highlighted) {
+			return;
+		}
+
+		const timeoutId = setTimeout(() => {
+			setHighlightedItemId(undefined);
+		}, 2500);
+
+		return () => clearTimeout(timeoutId);
+	}, [highlighted, setHighlightedItemId]);
+
 	return (
-		<Flex
+		<motion.div
 			className={styles.wrapper}
-			gap="var(--ant-padding-xs)"
+			initial="initial"
+			animate={highlighted ? "highlighted" : "initial"}
+			variants={messageVariants}
+			transition={{ duration: 0.5, ease: "easeOut" }}
 			{...generateListItemDataAttributes(id)}
 		>
 			<div className={styles.leftContentContainer}>
@@ -203,7 +236,7 @@ const Message: React.FC<MessageProps> = ({
 					</Flex>
 				)}
 			</div>
-		</Flex>
+		</motion.div>
 	);
 };
 

@@ -10,7 +10,12 @@ interface StyleProps {
 export const useStyles = createStyles(
 	({ css }, { senderClickable, showUserInfo, contextMenuOpened }: StyleProps) => {
 		const wrapper = css`
+			position: relative;
+
 			width: 100%;
+
+			display: flex;
+			gap: var(--ant-padding-xs);
 
 			padding: var(--ant-padding-xxs);
 
@@ -24,6 +29,19 @@ export const useStyles = createStyles(
 					background-color: var(--ant-control-item-bg-hover);
 				}
 			`}
+
+			&&::after {
+				content: "";
+
+				position: absolute;
+				inset: 0;
+
+				background-color: var(--ant-yellow);
+
+				pointer-events: none;
+
+				opacity: var(--highlight-opacity);
+			}
 		`;
 
 		return {
