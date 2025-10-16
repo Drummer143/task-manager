@@ -4,29 +4,26 @@ import { Typography } from "antd";
 
 import { useStyles } from "./styles";
 
+const currentYear = new Date().getFullYear();
+
 export interface DividerProps {
-	date: Date;
-	renderYear?: boolean;
+	date: string;
 }
 
-const Divider: React.FC<DividerProps> = ({ date, renderYear }) => {
-	const formattedDate = useMemo(
-		() =>
-			date.toLocaleDateString(undefined, {
-				day: "2-digit",
-				month: "short",
-				year: renderYear ? undefined : "numeric"
-			}),
-		[date, renderYear]
-	);
+const Divider: React.FC<DividerProps> = ({ date: dateStr }) => {
+	const formattedDate = useMemo(() => {
+		const date = new Date(dateStr);
+
+		return date.toLocaleDateString(undefined, {
+			day: "2-digit",
+			month: "short",
+			year: date.getFullYear() === currentYear ? undefined : "numeric"
+		});
+	}, [dateStr]);
 
 	const styles = useStyles().styles;
 
-	return (
-		<div className={styles.wrapper}>
-			<Typography.Text>{formattedDate}</Typography.Text>
-		</div>
-	);
+	return <Typography.Paragraph className={styles.wrapper}>{formattedDate}</Typography.Paragraph>;
 };
 
 export default Divider;

@@ -13,7 +13,7 @@ export interface MessageData {
 	text: string;
 	sender: UserInfo;
 	createdAt: string;
-	
+
 	pinnedBy?: UserInfo | null;
 	updatedAt?: string | null;
 }
@@ -36,10 +36,7 @@ export interface ChatProps {
 
 	subscribeToNewMessages: (cb: (newMessage: MessageData) => void) => () => void;
 	subscribeToUpdatedMessages: (
-		cb: (payload: {
-			action: "edit" | "pin" | "unpin";
-			message: MessageData;
-		}) => void
+		cb: (payload: { action: "edit" | "pin" | "unpin"; message: MessageData }) => void
 	) => () => void;
 	subscribeToDeletedMessages: (cb: (params: { id: string }) => void) => () => void;
 
@@ -63,8 +60,7 @@ export interface MessageListItemMessage extends DefaultListItemParams {
 }
 
 export interface MessageListItemDivider extends DefaultListItemParams {
-	type: "divider";
-	props: DividerProps;
+	type: "placeholder";
 }
 
 export type MessageListItem = MessageListItemMessage | MessageListItemDivider;
