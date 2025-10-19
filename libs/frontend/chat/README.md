@@ -27,7 +27,7 @@
 ### Advanced Features
 
 - **Message Management**
-    - [ ] Pinned messages
+    - [x] Pinned messages
     - [ ] Message reactions
 
 BLOCKED:
@@ -53,8 +53,7 @@ BLOCKED:
 - **Integration**(markdown required)
 
     - [ ] File attachments
-    - [ ] Code snippets with syntax highlighting
-    - [ ] Task reference cards
+    - [ ] Link preview
 
 - **Message Management**
     - [ ] Message edit history

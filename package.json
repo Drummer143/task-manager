@@ -3,7 +3,7 @@
 	"version": "0.0.0",
 	"license": "MIT",
 	"scripts": {
-		"start_db": "docker compose up -d postgres rmq",
+		"start_base": "docker compose up -d postgres rmq main-service",
 		"dev": "nx run-many --target=dev --projects=task-manager,main,storage",
 		"dev:all": "nx run-many --target=dev --all",
 		"dev:custom": "nx run-many --target=dev",

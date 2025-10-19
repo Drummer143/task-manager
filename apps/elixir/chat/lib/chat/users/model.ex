@@ -11,9 +11,9 @@ defmodule Chat.Users.Model do
     field :email, :string
     field :username, :string
     field :picture, :string
-    field :created_at, :utc_datetime
-    field :updated_at, :utc_datetime
-    field :deleted_at, :utc_datetime
+    field :created_at, :utc_datetime_usec
+    field :updated_at, :utc_datetime_usec
+    field :deleted_at, :utc_datetime_usec
   end
 
   def changeset(user, attrs) do

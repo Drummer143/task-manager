@@ -1,7 +1,7 @@
 import React, { useCallback, useEffect, useMemo, useState } from "react";
 
 import { MessageOutlined } from "@ant-design/icons";
-import Chat, { MessageData, PresenceInfo, UserInfo } from "@task-manager/chat";
+import Chat, { PresenceInfo, UserInfo } from "@task-manager/chat";
 import { type ChatProps } from "@task-manager/chat";
 import { useDisclosure } from "@task-manager/react-utils";
 import { Button } from "antd";
@@ -67,11 +67,8 @@ const TaskChat: React.FC = () => {
 		[styles]
 	);
 
-	const loadMessages = useCallback(
-		(
-			cb: (messages: MessageData[]) => void,
-			query: { before?: string; after?: string; limit?: number }
-		) => {
+	const loadMessages = useCallback<ChatProps["loadMessages"]>(
+		(cb, query) => {
 			const requestMessages = () => {
 				channel?.push("get_all", query).receive("ok", cb);
 			};
@@ -84,6 +81,13 @@ const TaskChat: React.FC = () => {
 				channel?.off("join", joinRef);
 				requestMessages();
 			});
+		},
+		[channel]
+	);
+
+	const loadMessagesAround = useCallback<ChatProps["loadMessagesAround"]>(
+		(cb, messageId, limit) => {
+			channel?.push("get_around", { messageId, limit }).receive("ok", cb);
 		},
 		[channel]
 	);
@@ -226,6 +230,7 @@ const TaskChat: React.FC = () => {
 					subscribeToUpdatedMessages={subscribeToUpdatedMessages}
 					sendMessage={sendMessage}
 					loadMessages={loadMessages}
+					loadMessagesAround={loadMessagesAround}
 					deleteMessage={handleDeleteMessage}
 					updateMessage={handleUpdateMessage}
 					pinMessage={handlePinMessage}

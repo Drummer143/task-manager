@@ -55,14 +55,155 @@ defmodule Chat.ChatChannel do
     {:noreply, assign(socket, "typing_timer_ref", ref)}
   end
 
+  def handle_in("get_all", %{"after" => after_date} = params, socket) do
+    try do
+      limit = Map.get(params, "limit", 50)
+      count_total = Map.get(params, "countTotal", false)
+
+      {messages, has_more} =
+        Chat.Messages.get_messages_after(
+          socket.assigns.chat_id,
+          after_date,
+          limit
+        )
+
+      total =
+        if count_total do
+          Chat.Messages.count_total_messages_in_chat(socket.assigns.chat_id)
+        else
+          nil
+        end
+
+      messages = Enum.map(messages, &Chat.Messages.Mappers.to_response/1)
+
+      {:reply,
+       {:ok,
+        %{
+          messages: messages,
+          total: total,
+          hasMoreOnBottom: has_more
+        }}, socket}
+    rescue
+      e -> {:reply, {:error, e}, socket}
+    end
+  end
+
   def handle_in("get_all", params, socket) do
     try do
-      messages =
-        Chat.Messages.get_chat_messages_by_task_id(socket.assigns.chat_id, params)
-        |> Enum.reverse()
-        |> Enum.map(&Chat.Messages.Mappers.to_response/1)
+      limit = Map.get(params, "limit", 50)
+      count_total = Map.get(params, "countTotal", false)
+      before_date = Map.get(params, "before")
 
-      {:reply, {:ok, messages}, socket}
+      {messages, has_more} =
+        Chat.Messages.get_messages_before(
+          socket.assigns.chat_id,
+          before_date,
+          limit
+        )
+
+      total =
+        if count_total do
+          Chat.Messages.count_total_messages_in_chat(socket.assigns.chat_id)
+        else
+          nil
+        end
+
+      has_more_on_bottom =
+        if is_nil(before_date) and not Enum.empty?(messages) do
+          last_message = Enum.at(messages, 0)
+
+          Chat.Messages.has_more_messages_after(
+            socket.assigns.chat_id,
+            last_message.created_at,
+            last_message.id
+          )
+        else
+          nil
+        end
+
+      messages = Enum.reverse(messages) |> Enum.map(&Chat.Messages.Mappers.to_response/1)
+
+      {:reply,
+       {:ok,
+        %{
+          messages: messages,
+          total: total,
+          hasMoreOnTop: has_more,
+          hasMoreOnBottom: has_more_on_bottom
+        }}, socket}
+    rescue
+      e -> {:reply, {:error, e}, socket}
+    end
+  end
+
+  # def handle_in("get_all", params, socket) do
+  #   try do
+  #     before_date = Map.get(params, "before")
+  #     after_date = Map.get(params, "after")
+  #     limit = Map.get(params, "limit")
+  #     count_total = Map.get(params, "countTotal")
+
+  #     {messages, total, has_more_on_top, has_more_on_bottom} =
+  #       Chat.Messages.get_chat_messages_by_task_id(
+  #         socket.assigns.chat_id,
+  #         before_date,
+  #         after_date,
+  #         limit,
+  #         count_total
+  #       )
+
+  #     messages = Enum.reverse(messages) |> Enum.map(&Chat.Messages.Mappers.to_response/1)
+
+  #     {:reply,
+  #      {:ok,
+  #       %{
+  #         messages: messages,
+  #         total: total,
+  #         hasMoreOnTop: has_more_on_top,
+  #         hasMoreOnBottom: has_more_on_bottom
+  #       }}, socket}
+  #   rescue
+  #     e -> {:reply, {:error, e}, socket}
+  #   end
+  # end
+
+  def handle_in("get_around", params, socket) do
+    try do
+      message_id = Map.get(params, "messageId")
+      limit = Map.get(params, "limit")
+
+      {messages_before, target_message, messages_after, has_more_on_top, has_more_on_bottom} =
+        Chat.Messages.get_chat_messages_around(socket.assigns.chat_id, message_id, limit)
+
+      mapped_after = Enum.map(messages_after, &Chat.Messages.Mappers.to_response/1)
+
+      initial_acc = [Chat.Messages.Mappers.to_response(target_message) | mapped_after]
+
+      messages =
+        Enum.reduce(messages_before, initial_acc, fn message, acc ->
+          [Chat.Messages.Mappers.to_response(message) | acc]
+        end)
+
+      target_position = length(messages_before)
+
+      first_message_position =
+        if target_position > 0 do
+          first_message_created_at = Enum.at(messages, 0).createdAt
+
+          Chat.Messages.count_messages_before(socket.assigns.chat_id, first_message_created_at)
+        else
+          0
+        end
+
+      {:reply,
+       {:ok,
+        %{
+          messages: messages,
+          targetPosition: target_position,
+          firstMessagePosition: first_message_position,
+          hasMoreOnTop: has_more_on_top,
+          hasMoreOnBottom: has_more_on_bottom
+        }}, socket}
     rescue
       e -> {:reply, {:error, e}, socket}
     end

@@ -124,9 +124,15 @@ const mergeLists = (currentList: ListInfo, newList: ListInfo): ListInfo => {
 	};
 };
 
-export const prependMessages = (currentList: ListInfo, newMessages: MessageData[]): ListInfo => {
+export const addNewMessagesToList = (
+	currentList: ListInfo,
+	newMessages: MessageData[],
+	action: "prepend" | "append" = "prepend"
+): ListInfo => {
 	const newList = prepareList(newMessages);
 
-	return mergeLists(currentList, newList);
+	return action === "prepend"
+		? mergeLists(currentList, newList)
+		: mergeLists(newList, currentList);
 };
 

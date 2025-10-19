@@ -11,9 +11,9 @@ defmodule Chat.Messages.Model do
     field :text, :string
     field :task_id, :binary_id
     field :reply_to, :binary_id
-    field :created_at, :utc_datetime
-    field :updated_at, :utc_datetime
-    field :deleted_at, :utc_datetime
+    field :created_at, :utc_datetime_usec
+    field :updated_at, :utc_datetime_usec
+    field :deleted_at, :utc_datetime_usec
 
     belongs_to :sender, Chat.Users.Model, foreign_key: :user_id, type: :binary_id
     belongs_to :pinner, Chat.Users.Model, foreign_key: :pinned_by, type: :binary_id

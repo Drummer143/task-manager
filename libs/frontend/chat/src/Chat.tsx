@@ -3,7 +3,7 @@ import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from "
 
 import { App } from "antd";
 import { AnimatePresence, motion } from "framer-motion";
-import { GroupedVirtuoso, GroupedVirtuosoHandle } from "react-virtuoso";
+import { GroupedVirtuoso, GroupedVirtuosoHandle, LogLevel } from "react-virtuoso";
 
 import { useMessageRenderer } from "./hooks/useMessageRenderer";
 import { useChatStore } from "./store";
@@ -15,7 +15,7 @@ import NewMessageInput from "./ui/NewMessageInput";
 import PinnedBar from "./ui/PinnedBar";
 import TypingBar from "./ui/TypingBar";
 import { removeMessageById, transformSingleMessage } from "./utils";
-import { prepareList, prependMessages } from "./utils/messageListProcessors";
+import { addNewMessagesToList, prepareList } from "./utils/messageListProcessors";
 
 const computeItemKey = (index: number, item?: MessageListItem) => item?.id ?? index;
 
@@ -24,7 +24,7 @@ const INITIAL_MAX_ITEMS = 1_000_000;
 
 const increaseViewportBy = {
 	bottom: 0,
-	top: 200
+	top: 500
 };
 
 const Chat: React.FC<ChatProps> = ({
@@ -41,12 +41,13 @@ const Chat: React.FC<ChatProps> = ({
 	deleteMessage,
 	updateMessage,
 	pinMessage,
-	loadPins
+	loadPins,
+	loadMessagesAround
 }) => {
 	const modal = App.useApp().modal;
 
 	const [pins, setPins] = useState<MessageData[]>([]);
-	// const [listItems, setListItems] = useState<MessageListItem[]>([]);
+	const [loading, setLoading] = useState<boolean>(true);
 	const [isScrolling, setIsScrolling] = useState(false);
 	const [firstItemIndex, setFirstItemIndex] = useState(INITIAL_MAX_ITEMS - LIMIT);
 	const [listInfo, setListInfo] = useState<ReturnType<typeof prepareList>>({
@@ -59,9 +60,14 @@ const Chat: React.FC<ChatProps> = ({
 
 	const { styles, cx } = useStyles();
 
-	const queuedLoadMore = useRef(false);
+	const isFetchingMessages = useRef(false);
+	const queuedLoadMore = useRef<"top" | "bottom" | false>(false);
 	const isProgrammaticScrolling = useRef(false);
 	const virtuosoRef = useRef<GroupedVirtuosoHandle>(null);
+	const hasMore = useRef({
+		top: true,
+		bottom: true
+	});
 
 	const handleDeleteMessage = useMemo(() => {
 		if (!deleteMessage) {
@@ -77,24 +83,66 @@ const Chat: React.FC<ChatProps> = ({
 		};
 	}, [deleteMessage, modal]);
 
-	const handleLoadMoreMessage = useCallback(() => {
-		if (isProgrammaticScrolling.current) {
-			queuedLoadMore.current = true;
+	const handleLoadMoreMessageOnTop = useCallback(() => {
+		if (isFetchingMessages.current) {
 			return;
 		}
 
+		if (isProgrammaticScrolling.current || !hasMore.current.top) {
+			queuedLoadMore.current = "top";
+			return;
+		}
+
+		isFetchingMessages.current = true;
+
 		loadMessages(
-			messages => {
-				if (!messages.length) {
+			response => {
+				hasMore.current.top = response.hasMoreOnTop;
+
+				if (!response.messages.length) {
 					return;
 				}
 
-				setFirstItemIndex(prev => prev - messages.length);
-				setListInfo(prev => prependMessages(prev, messages));
+				setFirstItemIndex(prev => prev - response.messages.length);
+				setListInfo(prev => addNewMessagesToList(prev, response.messages));
+
+				isFetchingMessages.current = false;
 			},
 			{
 				before: (listInfo.items[1] as MessageListItemMessage).message.createdAt,
 				limit: LIMIT
+			}
+		);
+	}, [loadMessages, listInfo]);
+
+	const handleLoadMoreMessageOnBottom = useCallback(() => {
+		if (isFetchingMessages.current) {
+			return;
+		}
+
+		if (isProgrammaticScrolling.current || !hasMore.current.bottom) {
+			queuedLoadMore.current = "bottom";
+			return;
+		}
+
+		isFetchingMessages.current = true;
+
+		loadMessages(
+			response => {
+				hasMore.current.bottom = response.hasMoreOnBottom;
+
+				if (!response.messages.length) {
+					return;
+				}
+
+				setListInfo(prev => addNewMessagesToList(prev, response.messages, "append"));
+
+				isFetchingMessages.current = false;
+			},
+			{
+				limit: LIMIT,
+				after: (listInfo.items[listInfo.items.length - 1] as MessageListItemMessage).message
+					.createdAt
 			}
 		);
 	}, [loadMessages, listInfo]);
@@ -109,6 +157,10 @@ const Chat: React.FC<ChatProps> = ({
 
 	const handleScrollToMessage = useCallback(
 		(message: MessageData) => {
+			if (isFetchingMessages.current) {
+				return;
+			}
+
 			isProgrammaticScrolling.current = true;
 
 			let idx = 0;
@@ -128,11 +180,35 @@ const Chat: React.FC<ChatProps> = ({
 
 			idx -= placeholderCount;
 
-			if (idx === -1) {
-				return console.debug("Message is not the current portion of the list");
-			}
-
 			useChatStore.setState({ highlightedItemId: message.id });
+
+			if (idx >= listInfo.items.length - listInfo.groupCounts.length) {
+				isFetchingMessages.current = true;
+
+				return loadMessagesAround(
+					response => {
+						hasMore.current.top = response.hasMoreOnTop;
+						hasMore.current.bottom = response.hasMoreOnBottom;
+
+						setListInfo(prepareList(response.messages));
+						setFirstItemIndex(response.firstMessagePosition);
+
+						setTimeout(() => {
+							virtuosoRef.current?.scrollToIndex({
+								index: response.targetPosition,
+								align: "center",
+								behavior: "auto"
+							});
+
+							requestAnimationFrame(() => {
+								isFetchingMessages.current = false;
+							});
+						}, 500);
+					},
+					message.id,
+					LIMIT
+				);
+			}
 
 			virtuosoRef.current?.scrollToIndex({
 				index: idx,
@@ -140,7 +216,7 @@ const Chat: React.FC<ChatProps> = ({
 				behavior: "smooth"
 			});
 		},
-		[listInfo.items]
+		[listInfo.groupCounts.length, listInfo.items, loadMessagesAround]
 	);
 
 	const renderGroup = useCallback(
@@ -149,9 +225,23 @@ const Chat: React.FC<ChatProps> = ({
 	);
 
 	useEffect(() => {
-		loadMessages(messages => setListInfo(prepareList(messages)), {
-			limit: LIMIT
-		});
+		loadMessages(
+			response => {
+				hasMore.current.bottom = true;
+				hasMore.current.top = response.hasMoreOnTop;
+
+				if (response.total) {
+					setFirstItemIndex(response.total - response.messages.length);
+				}
+
+				setListInfo(prepareList(response.messages));
+				setLoading(false);
+			},
+			{
+				limit: LIMIT,
+				countTotal: true
+			}
+		);
 
 		loadPins?.(setPins);
 
@@ -249,40 +339,50 @@ const Chat: React.FC<ChatProps> = ({
 			isProgrammaticScrolling.current = false;
 
 			if (queuedLoadMore.current) {
+				setTimeout(
+					queuedLoadMore.current === "top"
+						? handleLoadMoreMessageOnTop
+						: handleLoadMoreMessageOnBottom,
+					500
+				);
 				queuedLoadMore.current = false;
-				setTimeout(handleLoadMoreMessage);
 			}
 		}
-	}, [handleLoadMoreMessage, isScrolling]);
+	}, [handleLoadMoreMessageOnBottom, handleLoadMoreMessageOnTop, isScrolling]);
 
 	return (
 		<div className={cx(styles.wrapper, className)}>
 			<PinnedBar pins={pins} onPinClick={handleScrollToMessage} />
 
-			<ContextMenu
-				listItems={listInfo.items}
-				currentUserId={currentUserId}
-				handleDeleteMessage={handleDeleteMessage}
-				handleUpdateMessage={updateMessage}
-				handlePinMessage={pinMessage}
-			>
-				<GroupedVirtuoso
-					className={styles.messageList}
-					data={listInfo.items}
-					ref={virtuosoRef}
-					groupCounts={listInfo.groupCounts}
-					groupContent={renderGroup}
-					isScrolling={handleIsScrolling}
-					computeItemKey={computeItemKey}
-					itemContent={renderMessage}
-					initialTopMostItemIndex={Number.MAX_SAFE_INTEGER}
-					alignToBottom
-					startReached={handleLoadMoreMessage}
-					increaseViewportBy={increaseViewportBy}
-					// defaultItemHeight={32}
-					firstItemIndex={firstItemIndex}
-				/>
-			</ContextMenu>
+			{!loading && (
+				<ContextMenu
+					listItems={listInfo.items}
+					currentUserId={currentUserId}
+					handleDeleteMessage={handleDeleteMessage}
+					handleUpdateMessage={updateMessage}
+					handlePinMessage={pinMessage}
+				>
+					<GroupedVirtuoso
+						className={styles.messageList}
+						data={listInfo.items}
+						ref={virtuosoRef}
+						groupCounts={listInfo.groupCounts}
+						logLevel={LogLevel.DEBUG}
+						groupContent={renderGroup}
+						isScrolling={handleIsScrolling}
+						computeItemKey={computeItemKey}
+						itemContent={renderMessage}
+						initialTopMostItemIndex={Number.MAX_SAFE_INTEGER}
+						alignToBottom
+						skipAnimationFrameInResizeObserver
+						startReached={handleLoadMoreMessageOnTop}
+						endReached={handleLoadMoreMessageOnBottom}
+						increaseViewportBy={increaseViewportBy}
+						// defaultItemHeight={32}
+						firstItemIndex={firstItemIndex}
+					/>
+				</ContextMenu>
+			)}
 
 			<div className={styles.bottomContent}>
 				<AnimatePresence>

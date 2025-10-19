@@ -1,4 +1,3 @@
-import { DividerProps } from "./ui/Divider";
 import { MessageProps } from "./ui/Message";
 
 export interface UserInfo {
@@ -30,8 +29,24 @@ export interface ChatProps {
 
 	sendMessage: (text: string) => void;
 	loadMessages: (
-		cb: (messages: MessageData[]) => void,
-		query: { before?: string; after?: string; limit?: number }
+		cb: (response: {
+			messages: MessageData[];
+			total?: number;
+			hasMoreOnTop: boolean;
+			hasMoreOnBottom: boolean;
+		}) => void,
+		query: { before?: string; after?: string; limit?: number; countTotal?: boolean }
+	) => void;
+	loadMessagesAround: (
+		cb: (response: {
+			messages: MessageData[];
+			targetPosition: number;
+			firstMessagePosition: number;
+			hasMoreOnTop: boolean;
+			hasMoreOnBottom: boolean;
+		}) => void,
+		messageId: string,
+		limit?: number
 	) => void;
 
 	subscribeToNewMessages: (cb: (newMessage: MessageData) => void) => () => void;
