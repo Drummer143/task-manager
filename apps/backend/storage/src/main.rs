@@ -51,8 +51,7 @@ async fn main() {
     )
     .await;
 
-    rust_api::migration::MIGRATOR
-        .run(&db)
+    migrator::migrator::migrate(migrator::MigrationDirection::Up)
         .await
         .expect("Failed to run migrations");
 

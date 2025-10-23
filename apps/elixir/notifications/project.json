@@ -7,8 +7,7 @@
 		"dev": {
 			"executor": "nx:run-commands",
 			"options": {
-				"command": "mix phx.server",
-				"cwd": "{projectRoot}"
+				"command": "mix phx.server"
 			}
 		},
 		"build": {
@@ -17,9 +16,9 @@
 				"command": "mix compile && mix release --overwrite",
 				"env": {
 					"MIX_ENV": "prod"
-				},
-				"cwd": "{projectRoot}"
+				}
 			}
 		}
 	}
 }
+
