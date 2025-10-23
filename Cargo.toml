@@ -6,6 +6,7 @@ members = [
 	'apps/backend/storage',
 	'libs/backend/error-handlers',
 	'libs/backend/rust-api',
+	'libs/backend/migrator',
 ]
 
 [profile.release]

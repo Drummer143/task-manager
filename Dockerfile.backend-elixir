@@ -1,6 +1,3 @@
-# Multi-stage build for Elixir umbrella applications
-# Usage: docker build --build-arg APP_NAME=your_app_name -t your_app_name .
-
 # Stage 1: Build stage
 FROM elixir:1.15-alpine AS builder
 
@@ -26,6 +23,7 @@ RUN if [ -z "$APP_NAME" ]; then \
     echo "ERROR: APP_NAME build argument is required" && exit 1; \
     fi
 
+COPY libs/elixir/ ./libs/elixir/
 # Copy mix files
 COPY mix.exs mix.lock ./
 COPY config/ ./config/

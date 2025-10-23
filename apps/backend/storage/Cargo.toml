@@ -10,6 +10,7 @@ axum-macros = "0.5"
 dotenvy = "0.15"
 error_handlers = { path = "../../../libs/backend/error-handlers" }
 infer = "0.19"
+migrator = { path = "../../../libs/backend/migrator" }
 tokio = { version = "1", features = ["full"] }
 tokio-util = "0.7"
 rust_api = { path = "../../../libs/backend/rust-api" }

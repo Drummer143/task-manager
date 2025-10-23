@@ -1,0 +1,8 @@
+ALTER TABLE tasks DROP CONSTRAINT IF EXISTS tasks_status_id_fkey;
+
+ALTER TABLE tasks DROP COLUMN IF EXISTS position;
+ALTER TABLE tasks DROP COLUMN IF EXISTS status_id;
+
+ALTER TABLE tasks ADD COLUMN status TEXT;
+
+DROP TABLE IF EXISTS board_statuses;

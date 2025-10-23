@@ -21,6 +21,8 @@ defmodule Notifications.Application do
       NotificationsWeb.Endpoint
     ]
 
+    Migrator.up()
+
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: Notifications.Supervisor]
