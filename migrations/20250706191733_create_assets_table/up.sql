@@ -1,4 +1,3 @@
--- Add migration script here
 CREATE TABLE
     IF NOT EXISTS assets (
         id uuid PRIMARY KEY DEFAULT uuid_generate_v4(),

@@ -176,5 +176,4 @@ volumes:
     pgdata:
     storage:
     rmqdata:
-    elasticsearchdata:
 

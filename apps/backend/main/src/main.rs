@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use axum::http;
-use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+// use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use utoipa::OpenApi;
 mod db_connections;
 mod entities;
@@ -26,8 +26,7 @@ async fn main() {
     let (postgres, mongo, rabbitmq) =
         db_connections::init_databases(&db_url, &mongo_url, &rabbitmq_url).await;
 
-    rust_api::migration::MIGRATOR
-        .run(&postgres)
+    migrator::migrator::migrate(migrator::MigrationDirection::Up)
         .await
         .expect("Failed to run migrations");
 

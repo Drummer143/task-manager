@@ -11,7 +11,8 @@ axum-macros = "0.5"
 bcrypt = "0.17"
 error_handlers = { path = "../../../libs/backend/error-handlers" }
 rust_api = { path = "../../../libs/backend/rust-api" }
-mongodb = "3.2"
+migrator = { path = "../../../libs/backend/migrator" }
+mongodb = "3.3"
 tokio = { version = "1", features = ["full"] }
 tower = "0.5"
 tower-http = { version = "0.6", features = ["trace", "cors"] }
