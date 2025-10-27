@@ -65,8 +65,8 @@ const Chat: React.FC<ChatProps> = ({
 	const isProgrammaticScrolling = useRef(false);
 	const virtuosoRef = useRef<GroupedVirtuosoHandle>(null);
 	const hasMore = useRef({
-		top: true,
-		bottom: true
+		top: false,
+		bottom: false
 	});
 
 	const handleDeleteMessage = useMemo(() => {
@@ -84,11 +84,11 @@ const Chat: React.FC<ChatProps> = ({
 	}, [deleteMessage, modal]);
 
 	const handleLoadMoreMessageOnTop = useCallback(() => {
-		if (isFetchingMessages.current) {
+		if (isFetchingMessages.current || !hasMore.current.top) {
 			return;
 		}
 
-		if (isProgrammaticScrolling.current || !hasMore.current.top) {
+		if (isProgrammaticScrolling.current) {
 			queuedLoadMore.current = "top";
 			return;
 		}
@@ -116,11 +116,11 @@ const Chat: React.FC<ChatProps> = ({
 	}, [loadMessages, listInfo]);
 
 	const handleLoadMoreMessageOnBottom = useCallback(() => {
-		if (isFetchingMessages.current) {
+		if (isFetchingMessages.current || !hasMore.current.bottom) {
 			return;
 		}
 
-		if (isProgrammaticScrolling.current || !hasMore.current.bottom) {
+		if (isProgrammaticScrolling.current) {
 			queuedLoadMore.current = "bottom";
 			return;
 		}
@@ -227,7 +227,7 @@ const Chat: React.FC<ChatProps> = ({
 	useEffect(() => {
 		loadMessages(
 			response => {
-				hasMore.current.bottom = true;
+				hasMore.current.bottom = false;
 				hasMore.current.top = response.hasMoreOnTop;
 
 				if (response.total) {
@@ -367,7 +367,6 @@ const Chat: React.FC<ChatProps> = ({
 						data={listInfo.items}
 						ref={virtuosoRef}
 						groupCounts={listInfo.groupCounts}
-						logLevel={LogLevel.DEBUG}
 						groupContent={renderGroup}
 						isScrolling={handleIsScrolling}
 						computeItemKey={computeItemKey}
