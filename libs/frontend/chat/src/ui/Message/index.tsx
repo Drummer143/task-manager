@@ -1,13 +1,14 @@
+/* eslint-disable max-lines */
 import React, { memo, useEffect, useMemo, useRef } from "react";
 
-import { PushpinOutlined } from "@ant-design/icons";
+import { EnterOutlined, PushpinOutlined } from "@ant-design/icons";
 import { Avatar, Button, Flex, Tooltip, Typography } from "antd";
-import { motion, Variants } from "framer-motion";
+import { motion } from "framer-motion";
 
 import { useStyles } from "./styles";
 
 import { useChatStore } from "../../store";
-import { UserInfo } from "../../types";
+import { MessageData, UserInfo } from "../../types";
 import { getPlaceholderAvatarUrl } from "../../utils";
 import { generateListItemDataAttributes } from "../../utils/listItemDataAttributes";
 
@@ -23,6 +24,7 @@ export interface MessageProps {
 	pinnedBy?: UserInfo | null;
 	avatarUrl?: string | null;
 	updatedAt?: string | null;
+	replyTo?: Pick<MessageData, "id" | "text" | "sender"> | null;
 
 	onSenderClick?: (id: string) => void;
 }
@@ -38,7 +40,6 @@ const messageVariants = {
 
 const Message: React.FC<MessageProps> = ({
 	id,
-	index,
 	pinnedBy,
 	createdAt,
 	sentByCurrentUser,
@@ -47,7 +48,8 @@ const Message: React.FC<MessageProps> = ({
 	senderName,
 	avatarUrl,
 	showUserInfo,
-	updatedAt
+	updatedAt,
+	replyTo
 }) => {
 	const inputValue = useRef(text);
 
@@ -57,7 +59,8 @@ const Message: React.FC<MessageProps> = ({
 		highlightedItemId,
 		clearEditingItemInfo,
 		editSubmitHandler,
-		setHighlightedItemId
+		setHighlightedItemId,
+		setReplayMessageId
 	} = useChatStore();
 
 	const createdAtFormattedDates = useMemo(() => {
@@ -138,6 +141,15 @@ const Message: React.FC<MessageProps> = ({
 			transition={{ duration: 0.5, ease: "easeOut" }}
 			{...generateListItemDataAttributes(id)}
 		>
+			<div className={styles.actionButtons}>
+				<Button
+					type="text"
+					size="small"
+					icon={<EnterOutlined style={{ transform: "scaleY(-1)" }} />}
+					onClick={() => setReplayMessageId({ id, text, senderName })}
+				/>
+			</div>
+
 			<div className={styles.leftContentContainer}>
 				{showUserInfo ? (
 					<Avatar
@@ -160,7 +172,7 @@ const Message: React.FC<MessageProps> = ({
 
 			<div className={styles.body}>
 				{pinnedBy && (
-					<Typography.Text type="secondary" className={styles.secondaryText}>
+					<Typography.Paragraph type="secondary" className={styles.secondaryText}>
 						<PushpinOutlined style={{ fontSize: 10 }} /> Pinned by{" "}
 						{onUserClick ? (
 							<Button type="link" onClick={() => onUserClick(pinnedBy.id)}>
@@ -169,7 +181,27 @@ const Message: React.FC<MessageProps> = ({
 						) : (
 							pinnedBy.username
 						)}
-					</Typography.Text>
+					</Typography.Paragraph>
+				)}
+
+				{replyTo && (
+					<Typography.Paragraph
+						type="secondary"
+						onClick={() => useChatStore.setState({ scrollToItemId: replyTo.id })}
+						ellipsis
+						style={{ cursor: "pointer" }}
+						className={styles.secondaryText}
+					>
+						<EnterOutlined style={{ fontSize: 10, transform: "scaleY(-1)" }} /> Reply to{" "}
+						{onUserClick ? (
+							<Button type="link" onClick={() => onUserClick(replyTo.sender.id)}>
+								{replyTo.sender.username}
+							</Button>
+						) : (
+							replyTo.sender.username
+						)}
+						: {replyTo.text}
+					</Typography.Paragraph>
 				)}
 
 				{showUserInfo && (

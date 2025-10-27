@@ -26,6 +26,7 @@ export const useMessageRenderer = (
 					avatarUrl={item.message.sender.avatar}
 					onSenderClick={onUserClick}
 					index={index}
+					replyTo={item.message.replyTarget}
 					updatedAt={item.message.updatedAt}
 				/>
 			);

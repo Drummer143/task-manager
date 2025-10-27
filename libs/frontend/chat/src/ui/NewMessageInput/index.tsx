@@ -1,23 +1,25 @@
 import React, { useCallback, useMemo } from "react";
 
-import { SendOutlined } from "@ant-design/icons";
+import { CloseOutlined, SendOutlined } from "@ant-design/icons";
 import { useLocalStorage } from "@task-manager/react-utils";
-import { Button, Form, Input } from "antd";
+import { Button, Flex, Form, Input, Typography } from "antd";
 import { throttle } from "throttle-debounce";
 
 import { useStyles } from "./styles";
+
+import { useChatStore } from "../../store";
 
 interface NewMessageInputProps {
 	chatId?: string;
 	hasTopBar?: boolean;
 
-	onSend: (message: string) => void;
+	onSend: (payload: { text: string; replyTo?: string }) => void;
 
 	onTypingChange?: () => void;
 }
 
 interface FormValues {
-	message: string;
+	text: string;
 }
 
 const NewMessageInput: React.FC<NewMessageInputProps> = ({
@@ -28,23 +30,28 @@ const NewMessageInput: React.FC<NewMessageInputProps> = ({
 }) => {
 	const styles = useStyles({ hasTopBar }).styles;
 
+	const { replayMessage, setReplayMessageId } = useChatStore();
+
 	const [draft, setDraft] = useLocalStorage(`chat:${chatId}:draft`, "");
 
 	const [form] = Form.useForm<FormValues>();
 
-	const initialValues = useMemo(() => ({ message: draft }), [draft]);
+	const initialValues = useMemo<FormValues>(() => ({ text: draft }), [draft]);
 
 	const handleSubmit = useCallback(
 		(values: FormValues) => {
-			const message = values.message.trim();
+			const text = values.text.trim();
 
-			if (!message) return;
+			if (!text) return;
 
 			setDraft("");
 
-			onSend(message);
+			onSend({ text, replyTo: useChatStore.getState().replayMessage?.id });
 
-			queueMicrotask(() => form.resetFields());
+			queueMicrotask(() => {
+				form.resetFields();
+				useChatStore.setState({ replayMessage: undefined });
+			});
 		},
 		[onSend, form, setDraft]
 	);
@@ -61,7 +68,7 @@ const NewMessageInput: React.FC<NewMessageInputProps> = ({
 		() =>
 			throttle(750, () => {
 				onTypingChange?.();
-				setDraft(form.getFieldValue("message"));
+				setDraft(form.getFieldValue("text"));
 			}),
 		[onTypingChange, form, setDraft]
 	);
@@ -74,7 +81,39 @@ const NewMessageInput: React.FC<NewMessageInputProps> = ({
 			onValuesChange={handleTypingChange}
 			onFinish={handleSubmit}
 		>
-			<Form.Item name="message" noStyle>
+			{replayMessage && (
+				<Flex
+					justify="space-between"
+					align="center"
+					style={{
+						backgroundColor: "var(--ant-input-hover-bg)",
+						padding: "var(--ant-padding-xxs)",
+						width: "100%",
+						borderTop: "1px solid var(--ant-color-border)",
+						maxWidth: "100%",
+						overflow: "hidden"
+					}}
+				>
+					<div style={{ flex: "1", overflow: "hidden" }}>
+						<Typography.Text type="secondary">
+							Reply to {replayMessage.senderName}
+						</Typography.Text>
+
+						<Typography.Paragraph style={{ margin: 0 }} ellipsis={{ tooltip: true }}>
+							{replayMessage.text}
+						</Typography.Paragraph>
+					</div>
+
+					<Button
+						type="text"
+						size="small"
+						icon={<CloseOutlined />}
+						onClick={() => setReplayMessageId(undefined)}
+					/>
+				</Flex>
+			)}
+
+			<Form.Item name="text" noStyle>
 				<Input.TextArea
 					className={styles.textarea}
 					aria-autocomplete="none"

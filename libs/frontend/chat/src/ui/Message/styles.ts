@@ -54,6 +54,8 @@ export const useStyles = createStyles(
 			`,
 			body: css`
 				flex: 1;
+
+				overflow: hidden;
 			`,
 			avatar: css`
 				${senderClickable && "cursor: pointer !important;"}
@@ -91,6 +93,8 @@ export const useStyles = createStyles(
 				font-size: var(--ant-font-size-lg);
 			`,
 			secondaryText: css`
+				margin: 0 !important;
+
 				font-size: var(--ant-font-size-xs);
 			`,
 			editedText: css`
@@ -100,6 +104,26 @@ export const useStyles = createStyles(
 				justify-content: flex-end;
 
 				margin-top: var(--ant-padding-xxs);
+			`,
+			actionButtons: css`
+				position: absolute;
+				top: 0;
+				right: var(--ant-padding);
+				z-index: 1;
+
+				display: none;
+				gap: var(--ant-padding-xxs);
+
+				padding: 2px;
+
+				border-radius: var(--ant-border-radius-sm);
+				border: 1px solid var(--ant-color-border);
+				background-color: var(--ant-color-border-bg);
+				transform: translateY(-50%);
+
+				.acss-${wrapper.name}:hover & {
+					display: flex;
+				}
 			`
 		};
 	}

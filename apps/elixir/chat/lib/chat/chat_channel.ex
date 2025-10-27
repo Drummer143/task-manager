@@ -136,37 +136,6 @@ defmodule Chat.ChatChannel do
     end
   end
 
-  # def handle_in("get_all", params, socket) do
-  #   try do
-  #     before_date = Map.get(params, "before")
-  #     after_date = Map.get(params, "after")
-  #     limit = Map.get(params, "limit")
-  #     count_total = Map.get(params, "countTotal")
-
-  #     {messages, total, has_more_on_top, has_more_on_bottom} =
-  #       Chat.Messages.get_chat_messages_by_task_id(
-  #         socket.assigns.chat_id,
-  #         before_date,
-  #         after_date,
-  #         limit,
-  #         count_total
-  #       )
-
-  #     messages = Enum.reverse(messages) |> Enum.map(&Chat.Messages.Mappers.to_response/1)
-
-  #     {:reply,
-  #      {:ok,
-  #       %{
-  #         messages: messages,
-  #         total: total,
-  #         hasMoreOnTop: has_more_on_top,
-  #         hasMoreOnBottom: has_more_on_bottom
-  #       }}, socket}
-  #   rescue
-  #     e -> {:reply, {:error, e}, socket}
-  #   end
-  # end
-
   def handle_in("get_around", params, socket) do
     try do
       message_id = Map.get(params, "messageId")
@@ -209,11 +178,14 @@ defmodule Chat.ChatChannel do
     end
   end
 
-  def handle_in("create", %{"text" => text}, socket) do
+  def handle_in("create", payload, socket) do
     chat_id = socket.assigns.chat_id
     user_id = socket.assigns.user.id
 
-    case Chat.Messages.create_message(chat_id, user_id, text) do
+    text = Map.get(payload, "text")
+    reply_to = Map.get(payload, "replyTo", nil)
+
+    case Chat.Messages.create_message(chat_id, user_id, text, reply_to) do
       {:ok, message} ->
         sender = Chat.Users.get_user_by_id(user_id)
 
@@ -223,7 +195,8 @@ defmodule Chat.ChatChannel do
           taskId: message.task_id,
           createdAt: message.created_at,
           updatedAt: message.updated_at,
-          sender: sender
+          sender: sender,
+          replyTo: message.reply_to
         }
 
         broadcast!(socket, "new", payload)

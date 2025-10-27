@@ -15,6 +15,7 @@ export interface MessageData {
 
 	pinnedBy?: UserInfo | null;
 	updatedAt?: string | null;
+	replyTarget?: Pick<MessageData, "id" | "text" | "sender"> | null;
 }
 
 export interface PresenceInfo {
@@ -27,7 +28,7 @@ export interface ChatProps {
 	presence?: PresenceInfo;
 	className?: string;
 
-	sendMessage: (text: string) => void;
+	sendMessage: (payload: { text: string; replyTo?: string }) => void;
 	loadMessages: (
 		cb: (response: {
 			messages: MessageData[];

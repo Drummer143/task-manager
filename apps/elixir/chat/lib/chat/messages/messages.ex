@@ -19,7 +19,7 @@ defmodule Chat.Messages do
     query =
       from m in ChatMessageModel,
         where: m.task_id == ^task_id and is_nil(m.deleted_at),
-        preload: [:sender, :pinner],
+        preload: [:sender, :pinner, :reply_target, reply_target: :sender],
         order_by: [desc: m.created_at],
         limit: ^limit
 
@@ -67,7 +67,7 @@ defmodule Chat.Messages do
       ChatMessageModel
       |> where([m], m.task_id == ^task_id and is_nil(m.deleted_at) and m.created_at > ^after_date)
       |> limit(^limit)
-      |> preload([:sender, :pinner])
+      |> preload([:sender, :pinner, :reply_target, reply_target: :sender])
       |> order_by([m], asc: m.created_at)
       |> Repo.all()
 
@@ -98,7 +98,7 @@ defmodule Chat.Messages do
     base_query =
       from u in ChatMessageModel,
         where: u.task_id == ^task_id and is_nil(u.deleted_at),
-        preload: [:sender, :pinner],
+        preload: [:sender, :pinner, :reply_target, reply_target: :sender],
         limit: ^limit
 
     messages_before =
@@ -137,11 +137,12 @@ defmodule Chat.Messages do
     |> Repo.one()
   end
 
-  def create_message(task_id, user_id, text) do
+  def create_message(task_id, user_id, text, reply_to \\ nil) do
     ChatMessageModel.changeset(%ChatMessageModel{}, %{
       task_id: task_id,
       user_id: user_id,
-      text: text
+      text: text,
+      reply_to: reply_to
     })
     |> Repo.insert(returning: true)
   end
@@ -149,7 +150,7 @@ defmodule Chat.Messages do
   def get_message_by_id(id) do
     ChatMessageModel
     |> where([m], m.id == ^id)
-    |> preload([:sender, :pinner])
+    |> preload([:sender, :pinner, :reply_target, reply_target: :sender])
     |> Repo.one()
   end
 
@@ -177,7 +178,7 @@ defmodule Chat.Messages do
   def get_pinned_messages(task_id) do
     ChatMessageModel
     |> where([m], m.task_id == ^task_id and not is_nil(m.pinned_by))
-    |> preload([:pinner, :sender])
+    |> preload([:pinner, :sender, :reply_target, reply_target: :sender])
     |> order_by([m], desc: m.created_at)
     |> Repo.all()
   end

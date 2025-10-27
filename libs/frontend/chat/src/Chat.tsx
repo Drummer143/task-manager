@@ -3,7 +3,7 @@ import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from "
 
 import { App } from "antd";
 import { AnimatePresence, motion } from "framer-motion";
-import { GroupedVirtuoso, GroupedVirtuosoHandle, LogLevel } from "react-virtuoso";
+import { GroupedVirtuoso, GroupedVirtuosoHandle } from "react-virtuoso";
 
 import { useMessageRenderer } from "./hooks/useMessageRenderer";
 import { useChatStore } from "./store";
@@ -57,6 +57,8 @@ const Chat: React.FC<ChatProps> = ({
 	});
 
 	const renderMessage = useMessageRenderer(currentUserId, onUserClick);
+
+	const scrollToMessageId = useChatStore(state => state.scrollToItemId);
 
 	const { styles, cx } = useStyles();
 
@@ -156,7 +158,7 @@ const Chat: React.FC<ChatProps> = ({
 	}, []);
 
 	const handleScrollToMessage = useCallback(
-		(message: MessageData) => {
+		(messageId: string) => {
 			if (isFetchingMessages.current) {
 				return;
 			}
@@ -167,7 +169,7 @@ const Chat: React.FC<ChatProps> = ({
 			let placeholderCount = 0;
 
 			while (idx < listInfo.items.length) {
-				if (listInfo.items[idx].id === message.id) {
+				if (listInfo.items[idx].id === messageId) {
 					break;
 				}
 
@@ -180,7 +182,7 @@ const Chat: React.FC<ChatProps> = ({
 
 			idx -= placeholderCount;
 
-			useChatStore.setState({ highlightedItemId: message.id });
+			useChatStore.setState({ highlightedItemId: messageId });
 
 			if (idx >= listInfo.items.length - listInfo.groupCounts.length) {
 				isFetchingMessages.current = true;
@@ -205,7 +207,7 @@ const Chat: React.FC<ChatProps> = ({
 							});
 						}, 500);
 					},
-					message.id,
+					messageId,
 					LIMIT
 				);
 			}
@@ -349,6 +351,16 @@ const Chat: React.FC<ChatProps> = ({
 			}
 		}
 	}, [handleLoadMoreMessageOnBottom, handleLoadMoreMessageOnTop, isScrolling]);
+
+	useEffect(() => {
+		if (!scrollToMessageId) {
+			return;
+		}
+
+		handleScrollToMessage(scrollToMessageId);
+
+		useChatStore.setState({ scrollToItemId: undefined });
+	}, [handleScrollToMessage, scrollToMessageId]);
 
 	return (
 		<div className={cx(styles.wrapper, className)}>

@@ -11,7 +11,7 @@ import { MessageData } from "../../types";
 interface PinnedBarProps {
 	pins: MessageData[];
 
-	onPinClick: (pin: MessageData) => void;
+	onPinClick: (messageId: string) => void;
 }
 
 const pinTextEllipsis: EllipsisConfig = {
@@ -50,7 +50,7 @@ const PinnedBar: React.FC<PinnedBarProps> = ({ pins, onPinClick }) => {
 			<Button
 				type="text"
 				className={styles.pinTextWrapper}
-				onClick={() => onPinClick(lastPinned)}
+				onClick={() => onPinClick(lastPinned.id)}
 			>
 				<Typography.Paragraph className={styles.senderName}>
 					{lastPinned.sender.username}

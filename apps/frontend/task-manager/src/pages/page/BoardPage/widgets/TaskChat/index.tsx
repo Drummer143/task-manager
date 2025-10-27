@@ -93,8 +93,8 @@ const TaskChat: React.FC = () => {
 	);
 
 	const sendMessage: ChatProps["sendMessage"] = useCallback(
-		text => {
-			return channel?.push("create", { text });
+		payload => {
+			return channel?.push("create", payload);
 		},
 		[channel]
 	);
