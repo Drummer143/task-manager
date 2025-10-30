@@ -79,7 +79,7 @@ export const prepareList = (messages: MessageData[]): ListInfo => {
 	const groupLabels: string[] = [];
 	const items: MessageListItem[] = [];
 
-	let currentGroupCount = 2;
+	let currentGroupCount = messages.length > 1 ? 2 : 1;
 
 	items.push({
 		id: messages[0].id,
@@ -133,7 +133,7 @@ const mergeLists = (currentList: ListInfo, newList: ListInfo): ListInfo => {
 	const firstGroupLabelOfCurrentList = currentList.groupLabels[0];
 
 	if (isSameDate(lastGroupLabelOfNewList, firstGroupLabelOfCurrentList)) {
-		const firstMessageOfCurrentList = currentList.items[1] as MessageListItemMessage;
+		const firstMessageOfCurrentList = currentList.items[0] as MessageListItemMessage;
 
 		const mergedList: ListInfo = {
 			groupCounts: [
@@ -143,7 +143,7 @@ const mergeLists = (currentList: ListInfo, newList: ListInfo): ListInfo => {
 			],
 			groupLabels: [...newList.groupLabels, ...currentList.groupLabels.slice(1)],
 			items: [
-				...newList.items.slice(0, -1),
+				...newList.items,
 				{
 					type: "message",
 					id: firstMessageOfCurrentList.id,
@@ -154,7 +154,7 @@ const mergeLists = (currentList: ListInfo, newList: ListInfo): ListInfo => {
 								.message.sender.id !== firstMessageOfCurrentList.message.sender.id
 					}
 				},
-				...currentList.items
+				...currentList.items.slice(1)
 			]
 		};
 

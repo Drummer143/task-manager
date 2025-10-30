@@ -1,18 +1,17 @@
 import { useCallback } from "react";
 
+import { chatStore } from "../state";
 import { MessageListItem } from "../types";
 import Message from "../ui/Message";
 
 export const useMessageRenderer = (
 	currentUserId: string,
-	list: MessageListItem[],
-	firstItemIndex: number,
 	onUserClick?: (userId: string) => void
 ) => {
 	return useCallback(
 		(index: number, _: unknown, __: MessageListItem) => {
-			const idx = index - firstItemIndex;
-			const item = list[idx];
+			const idx = index - chatStore.firstItemIndex;
+			const item = chatStore.listInfo.items[idx];
 
 			if (!item) {
 				return null;
@@ -43,7 +42,7 @@ export const useMessageRenderer = (
 					);
 			}
 		},
-		[currentUserId, firstItemIndex, list, onUserClick]
+		[currentUserId, onUserClick]
 	);
 };
 
