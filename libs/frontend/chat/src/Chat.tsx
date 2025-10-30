@@ -14,8 +14,7 @@ import Divider from "./ui/Divider";
 import NewMessageInput from "./ui/NewMessageInput";
 import PinnedBar from "./ui/PinnedBar";
 import TypingBar from "./ui/TypingBar";
-import { removeMessageById, transformSingleMessage } from "./utils";
-import { addNewMessagesToList, prepareList } from "./utils/messageListProcessors";
+import { addNewMessagesToList, prepareList, pushMessage } from "./utils/messageListProcessors";
 
 const computeItemKey = (index: number, item?: MessageListItem) => item?.id ?? index;
 
@@ -56,7 +55,12 @@ const Chat: React.FC<ChatProps> = ({
 		groupLabels: []
 	});
 
-	const renderMessage = useMessageRenderer(currentUserId, onUserClick);
+	const renderMessage = useMessageRenderer(
+		currentUserId,
+		listInfo.items,
+		firstItemIndex,
+		onUserClick
+	);
 
 	const scrollToMessageId = useChatStore(state => state.scrollToItemId);
 
@@ -111,7 +115,7 @@ const Chat: React.FC<ChatProps> = ({
 				isFetchingMessages.current = false;
 			},
 			{
-				before: (listInfo.items[1] as MessageListItemMessage).message.createdAt,
+				before: (listInfo.items[0] as MessageListItemMessage).message.createdAt,
 				limit: LIMIT
 			}
 		);
@@ -166,25 +170,18 @@ const Chat: React.FC<ChatProps> = ({
 			isProgrammaticScrolling.current = true;
 
 			let idx = 0;
-			let placeholderCount = 0;
 
 			while (idx < listInfo.items.length) {
 				if (listInfo.items[idx].id === messageId) {
 					break;
 				}
 
-				if (listInfo.items[idx].type === "placeholder") {
-					placeholderCount++;
-				}
-
 				idx++;
 			}
 
-			idx -= placeholderCount;
-
 			useChatStore.setState({ highlightedItemId: messageId });
 
-			if (idx >= listInfo.items.length - listInfo.groupCounts.length) {
+			if (idx >= listInfo.items.length) {
 				isFetchingMessages.current = true;
 
 				return loadMessagesAround(
@@ -218,7 +215,7 @@ const Chat: React.FC<ChatProps> = ({
 				behavior: "smooth"
 			});
 		},
-		[listInfo.groupCounts.length, listInfo.items, loadMessagesAround]
+		[listInfo.items, loadMessagesAround]
 	);
 
 	const renderGroup = useCallback(
@@ -247,31 +244,27 @@ const Chat: React.FC<ChatProps> = ({
 
 		loadPins?.(setPins);
 
-		// const unsubscribeFromNewMessage = subscribeToNewMessages(message => {
-		// 	let idx = 0;
+		const unsubscribeFromNewMessage = subscribeToNewMessages(message => {
+			let idx = 0;
 
-		// 	setListItems(prev => {
-		// 		const lastMessage = prev.at(-1) as MessageListItemMessage;
+			setListInfo(prev => {
+				const result = pushMessage(prev, message);
 
-		// 		const transformedMessage = transformSingleMessage(message, lastMessage.message);
+				idx = result.items.length - 1;
 
-		// 		const result = [...prev, ...transformedMessage];
+				return result;
+			});
 
-		// 		idx = result.length - 1;
-
-		// 		return result;
-		// 	});
-
-		// 	if (message.sender.id === currentUserId) {
-		// 		requestAnimationFrame(() => {
-		// 			virtuosoRef.current?.scrollToIndex({
-		// 				index: idx,
-		// 				align: "end",
-		// 				behavior: "smooth"
-		// 			});
-		// 		});
-		// 	}
-		// });
+			if (message.sender.id === currentUserId) {
+				requestAnimationFrame(() => {
+					virtuosoRef.current?.scrollToIndex({
+						index: idx,
+						align: "end",
+						behavior: "smooth"
+					});
+				});
+			}
+		});
 
 		// const unsubscribeFromDeletedMessage = subscribeToDeletedMessages(({ id }) => {
 		// 	setListItems(prev => {
@@ -322,11 +315,11 @@ const Chat: React.FC<ChatProps> = ({
 		// 	});
 		// });
 
-		// return () => {
-		// 	unsubscribeFromNewMessage();
-		// 	unsubscribeFromDeletedMessage();
-		// 	unsubscribeFromUpdatedMessage();
-		// };
+		return () => {
+			unsubscribeFromNewMessage();
+			// unsubscribeFromDeletedMessage();
+			// unsubscribeFromUpdatedMessage();
+		};
 	}, [
 		currentUserId,
 		subscribeToNewMessages,
@@ -376,7 +369,6 @@ const Chat: React.FC<ChatProps> = ({
 				>
 					<GroupedVirtuoso
 						className={styles.messageList}
-						data={listInfo.items}
 						ref={virtuosoRef}
 						groupCounts={listInfo.groupCounts}
 						groupContent={renderGroup}

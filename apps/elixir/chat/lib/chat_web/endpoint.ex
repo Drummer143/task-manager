@@ -16,7 +16,7 @@ defmodule ChatWeb.Endpoint do
     longpoll: [connect_info: [session: @session_options]]
 
   socket "/socket", Chat.UserSocket,
-    websocket: [connect_info: [session: @session_options], compress: true],
+    websocket: [connect_info: [session: @session_options]],
     longpoll: false
 
   # Serve at "/" the static files from "priv/static" directory.
