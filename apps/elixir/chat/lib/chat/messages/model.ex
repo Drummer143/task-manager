@@ -9,7 +9,7 @@ defmodule Chat.Messages.Model do
 
   schema "task_chat_messages" do
     field :text, :string
-    field :task_id, :binary_id
+    field :chat_id, :binary_id
     field :created_at, :utc_datetime_usec
     field :updated_at, :utc_datetime_usec
     field :deleted_at, :utc_datetime_usec
@@ -21,7 +21,7 @@ defmodule Chat.Messages.Model do
 
   def changeset(chat_message, attrs) do
     chat_message
-    |> cast(attrs, [:text, :pinned_by, :user_id, :task_id, :reply_to, :updated_at])
-    |> validate_required([:text, :user_id, :task_id])
+    |> cast(attrs, [:text, :pinned_by, :user_id, :chat_id, :reply_to, :updated_at])
+    |> validate_required([:text, :user_id, :chat_id])
   end
 end

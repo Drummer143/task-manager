@@ -57,3 +57,8 @@ config :phoenix, :json_library, Jason
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"
+
+config :chat, :redix_config,
+  host: System.get_env("REDIS_HOST") || "localhost",
+  port: String.to_integer(System.get_env("REDIS_PORT") || "6379"),
+  database: String.to_integer(System.get_env("REDIS_DB") || "0")

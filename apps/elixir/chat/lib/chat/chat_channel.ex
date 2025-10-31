@@ -8,10 +8,12 @@ defmodule Chat.ChatChannel do
         {:error, %{reason: "User not found"}}
 
       user ->
+        chat = Chat.Chats.Chat.find_by_task_id(chat_id)
+
         socket =
           socket
           |> assign(:user, user)
-          |> assign(:chat_id, chat_id)
+          |> assign(:chat_id, chat.id)
 
         send(self(), "after_join")
 

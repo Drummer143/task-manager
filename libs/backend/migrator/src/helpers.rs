@@ -112,8 +112,13 @@ pub fn get_unapplied_migrations(
         .collect::<Vec<MigrationFile>>()
 }
 
-pub fn get_envs() -> EnvConfig {
-    let data_base_url = std::env::var("DATABASE_URL").expect("DATABASE_URL not found");
+pub fn get_envs(db_required: bool) -> EnvConfig {
+    let data_base_url = if db_required {
+        std::env::var("DATABASE_URL").expect("DATABASE_URL not found")
+    } else {
+        "".to_string()
+    };
+
     let migrations_dir = std::env::var("MIGRATIONS_DIR").unwrap_or("migrations".to_string());
     let migrations_db_name =
         std::env::var("MIGRATIONS_DB_NAME").unwrap_or("_migrations".to_string());
@@ -149,7 +154,7 @@ pub async fn get_migrations_from_db(
 }
 
 pub async fn prepare() -> Result<(sqlx::postgres::PgPool, EnvConfig), MigratorError> {
-    let env = get_envs();
+    let env = get_envs(true);
 
     let pool = sqlx::postgres::PgPool::connect(&env.data_base_url)
         .await
