@@ -3,12 +3,14 @@ use rust_api::entities::workspace_access::model::Role;
 use uuid::Uuid;
 
 #[derive(Debug, serde::Deserialize, utoipa::ToSchema)]
+#[serde(rename_all = "camelCase")]
 pub struct CreateWorkspaceAccessDto {
     pub user_id: Uuid,
     pub role: Role,
 }
 
 #[derive(Debug, serde::Deserialize, utoipa::ToSchema)]
+#[serde(rename_all = "camelCase")]
 pub struct UpdateWorkspaceAccessDto {
     pub user_id: Uuid,
     pub role: Option<Role>,

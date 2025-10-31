@@ -1,16 +1,18 @@
-import React from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 
-import { MessageOutlined, SendOutlined } from "@ant-design/icons";
-import { useMutation } from "@tanstack/react-query";
-import { sendMessage } from "@task-manager/api";
-import { useDisclosure, useFunctionWithFeedback } from "@task-manager/react-utils";
-import { Button, Flex, Form, Input } from "antd";
+import { MessageOutlined } from "@ant-design/icons";
+import Chat, { PresenceInfo, UserInfo } from "@task-manager/chat";
+import { type ChatProps } from "@task-manager/chat";
+import { useDisclosure } from "@task-manager/react-utils";
+import { Button } from "antd";
+import { DrawerClassNames } from "antd/es/drawer/DrawerPanel";
 import { createStyles } from "antd-style";
-import { useParams, useSearchParams } from "react-router";
+import { Channel, Presence } from "phoenix";
+import { useSearchParams } from "react-router";
 
 import { useAuthStore } from "../../../../../app/store/auth";
+import { useChatSocketStore } from "../../../../../app/store/socket";
 import Drawer from "../../../../../widgets/Drawer";
-import ChatMessageList from "../ChatMessageList";
 
 const useStyles = createStyles(({ css }) => ({
 	drawer: css`
@@ -27,72 +29,217 @@ const useStyles = createStyles(({ css }) => ({
 		flex-direction: column;
 
 		padding: 0 !important;
-	`,
-	inputForm: css`
-		padding: var(--ant-padding);
 	`
 }));
 
+interface RawPresenceInfo {
+	[key: string]: {
+		metas: Array<{
+			user_id: string;
+			typing: boolean;
+			id: string;
+			avatar: string | null;
+			username: string;
+			joined_at: number;
+		}>;
+	};
+}
+
 const TaskChat: React.FC = () => {
+	const [presence, setPresence] = useState<PresenceInfo | undefined>(undefined);
+	const [channel, setConnection] = useState<Channel | undefined>(undefined);
+
+	const userId = useAuthStore.getState().user.id;
+
+	const taskId = useSearchParams()[0].get("taskId");
+
 	const { open, onOpen, onClose } = useDisclosure();
 
-	const { drawerBody, drawer, inputForm } = useStyles().styles;
+	const styles = useStyles().styles;
 
-	const taskId = useSearchParams()[0].get("taskId")!;
-	const pageId = useParams<{ id: string }>().id!;
-	const workspaceId = useAuthStore(state => state.user.workspace.id);
+	const socket = useChatSocketStore().getSocket();
 
-	const [form] = Form.useForm<{ text: string }>();
+	const drawerClassnames = useMemo<DrawerClassNames>(
+		() => ({
+			body: styles.drawerBody,
+			wrapper: styles.drawer
+		}),
+		[styles]
+	);
 
-	const { isPending, mutateAsync } = useMutation({
-		mutationFn: (text: string) => sendMessage({ pageId, taskId, workspaceId, text })
-	});
+	const loadMessages = useCallback<ChatProps["loadMessages"]>(
+		(cb, query) => {
+			const requestMessages = () => {
+				channel?.push("get_all", query).receive("ok", cb);
+			};
 
-	const handleSendMessage = useFunctionWithFeedback({
-		callback: async (values: { text: string }) => {
-			const result = await mutateAsync(values.text);
-
-			if (result) {
-				form.resetFields();
+			if (channel?.state === "joined") {
+				return requestMessages();
 			}
 
-			return true;
+			const joinRef = channel?.on("join", () => {
+				channel?.off("join", joinRef);
+				requestMessages();
+			});
 		},
-		message: "Failed to send message"
-	});
+		[channel]
+	);
+
+	const loadMessagesAround = useCallback<ChatProps["loadMessagesAround"]>(
+		(cb, messageId, limit) => {
+			channel?.push("get_around", { messageId, limit }).receive("ok", cb);
+		},
+		[channel]
+	);
+
+	const sendMessage: ChatProps["sendMessage"] = useCallback(
+		payload => {
+			return channel?.push("create", payload);
+		},
+		[channel]
+	);
+
+	const subscribeToNewMessages: ChatProps["subscribeToNewMessages"] = useCallback(
+		cb => {
+			const refNewMessage = channel?.on("new", cb);
+
+			return () => {
+				channel?.off("new", refNewMessage);
+			};
+		},
+		[channel]
+	);
+
+	const subscribeToDeletedMessages: ChatProps["subscribeToDeletedMessages"] = useCallback(
+		cb => {
+			const refDeleteMessage = channel?.on("delete", cb);
+
+			return () => {
+				channel?.off("delete", refDeleteMessage);
+			};
+		},
+		[channel]
+	);
+
+	const subscribeToUpdatedMessages: ChatProps["subscribeToUpdatedMessages"] = useCallback(
+		cb => {
+			const refUpdateMessage = channel?.on("update", cb);
+
+			return () => {
+				channel?.off("update", refUpdateMessage);
+			};
+		},
+		[channel]
+	);
+
+	const handleTypingChange = useCallback(() => {
+		channel?.push("typing", {});
+	}, [channel]);
+
+	const handleDeleteMessage: NonNullable<ChatProps["deleteMessage"]> = useCallback(
+		id => channel?.push("delete", { id }),
+		[channel]
+	);
+
+	const handleUpdateMessage: NonNullable<ChatProps["updateMessage"]> = useCallback(
+		(id, text) => channel?.push("update", { id, text }),
+		[channel]
+	);
+
+	const handlePinMessage: NonNullable<ChatProps["pinMessage"]> = useCallback(
+		id => channel?.push("pin", { id }),
+		[channel]
+	);
+
+	const handleGetPinnedMessages = useCallback<NonNullable<ChatProps["loadPins"]>>(
+		cb => {
+			channel?.push("get_pinned", {}).receive("ok", cb);
+		},
+		[channel]
+	);
+
+	useEffect(() => {
+		if (!taskId) {
+			return;
+		}
+
+		const channel = socket.channel(`chat:${taskId}`, { user_id: userId });
+		let presences: RawPresenceInfo = {};
+
+		const handleRawPresenceInfo = (info: RawPresenceInfo) => {
+			const typingUsers = Object.entries(info).reduce((acc, [key, value]) => {
+				if (key === userId) {
+					return acc;
+				}
+
+				const typingIndex = value.metas.findIndex(meta => meta.typing);
+
+				if (typingIndex !== -1) {
+					acc.push({
+						id: key,
+						username: value.metas[typingIndex].username,
+						avatar: value.metas[typingIndex].avatar
+					});
+				}
+
+				return acc;
+			}, [] as UserInfo[]);
+
+			setPresence({ typingUsers });
+		};
+
+		channel.on("presence_diff", diff => {
+			presences = Presence.syncDiff(presences, diff);
+			handleRawPresenceInfo(presences);
+		});
+
+		const presenceStateRef = channel.on("presence_state", state => {
+			presences = Presence.syncState(presences, state);
+			channel.off("presence_state", presenceStateRef);
+			handleRawPresenceInfo(presences);
+		});
+
+		channel.join();
+
+		setConnection(channel);
+
+		return () => {
+			setConnection(undefined);
+			channel?.leave();
+		};
+	}, [socket, taskId, userId]);
 
 	return (
 		<>
 			<Button type="text" icon={<MessageOutlined />} onClick={onOpen} />
 
 			<Drawer
-				drawerRender={node => <Flex vertical>{node}</Flex>}
+				keyboard={false}
 				open={open}
 				onClose={onClose}
 				title="Discussion"
-				classNames={{ body: drawerBody, wrapper: drawer }}
+				destroyOnClose
+				classNames={drawerClassnames}
 			>
-				<ChatMessageList enabled={open} pageId={pageId} taskId={taskId} workspaceId={workspaceId} />
-
-				<Form className={inputForm} onFinish={handleSendMessage} form={form}>
-					<Form.Item name="text" noStyle>
-						<Input
-							placeholder="Type your message"
-							suffix={
-								<Button
-									type="text"
-									shape="circle"
-									loading={isPending}
-									htmlType="submit"
-									icon={<SendOutlined />}
-								/>
-							}
-						/>
-					</Form.Item>
-				</Form>
+				<Chat
+					presence={presence}
+					onTypingChange={handleTypingChange}
+					currentUserId={userId}
+					subscribeToNewMessages={subscribeToNewMessages}
+					subscribeToDeletedMessages={subscribeToDeletedMessages}
+					subscribeToUpdatedMessages={subscribeToUpdatedMessages}
+					sendMessage={sendMessage}
+					loadMessages={loadMessages}
+					loadMessagesAround={loadMessagesAround}
+					deleteMessage={handleDeleteMessage}
+					updateMessage={handleUpdateMessage}
+					pinMessage={handlePinMessage}
+					loadPins={handleGetPinnedMessages}
+				/>
 			</Drawer>
 		</>
 	);
 };
 
 export default TaskChat;
+

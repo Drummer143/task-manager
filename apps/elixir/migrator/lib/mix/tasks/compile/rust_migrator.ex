@@ -17,9 +17,13 @@ defmodule Mix.Tasks.Compile.RustMigrator do
   @impl true
   def run(_args) do
     root = Path.expand(File.cwd!())
+    root = if String.contains?(root, "apps/elixir/migrator") do
+      Path.join([root, "..", "..", ".."]) |> Path.absname()
+    else
+      root
+    end
     rust_project = Path.join(root, "libs/backend/migrator")
     priv_dir = :code.priv_dir(:migrator)
-    IO.puts("priv_dir: #{priv_dir}")
     bin_dir = Path.join(root, "dist/target/release")
     bin_path = find_binary(bin_dir, "migrator")
 

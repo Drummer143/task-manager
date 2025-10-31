@@ -13,8 +13,6 @@ defmodule Notifications.Application do
       Notifications.Consumer,
       {DNSCluster, query: Application.get_env(:notifications, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: Notifications.PubSub},
-      # Start the Finch HTTP client for sending emails
-      {Finch, name: Notifications.Finch},
       # Start a worker by calling: Notifications.Worker.start_link(arg)
       # {Notifications.Worker, arg},
       # Start to serve requests, typically the last entry

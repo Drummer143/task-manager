@@ -1,4 +1,8 @@
-export type ExtraThemeToken = {
+export interface BaseThemeToken {
+	fontSizeXs: string;
+}
+
+export interface ExtraThemeToken extends BaseThemeToken {
 	taskBoardColumnBg: string;
 	colorTaskGroupTitle: string;
 	taskBg: string;
@@ -6,4 +10,4 @@ export type ExtraThemeToken = {
 	colorBorderTertiary: string;
 
 	imageCropMaskColor: string;
-};
+}

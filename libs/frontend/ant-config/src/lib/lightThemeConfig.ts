@@ -1,6 +1,6 @@
 import { ThemeConfig } from "antd";
 
-import { lightExtra } from "./extraTokenColors";
+import { lightExtra } from "./extraToken";
 
 export default {
 	cssVar: true,

@@ -1,4 +1,4 @@
-FROM rust:1.86.0 AS builder
+FROM rust:1.88.0 AS builder
 
 ARG APP_NAME
 
@@ -14,7 +14,7 @@ COPY libs/ ./libs/
 
 RUN cargo build -p ${APP_NAME} --release
 
-FROM rust:1.86.0 as runner
+FROM rust:1.88.0 as runner
 
 ARG APP_NAME
 

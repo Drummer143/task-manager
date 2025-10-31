@@ -1,6 +1,11 @@
-import { ExtraThemeToken } from "./types";
+import { BaseThemeToken, ExtraThemeToken } from "./types";
+
+export const base: BaseThemeToken = {
+	fontSizeXs: "11px"
+};
 
 export const lightExtra: ExtraThemeToken = {
+	...base,
 	taskBoardColumnBg: "#F0F0F0",
 	colorTaskGroupTitle: "rgba(255, 255, 255, 0.3)",
 	taskBg: "#FCFCFC",
@@ -9,6 +14,7 @@ export const lightExtra: ExtraThemeToken = {
 };
 
 export const darkExtra: ExtraThemeToken = {
+	...base,
 	taskBoardColumnBg: "#090909",
 	colorTaskGroupTitle: "rgba(0, 0, 0, 0.3)",
 	taskBg: "#040404",

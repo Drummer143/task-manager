@@ -64,6 +64,8 @@ fn apply_filter<'a>(
                 builder.push(")");
             }
         }
+
+        builder.push(")");
     }
 
     builder

@@ -105,7 +105,7 @@ impl PageRepository {
             .await
     }
 
-    /* MongoDB api */
+    // MongoDB api
 
     pub async fn get_page_text<'a>(
         executor: &mongodb::Database,

@@ -5,12 +5,14 @@ use uuid::Uuid;
 use rust_api::entities::page_access::model::Role;
 
 #[derive(Debug, utoipa::ToSchema, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct CreatePageAccessDto {
     pub user_id: Uuid,
     pub role: Role,
 }
 
 #[derive(Debug, utoipa::ToSchema, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct UpdatePageAccessDto {
     pub user_id: Uuid,
     pub role: Option<Role>,

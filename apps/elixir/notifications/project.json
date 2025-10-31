@@ -1,6 +1,6 @@
 {
 	"$schema": "../../../node_modules/nx/schemas/project-schema.json",
-	"name": "socket-server",
+	"name": "notifications",
 	"projectType": "application",
 	"sourceRoot": "apps/elixir/notifications/src",
 	"targets": {
