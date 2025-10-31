@@ -15,7 +15,7 @@ updates:
     schedule:
       interval: "weekly"
 
-  - package-ecosystem: "hex" # See documentation for possible values
+  - package-ecosystem: "mix" # See documentation for possible values
     directory: "/" # Location of package manifests
     schedule:
       interval: "weekly"
