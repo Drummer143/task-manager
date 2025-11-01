@@ -13,7 +13,7 @@ pub fn create_migration(migration_name: impl AsRef<str>) -> Result<(), MigratorE
 
     let version = duration.as_millis();
 
-    let env = crate::helpers::get_envs();
+    let env = crate::helpers::get_envs(false);
 
     let mut path_buf = std::path::PathBuf::from(env.migrations_dir);
     path_buf.push(format!("{}_{}", version, migration_name.as_ref()));

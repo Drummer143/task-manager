@@ -5,20 +5,20 @@ defmodule Chat.Messages do
 
   alias Chat.Messages.Model, as: ChatMessageModel
 
-  def has_more_messages_before(task_id, before_date, first_message_id) do
+  def has_more_messages_before(chat_id, before_date, first_message_id) do
     ChatMessageModel
     |> where(
       [m],
-      m.task_id == ^task_id and m.created_at < ^before_date and is_nil(m.deleted_at) and
+      m.chat_id == ^chat_id and m.created_at < ^before_date and is_nil(m.deleted_at) and
         m.id != ^first_message_id
     )
     |> Repo.exists?()
   end
 
-  def get_messages_before(task_id, before_date \\ nil, limit \\ 50) do
+  def get_messages_before(chat_id, before_date \\ nil, limit \\ 50) do
     query =
       from m in ChatMessageModel,
-        where: m.task_id == ^task_id and is_nil(m.deleted_at),
+        where: m.chat_id == ^chat_id and is_nil(m.deleted_at),
         preload: [:sender, :pinner, :reply_target, reply_target: :sender],
         order_by: [desc: m.created_at],
         limit: ^limit
@@ -32,7 +32,7 @@ defmodule Chat.Messages do
         first_message_created_at = Enum.at(messages, -1).created_at
         first_message_id = Enum.at(messages, -1).id
 
-        has_more_messages_before(task_id, first_message_created_at, first_message_id)
+        has_more_messages_before(chat_id, first_message_created_at, first_message_id)
       else
         false
       end
@@ -44,7 +44,7 @@ defmodule Chat.Messages do
         first_message_created_at = Enum.at(messages, -1).created_at
         first_message_id = Enum.at(messages, -1).id
 
-        has_more_messages_before(task_id, first_message_created_at, first_message_id)
+        has_more_messages_before(chat_id, first_message_created_at, first_message_id)
       else
         false
       end
@@ -52,20 +52,20 @@ defmodule Chat.Messages do
     {messages, has_more}
   end
 
-  def has_more_messages_after(task_id, after_date, last_message_id) do
+  def has_more_messages_after(chat_id, after_date, last_message_id) do
     ChatMessageModel
     |> where(
       [m],
-      m.task_id == ^task_id and m.created_at > ^after_date and is_nil(m.deleted_at) and
+      m.chat_id == ^chat_id and m.created_at > ^after_date and is_nil(m.deleted_at) and
         m.id != ^last_message_id
     )
     |> Repo.exists?()
   end
 
-  def get_messages_after(task_id, after_date, limit \\ 50) do
+  def get_messages_after(chat_id, after_date, limit \\ 50) do
     messages =
       ChatMessageModel
-      |> where([m], m.task_id == ^task_id and is_nil(m.deleted_at) and m.created_at > ^after_date)
+      |> where([m], m.chat_id == ^chat_id and is_nil(m.deleted_at) and m.created_at > ^after_date)
       |> limit(^limit)
       |> preload([:sender, :pinner, :reply_target, reply_target: :sender])
       |> order_by([m], asc: m.created_at)
@@ -76,7 +76,7 @@ defmodule Chat.Messages do
         last_message_created_at = Enum.at(messages, 0).created_at
         last_message_id = Enum.at(messages, 0).id
 
-        has_more_messages_after(task_id, last_message_created_at, last_message_id)
+        has_more_messages_after(chat_id, last_message_created_at, last_message_id)
       else
         false
       end
@@ -84,20 +84,20 @@ defmodule Chat.Messages do
     {messages, has_more}
   end
 
-  def count_total_messages_in_chat(task_id) do
+  def count_total_messages_in_chat(chat_id) do
     ChatMessageModel
-    |> where([m], m.task_id == ^task_id and is_nil(m.deleted_at))
+    |> where([m], m.chat_id == ^chat_id and is_nil(m.deleted_at))
     |> select([m], count(m.id))
     |> Repo.one()
   end
 
-  def get_chat_messages_around(task_id, message_id, limit \\ 50) do
+  def get_chat_messages_around(chat_id, message_id, limit \\ 50) do
     target_message = get_message_by_id(message_id)
     limit = div(limit, 2)
 
     base_query =
       from u in ChatMessageModel,
-        where: u.task_id == ^task_id and is_nil(u.deleted_at),
+        where: u.chat_id == ^chat_id and is_nil(u.deleted_at),
         preload: [:sender, :pinner, :reply_target, reply_target: :sender],
         limit: ^limit
 
@@ -115,14 +115,14 @@ defmodule Chat.Messages do
 
     has_more_on_top =
       if not Enum.empty?(messages_before) do
-        has_more_messages_before(task_id, target_message.created_at, target_message.id)
+        has_more_messages_before(chat_id, target_message.created_at, target_message.id)
       else
         false
       end
 
     has_more_on_bottom =
       if not Enum.empty?(messages_after) do
-        has_more_messages_after(task_id, target_message.created_at, target_message.id)
+        has_more_messages_after(chat_id, target_message.created_at, target_message.id)
       else
         false
       end
@@ -130,16 +130,16 @@ defmodule Chat.Messages do
     {messages_before, target_message, messages_after, has_more_on_top, has_more_on_bottom}
   end
 
-  def count_messages_before(task_id, before_date) do
+  def count_messages_before(chat_id, before_date) do
     ChatMessageModel
-    |> where([m], m.task_id == ^task_id and m.created_at < ^before_date and is_nil(m.deleted_at))
+    |> where([m], m.chat_id == ^chat_id and m.created_at < ^before_date and is_nil(m.deleted_at))
     |> select([m], count(m.id))
     |> Repo.one()
   end
 
-  def create_message(task_id, user_id, text, reply_to \\ nil) do
+  def create_message(chat_id, user_id, text, reply_to \\ nil) do
     ChatMessageModel.changeset(%ChatMessageModel{}, %{
-      task_id: task_id,
+      chat_id: chat_id,
       user_id: user_id,
       text: text,
       reply_to: reply_to
@@ -175,9 +175,9 @@ defmodule Chat.Messages do
     |> Repo.update()
   end
 
-  def get_pinned_messages(task_id) do
+  def get_pinned_messages(chat_id) do
     ChatMessageModel
-    |> where([m], m.task_id == ^task_id and not is_nil(m.pinned_by))
+    |> where([m], m.chat_id == ^chat_id and not is_nil(m.pinned_by))
     |> preload([:pinner, :sender, :reply_target, reply_target: :sender])
     |> order_by([m], desc: m.created_at)
     |> Repo.all()

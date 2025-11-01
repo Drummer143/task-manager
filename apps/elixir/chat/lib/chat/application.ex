@@ -7,12 +7,15 @@ defmodule Chat.Application do
 
   @impl true
   def start(_type, _args) do
+    redix_config = Application.get_env(:chat, :redix_config)
+
     children = [
       ChatWeb.Telemetry,
       Chat.Repo,
       {DNSCluster, query: Application.get_env(:chat, :dns_cluster_query) || :ignore},
       {Phoenix.PubSub, name: Chat.PubSub},
       Chat.Presence,
+      {Redix, Keyword.put(redix_config, :name, :redix)},
       # Start a worker by calling: Chat.Worker.start_link(arg)
       # {Chat.Worker, arg},
       # Start to serve requests, typically the last entry

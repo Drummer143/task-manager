@@ -159,7 +159,7 @@ const TaskChat: React.FC = () => {
 	);
 
 	useEffect(() => {
-		if (!taskId) {
+		if (!taskId || !open) {
 			return;
 		}
 
@@ -199,15 +199,15 @@ const TaskChat: React.FC = () => {
 			handleRawPresenceInfo(presences);
 		});
 
-		channel.join();
-
-		setConnection(channel);
+		channel.join().receive("ok", () => {
+			setConnection(channel);
+		});
 
 		return () => {
 			setConnection(undefined);
 			channel?.leave();
 		};
-	}, [socket, taskId, userId]);
+	}, [socket, taskId, userId, open]);
 
 	return (
 		<>
@@ -221,21 +221,23 @@ const TaskChat: React.FC = () => {
 				destroyOnClose
 				classNames={drawerClassnames}
 			>
-				<Chat
-					presence={presence}
-					onTypingChange={handleTypingChange}
-					currentUserId={userId}
-					subscribeToNewMessages={subscribeToNewMessages}
-					subscribeToDeletedMessages={subscribeToDeletedMessages}
-					subscribeToUpdatedMessages={subscribeToUpdatedMessages}
-					sendMessage={sendMessage}
-					loadMessages={loadMessages}
-					loadMessagesAround={loadMessagesAround}
-					deleteMessage={handleDeleteMessage}
-					updateMessage={handleUpdateMessage}
-					pinMessage={handlePinMessage}
-					loadPins={handleGetPinnedMessages}
-				/>
+				{channel && (
+					<Chat
+						presence={presence}
+						onTypingChange={handleTypingChange}
+						currentUserId={userId}
+						subscribeToNewMessages={subscribeToNewMessages}
+						subscribeToDeletedMessages={subscribeToDeletedMessages}
+						subscribeToUpdatedMessages={subscribeToUpdatedMessages}
+						sendMessage={sendMessage}
+						loadMessages={loadMessages}
+						loadMessagesAround={loadMessagesAround}
+						deleteMessage={handleDeleteMessage}
+						updateMessage={handleUpdateMessage}
+						pinMessage={handlePinMessage}
+						loadPins={handleGetPinnedMessages}
+					/>
+				)}
 			</Drawer>
 		</>
 	);

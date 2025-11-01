@@ -40,6 +40,10 @@ const createSocketStore = (url: string) => {
 				debug: import.meta.env.DEV
 			});
 
+			socket.onError(error => {
+				console.log("error", error);
+			});
+
 			socket.connect();
 
 			set({ socket });

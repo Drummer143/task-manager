@@ -43,6 +43,22 @@ services:
         volumes:
             - rmqdata:/var/lib/rabbitmq
 
+    redis:
+        image: redis:alpine
+        container_name: redis
+        command: ["redis-server", "--appendonly", "yes"]
+        ports:
+            - 6379:6379
+        deploy:
+            resources:
+                limits:
+                    memory: 128M
+                    cpus: "0.25"
+        volumes:
+            - redisdata:/data
+        networks:
+            - net
+
     main-service:
         # restart: always
         container_name: main-service
@@ -133,6 +149,7 @@ services:
             - 8078:8078
         depends_on:
             - postgres
+            - redis
         deploy:
             resources:
                 limits:
@@ -176,4 +193,4 @@ volumes:
     pgdata:
     storage:
     rmqdata:
-
+    redisdata:
