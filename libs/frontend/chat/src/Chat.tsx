@@ -358,51 +358,45 @@ const Chat: React.FC<ChatProps> = ({
 			deleteMessageFromList(id);
 		});
 
-		// const unsubscribeFromUpdatedMessage = subscribeToUpdatedMessages(({ action, message }) => {
-		// 	if (action === "pin") {
-		// 		setPins(prev => {
-		// 			const messageCreatedAt = new Date(message.createdAt).getTime();
+		const unsubscribeFromUpdatedMessage = subscribeToUpdatedMessages(({ action, message }) => {
+			if (action === "pin") {
+				setPins(prev => {
+					const messageCreatedAt = new Date(message.createdAt).getTime();
 
-		// 			const updatedIdx = prev.findIndex(
-		// 				item => messageCreatedAt > new Date(item.createdAt).getTime()
-		// 			);
+					const updatedIdx = prev.findIndex(
+						item => messageCreatedAt > new Date(item.createdAt).getTime()
+					);
 
-		// 			if (updatedIdx === -1) {
-		// 				return prev.concat(message);
-		// 			}
+					if (updatedIdx === -1) {
+						return prev.concat(message);
+					}
 
-		// 			const copy = [...prev];
+					const copy = [...prev];
 
-		// 			copy.splice(updatedIdx - 1, 0, message);
+					copy.splice(updatedIdx - 1, 0, message);
 
-		// 			return copy;
-		// 		});
-		// 	} else if (action === "unpin") {
-		// 		setPins(prev => prev.filter(item => item.id !== message.id));
-		// 	}
+					return copy;
+				});
+			} else if (action === "unpin") {
+				setPins(prev => prev.filter(item => item.id !== message.id));
+			}
 
-		// 	setListItems(prev => {
-		// 		const updatedIdx = prev.findIndex(item => item.id === message.id);
+			const updatedIdx = chatStore.listInfo.items.findIndex(item => item.id === message.id);
 
-		// 		if (updatedIdx === -1) {
-		// 			return prev;
-		// 		}
+			if (updatedIdx === -1) {
+				return;
+			}
 
-		// 		const copy = [...prev];
-
-		// 		(copy[updatedIdx] as MessageListItemMessage).message = {
-		// 			...(copy[updatedIdx] as MessageListItemMessage).message,
-		// 			...message
-		// 		};
-
-		// 		return copy;
-		// 	});
-		// });
+			(chatStore.listInfo.items[updatedIdx] as MessageListItemMessage).message.text =
+				message.text;
+			(chatStore.listInfo.items[updatedIdx] as MessageListItemMessage).message.pinnedBy =
+				message.pinnedBy;
+		});
 
 		return () => {
 			unsubscribeFromNewMessage();
 			unsubscribeFromDeletedMessage();
-			// unsubscribeFromUpdatedMessage();
+			unsubscribeFromUpdatedMessage();
 		};
 	}, [
 		currentUserId,

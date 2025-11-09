@@ -1,5 +1,7 @@
 import { useCallback } from "react";
 
+import { useSnapshot } from "valtio";
+
 import { chatStore } from "../state";
 import { MessageListItem } from "../types";
 import Message from "../ui/Message";
@@ -8,10 +10,12 @@ export const useMessageRenderer = (
 	currentUserId: string,
 	onUserClick?: (userId: string) => void
 ) => {
+	const chatStoreSnapshot = useSnapshot(chatStore);
+
 	return useCallback(
 		(index: number, _: unknown, __: MessageListItem) => {
-			const idx = index - chatStore.firstItemIndex;
-			const item = chatStore.listInfo.items[idx];
+			const idx = index - chatStoreSnapshot.firstItemIndex;
+			const item = chatStoreSnapshot.listInfo.items[idx];
 
 			if (!item) {
 				return null;
@@ -42,7 +46,12 @@ export const useMessageRenderer = (
 					);
 			}
 		},
-		[currentUserId, onUserClick]
+		[
+			chatStoreSnapshot.firstItemIndex,
+			chatStoreSnapshot.listInfo.items,
+			currentUserId,
+			onUserClick
+		]
 	);
 };
 
