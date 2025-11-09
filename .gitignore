@@ -4,6 +4,7 @@
 dist
 tmp
 out-tsc
+target
 
 # dependencies
 node_modules
@@ -75,6 +76,3 @@ erl_crash.dump
 
 # Temporary files, for example, from tests.
 /tmp/
-
-
-storybook-static

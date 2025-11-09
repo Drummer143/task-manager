@@ -1,3 +1,4 @@
+import { chatStore } from "../state";
 import { MessageData, MessageListItem, MessageListItemMessage } from "../types";
 
 export interface ListInfo {
@@ -17,6 +18,77 @@ const isSameDate = (a: string, b: string) => {
 	);
 };
 
+export const pushMessage = (listInfo: ListInfo, message: MessageData): ListInfo => {
+	const newListInfo = {
+		items: [...listInfo.items],
+		groupCounts: [...listInfo.groupCounts],
+		groupLabels: [...listInfo.groupLabels]
+	};
+
+	const prevMessage = newListInfo.items[newListInfo.items.length - 1] as MessageListItemMessage;
+
+	if (!isSameDate(prevMessage.message.createdAt, message.createdAt)) {
+		newListInfo.groupCounts.push(1);
+		newListInfo.groupLabels.push(message.createdAt);
+	} else {
+		newListInfo.groupCounts[newListInfo.groupCounts.length - 1]++;
+	}
+
+	newListInfo.items.push({
+		id: message.id,
+		type: "message",
+		message,
+		uiProps: {
+			showUserInfo:
+				message.sender.id !== prevMessage.message.sender.id ||
+				!isSameDate(prevMessage.message.createdAt, message.createdAt)
+		}
+	});
+
+	return newListInfo;
+};
+
+export const deleteMessageFromList = (messageId: string) => {
+	const idx = chatStore.listInfo.items.findIndex(item => item.id === messageId);
+
+	if (idx === -1) {
+		return;
+	}
+
+	let groupIndex = 0;
+	let iter = idx;
+
+	while (groupIndex < chatStore.listInfo.groupCounts.length && iter >= 0) {
+		if (iter < chatStore.listInfo.groupCounts[groupIndex]) {
+			break;
+		}
+
+		iter -= chatStore.listInfo.groupCounts[groupIndex];
+		groupIndex++;
+	}
+
+	if (chatStore.listInfo.groupCounts[groupIndex] === 1) {
+		chatStore.listInfo.groupCounts.splice(groupIndex, 1);
+		chatStore.listInfo.groupLabels.splice(groupIndex, 1);
+	} else {
+		chatStore.listInfo.groupCounts[groupIndex]--;
+
+		const messageAfterDeleted = chatStore.listInfo.items[idx + 1];
+
+		if (messageAfterDeleted?.type === "message") {
+			const messageBeforeDeleted = chatStore.listInfo.items[idx - 1];
+
+			messageAfterDeleted.uiProps.showUserInfo =
+				messageBeforeDeleted?.type === "message"
+					? messageBeforeDeleted.message.sender.id !==
+						messageAfterDeleted.message.sender.id
+					: true;
+		}
+	}
+
+	chatStore.listInfo.items.splice(idx, 1);
+};
+
 export const prepareList = (messages: MessageData[]): ListInfo => {
 	if (!messages.length) {
 		return {
@@ -30,41 +102,34 @@ export const prepareList = (messages: MessageData[]): ListInfo => {
 	const groupLabels: string[] = [];
 	const items: MessageListItem[] = [];
 
-	let currentGroupCount = 1;
+	let currentGroupCount = messages.length > 1 ? 2 : 1;
 
-	items.push(
-		{
-			type: "placeholder",
-			id: `${messages[0].id}-placeholder`
-		},
-		{
-			id: messages[0].id,
-			type: "message",
-			message: messages[0],
-			uiProps: {
-				showUserInfo: true
-			}
+	items.push({
+		id: messages[0].id,
+		type: "message",
+		message: messages[0],
+		uiProps: {
+			showUserInfo: true
 		}
-	);
+	});
 
 	for (let i = 1; i < messages.length; i++) {
 		const message = messages[i];
-		const prevMessage = messages[i - 1];
+		const nextMessage = messages[i + 1];
 
-		const prevMessageSameDay = isSameDate(prevMessage.createdAt, message.createdAt);
+		if (nextMessage) {
+			if (!isSameDate(message.createdAt, nextMessage.createdAt)) {
+				groupCounts.push(currentGroupCount);
+				groupLabels.push(message.createdAt);
 
-		if (prevMessageSameDay) {
-			currentGroupCount++;
-		} else {
-			groupCounts.push(currentGroupCount);
-			groupLabels.push(prevMessage.createdAt);
-			currentGroupCount = 1;
-
-			items.push({
-				type: "placeholder",
-				id: `${message.id}-placeholder`
-			});
+				currentGroupCount = 1;
+			} else {
+				currentGroupCount++;
+			}
 		}
+
+		const prevMessage = messages[i - 1];
+		const prevMessageSameDay = isSameDate(message.createdAt, prevMessage.createdAt);
 
 		items.push({
 			id: message.id,
@@ -91,9 +156,9 @@ const mergeLists = (currentList: ListInfo, newList: ListInfo): ListInfo => {
 	const firstGroupLabelOfCurrentList = currentList.groupLabels[0];
 
 	if (isSameDate(lastGroupLabelOfNewList, firstGroupLabelOfCurrentList)) {
-		const firstMessageOfCurrentList = currentList.items[1] as MessageListItemMessage;
+		const firstMessageOfCurrentList = currentList.items[0] as MessageListItemMessage;
 
-		return {
+		const mergedList: ListInfo = {
 			groupCounts: [
 				...newList.groupCounts.slice(0, -1),
 				newList.groupCounts[newList.groupCounts.length - 1] + currentList.groupCounts[0],
@@ -112,9 +177,11 @@ const mergeLists = (currentList: ListInfo, newList: ListInfo): ListInfo => {
 								.message.sender.id !== firstMessageOfCurrentList.message.sender.id
 					}
 				},
-				...currentList.items.slice(2)
+				...currentList.items.slice(1)
 			]
 		};
+
+		return mergedList;
 	}
 
 	return {
@@ -125,14 +192,13 @@ const mergeLists = (currentList: ListInfo, newList: ListInfo): ListInfo => {
 };
 
 export const addNewMessagesToList = (
-	currentList: ListInfo,
 	newMessages: MessageData[],
 	action: "prepend" | "append" = "prepend"
-): ListInfo => {
+): void => {
 	const newList = prepareList(newMessages);
 
-	return action === "prepend"
-		? mergeLists(currentList, newList)
-		: mergeLists(newList, currentList);
+	chatStore.listInfo = action === "prepend"
+		? mergeLists(chatStore.listInfo, newList)
+		: mergeLists(newList, chatStore.listInfo);
 };
 

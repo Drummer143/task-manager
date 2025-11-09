@@ -7,7 +7,7 @@ import { motion } from "framer-motion";
 
 import { useStyles } from "./styles";
 
-import { useChatStore } from "../../store";
+import { chatStore } from "../../state";
 import { MessageData, UserInfo } from "../../types";
 import { getPlaceholderAvatarUrl } from "../../utils";
 import { generateListItemDataAttributes } from "../../utils/listItemDataAttributes";
@@ -15,9 +15,10 @@ import { generateListItemDataAttributes } from "../../utils/listItemDataAttribut
 export interface MessageProps {
 	id: string;
 	text: string;
-	index: number;
+	editing: boolean;
 	createdAt: string;
 	senderName: string;
+	highlighted: boolean;
 	showUserInfo: boolean;
 	sentByCurrentUser: boolean;
 
@@ -49,19 +50,12 @@ const Message: React.FC<MessageProps> = ({
 	avatarUrl,
 	showUserInfo,
 	updatedAt,
-	replyTo
+	replyTo,
+	highlighted,
+	editing
 }) => {
+	// const chatStoreSnapshot = useSnapshot(chatStore);
 	const inputValue = useRef(text);
-
-	const {
-		ctxMenuId,
-		editingItemId,
-		highlightedItemId,
-		clearEditingItemInfo,
-		editSubmitHandler,
-		setHighlightedItemId,
-		setReplayMessageId
-	} = useChatStore();
 
 	const createdAtFormattedDates = useMemo(() => {
 		const date = new Date(createdAt);
@@ -110,32 +104,23 @@ const Message: React.FC<MessageProps> = ({
 	const { styles, cx } = useStyles({
 		senderClickable: !!handleSenderClick,
 		showUserInfo,
-		contextMenuOpened: ctxMenuId === id
+		contextMenuOpened: chatStore.ctxItemId === id
 	});
-
-	const editing = editingItemId === id && !!editSubmitHandler;
-	const highlighted = highlightedItemId === id;
 
 	useEffect(() => {
 		inputValue.current = text;
 	}, [text]);
 
 	useEffect(() => {
-		if (!highlighted) {
-			return;
+		if (highlighted) {
+			chatStore.highlightedViewed = true;
 		}
-
-		const timeoutId = setTimeout(() => {
-			setHighlightedItemId(undefined);
-		}, 2500);
-
-		return () => clearTimeout(timeoutId);
-	}, [highlighted, setHighlightedItemId]);
+	}, [highlighted]);
 
 	return (
 		<motion.div
 			className={styles.wrapper}
-			initial="initial"
+			initial={highlighted && chatStore.highlightedViewed ? "highlighted" : "initial"}
 			animate={highlighted ? "highlighted" : "initial"}
 			variants={messageVariants}
 			transition={{ duration: 0.5, ease: "easeOut" }}
@@ -146,7 +131,7 @@ const Message: React.FC<MessageProps> = ({
 					type="text"
 					size="small"
 					icon={<EnterOutlined style={{ transform: "scaleY(-1)" }} />}
-					onClick={() => setReplayMessageId({ id, text, senderName })}
+					onClick={() => (chatStore.replayMessage = { id, text, senderName })}
 				/>
 			</div>
 
@@ -187,7 +172,7 @@ const Message: React.FC<MessageProps> = ({
 				{replyTo && (
 					<Typography.Paragraph
 						type="secondary"
-						onClick={() => useChatStore.setState({ scrollToItemId: replyTo.id })}
+						onClick={() => (chatStore.scrollToItemId = replyTo.id)}
 						ellipsis
 						style={{ cursor: "pointer" }}
 						className={styles.secondaryText}
@@ -224,9 +209,9 @@ const Message: React.FC<MessageProps> = ({
 						enterIcon: null,
 						icon: null,
 						triggerType: ["text"],
-						onCancel: clearEditingItemInfo,
+						onCancel: () => (chatStore.edit = undefined),
 						onChange: value => (inputValue.current = value),
-						onEnd: () => editSubmitHandler?.(inputValue.current)
+						onEnd: () => (chatStore.edit!.text = inputValue.current)
 					}}
 					className={styles.text}
 				>
@@ -257,12 +242,16 @@ const Message: React.FC<MessageProps> = ({
 						<Button
 							type="primary"
 							size="small"
-							onClick={() => editSubmitHandler?.(inputValue.current)}
+							onClick={() => (chatStore.edit!.text = inputValue.current)}
 						>
 							Save
 						</Button>
 
-						<Button type="default" size="small" onClick={clearEditingItemInfo}>
+						<Button
+							type="default"
+							size="small"
+							onClick={() => (chatStore.edit = undefined)}
+						>
 							Cancel
 						</Button>
 					</Flex>

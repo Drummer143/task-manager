@@ -9,7 +9,7 @@
 		"noImplicitReturns": true,
 		"esModuleInterop": true,
 		"noFallthroughCasesInSwitch": true,
-		"noPropertyAccessFromIndexSignature": true,
+		"noPropertyAccessFromIndexSignature": true
 	},
 	"files": [],
 	"include": [],
@@ -19,9 +19,7 @@
 		},
 		{
 			"path": "./tsconfig.spec.json"
-		},
-		{
-			"path": "./tsconfig.storybook.json"
 		}
 	]
 }
+

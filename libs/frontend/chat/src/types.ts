@@ -75,11 +75,7 @@ export interface MessageListItemMessage extends DefaultListItemParams {
 	uiProps: Pick<MessageProps, "showUserInfo">;
 }
 
-export interface MessageListItemDivider extends DefaultListItemParams {
-	type: "placeholder";
-}
-
-export type MessageListItem = MessageListItemMessage | MessageListItemDivider;
+export type MessageListItem = MessageListItemMessage;
 
 export type ListItemType = MessageListItem["type"];
 

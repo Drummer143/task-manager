@@ -1,4 +1,4 @@
-import React, { useMemo } from "react";
+import React, { memo, useMemo } from "react";
 
 import { DownOutlined, UpOutlined } from "@ant-design/icons";
 import { Button, Flex, Space, Typography } from "antd";
@@ -78,5 +78,5 @@ const PinnedBar: React.FC<PinnedBarProps> = ({ pins, onPinClick }) => {
 	);
 };
 
-export default PinnedBar;
+export default memo(PinnedBar);
 
