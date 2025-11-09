@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo } from "react";
+import React, { useCallback, useEffect, useMemo } from "react";
 
 import { CloseOutlined, SendOutlined } from "@ant-design/icons";
 import { useLocalStorage } from "@task-manager/react-utils";
@@ -45,13 +45,12 @@ const NewMessageInput: React.FC<NewMessageInputProps> = ({
 
 			if (!text) return;
 
-			setDraft("");
-
 			onSend({ text, replyTo: chatStore.replayMessage?.id });
 
 			queueMicrotask(() => {
 				form.resetFields();
 				chatStore.replayMessage = undefined;
+				setDraft("");
 			});
 		},
 		[onSend, form, setDraft]
@@ -67,11 +66,13 @@ const NewMessageInput: React.FC<NewMessageInputProps> = ({
 
 	const handleTypingChange = useMemo(
 		() =>
-			throttle(750, () => {
-				onTypingChange?.();
-				setDraft(form.getFieldValue("text"));
+			throttle<React.KeyboardEventHandler<HTMLTextAreaElement>>(750, e => {
+				if (e.code !== "Enter") {
+					onTypingChange?.();
+					setDraft(e.currentTarget.value);
+				}
 			}),
-		[onTypingChange, form, setDraft]
+		[onTypingChange, setDraft]
 	);
 
 	return (
@@ -79,7 +80,6 @@ const NewMessageInput: React.FC<NewMessageInputProps> = ({
 			initialValues={initialValues}
 			form={form}
 			className={styles.textareaWrapper}
-			onValuesChange={handleTypingChange}
 			onFinish={handleSubmit}
 		>
 			{chatStoreSnapshot.replayMessage && (
@@ -120,6 +120,7 @@ const NewMessageInput: React.FC<NewMessageInputProps> = ({
 					aria-autocomplete="none"
 					autoComplete="off"
 					placeholder="Type your message"
+					onKeyDown={handleTypingChange}
 					onPressEnter={handleTextareaPressEnter}
 					autoSize={{ minRows: 2, maxRows: 5 }}
 				/>
