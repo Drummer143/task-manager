@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useMemo } from "react";
+import React, { memo, useCallback, useMemo } from "react";
 
 import { CloseOutlined, SendOutlined } from "@ant-design/icons";
 import { useLocalStorage } from "@task-manager/react-utils";
@@ -136,5 +136,5 @@ const NewMessageInput: React.FC<NewMessageInputProps> = ({
 	);
 };
 
-export default NewMessageInput;
+export default memo(NewMessageInput);
 

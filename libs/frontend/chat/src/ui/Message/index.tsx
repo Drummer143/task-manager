@@ -4,7 +4,6 @@ import React, { memo, useEffect, useMemo, useRef } from "react";
 import { EnterOutlined, PushpinOutlined } from "@ant-design/icons";
 import { Avatar, Button, Flex, Tooltip, Typography } from "antd";
 import { motion } from "framer-motion";
-import { useSnapshot } from "valtio";
 
 import { useStyles } from "./styles";
 
@@ -16,9 +15,10 @@ import { generateListItemDataAttributes } from "../../utils/listItemDataAttribut
 export interface MessageProps {
 	id: string;
 	text: string;
-	index: number;
+	editing: boolean;
 	createdAt: string;
 	senderName: string;
+	highlighted: boolean;
 	showUserInfo: boolean;
 	sentByCurrentUser: boolean;
 
@@ -50,9 +50,11 @@ const Message: React.FC<MessageProps> = ({
 	avatarUrl,
 	showUserInfo,
 	updatedAt,
-	replyTo
+	replyTo,
+	highlighted,
+	editing
 }) => {
-	const chatStoreSnapshot = useSnapshot(chatStore);
+	// const chatStoreSnapshot = useSnapshot(chatStore);
 	const inputValue = useRef(text);
 
 	const createdAtFormattedDates = useMemo(() => {
@@ -104,9 +106,6 @@ const Message: React.FC<MessageProps> = ({
 		showUserInfo,
 		contextMenuOpened: chatStore.ctxItemId === id
 	});
-
-	const editing = chatStoreSnapshot.edit?.messageId === id;
-	const highlighted = chatStoreSnapshot.highlightedItemId === id;
 
 	useEffect(() => {
 		inputValue.current = text;

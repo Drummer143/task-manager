@@ -35,9 +35,10 @@ export const useMessageRenderer = (
 							showUserInfo={item.uiProps.showUserInfo}
 							avatarUrl={item.message.sender.avatar}
 							onSenderClick={onUserClick}
-							index={index}
 							replyTo={item.message.replyTarget}
 							updatedAt={item.message.updatedAt}
+							highlighted={chatStoreSnapshot.highlightedItemId === item.id}
+							editing={chatStoreSnapshot.edit?.messageId === item.id}
 						/>
 					);
 				default:
@@ -47,7 +48,9 @@ export const useMessageRenderer = (
 			}
 		},
 		[
+			chatStoreSnapshot.edit?.messageId,
 			chatStoreSnapshot.firstItemIndex,
+			chatStoreSnapshot.highlightedItemId,
 			chatStoreSnapshot.listInfo.items,
 			currentUserId,
 			onUserClick
