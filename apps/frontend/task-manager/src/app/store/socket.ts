@@ -36,9 +36,7 @@ const createSocketStore = (url: string) => {
 
 			socket?.disconnect();
 
-			socket = new Socket(url, {
-				debug: import.meta.env.DEV
-			});
+			socket = new Socket(url);
 
 			socket.onError(error => {
 				console.log("error", error);

@@ -18,10 +18,11 @@ defmodule Mix.Tasks.Compile.RustMigrator do
   def run(_args) do
     root = Path.expand(File.cwd!())
     root = if String.contains?(root, "apps/elixir/migrator") do
-      Path.join([root, "..", "..", ".."]) |> Path.absname()
+      Path.expand("../../..", root)
     else
       root
     end
+
     rust_project = Path.join(root, "libs/backend/migrator")
     priv_dir = :code.priv_dir(:migrator)
     bin_dir = Path.join(root, "dist/target/release")
@@ -36,13 +37,12 @@ defmodule Mix.Tasks.Compile.RustMigrator do
 
     IO.puts("🔧 Building Rust migrator in #{rust_project}...")
 
-    {output, status} =
-      System.cmd("cargo", ["build", "--release"],
-        cd: rust_project,
-        stderr_to_stdout: true
-      )
-
-    IO.puts(output)
+    {_, status} =
+    System.cmd("cargo", ["build", "--release"],
+      cd: rust_project,
+      stderr_to_stdout: true,
+      into: IO.stream(:stdio, :line)
+    )
 
     if status != 0 do
       Mix.raise("Rust migrator build failed with status #{status}")

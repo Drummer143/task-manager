@@ -21,6 +21,16 @@ export const useStyles = createStyles(({ css }) => ({
 	`,
 	bottomContent: css`
 		position: relative;
+	`,
+	newMessagesButtonWrapper: css`
+		position: relative;
+	`,
+	newMessagesButton: css`
+		position: absolute;
+		left: 50%;
+		transform: translate(-50%, -100%);
+		top: -16px;
+		z-index: 1;
 	`
 }));
 

@@ -2,11 +2,11 @@ import React, { memo, useCallback, useRef, useState } from "react";
 
 import { DeleteOutlined, EditOutlined, PushpinOutlined } from "@ant-design/icons";
 import { Dropdown, MenuProps } from "antd";
+import { useSnapshot } from "valtio";
 
 import { useStyles } from "./styles";
 
-import { useChatStore } from "../../store";
-import { MessageListItem } from "../../types";
+import { chatStore } from "../../state";
 import {
 	getClosestInteractiveListItem,
 	getDataAttribute
@@ -14,7 +14,6 @@ import {
 
 interface ContextMenuProps {
 	children: React.ReactNode;
-	listItems: MessageListItem[];
 	currentUserId: string;
 
 	handlePinMessage?: (id: string) => void;
@@ -24,27 +23,25 @@ interface ContextMenuProps {
 
 const ContextMenu: React.FC<ContextMenuProps> = ({
 	children,
-	listItems,
 	currentUserId,
 	handlePinMessage,
 	handleDeleteMessage,
 	handleUpdateMessage
 }) => {
+	const chatStoreSnapshot = useSnapshot(chatStore);
+
 	const [contextMenuItems, setContextMenuItems] = useState<MenuProps | undefined>(undefined);
 
 	const ctxParams = useRef<MenuProps | undefined>(undefined);
-
-	const { setCtxMenuId, setEditingItemId, clearEditingItemInfo, setCtxOpen, ctxOpen } =
-		useChatStore();
 
 	const styles = useStyles().styles;
 
 	const closeContextMenu = useCallback(() => {
 		setContextMenuItems(undefined);
-		setCtxOpen(false);
+		chatStore.ctxOpen = false;
 		ctxParams.current = undefined;
-		setCtxMenuId(undefined);
-	}, [setCtxMenuId, setCtxOpen]);
+		chatStore.ctxItemId = undefined;
+	}, []);
 
 	const handleContextMenuOpen = useCallback<React.MouseEventHandler<HTMLDivElement>>(
 		e => {
@@ -59,8 +56,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 			}
 
 			const id = getDataAttribute(ctxTarget, "data-item-id");
-			const index = listItems.findIndex(item => item.id === id);
-			const item = listItems.at(index);
+			const item = chatStore.listInfo.items.find(item => item.id === id);
 
 			if (!item || item?.type !== "message") {
 				e.preventDefault();
@@ -88,9 +84,8 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 						label: "Edit",
 						icon: <EditOutlined />,
 						onClick: () =>
-							setEditingItemId(item.message.id, text => {
-								handleUpdateMessage(item.message.id, text);
-								clearEditingItemInfo();
+							(chatStore.edit = {
+								messageId: item.message.id
 							})
 					});
 				}
@@ -113,7 +108,7 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 				}
 			}
 
-			setCtxMenuId(item.message.id);
+			chatStore.ctxItemId = item.message.id;
 
 			if (ctxMenu.length) {
 				ctxParams.current = {
@@ -125,43 +120,33 @@ const ContextMenu: React.FC<ContextMenuProps> = ({
 			}
 		},
 		[
-			listItems,
 			handlePinMessage,
 			currentUserId,
-			setCtxMenuId,
 			closeContextMenu,
 			handleUpdateMessage,
-			handleDeleteMessage,
-			setEditingItemId,
-			clearEditingItemInfo
+			handleDeleteMessage
 		]
 	);
 
-	const handleContextMenuClose = useCallback(
-		(open: boolean) => {
-			if (ctxParams.current) {
-				setCtxOpen(open);
-			}
+	const handleContextMenuClose = useCallback((open: boolean) => {
+		if (ctxParams.current) {
+			chatStore.ctxOpen = open;
+		}
 
-			if (!open) {
-				setContextMenuItems(undefined);
-				setCtxMenuId(undefined);
-			}
-		},
-		[setCtxOpen, setCtxMenuId]
-	);
+		if (!open) {
+			setContextMenuItems(undefined);
+			chatStore.ctxItemId = undefined;
+		}
+	}, []);
 
 	return (
 		<Dropdown
 			menu={contextMenuItems}
 			trigger={["contextMenu"]}
-			open={ctxOpen && !!contextMenuItems}
+			open={chatStoreSnapshot.ctxOpen && !!contextMenuItems}
 			onOpenChange={handleContextMenuClose}
 		>
-			<div
-				onContextMenuCapture={handleContextMenuOpen}
-				className={styles.contextMenuWrapper}
-			>
+			<div onContextMenuCapture={handleContextMenuOpen} className={styles.contextMenuWrapper}>
 				{children}
 			</div>
 		</Dropdown>

@@ -201,6 +201,10 @@ defmodule Chat.ChatChannel do
           replyTo: message.reply_to
         }
 
+        Presence.update(socket, user_id, fn meta ->
+          Map.put(meta, :typing, false)
+        end)
+
         broadcast!(socket, "new", payload)
         {:noreply, socket}
 

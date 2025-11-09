@@ -1,13 +1,14 @@
-import React, { useCallback, useMemo } from "react";
+import React, { memo, useCallback, useMemo } from "react";
 
 import { CloseOutlined, SendOutlined } from "@ant-design/icons";
 import { useLocalStorage } from "@task-manager/react-utils";
 import { Button, Flex, Form, Input, Typography } from "antd";
 import { throttle } from "throttle-debounce";
+import { useSnapshot } from "valtio";
 
 import { useStyles } from "./styles";
 
-import { useChatStore } from "../../store";
+import { chatStore } from "../../state";
 
 interface NewMessageInputProps {
 	chatId?: string;
@@ -30,7 +31,7 @@ const NewMessageInput: React.FC<NewMessageInputProps> = ({
 }) => {
 	const styles = useStyles({ hasTopBar }).styles;
 
-	const { replayMessage, setReplayMessageId } = useChatStore();
+	const chatStoreSnapshot = useSnapshot(chatStore);
 
 	const [draft, setDraft] = useLocalStorage(`chat:${chatId}:draft`, "");
 
@@ -44,13 +45,12 @@ const NewMessageInput: React.FC<NewMessageInputProps> = ({
 
 			if (!text) return;
 
-			setDraft("");
-
-			onSend({ text, replyTo: useChatStore.getState().replayMessage?.id });
+			onSend({ text, replyTo: chatStore.replayMessage?.id });
 
 			queueMicrotask(() => {
 				form.resetFields();
-				useChatStore.setState({ replayMessage: undefined });
+				chatStore.replayMessage = undefined;
+				setDraft("");
 			});
 		},
 		[onSend, form, setDraft]
@@ -66,11 +66,13 @@ const NewMessageInput: React.FC<NewMessageInputProps> = ({
 
 	const handleTypingChange = useMemo(
 		() =>
-			throttle(750, () => {
-				onTypingChange?.();
-				setDraft(form.getFieldValue("text"));
+			throttle<React.KeyboardEventHandler<HTMLTextAreaElement>>(750, e => {
+				if (e.code !== "Enter") {
+					onTypingChange?.();
+					setDraft(e.currentTarget.value);
+				}
 			}),
-		[onTypingChange, form, setDraft]
+		[onTypingChange, setDraft]
 	);
 
 	return (
@@ -78,10 +80,9 @@ const NewMessageInput: React.FC<NewMessageInputProps> = ({
 			initialValues={initialValues}
 			form={form}
 			className={styles.textareaWrapper}
-			onValuesChange={handleTypingChange}
 			onFinish={handleSubmit}
 		>
-			{replayMessage && (
+			{chatStoreSnapshot.replayMessage && (
 				<Flex
 					justify="space-between"
 					align="center"
@@ -96,11 +97,11 @@ const NewMessageInput: React.FC<NewMessageInputProps> = ({
 				>
 					<div style={{ flex: "1", overflow: "hidden" }}>
 						<Typography.Text type="secondary">
-							Reply to {replayMessage.senderName}
+							Reply to {chatStoreSnapshot.replayMessage?.senderName}
 						</Typography.Text>
 
 						<Typography.Paragraph style={{ margin: 0 }} ellipsis={{ tooltip: true }}>
-							{replayMessage.text}
+							{chatStoreSnapshot.replayMessage?.text}
 						</Typography.Paragraph>
 					</div>
 
@@ -108,7 +109,7 @@ const NewMessageInput: React.FC<NewMessageInputProps> = ({
 						type="text"
 						size="small"
 						icon={<CloseOutlined />}
-						onClick={() => setReplayMessageId(undefined)}
+						onClick={() => (chatStore.replayMessage = undefined)}
 					/>
 				</Flex>
 			)}
@@ -119,6 +120,7 @@ const NewMessageInput: React.FC<NewMessageInputProps> = ({
 					aria-autocomplete="none"
 					autoComplete="off"
 					placeholder="Type your message"
+					onKeyDown={handleTypingChange}
 					onPressEnter={handleTextareaPressEnter}
 					autoSize={{ minRows: 2, maxRows: 5 }}
 				/>
@@ -134,5 +136,5 @@ const NewMessageInput: React.FC<NewMessageInputProps> = ({
 	);
 };
 
-export default NewMessageInput;
+export default memo(NewMessageInput);
 
