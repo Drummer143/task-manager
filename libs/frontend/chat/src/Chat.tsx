@@ -2,7 +2,7 @@
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { ArrowDownOutlined } from "@ant-design/icons";
-import { App, Badge, Button } from "antd";
+import { App, Button } from "antd";
 import { AnimatePresence, motion } from "framer-motion";
 import { GroupedVirtuoso, GroupedVirtuosoHandle } from "react-virtuoso";
 import { subscribe, useSnapshot } from "valtio";
@@ -120,10 +120,7 @@ const Chat: React.FC<ChatProps> = ({
 
 				if (response.messages.length) {
 					chatStore.firstItemIndex = chatStore.firstItemIndex - response.messages.length;
-					chatStore.listInfo = addNewMessagesToList(
-						chatStore.listInfo,
-						response.messages
-					);
+					addNewMessagesToList(response.messages);
 				}
 
 				isFetchingMessages.current = false;
@@ -152,11 +149,7 @@ const Chat: React.FC<ChatProps> = ({
 				hasMore.current.bottom = response.hasMoreOnBottom;
 
 				if (response.messages.length) {
-					chatStore.listInfo = addNewMessagesToList(
-						chatStore.listInfo,
-						response.messages,
-						"append"
-					);
+					addNewMessagesToList(response.messages, "append");
 				}
 
 				isFetchingMessages.current = false;

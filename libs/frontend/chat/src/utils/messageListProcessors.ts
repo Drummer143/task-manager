@@ -192,14 +192,13 @@ const mergeLists = (currentList: ListInfo, newList: ListInfo): ListInfo => {
 };
 
 export const addNewMessagesToList = (
-	currentList: ListInfo,
 	newMessages: MessageData[],
 	action: "prepend" | "append" = "prepend"
-): ListInfo => {
+): void => {
 	const newList = prepareList(newMessages);
 
-	return action === "prepend"
-		? mergeLists(currentList, newList)
-		: mergeLists(newList, currentList);
+	chatStore.listInfo = action === "prepend"
+		? mergeLists(chatStore.listInfo, newList)
+		: mergeLists(newList, chatStore.listInfo);
 };
 
