@@ -1,7 +1,8 @@
 /* eslint-disable max-lines */
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { App } from "antd";
+import { ArrowDownOutlined } from "@ant-design/icons";
+import { App, Badge, Button } from "antd";
 import { AnimatePresence, motion } from "framer-motion";
 import { GroupedVirtuoso, GroupedVirtuosoHandle } from "react-virtuoso";
 import { subscribe, useSnapshot } from "valtio";
@@ -23,6 +24,23 @@ const increaseViewportBy = {
 	bottom: 300,
 	top: 300
 };
+
+const messageForms: Record<Intl.LDMLPluralRule, string> = {
+	one: "new message",
+	two: "new messages",
+	few: "new messages",
+	many: "new messages",
+	other: "new messages",
+	zero: "new messages"
+};
+
+const plural = new Intl.PluralRules();
+
+function pluralizeMessages(count: number) {
+	const form = plural.select(count);
+
+	return `${count} ${messageForms[form]}`;
+}
 
 const Chat: React.FC<ChatProps> = ({
 	currentUserId,
@@ -48,11 +66,14 @@ const Chat: React.FC<ChatProps> = ({
 	const [pins, setPins] = useState<MessageData[]>([]);
 	const [loading, setLoading] = useState<boolean>(true);
 	const [isScrolling, setIsScrolling] = useState(false);
+	const [atBottom, setAtBottom] = useState(false);
+	const [newMessagesCount, setNewMessagesCount] = useState<number>(0);
 
 	const renderMessage = useMessageRenderer(currentUserId, onUserClick);
 
 	const { styles, cx } = useStyles();
 
+	const atBottomRef = useRef(false);
 	const isFetchingMessages = useRef(true);
 	const queuedLoadMore = useRef<"top" | "bottom" | false>(false);
 	const isProgrammaticScrolling = useRef(false);
@@ -200,6 +221,52 @@ const Chat: React.FC<ChatProps> = ({
 		[loadMessagesAround]
 	);
 
+	const handleScrollToBottomClick = useCallback(() => {
+		if (!hasMore.current.bottom) {
+			virtuosoRef.current?.scrollToIndex({
+				index: Number.MAX_SAFE_INTEGER,
+				align: "end",
+				behavior: "smooth"
+			});
+
+			return;
+		}
+
+		isFetchingMessages.current = true;
+
+		loadMessages(
+			response => {
+				hasMore.current.bottom = false;
+				hasMore.current.top = response.hasMoreOnTop;
+
+				if (response.total) {
+					chatStore.firstItemIndex = response.total - response.messages.length;
+				}
+
+				chatStore.listInfo = prepareList(response.messages);
+
+				isProgrammaticScrolling.current = true;
+
+				requestAnimationFrame(() => {
+					virtuosoRef.current?.scrollToIndex({
+						index: response.messages.length,
+						align: "end",
+						behavior: "auto"
+					});
+					setNewMessagesCount(0);
+
+					isProgrammaticScrolling.current = false;
+				});
+
+				isFetchingMessages.current = false;
+			},
+			{
+				limit: INITIAL_LIMIT,
+				countTotal: true
+			}
+		);
+	}, [loadMessages]);
+
 	const renderGroup = useCallback(
 		(index: number) => <Divider date={chatStore.listInfo.groupLabels[index]} />,
 		[]
@@ -228,16 +295,57 @@ const Chat: React.FC<ChatProps> = ({
 		loadPins?.(setPins);
 
 		const unsubscribeFromNewMessage = subscribeToNewMessages(message => {
-			chatStore.listInfo = pushMessage(chatStore.listInfo, message);
+			const sentByCurrentUser = message.sender.id === currentUserId;
 
-			if (message.sender.id === currentUserId) {
-				requestAnimationFrame(() => {
-					virtuosoRef.current?.scrollToIndex({
-						index: chatStore.listInfo.items.length - 1,
-						align: "end",
-						behavior: "smooth"
+			if (!hasMore.current.bottom) {
+				chatStore.listInfo = pushMessage(chatStore.listInfo, message);
+
+				if (sentByCurrentUser || atBottomRef.current) {
+					requestAnimationFrame(() => {
+						virtuosoRef.current?.scrollToIndex({
+							index: chatStore.listInfo.items.length - 1,
+							align: "end",
+							behavior: "smooth"
+						});
 					});
-				});
+				} else {
+					setNewMessagesCount(prev => prev + 1);
+				}
+			} else if (sentByCurrentUser) {
+				isFetchingMessages.current = true;
+
+				loadMessages(
+					response => {
+						hasMore.current.bottom = false;
+						hasMore.current.top = response.hasMoreOnTop;
+
+						if (response.total) {
+							chatStore.firstItemIndex = response.total - response.messages.length;
+						}
+
+						chatStore.listInfo = prepareList(response.messages);
+
+						isProgrammaticScrolling.current = true;
+
+						requestAnimationFrame(() => {
+							virtuosoRef.current?.scrollToIndex({
+								index: response.messages.length,
+								align: "end",
+								behavior: "auto"
+							});
+
+							isProgrammaticScrolling.current = false;
+						});
+
+						isFetchingMessages.current = false;
+					},
+					{
+						limit: INITIAL_LIMIT,
+						countTotal: true
+					}
+				);
+			} else {
+				setNewMessagesCount(prev => prev + 1);
 			}
 		});
 
@@ -340,6 +448,10 @@ const Chat: React.FC<ChatProps> = ({
 		});
 	}, [handleScrollToMessage, updateMessage]);
 
+	useEffect(() => {
+		atBottomRef.current = atBottom;
+	}, [atBottom]);
+
 	return (
 		<div className={cx(styles.wrapper, className)}>
 			<PinnedBar pins={pins} onPinClick={handleScrollToMessage} />
@@ -360,10 +472,11 @@ const Chat: React.FC<ChatProps> = ({
 						computeItemKey={computeItemKey}
 						itemContent={renderMessage}
 						initialTopMostItemIndex={Number.MAX_SAFE_INTEGER}
-						alignToBottom
 						skipAnimationFrameInResizeObserver
 						startReached={handleLoadMoreMessageOnTop}
 						endReached={handleLoadMoreMessageOnBottom}
+						atBottomStateChange={setAtBottom}
+						atBottomThreshold={300}
 						increaseViewportBy={increaseViewportBy}
 						// defaultItemHeight={32}
 						firstItemIndex={chatStoreSnapshot.firstItemIndex}
@@ -372,6 +485,28 @@ const Chat: React.FC<ChatProps> = ({
 			)}
 
 			<div className={styles.bottomContent}>
+				<AnimatePresence>
+					{!atBottom && (
+						<motion.div
+							key="new-messages-button-wrapper"
+							initial={{ y: 30, opacity: 0 }}
+							animate={{ y: 0, opacity: 1 }}
+							exit={{ y: 30, opacity: 0 }}
+							transition={{ duration: 0.05 }}
+							className={styles.newMessagesButtonWrapper}
+						>
+							<Button
+								className={styles.newMessagesButton}
+								shape={newMessagesCount ? "round" : "circle"}
+								icon={<ArrowDownOutlined />}
+								onClick={handleScrollToBottomClick}
+							>
+								{!!newMessagesCount && pluralizeMessages(newMessagesCount)}
+							</Button>
+						</motion.div>
+					)}
+				</AnimatePresence>
+
 				<AnimatePresence>
 					{!!presence?.typingUsers?.length && (
 						<motion.div
