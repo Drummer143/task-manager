@@ -26,12 +26,9 @@ defmodule Mix.Tasks.Compile.RustMigrator do
     rust_project = Path.join(root, "libs/backend/migrator")
     priv_dir = :code.priv_dir(:migrator)
     bin_dir = Path.join(root, "dist/target/release")
-    bin_path = find_binary(bin_dir, "migrator")
 
     # source_migrations_dir = Path.join(rust_project, "migrations")
     # dest_migrations_dir = Path.join(priv_dir, "migrations")
-
-    dest = Path.join(priv_dir, Path.basename(bin_path))
 
     File.mkdir_p!(priv_dir)
 
@@ -47,6 +44,9 @@ defmodule Mix.Tasks.Compile.RustMigrator do
     if status != 0 do
       Mix.raise("Rust migrator build failed with status #{status}")
     end
+
+    bin_path = find_binary(bin_dir, "migrator")
+    dest = Path.join(priv_dir, Path.basename(bin_path))
 
     File.cp!(bin_path, dest)
     IO.puts("✅ Copied binary to #{dest}")
