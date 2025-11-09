@@ -16,7 +16,12 @@ import Divider from "./ui/Divider";
 import NewMessageInput from "./ui/NewMessageInput";
 import PinnedBar from "./ui/PinnedBar";
 import TypingBar from "./ui/TypingBar";
-import { addNewMessagesToList, prepareList, pushMessage } from "./utils/messageListProcessors";
+import {
+	addNewMessagesToList,
+	deleteMessageFromList,
+	prepareList,
+	pushMessage
+} from "./utils/messageListProcessors";
 
 const computeItemKey = (index: number, item?: MessageListItem) => item?.id ?? index;
 
@@ -349,13 +354,9 @@ const Chat: React.FC<ChatProps> = ({
 			}
 		});
 
-		// const unsubscribeFromDeletedMessage = subscribeToDeletedMessages(({ id }) => {
-		// 	setListItems(prev => {
-		// 		const newList = removeMessageById(prev, id);
-
-		// 		return newList;
-		// 	});
-		// });
+		const unsubscribeFromDeletedMessage = subscribeToDeletedMessages(({ id }) => {
+			deleteMessageFromList(id);
+		});
 
 		// const unsubscribeFromUpdatedMessage = subscribeToUpdatedMessages(({ action, message }) => {
 		// 	if (action === "pin") {
@@ -400,7 +401,7 @@ const Chat: React.FC<ChatProps> = ({
 
 		return () => {
 			unsubscribeFromNewMessage();
-			// unsubscribeFromDeletedMessage();
+			unsubscribeFromDeletedMessage();
 			// unsubscribeFromUpdatedMessage();
 		};
 	}, [

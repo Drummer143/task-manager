@@ -1,3 +1,4 @@
+import { chatStore } from "../state";
 import { MessageData, MessageListItem, MessageListItemMessage } from "../types";
 
 export interface ListInfo {
@@ -47,24 +48,46 @@ export const pushMessage = (listInfo: ListInfo, message: MessageData): ListInfo 
 	return newListInfo;
 };
 
-// export const deleteMessage = (listInfo: ListInfo, messageId: string): ListInfo => {
-// 	const newListInfo = {
-// 		items: [...listInfo.items],
-// 		groupCounts: [...listInfo.groupCounts],
-// 		groupLabels: [...listInfo.groupLabels]
-// 	};
+export const deleteMessageFromList = (messageId: string) => {
+	const idx = chatStore.listInfo.items.findIndex(item => item.id === messageId);
 
-// 	const idx = newListInfo.items.findIndex(item => item.id === messageId);
+	if (idx === -1) {
+		return;
+	}
 
-// 	if (idx === -1) {
-// 		return listInfo;
-// 	}
+	let groupIndex = 0;
+	let iter = idx;
 
-// 	const itemBefore = newListInfo.items[idx - 1];
-// 	const itemAfter = newListInfo.items[idx + 1];
+	while (groupIndex < chatStore.listInfo.groupCounts.length && iter >= 0) {
+		if (iter < chatStore.listInfo.groupCounts[groupIndex]) {
+			break;
+		}
 
-// 	return newListInfo;
-// };
+		iter -= chatStore.listInfo.groupCounts[groupIndex];
+		groupIndex++;
+	}
+
+	if (chatStore.listInfo.groupCounts[groupIndex] === 1) {
+		chatStore.listInfo.groupCounts.splice(groupIndex, 1);
+		chatStore.listInfo.groupLabels.splice(groupIndex, 1);
+	} else {
+		chatStore.listInfo.groupCounts[groupIndex]--;
+
+		const messageAfterDeleted = chatStore.listInfo.items[idx + 1];
+
+		if (messageAfterDeleted?.type === "message") {
+			const messageBeforeDeleted = chatStore.listInfo.items[idx - 1];
+
+			messageAfterDeleted.uiProps.showUserInfo =
+				messageBeforeDeleted?.type === "message"
+					? messageBeforeDeleted.message.sender.id !==
+						messageAfterDeleted.message.sender.id
+					: true;
+		}
+	}
+
+	chatStore.listInfo.items.splice(idx, 1);
+};
 
 export const prepareList = (messages: MessageData[]): ListInfo => {
 	if (!messages.length) {
