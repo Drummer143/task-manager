@@ -46,7 +46,6 @@ defmodule Chat.MixProject do
       {:jason, "~> 1.2"},
       {:dns_cluster, "~> 0.2.0"},
       {:bandit, "~> 1.5"},
-      {:migrator, in_umbrella: true}
     ]
   end
 

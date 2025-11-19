@@ -5,14 +5,12 @@ ARG APP_NAME
 WORKDIR /app
 
 COPY Cargo.toml Cargo.lock ./
-
 COPY apps/backend/ ./apps/backend/
+COPY libs/ ./libs/
 
 ENV APP_NAME=${APP_NAME}
 
-COPY libs/ ./libs/
-
-RUN cargo build -p ${APP_NAME} --release
+RUN cargo build -p ${APP_NAME}
 
 FROM rust:1.88.0 as runner
 
@@ -20,7 +18,11 @@ ARG APP_NAME
 
 WORKDIR /app
 
-COPY --from=builder /app/target/release/ ./
+COPY --from=builder /app/target/debug/ ./
+
+COPY migrations/ ./migrations/
+
+ENV MIGRATIONS_DIR=/app/migrations
 
 RUN echo "#!/bin/sh\n./${APP_NAME}" > entrypoint.sh
 

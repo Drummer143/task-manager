@@ -1,5 +1,4 @@
 use axum::http;
-use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use utoipa::OpenApi;
 
 mod db_connections;
@@ -11,9 +10,9 @@ mod types;
 async fn main() {
     let _ = dotenvy::dotenv();
 
-    tracing_subscriber::registry()
-        .with(tracing_subscriber::fmt::layer())
-        .init();
+    // tracing_subscriber::registry()
+    //     .with(tracing_subscriber::fmt::layer())
+    //     .init();
 
     let cors = tower_http::cors::CorsLayer::new()
         .allow_origin(tower_http::cors::AllowOrigin::list([
@@ -73,10 +72,11 @@ async fn main() {
                 .url("/api/openapi.json", swagger::ApiDoc::openapi()),
         )
         .with_state(app_state)
-        .layer(cors)
-        .layer(tower_http::trace::TraceLayer::new_for_http());
+        .layer(cors);
+        // .layer(tower_http::trace::TraceLayer::new_for_http());
 
     tracing::info!("Listening on {}", addr);
+    println!("Listening on {}", addr);
 
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
 
