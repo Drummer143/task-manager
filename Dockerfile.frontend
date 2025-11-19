@@ -16,7 +16,7 @@ ARG APP_NAME
 
 RUN pnpm exec nx run ${APP_NAME}:build
 
-FROM nginx:1.18 AS runner
+FROM nginx:1.29 AS runner
 
 ARG APP_NAME
 
