@@ -26,7 +26,7 @@ sqlx = { version = "0.8", features = [
 tower-http = { version = "0.6", features = ["trace", "cors", "fs"] }
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["fmt"] }
-utoipa = { version = "5.3", features = ["uuid", "chrono"] }
+utoipa = { version = "5.4", features = ["uuid", "chrono"] }
 utoipa-axum = "0.2"
 utoipa-swagger-ui = { version = "9.0", features = ["axum"] }
 uuid = { version = "1", features = ["v4", "serde"] }
