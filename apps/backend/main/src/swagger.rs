@@ -1,8 +1,8 @@
 #[derive(utoipa::OpenApi)]
 #[openapi(
     paths(
-        crate::entities::auth::controller::login::login,
-        crate::entities::auth::controller::register::register,
+        // crate::entities::auth::controller::login::login,
+        // crate::entities::auth::controller::register::register,
 
         crate::entities::board_statuses::controller::create_board_status::create_board_status,
         crate::entities::board_statuses::controller::get_board_statuses::get_board_statuses,

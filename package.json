@@ -3,7 +3,7 @@
 	"version": "0.0.0",
 	"license": "MIT",
 	"scripts": {
-		"start_base": "docker compose up -d postgres rmq main-service",
+		"start_base": "docker compose up -d postgres rmq redis authentik_server authentik_worker",
 		"dev": "nx run-many --target=dev --projects=task-manager,main,storage",
 		"dev:all": "nx run-many --target=dev --all",
 		"dev:custom": "nx run-many --target=dev",
@@ -44,6 +44,7 @@
 		"i18next-browser-languagedetector": "^8.2.0",
 		"i18next-http-backend": "^3.0.2",
 		"minimatch": "^10.0.1",
+		"oidc-client-ts": "^3.4.1",
 		"phoenix": "^1.7.21",
 		"react": "^18.3.1",
 		"react-dom": "^18.3.1",

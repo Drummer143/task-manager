@@ -3,6 +3,8 @@ use std::sync::Arc;
 use axum::http;
 // use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use utoipa::OpenApi;
+
+use crate::types::app_state::JwkSet;
 mod db_connections;
 mod entities;
 mod middleware;
@@ -19,9 +21,17 @@ async fn main() {
     let _ = dotenvy::dotenv();
 
     let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL not found");
-    let jwt_secret = std::env::var("JWT_SECRET").expect("JWT_SECRET not found");
     let mongo_url = std::env::var("MONGODB_URL").expect("MONGODB_URL not found");
     let rabbitmq_url = std::env::var("RABBITMQ_URL").expect("RABBITMQ_URL not found");
+    let jwks_url = std::env::var("AUTHENTIK_JWKS_URL").expect("AUTHENTIK_JWKS_URL must be set");
+    let authentik_audience = std::env::var("AUTHENTIK_AUDIENCE").expect("AUTHENTIK_AUDIENCE must be set");
+
+    let jwks: JwkSet = reqwest::get(&jwks_url)
+        .await
+        .expect("Failed to fetch JWKS")
+        .json()
+        .await
+        .expect("Failed to parse JWKS");
 
     let (postgres, mongo, rabbitmq) =
         db_connections::init_databases(&db_url, &mongo_url, &rabbitmq_url).await;
@@ -57,13 +67,15 @@ async fn main() {
         postgres,
         mongo,
         rabbitmq: Arc::new(rabbitmq),
-        jwt_secret: jwt_secret.as_bytes().to_vec(),
+        jwks: Arc::new(tokio::sync::RwLock::new(jwks)),
+        authentik_jwks_url: jwks_url,
+        authentik_audience,
     };
 
     let app = axum::Router::new()
         .merge(entities::user::router::init(app_state.clone()))
         .merge(entities::profile::router::init(app_state.clone()))
-        .merge(entities::auth::router::init())
+        // .merge(entities::auth::router::init())
         .merge(entities::workspace::router::init(app_state.clone()))
         .merge(entities::workspace_access::router::init(app_state.clone()))
         .merge(entities::page::router::init(app_state.clone()))

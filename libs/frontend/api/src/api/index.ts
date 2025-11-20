@@ -1,6 +1,6 @@
 export * from "./profile";
 
-export { modifyAxiosInstance } from "./base";
+export { insertAccessToken } from "./base";
 
 export * from "./auth";
 
