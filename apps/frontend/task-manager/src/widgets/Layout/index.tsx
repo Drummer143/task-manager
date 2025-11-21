@@ -4,6 +4,7 @@ import { useMutation } from "@tanstack/react-query";
 import { lazySuspense } from "@task-manager/react-utils";
 import { useNavigate } from "react-router";
 
+import { userManager } from "../../app/auth";
 import { useAuthStore } from "../../app/store/auth";
 import { useChatSocketStore } from "../../app/store/socket";
 import FullSizeLoader from "../../shared/ui/FullSizeLoader";
@@ -36,7 +37,13 @@ const Layout: React.FC = () => {
 
 		// signalsChannel.on("message", console.log);
 
-		useChatSocketStore.getState().getSocket();
+		userManager.getUser().then(user => {
+			if (!user) {
+				return;
+			}
+
+			useChatSocketStore.getState().getSocket(user.access_token);
+		});
 
 		return () => {
 			useChatSocketStore.getState().closeSocket();
