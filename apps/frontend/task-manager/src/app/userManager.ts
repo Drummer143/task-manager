@@ -9,4 +9,3 @@ export const userManager = new UserManager({
 	automaticSilentRenew: true
 	// post_logout_redirect_uri: import.meta.env.VITE_POST_LOGOUT_REDIRECT_URI
 });
-

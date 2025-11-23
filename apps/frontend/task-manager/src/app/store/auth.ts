@@ -1,60 +1,68 @@
 import { getProfile, User, Workspace } from "@task-manager/api";
+import { User as OidcUser } from "oidc-client-ts";
 import { create } from "zustand";
-import { devtools } from "zustand/middleware";
 
-interface authState {
-	loading: boolean;
+import { userManager } from "../userManager";
 
-	clear: () => void;
-	getSession: () => Promise<(User & { workspace: Workspace }) | undefined | void>;
-	setSession: (user: User & { workspace: Workspace }) => void;
-
+type GetSessionResponse = {
 	user: User & { workspace: Workspace };
+	identity: OidcUser;
+};
+
+interface AuthState {
+	user: User & { workspace: Workspace };
+	loading: boolean;
+	identity: OidcUser;
+
+	getSession: () => Promise<GetSessionResponse>;
 }
 
-let promise: Promise<(User & { workspace: Workspace }) | undefined> | undefined = undefined;
+let promise: Promise<GetSessionResponse> | undefined = undefined;
 
-export const useAuthStore = create<authState>()(
-	devtools(
-		(set, get) => ({
-			loading: false,
+export const useAuthStore = create<AuthState>((set, get) => ({
+	loading: false,
 
-			user: undefined as unknown as User & { workspace: Workspace },
+	user: undefined as unknown as User & { workspace: Workspace },
 
-			clear: () => set({ user: undefined, loading: false }),
+	identity: undefined as unknown as OidcUser,
 
-			setSession: user => set({ user, loading: false }),
+	getSession: async () => {
+		if (promise) {
+			return promise;
+		}
 
-			getSession: async () => {
-				if (promise) {
-					return promise;
-				}
+		const { loading, user, identity } = get();
 
-				const { loading, user: existingUser } = get();
+		if (loading || user) {
+			return { user, identity };
+		}
 
-				if (loading || existingUser) {
-					return existingUser;
-				}
+		set({ loading: true });
 
-				set({ loading: true });
-
-				let user: (User & { workspace: Workspace }) | undefined = undefined;
-
-				try {
-					user = await getProfile({ include: ["workspace"] });
-
-					set({ user });
-				} catch {
+		try {
+			promise = Promise.all([
+				getProfile({ include: ["workspace"] }),
+				userManager.getUser()
+			]).then(([user, identity]) => {
+				if (!identity) {
 					throw new Error("Failed to get user profile");
-				} finally {
-					set({ loading: false });
-
-					promise = undefined;
 				}
 
-				return user;
-			}
-		}),
-		{ name: "auth-store" }
-	)
-);
+				return { user, identity };
+			});
+
+			const data = await promise;
+
+			set(data);
+
+			return data;
+		} catch {
+			throw new Error("Failed to get user profile");
+		} finally {
+			set({ loading: false });
+
+			promise = undefined;
+		}
+	}
+}));
+

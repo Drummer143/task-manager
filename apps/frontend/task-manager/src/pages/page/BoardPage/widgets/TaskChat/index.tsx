@@ -10,9 +10,9 @@ import { createStyles } from "antd-style";
 import { Channel, Presence } from "phoenix";
 import { useSearchParams } from "react-router";
 
-import { userManager } from "../../../../../app/auth";
 import { useAuthStore } from "../../../../../app/store/auth";
 import { useChatSocketStore } from "../../../../../app/store/socket";
+import { userManager } from "../../../../../app/userManager";
 import Drawer from "../../../../../widgets/Drawer";
 
 const useStyles = createStyles(({ css }) => ({

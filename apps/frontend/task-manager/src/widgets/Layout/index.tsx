@@ -2,11 +2,10 @@ import React, { useEffect } from "react";
 
 import { useMutation } from "@tanstack/react-query";
 import { lazySuspense } from "@task-manager/react-utils";
-import { useNavigate } from "react-router";
 
-import { userManager } from "../../app/auth";
 import { useAuthStore } from "../../app/store/auth";
 import { useChatSocketStore } from "../../app/store/socket";
+import { userManager } from "../../app/userManager";
 import FullSizeLoader from "../../shared/ui/FullSizeLoader";
 
 const DesktopLayout = lazySuspense(() => import("./Desktop"), <FullSizeLoader />);
@@ -17,14 +16,13 @@ const Layout: React.FC = () => {
 
 	// useWindowResize("md", setMobileLayout);
 
-	const { getSession, user } = useAuthStore();
-
-	const navigate = useNavigate();
+	const user = useAuthStore(state => state.user);
 
 	const { mutateAsync, isPending } = useMutation({
-		mutationFn: getSession,
+		mutationFn: useAuthStore.getState().getSession,
 		onError: () => {
-			navigate("/login");
+			debugger
+			userManager.signinRedirect();
 		}
 	});
 

@@ -1,20 +1,25 @@
 import React from "react";
 
-import { Navigate } from "react-router";
-
 import { useAuthStore } from "../../app/store/auth";
+import { userManager } from "../../app/userManager";
 import FullSizeLoader from "../../shared/ui/FullSizeLoader";
 
-export const withAuthPageCheck = <P extends object>(Component: React.ComponentType<P>, authRequired = true) => {
+export const withAuthPageCheck = <P extends object>(
+	Component: React.ComponentType<P>,
+	authRequired = true
+) => {
 	const ProtectedComponent: React.FC<P> = props => {
-		const { loading, user } = useAuthStore(state => state);
+		const { loading, user, identity } = useAuthStore(state => state);
 
 		if (loading) {
 			return <FullSizeLoader />;
 		}
 
-		if (!user === authRequired) {
-			return <Navigate to={authRequired ? "/login" : "/profile"} replace />;
+		if (!user && !identity) {
+			debugger;
+			userManager.signinRedirect();
+
+			return <FullSizeLoader />;
 		}
 
 		return <Component {...props} />;
@@ -22,3 +27,4 @@ export const withAuthPageCheck = <P extends object>(Component: React.ComponentTy
 
 	return ProtectedComponent;
 };
+

@@ -5,8 +5,8 @@ import "antd/dist/reset.css";
 import { createRoot } from "react-dom/client";
 
 import App from "./app/App";
-import { userManager } from "./app/auth";
 import Providers from "./app/Providers";
+import { userManager } from "./app/userManager";
 import "./index.css";
 
 const mount = () =>
@@ -20,26 +20,29 @@ const mount = () =>
 	);
 
 const init = async () => {
-	const user = await userManager.getUser(true);
+	const user = await userManager.getUser();
 
 	if (!user) {
-		if (window.location.href.includes(import.meta.env.VITE_REDIRECT_URI)) {
-			userManager.signinCallback();
+		if (
+			`${window.location.origin}${window.location.pathname}` ===
+			import.meta.env.VITE_REDIRECT_URI
+		) {
+			await userManager.signinCallback();
 		} else {
-			userManager.signinRedirect();
+			await userManager.signinRedirect();
 			return;
 		}
-	} else {
-		insertAccessToken(async () => {
-			const user = await userManager.getUser(true);
-
-			if (!user) {
-				throw new Error("User not found");
-			}
-
-			return user.access_token;
-		});
 	}
+
+	insertAccessToken(async () => {
+		const user = await userManager.getUser();
+
+		if (!user) {
+			throw new Error("User not found");
+		}
+
+		return user.access_token;
+	});
 
 	mount();
 };
