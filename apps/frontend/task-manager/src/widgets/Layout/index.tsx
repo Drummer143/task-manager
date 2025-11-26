@@ -2,6 +2,7 @@ import React, { useEffect } from "react";
 
 import { useMutation } from "@tanstack/react-query";
 import { lazySuspense } from "@task-manager/react-utils";
+import { AxiosError } from "axios";
 
 import { useAuthStore } from "../../app/store/auth";
 import { useChatSocketStore } from "../../app/store/socket";
@@ -20,9 +21,10 @@ const Layout: React.FC = () => {
 
 	const { mutateAsync, isPending } = useMutation({
 		mutationFn: useAuthStore.getState().getSession,
-		onError: () => {
-			debugger
-			userManager.signinRedirect();
+		onError: async (error, vars, ctx) => {
+			if (error instanceof AxiosError && error.status === 401) {
+				userManager.signinRedirect();
+			}
 		}
 	});
 

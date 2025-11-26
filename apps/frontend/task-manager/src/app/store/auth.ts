@@ -56,8 +56,6 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 			set(data);
 
 			return data;
-		} catch {
-			throw new Error("Failed to get user profile");
 		} finally {
 			set({ loading: false });
 

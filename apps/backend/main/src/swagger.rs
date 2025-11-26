@@ -62,3 +62,14 @@
     ))
 )]
 pub struct ApiDoc;
+
+#[derive(utoipa::OpenApi)]
+#[openapi(
+    paths(
+        crate::webhooks::authentik::user_created::controller::user_created,  
+    ),
+    components(schemas(
+        
+    ))
+)]
+pub struct WebhooksDoc;

@@ -11,6 +11,7 @@ mod middleware;
 mod shared;
 mod swagger;
 mod types;
+mod webhooks;
 
 #[tokio::main]
 async fn main() {
@@ -24,7 +25,8 @@ async fn main() {
     let mongo_url = std::env::var("MONGODB_URL").expect("MONGODB_URL not found");
     let rabbitmq_url = std::env::var("RABBITMQ_URL").expect("RABBITMQ_URL not found");
     let jwks_url = std::env::var("AUTHENTIK_JWKS_URL").expect("AUTHENTIK_JWKS_URL must be set");
-    let authentik_audience = std::env::var("AUTHENTIK_AUDIENCE").expect("AUTHENTIK_AUDIENCE must be set");
+    let authentik_audience =
+        std::env::var("AUTHENTIK_AUDIENCE").expect("AUTHENTIK_AUDIENCE must be set");
 
     let jwks: JwkSet = reqwest::get(&jwks_url)
         .await
@@ -84,12 +86,18 @@ async fn main() {
         .merge(entities::board_statuses::router::init(app_state.clone()))
         .merge(
             utoipa_swagger_ui::SwaggerUi::new("/api")
-                .url("/api/openapi.json", swagger::ApiDoc::openapi())
-                .config(utoipa_swagger_ui::Config::default().doc_expansion("none")),
+                .url("/api/api.json", swagger::ApiDoc::openapi())
+                .url("/api/webhooks.json", swagger::WebhooksDoc::openapi())
+                .config(
+                    utoipa_swagger_ui::Config::default()
+                        .doc_expansion("none")
+                        .display_request_duration(true),
+                ),
         )
+        .merge(webhooks::authentik::router::init())
         .with_state(app_state)
-        .layer(cors)
-        .layer(tower_http::trace::TraceLayer::new_for_http());
+        // .layer(tower_http::trace::TraceLayer::new_for_http())
+        .layer(cors);
 
     let port = std::env::var("PORT").unwrap_or("3000".to_string());
     let addr = format!("0.0.0.0:{}", port);
