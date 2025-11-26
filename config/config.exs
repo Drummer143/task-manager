@@ -57,3 +57,12 @@ config :phoenix, :json_library, Jason
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{config_env()}.exs"
+
+config :joken, json_module: Jason
+
+config :tesla, adapter: Tesla.Adapter.Httpc
+
+config :auth_verifier,
+  jwks_url: System.get_env("AUTHENTIK_JWKS_URL"),
+  issuer: System.get_env("AUTHENTIK_ISSUER"),
+  audience: System.get_env("AUTHENTIK_AUDIENCE")

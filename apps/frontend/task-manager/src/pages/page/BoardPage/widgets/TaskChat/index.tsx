@@ -12,6 +12,7 @@ import { useSearchParams } from "react-router";
 
 import { useAuthStore } from "../../../../../app/store/auth";
 import { useChatSocketStore } from "../../../../../app/store/socket";
+import { userManager } from "../../../../../app/userManager";
 import Drawer from "../../../../../widgets/Drawer";
 
 const useStyles = createStyles(({ css }) => ({
@@ -56,8 +57,6 @@ const TaskChat: React.FC = () => {
 	const { open, onOpen, onClose } = useDisclosure();
 
 	const styles = useStyles().styles;
-
-	const socket = useChatSocketStore().getSocket();
 
 	const drawerClassnames = useMemo<DrawerClassNames>(
 		() => ({
@@ -163,51 +162,61 @@ const TaskChat: React.FC = () => {
 			return;
 		}
 
-		const channel = socket.channel(`chat:${taskId}`, { user_id: userId });
-		let presences: RawPresenceInfo = {};
+		let channel: Channel | undefined;
 
-		const handleRawPresenceInfo = (info: RawPresenceInfo) => {
-			const typingUsers = Object.entries(info).reduce((acc, [key, value]) => {
-				if (key === userId) {
+		userManager.getUser().then(user => {
+			if (!user) {
+				return;
+			}
+
+			const socket = useChatSocketStore.getState().getSocket(user.access_token);
+
+			channel = socket.channel(`chat:${taskId}`, { user_id: user.profile.sub });
+			let presences: RawPresenceInfo = {};
+
+			const handleRawPresenceInfo = (info: RawPresenceInfo) => {
+				const typingUsers = Object.entries(info).reduce((acc, [key, value]) => {
+					if (key === user.profile.sub) {
+						return acc;
+					}
+
+					const typingIndex = value.metas.findIndex(meta => meta.typing);
+
+					if (typingIndex !== -1) {
+						acc.push({
+							id: key,
+							username: value.metas[typingIndex].username,
+							avatar: value.metas[typingIndex].avatar
+						});
+					}
+
 					return acc;
-				}
+				}, [] as UserInfo[]);
 
-				const typingIndex = value.metas.findIndex(meta => meta.typing);
+				setPresence({ typingUsers });
+			};
 
-				if (typingIndex !== -1) {
-					acc.push({
-						id: key,
-						username: value.metas[typingIndex].username,
-						avatar: value.metas[typingIndex].avatar
-					});
-				}
+			channel.on("presence_diff", diff => {
+				presences = Presence.syncDiff(presences, diff);
+				handleRawPresenceInfo(presences);
+			});
 
-				return acc;
-			}, [] as UserInfo[]);
+			const presenceStateRef = channel.on("presence_state", state => {
+				presences = Presence.syncState(presences, state);
+				channel?.off("presence_state", presenceStateRef);
+				handleRawPresenceInfo(presences);
+			});
 
-			setPresence({ typingUsers });
-		};
+			channel.join();
 
-		channel.on("presence_diff", diff => {
-			presences = Presence.syncDiff(presences, diff);
-			handleRawPresenceInfo(presences);
+			setConnection(channel);
 		});
-
-		const presenceStateRef = channel.on("presence_state", state => {
-			presences = Presence.syncState(presences, state);
-			channel.off("presence_state", presenceStateRef);
-			handleRawPresenceInfo(presences);
-		});
-
-		channel.join();
-
-		setConnection(channel);
 
 		return () => {
 			setConnection(undefined);
 			channel?.leave();
 		};
-	}, [socket, taskId, userId]);
+	}, [taskId]);
 
 	return (
 		<>

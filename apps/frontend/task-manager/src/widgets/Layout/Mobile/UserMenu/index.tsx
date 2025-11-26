@@ -39,7 +39,7 @@ const UserMenu: React.FC = () => {
 
 	return (
 		<div>
-			<UserMenuInfo mobile username={user?.username} picture={user?.picture} onClick={onOpen} />
+			<UserMenuInfo mobile username={user.username} picture={user.picture} onClick={onOpen} />
 
 			<MobileDrawer open={open} onClose={onClose}>
 				<Menu className={menu} mode="inline" items={items} />

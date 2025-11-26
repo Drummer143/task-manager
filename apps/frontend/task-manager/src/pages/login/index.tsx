@@ -21,8 +21,6 @@ const rules = {
 const Login: React.FC = () => {
 	const { resetPasswordLink } = useStyles().styles;
 
-	const getSession = useAuthStore(state => state.getSession);
-
 	const navigate = useNavigate();
 
 	const t = useTranslation("login_page")[0];
@@ -30,7 +28,7 @@ const Login: React.FC = () => {
 	const { mutateAsync, error, reset, isPending } = useMutation({
 		mutationFn: login,
 		onSuccess: () => {
-			getSession();
+			useAuthStore.getState().getSession();
 
 			navigate("/profile", { replace: true });
 		}

@@ -99,11 +99,13 @@ impl PostgresqlRepositoryCreate for UserRepository {
         dto: Self::CreateDto,
     ) -> Result<User, sqlx::Error> {
         sqlx::query_as::<_, User>(
-            "INSERT INTO users (email, username, picture) VALUES ($1, $2, $3) RETURNING *",
+            "INSERT INTO users (id, email, username, picture, created_at) VALUES ($1, $2, $3, $4, $5) RETURNING *",
         )
+        .bind(&dto.id)
         .bind(&dto.email)
         .bind(&dto.username)
         .bind(&dto.picture)
+        .bind(&dto.created_at)
         .fetch_one(executor)
         .await
     }

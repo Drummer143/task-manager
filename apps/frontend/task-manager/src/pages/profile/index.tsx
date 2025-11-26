@@ -14,10 +14,8 @@ import { withAuthPageCheck } from "../../shared/HOCs";
 const Profile: React.FC = () => {
 	const { formsContainer, wrapper } = useStyles().styles;
 
-	const { getSession } = useAuthStore();
-
 	const { data, isLoading, error } = useQuery({
-		queryFn: getSession,
+		queryFn: useAuthStore.getState().getSession,
 		queryKey: ["profile"]
 	});
 
@@ -32,11 +30,11 @@ const Profile: React.FC = () => {
 	return (
 		<Flex className={wrapper} gap="2rem">
 			<div className={formsContainer}>
-				<UserInfoForm username={data.username} />
-				<EmailForm email={data.email} />
+				<UserInfoForm username={data.user.username} />
+				<EmailForm email={data.user.email} />
 			</div>
 
-			<AvatarInput avatarUrl={data.picture} />
+			<AvatarInput avatarUrl={data.user.picture} />
 		</Flex>
 	);
 };

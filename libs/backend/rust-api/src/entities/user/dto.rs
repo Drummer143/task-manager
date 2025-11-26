@@ -1,13 +1,16 @@
 use std::fmt;
 
+use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 #[derive(Debug, Deserialize)]
 pub struct CreateUserDto {
+    pub id: Option<Uuid>,
     pub email: String,
     pub username: String,
     pub picture: Option<String>,
+    pub created_at: Option<DateTime<Utc>>,
 }
 
 /// The `query` field should be empty if there is an `email` or `username` field
