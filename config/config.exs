@@ -61,8 +61,3 @@ import_config "#{config_env()}.exs"
 config :joken, json_module: Jason
 
 config :tesla, adapter: Tesla.Adapter.Httpc
-
-config :auth_verifier,
-  jwks_url: System.get_env("AUTHENTIK_JWKS_URL"),
-  issuer: System.get_env("AUTHENTIK_ISSUER"),
-  audience: System.get_env("AUTHENTIK_AUDIENCE")
