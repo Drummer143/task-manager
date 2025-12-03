@@ -1,0 +1,210 @@
+# yaml-language-server: $schema=https://goauthentik.io/blueprints/schema.json
+
+version: 1
+
+metadata:
+    name: Task Manager Setup App, Provider, Flow, Stages
+
+entries:
+    # # SIGN UP FLOW
+    # # FLOW
+
+    # - model: authentik_flows.flow
+    #   id: sign-up-flow
+    #   identifiers:
+    #       slug: sign-up-flow
+    #       name: Sign Up Flow
+    #   attrs:
+    #       slug: sign-up-flow
+    #       name: Sign Up Flow
+    #       designation: enrollment
+    #       compatibility_mode: true
+    #       title: Sign Up
+
+    # # STAGES
+
+    # - model: authentik_stages_prompt.promptstage
+    #   id: sign-up-flow-prompt-stage
+    #   identifiers:
+    #       name: sign-up-flow-prompt-stage
+    #   attrs:
+    #       name: sign-up-flow-prompt-stage
+    #       fields:
+    #           - !Find [
+    #                 authentik_stages_prompt.promptstage,
+    #                 [name, default-source-enrollment-field-username]
+    #             ]
+    #           - !Find [authentik_stages_prompt.promptstage, [name, initial-setup-field-email]]
+    #           - !Find [authentik_stages_prompt.promptstage, [name, initial-setup-field-password]]
+    #           - !Find [
+    #                 authentik_stages_prompt.promptstage,
+    #                 [name, initial-setup-field-password-repeat]
+    #             ]
+
+    # # STAGE -> FLOW BINDINGS
+
+    # AUTH FLOW COMBINED
+    # FLOW
+
+    - model: authentik_flows.flow
+      id: auth-flow-combined
+      identifiers:
+          name: Auth Flow Combined
+          slug: auth-flow-combined
+      attrs:
+          slug: auth-flow-combined
+          name: Auth Flow Combined
+          title: Login
+          designation: authentication
+          compatibility_mode: true
+
+    # STAGES
+
+    - model: authentik_stages_identification.identificationstage
+      id: auth-flow-combined-identification-stage
+      identifiers:
+          name: auth-flow-combined-identification-stage
+      attrs:
+          name: auth-flow-combined-identification-stage
+          enable_remember_me: true
+          password_stage:
+              !Find [
+                  authentik_stages_password.passwordstage,
+                  [name, default-authentication-password]
+              ]
+          user_fields:
+              - email
+              - username
+          case_insensitive_matching: true
+          show_matched_user: false
+          pretend_user_exists: false
+
+    # STAGE -> FLOW BINGINGS
+
+    - model: authentik_flows.flowstagebinding
+      id: auth-flow-combined-identification-stage-binging
+      identifiers:
+          target: !KeyOf auth-flow-combined
+          stage: !KeyOf auth-flow-combined-identification-stage
+      attrs:
+          target: !KeyOf auth-flow-combined
+          stage: !KeyOf auth-flow-combined-identification-stage
+          policy_engine_mode: any
+          order: 10
+          re_evaluate_policies: true
+
+    - model: authentik_flows.flowstagebinding
+      id: auth-flow-combined-authenticator-validation-stage-binging
+      identifiers:
+          target: !KeyOf auth-flow-combined
+          stage:
+              !Find [
+                  authentik_stages_authenticator_validate.authenticatorvalidatestage,
+                  [name, default-authentication-mfa-validation]
+              ]
+      attrs:
+          target: !KeyOf auth-flow-combined
+          stage:
+              !Find [
+                  authentik_stages_authenticator_validate.authenticatorvalidatestage,
+                  [name, default-authentication-mfa-validation]
+              ]
+          order: 20
+          policy: []
+
+    - model: authentik_flows.flowstagebinding
+      id: auth-flow-combined-user-login-stage-binging
+      identifiers:
+          target: !KeyOf auth-flow-combined
+          stage:
+              !Find [
+                  authentik_stages_user_login.userloginstage,
+                  [name, default-authentication-login]
+              ]
+      attrs:
+          target: !KeyOf auth-flow-combined
+          stage:
+              !Find [
+                  authentik_stages_user_login.userloginstage,
+                  [name, default-authentication-login]
+              ]
+          policy: []
+          order: 100
+          re_evaluate_policies: true
+
+    # POLICY -> STAGE BINGINGS
+
+    - model: authentik_policies.policybinding
+      id: auth-flow-combined-user-login-stage-binging-flow-password-policy
+      identifiers:
+          target: !KeyOf auth-flow-combined-identification-stage-binging
+          policy:
+              !Find [
+                  authentik_policies_expression.expressionpolicy,
+                  [name, default-authentication-flow-password-stage]
+              ]
+      attrs:
+          target: !KeyOf auth-flow-combined-identification-stage-binging
+          policy:
+              !Find [
+                  authentik_policies_expression.expressionpolicy,
+                  [name, default-authentication-flow-password-stage]
+              ]
+          enabled: true
+          failure_result: true
+          order: 10
+          negate: false
+          timeout: 30
+          re_evaluate_policies: true
+
+    # PROVIDERS
+
+    - model: authentik_providers_oauth2.oauth2provider
+      id: task-manager-provider
+      identifiers:
+          name: Task Manager Provider
+      attrs:
+          name: Task Manager Provider
+          client_id: !Env "AUTHENTIK_CLIENT_ID"
+          client_type: public
+          authentication_flow: !KeyOf auth-flow-combined
+          access_token_validity: minutes=15
+          sub_mode: user_uuid
+          signing_key:
+              !Find [
+                  authentik_crypto.certificatekeypair,
+                  [name, "authentik Self-signed Certificate"]
+              ]
+          redirect_uris:
+              - matching_mode: strict
+                url: !Env "AUTHENTIK_REDIRECT_URI"
+          authorization_flow:
+              !Find [authentik_flows.flow, [slug, default-provider-authorization-explicit-consent]]
+          invalidation_flow:
+              !Find [authentik_flows.flow, [slug, default-provider-invalidation-flow]]
+          property_mappings:
+              - !Find [
+                    authentik_providers_oauth2.scopemapping,
+                    [name, "authentik default OAuth Mapping: OpenID 'email'"]
+                ]
+              - !Find [
+                    authentik_providers_oauth2.scopemapping,
+                    [name, "authentik default OAuth Mapping: OpenID 'openid'"]
+                ]
+              - !Find [
+                    authentik_providers_oauth2.scopemapping,
+                    [name, "authentik default OAuth Mapping: OpenID 'profile'"]
+                ]
+
+    # APPLICATIONS
+
+    - model: authentik_core.application
+      id: task-manager-app
+      identifiers:
+          slug: !Env "AUTHENTIK_SLUG"
+      attrs:
+          name: "Task Manager"
+          slug: !Env "AUTHENTIK_SLUG"
+          provider: !KeyOf task-manager-provider
+          policy_engine_mode: any
+
