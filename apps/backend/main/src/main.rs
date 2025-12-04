@@ -1,7 +1,7 @@
 use std::sync::Arc;
 
 use axum::http;
-// use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
+use tracing_subscriber::{layer::SubscriberExt, util::SubscriberInitExt};
 use utoipa::OpenApi;
 
 use crate::types::app_state::JwkSet;
@@ -15,9 +15,9 @@ mod webhooks;
 
 #[tokio::main]
 async fn main() {
-    // tracing_subscriber::registry()
-    //     .with(tracing_subscriber::fmt::layer())
-    //     .init();
+    tracing_subscriber::registry()
+        .with(tracing_subscriber::fmt::layer())
+        .init();
 
     let _ = dotenvy::dotenv();
 
@@ -96,7 +96,7 @@ async fn main() {
         )
         .merge(webhooks::authentik::router::init())
         .with_state(app_state)
-        // .layer(tower_http::trace::TraceLayer::new_for_http())
+        .layer(tower_http::trace::TraceLayer::new_for_http())
         .layer(cors);
 
     let port = std::env::var("PORT").unwrap_or("3000".to_string());

@@ -66,7 +66,7 @@ pub struct ApiDoc;
 #[derive(utoipa::OpenApi)]
 #[openapi(
     paths(
-        crate::webhooks::authentik::user_created::controller::user_created,  
+        crate::webhooks::authentik::user_sync::controller::user_sync,  
     ),
     components(schemas(
         
