@@ -1,7 +1,7 @@
 use serde::Deserialize;
 use uuid::Uuid;
 
-use crate::shared::traits::UpdateDto;
+use crate::{entities::workspace::model::Workspace, shared::traits::UpdateDto};
 
 #[derive(Debug, Deserialize, utoipa::ToSchema)]
 #[serde(rename_all = "camelCase")]
@@ -10,8 +10,14 @@ pub struct UpdateWorkspaceDto {
 }
 
 impl UpdateDto for UpdateWorkspaceDto {
+    type Model = Workspace;
+
     fn is_empty(&self) -> bool {
         self.name.is_none()
+    }
+
+    fn has_changes(&self, _: &Self::Model) -> bool {
+        todo!("has_changes for UpdateWorkspaceDto")
     }
 }
 

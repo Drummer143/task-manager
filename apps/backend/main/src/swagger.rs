@@ -42,7 +42,7 @@
     ),
     components(schemas(
         rust_api::entities::user::model::User,
-        rust_api::entities::user_credentials::model::UserCredentials,
+        // rust_api::entities::user_credentials::model::UserCredentials,
         rust_api::entities::workspace_access::model::Role,
 
         error_handlers::handlers::ErrorResponse,

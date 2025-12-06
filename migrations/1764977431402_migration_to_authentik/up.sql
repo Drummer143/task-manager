@@ -1,0 +1,14 @@
+DROP TABLE user_credentials;
+
+ALTER TABLE users
+ADD COLUMN authentik_id INT UNIQUE;
+
+ALTER TABLE users
+ADD COLUMN is_active BOOLEAN NOT NULL DEFAULT TRUE;
+
+ALTER TABLE users
+DROP COLUMN email_verified;
+
+ALTER TABLE users
+ALTER COLUMN email
+DROP NOT NULL;

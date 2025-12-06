@@ -1,7 +1,10 @@
 use serde::Deserialize;
 use uuid::Uuid;
 
-use crate::{entities::page::model::PageType, shared::traits::UpdateDto};
+use crate::{
+    entities::page::model::{Page, PageType},
+    shared::traits::UpdateDto,
+};
 
 #[derive(Debug, Deserialize, utoipa::ToSchema, Clone)]
 #[serde(rename_all = "camelCase")]
@@ -33,7 +36,13 @@ pub struct UpdatePageDto {
 }
 
 impl UpdateDto for UpdatePageDto {
+    type Model = Page;
+
     fn is_empty(&self) -> bool {
         self.title.is_none() && self.text.is_none()
+    }
+
+    fn has_changes(&self, _: &Self::Model) -> bool {
+        todo!("has_changes for UpdatePageDto")
     }
 }

@@ -4,13 +4,67 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
+use crate::{entities::user::model::User, shared::traits::UpdateDto};
+
 #[derive(Debug, Deserialize)]
 pub struct CreateUserDto {
     pub id: Option<Uuid>,
-    pub email: String,
+    pub email: Option<String>,
     pub username: String,
+    pub authentik_id: i32,
+
     pub picture: Option<String>,
+    pub is_active: Option<bool>,
+
     pub created_at: Option<DateTime<Utc>>,
+}
+
+#[derive(Debug, Deserialize)]
+pub struct UpdateUserDto {
+    pub username: Option<String>,
+    pub is_active: Option<bool>,
+
+    pub email: Option<Option<String>>,
+    pub picture: Option<Option<String>>,
+}
+
+impl UpdateDto for UpdateUserDto {
+    type Model = User;
+
+    fn is_empty(&self) -> bool {
+        self.email.is_none()
+            && self.username.is_none()
+            && self.picture.is_none()
+            && self.is_active.is_none()
+    }
+
+    fn has_changes(&self, model: &Self::Model) -> bool {
+        if let Some(email) = &self.email
+            && email != &model.email
+        {
+            return true;
+        }
+
+        if let Some(username) = &self.username
+            && username != &model.username
+        {
+            return true;
+        }
+
+        if let Some(picture) = &self.picture
+            && picture != &model.picture
+        {
+            return true;
+        }
+
+        if let Some(is_active) = &self.is_active
+            && is_active != &model.is_active
+        {
+            return true;
+        }
+
+        false
+    }
 }
 
 /// The `query` field should be empty if there is an `email` or `username` field
