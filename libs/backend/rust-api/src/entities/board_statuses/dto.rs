@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use sqlx::types::Json;
 use uuid::Uuid;
 
-use crate::shared::traits::UpdateDto;
+use crate::{entities::board_statuses::model::BoardStatus, shared::traits::UpdateDto};
 
 pub struct CreateBoardStatusDto {
     pub page_id: Uuid,
@@ -21,10 +21,14 @@ pub struct UpdateBoardStatusDto {
 }
 
 impl UpdateDto for UpdateBoardStatusDto {
+    type Model = BoardStatus;
+
     fn is_empty(&self) -> bool {
-        self.initial.is_none()
-            && self.position.is_none()
-            && self.localizations.is_none()
-            // && self.parent_status_id.is_none()
+        self.initial.is_none() && self.position.is_none() && self.localizations.is_none()
+        // && self.parent_status_id.is_none()
+    }
+
+    fn has_changes(&self, _: &Self::Model) -> bool {
+        todo!("has_changes for UpdateBoardStatusDto")
     }
 }

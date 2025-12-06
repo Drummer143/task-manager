@@ -6,9 +6,10 @@ import { MenuProps } from "antd";
 import { useNavigate } from "react-router";
 
 import { useAuthStore } from "../../app/store/auth";
+import { userManager } from "../../app/userManager";
 
 export const useUserMenuItems = () => {
-	const { user } = useAuthStore();
+	const workspaceId = useAuthStore(state => state.user.workspace.id);
 
 	const navigate = useNavigate();
 
@@ -38,7 +39,7 @@ export const useUserMenuItems = () => {
 						data?.data.map(workspace => ({
 							key: workspace.id,
 							label: workspace.name,
-							disabled: workspace.id === user?.workspace.id,
+							disabled: workspace.id === workspaceId,
 							onClick: () => {
 								// eslint-disable-next-line no-restricted-globals
 								if (!location.pathname.startsWith("/profile")) {
@@ -56,11 +57,11 @@ export const useUserMenuItems = () => {
 				{
 					key: "logout",
 					label: "Log out",
-					onClick: () => {}
+					onClick: () => userManager.signoutRedirect()
 				}
 			]
 		}),
-		[data, isLoading, navigate, user?.workspace.id]
+		[data, isLoading, navigate, workspaceId]
 	);
 
 	return menu;

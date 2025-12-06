@@ -1,10 +1,15 @@
-import axios, { AxiosInstance } from "axios";
+import axios from "axios";
 
 export const axiosInstance = axios.create({
-	withCredentials: true,
 	baseURL: "http://localhost:8080"
 });
 
-export const modifyAxiosInstance = (
-	cb: (axiosInstance: AxiosInstance) => void
-) => cb(axiosInstance);
+export const insertAccessToken = (getToken: () => Promise<string>) => {
+	axiosInstance.interceptors.request.use(async config => {
+		const token = await getToken();
+
+		config.headers["Authorization"] = `Bearer ${token}`;
+		return config;
+	});
+};
+

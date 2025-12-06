@@ -8,6 +8,7 @@ defmodule Notifications.Application do
   @impl true
   def start(_type, _args) do
     children = [
+      {AuthVerifier.TokenStrategy, url: Application.get_env(:auth_verifier, :jwks_url)},
       NotificationsWeb.Telemetry,
       Notifications.Repo,
       Notifications.Consumer,

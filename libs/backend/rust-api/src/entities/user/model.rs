@@ -7,11 +7,14 @@ use uuid::Uuid;
 #[serde(rename_all = "camelCase")]
 pub struct User {
     pub id: Uuid,
-    pub email: String,
+    pub is_active: bool,
     pub username: String,
-    pub email_verified: bool,
+    pub authentik_id: i32,
+
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub email: Option<String>,
     pub picture: Option<String>,
+
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
     pub deleted_at: Option<DateTime<Utc>>,

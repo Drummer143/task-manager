@@ -2,7 +2,7 @@ use chrono::{DateTime, Utc};
 use serde::Deserialize;
 use uuid::Uuid;
 
-use crate::shared::traits::UpdateDto;
+use crate::{entities::task::model::Task, shared::traits::UpdateDto};
 
 #[derive(Debug, Deserialize, utoipa::ToSchema)]
 #[serde(rename_all = "camelCase")]
@@ -30,6 +30,8 @@ pub struct UpdateTaskDto {
 }
 
 impl UpdateDto for UpdateTaskDto {
+    type Model = Task;
+
     fn is_empty(&self) -> bool {
         self.title.is_none()
             && self.status_id.is_none()
@@ -37,6 +39,10 @@ impl UpdateDto for UpdateTaskDto {
             // && self.description.is_none()
             && self.due_date.is_none()
             && self.assignee_id.is_none()
+    }
+
+    fn has_changes(&self, _: &Self::Model) -> bool {
+        todo!("has_changes for UpdateTaskDto")
     }
 }
 

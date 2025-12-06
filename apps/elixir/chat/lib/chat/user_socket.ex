@@ -4,9 +4,20 @@ defmodule Chat.UserSocket do
 
   channel "chat:*", Chat.ChatChannel
 
-  def connect(_params, socket, _connect_info) do
-    socket = assign(socket, :user_id, "user_id")
-    {:ok, socket}
+  def connect(%{"token" => token}, socket, _connect_info) do
+    case AuthVerifier.Token.verify_and_validate(token) do
+      {:ok, claims} ->
+        sub = claims["sub"]
+
+        {:ok, assign(socket, :user_id, sub)}
+
+      {:error, _reason} ->
+        :error
+    end
+  end
+
+  def connect(_params, _socket, _connect_info) do
+    {:error, :unauthorized}
   end
 
   def id(socket), do: "socket:#{socket.assigns.user_id}"

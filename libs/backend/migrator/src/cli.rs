@@ -33,6 +33,8 @@ Structure:
 
 #[tokio::main]
 pub async fn main() {
+    let _ = dotenvy::dotenv();
+
     match Cli::parse().command {
         Commands::Up => {
             migrate(MigrationDirection::Up)

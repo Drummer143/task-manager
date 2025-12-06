@@ -27,7 +27,7 @@ impl PostgresqlRepositoryCreate for WorkspaceRepository {
         executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
         dto: Self::CreateDto,
     ) -> Result<Workspace, sqlx::Error> {
-        sqlx::query_as::<_, Workspace>("SELECT * FROM workspaces WHERE id = $1")
+        sqlx::query_as::<_, Workspace>("INSERT INTO workspaces (name, owner_id) VALUES ($1, $2) RETURNING *")
             .bind(dto.name)
             .bind(dto.owner_id)
             .fetch_one(executor)

@@ -18,8 +18,6 @@ const rules = {
 };
 
 const SignUp: React.FC = () => {
-	const getSession = useAuthStore(state => state.getSession);
-
 	const navigate = useNavigate();
 
 	const t = useTranslation("sign_up_page")[0];
@@ -27,7 +25,7 @@ const SignUp: React.FC = () => {
 	const { mutateAsync, error, isPending, reset } = useMutation({
 		mutationFn: signUp,
 		onSuccess: () => {
-			getSession();
+			useAuthStore.getState().getSession();
 
 			navigate("/profile", { replace: true });
 		}

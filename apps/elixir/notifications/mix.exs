@@ -23,7 +23,7 @@ defmodule Notifications.MixProject do
   def application do
     [
       mod: {Notifications.Application, []},
-      extra_applications: [:logger, :runtime_tools]
+      extra_applications: [:logger, :runtime_tools, :inets, :ssl]
     ]
   end
 
@@ -48,6 +48,7 @@ defmodule Notifications.MixProject do
       {:jason, "~> 1.2"},
       {:dns_cluster, "~> 0.2.0"},
       {:bandit, "~> 1.5"},
+      {:auth_verifier, in_umbrella: true}
     ]
   end
 

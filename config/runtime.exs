@@ -85,6 +85,11 @@ if config_env() == :prod do
     ],
     secret_key_base: secret_key_base
 
+  config :auth_verifier,
+    jwks_url: System.get_env("AUTHENTIK_JWKS_URL"),
+    issuer: System.get_env("AUTHENTIK_ISSUER"),
+    audience: System.get_env("AUTHENTIK_AUDIENCE")
+
   # ## SSL Support
   #
   # To get SSL working, you will need to add the `https` key

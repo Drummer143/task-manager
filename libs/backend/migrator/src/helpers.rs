@@ -13,7 +13,6 @@ pub fn get_migrations_from_folder(
 ) -> Result<Vec<MigrationFile>, MigratorError> {
     let migrations_dir = PathBuf::from(migrations_dir);
     let migrations_dir = migrations_dir.canonicalize().unwrap();
-    println!("migrations_dir: {}", migrations_dir.display());
     let migrations = fs::read_dir(migrations_dir)
         .map_err(|e| MigratorError::MigratorError(e.to_string()))?
         .filter_map(|entry| {
