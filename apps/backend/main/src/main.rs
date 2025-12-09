@@ -16,7 +16,7 @@ mod webhooks;
 #[tokio::main]
 async fn main() {
     // tracing_subscriber::registry()
-    //     .with(EnvFilter::new("debug,lapin=warn"))
+    //     .with(EnvFilter::new("debug,lapin=warn,sqlx=warn"))
     //     .with(tracing_subscriber::fmt::layer())
     //     .init();
 

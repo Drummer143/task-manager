@@ -110,7 +110,7 @@ services:
 
     authentik_server:
         image: ghcr.io/goauthentik/server:2025.2.4
-        restart: unless-stopped
+        # restart: unless-stopped
         container_name: authentik_server
         command: server
         env_file: .env
@@ -147,7 +147,7 @@ services:
 
     authentik_worker:
         image: ghcr.io/goauthentik/server:2025.2.4
-        restart: unless-stopped
+        # restart: unless-stopped
         container_name: authentik_worker
         command: worker
         env_file: .env
