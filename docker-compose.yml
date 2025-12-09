@@ -20,12 +20,44 @@ services:
             POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
             POSTGRES_DB: ${POSTGRES_DB_NAME}
             POSTGRES_SSL_MODE: disable
+            AUTHENTIK_DB_USER: ${AUTHENTIK_DB_USER}
+            AUTHENTIK_DB_NAME: ${AUTHENTIK_DB_NAME}
+            AUTHENTIK_DB_PASSWORD: ${AUTHENTIK_DB_PASSWORD}
         ports:
             - 5432:5432
         volumes:
             - pgdata:/var/lib/postgresql/data
         networks:
             - net
+
+    postgres-init:
+        image: postgres:16-alpine
+        container_name: postgres-init
+        depends_on:
+            postgres:
+                condition: service_healthy
+        networks:
+            - net
+        environment:
+            PGPASSWORD: ${POSTGRES_PASSWORD}
+            NEW_DB: ${AUTHENTIK_DB_NAME}
+            NEW_USER: ${AUTHENTIK_DB_USER}
+            NEW_PASS: ${AUTHENTIK_DB_PASSWORD}
+        command: >
+            bash -c "
+            echo 'Check if user exists...';
+            psql -h postgres -U ${POSTGRES_USER} -d ${POSTGRES_DB_NAME} -tAc \"SELECT 1 FROM pg_roles WHERE rolname='${AUTHENTIK_DB_USER}'\" | grep -q 1 || \
+            psql -h postgres -U ${POSTGRES_USER} -d ${POSTGRES_DB_NAME} -c \"CREATE USER ${AUTHENTIK_DB_USER} WITH PASSWORD '${AUTHENTIK_DB_PASSWORD}';\";
+
+            echo 'Check if database exists...';
+            psql -h postgres -U ${POSTGRES_USER} -d ${POSTGRES_DB_NAME} -tAc \"SELECT 1 FROM pg_database WHERE datname='${AUTHENTIK_DB_NAME}'\" | grep -q 1 || \
+            psql -h postgres -U ${POSTGRES_USER} -d ${POSTGRES_DB_NAME} -c \"CREATE DATABASE ${AUTHENTIK_DB_NAME} OWNER ${AUTHENTIK_DB_USER};\";
+
+            echo 'Granting privileges...';
+            psql -h postgres -U ${POSTGRES_USER} -d ${POSTGRES_DB_NAME} -c \"GRANT ALL PRIVILEGES ON DATABASE ${AUTHENTIK_DB_NAME} TO ${AUTHENTIK_DB_USER};\";
+
+            echo 'Authentik DB init complete';
+            "
 
     rmq:
         image: rabbitmq:management-alpine
@@ -54,18 +86,106 @@ services:
         volumes:
             - rmqdata:/var/lib/rabbitmq
 
+    redis:
+        image: redis:alpine
+        container_name: redis
+        command: ["redis-server", "--appendonly", "yes"]
+        healthcheck:
+            test: ["CMD", "redis-cli", "ping"]
+            interval: 10s
+            timeout: 10s
+            retries: 10
+            start_period: 10s
+        ports:
+            - 6379:6379
+        deploy:
+            resources:
+                limits:
+                    memory: 128M
+                    cpus: "0.25"
+        volumes:
+            - redisdata:/data
+        networks:
+            - net
+
+    authentik_server:
+        image: ghcr.io/goauthentik/server:2025.2.4
+        # restart: unless-stopped
+        container_name: authentik_server
+        command: server
+        env_file: .env
+        healthcheck:
+            test: ["CMD-SHELL", "python3 -c 'import urllib.request; urllib.request.urlopen(\"http://localhost:9000/-/health/live/\")'"]
+            interval: 30s
+            timeout: 10s
+            retries: 10
+            start_period: 40s
+        environment:
+            AUTHENTIK_REDIS__DB: 9
+            AUTHENTIK_REDIS__HOST: redis
+            AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY}
+            AUTHENTIK_ALLOWED_HOSTS: "localhost,authentik_server"
+            AUTHENTIK_POSTGRESQL__HOST: postgres
+            AUTHENTIK_POSTGRESQL__USER: ${AUTHENTIK_DB_USER}
+            AUTHENTIK_POSTGRESQL__NAME: ${AUTHENTIK_DB_NAME}
+            AUTHENTIK_POSTGRESQL__PASSWORD: ${AUTHENTIK_DB_PASSWORD}
+            AUTHENTIK_NOTIFICATION_WEBHOOK_USER_SYNC: ${AUTHENTIK_NOTIFICATION_WEBHOOK_USER_SYNC}
+        volumes:
+            - ./authentik/media:/media
+            - ./authentik/custom-templates:/templates
+            - ./authentik/blueprints:/blueprints
+        ports:
+            - "9000:9000"
+            - "9443:9443"
+        depends_on:
+            postgres:
+                condition: service_healthy
+            redis:
+                condition: service_healthy
+        networks:
+            - net
+
+    authentik_worker:
+        image: ghcr.io/goauthentik/server:2025.2.4
+        # restart: unless-stopped
+        container_name: authentik_worker
+        command: worker
+        env_file: .env
+        environment:
+            AUTHENTIK_REDIS__DB: 9
+            AUTHENTIK_REDIS__HOST: redis
+            AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY}
+            AUTHENTIK_ALLOWED_HOSTS: "localhost,authentik_server"
+            AUTHENTIK_POSTGRESQL__HOST: postgres
+            AUTHENTIK_POSTGRESQL__USER: ${AUTHENTIK_DB_USER}
+            AUTHENTIK_POSTGRESQL__NAME: ${AUTHENTIK_DB_NAME}
+            AUTHENTIK_POSTGRESQL__PASSWORD: ${AUTHENTIK_DB_PASSWORD}
+            AUTHENTIK_NOTIFICATION_WEBHOOK_USER_SYNC: ${AUTHENTIK_NOTIFICATION_WEBHOOK_USER_SYNC}
+        volumes:
+            - /var/run/docker.sock:/var/run/docker.sock
+            - ./authentik/media:/media
+            - ./authentik/custom-templates:/templates
+            - ./authentik/blueprints:/blueprints
+        depends_on:
+            postgres:
+                condition: service_healthy
+            redis:
+                condition: service_healthy
+        networks:
+            - net
+
     main-service:
         # restart: always
         container_name: main-service
         image: main-service:latest
         ports:
             - 8080:8080
-        networks:
-            - net
         depends_on:
             postgres:
                 condition: service_healthy
             rmq:
+                condition: service_healthy
+            authentik_server:
                 condition: service_healthy
         deploy:
             resources:
@@ -83,6 +203,10 @@ services:
             JWT_SECRET: ${JWT_SECRET}
             MONGODB_URL: ${MONGODB_URL}
             RABBITMQ_URL: ${RABBITMQ_URL}
+            AUTHENTIK_JWKS_URL: ${AUTHENTIK_JWKS_URL}
+            AUTHENTIK_AUDIENCE: ${AUTHENTIK_AUDIENCE}
+        networks:
+            - net
 
     storage-service:
         # restart: always
@@ -122,6 +246,8 @@ services:
         depends_on:
             rmq:
                 condition: service_healthy
+            authentik_server:
+                condition: service_healthy
         deploy:
             resources:
                 limits:
@@ -137,6 +263,9 @@ services:
             RABBITMQ_URL: ${RABBITMQ_URL}
             DATABASE_URL: ${DATABASE_URL}
             SECRET_KEY_BASE: ${SECRET_KEY_BASE}
+            AUTHENTIK_ISSUER: ${AUTHENTIK_ISSUER}
+            AUTHENTIK_JWKS_URL: ${AUTHENTIK_JWKS_URL}
+            AUTHENTIK_AUDIENCE: ${AUTHENTIK_AUDIENCE}
         networks:
             - net
 
@@ -148,6 +277,8 @@ services:
             - 8078:8078
         depends_on:
             postgres:
+                condition: service_healthy
+            authentik_server:
                 condition: service_healthy
         deploy:
             resources:
@@ -163,6 +294,9 @@ services:
             PORT: 8078
             DATABASE_URL: ${DATABASE_URL}
             SECRET_KEY_BASE: ${SECRET_KEY_BASE}
+            AUTHENTIK_ISSUER: ${AUTHENTIK_ISSUER}
+            AUTHENTIK_JWKS_URL: ${AUTHENTIK_JWKS_URL}
+            AUTHENTIK_AUDIENCE: ${AUTHENTIK_AUDIENCE}
         networks:
             - net
 
@@ -192,4 +326,4 @@ volumes:
     pgdata:
     storage:
     rmqdata:
-
+    redisdata:

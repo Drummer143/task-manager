@@ -21,7 +21,7 @@ const UserMenu: React.FC = () => {
 
 	return (
 		<Dropdown menu={menu} trigger={["click"]} placement="bottomRight">
-			<UserMenuInfo username={user?.username} picture={user?.picture} />
+			<UserMenuInfo username={user.username} picture={user.picture} />
 		</Dropdown>
 	);
 };

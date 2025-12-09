@@ -15,7 +15,7 @@ export interface SocketStoreState {
 
 	socket?: Socket;
 
-	getSocket: (token?: string) => Socket;
+	getSocket: (token: string) => Socket;
 
 	getChannel: (name: ChannelName) => Channel;
 
@@ -26,7 +26,7 @@ const createSocketStore = (url: string) => {
 	return create<SocketStoreState>((set, get) => ({
 		channels: {},
 
-		getSocket: () => {
+		getSocket: token => {
 			let socket = get().socket;
 			const state = socket?.connectionState();
 
@@ -36,7 +36,7 @@ const createSocketStore = (url: string) => {
 
 			socket?.disconnect();
 
-			socket = new Socket(url);
+			socket = new Socket(url, { params: { token }, reconnectAfterMs: () => 1500 });
 
 			socket.connect();
 
@@ -48,13 +48,17 @@ const createSocketStore = (url: string) => {
 		getChannel: name => {
 			const store = get();
 
+			if (!store.socket) {
+				throw new Error("Socket is not initialized");
+			}
+
 			let channel = store.channels[name];
 
 			if (channel) {
 				return channel;
 			}
 
-			channel = store.getSocket().channel(name);
+			channel = store.socket.channel(name);
 
 			channel.join();
 
