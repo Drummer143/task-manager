@@ -4,7 +4,6 @@ version: 1
 
 metadata:
     name: Synchronization of users with backend
-    description: Track for `model_created`, `user_updated`, `user_deleted` event of `User` model and sends data to backend
 
 entries:
     # PAYLOAD MAPPER

@@ -6,42 +6,143 @@ metadata:
     name: Task Manager Setup App, Provider, Flow, Stages
 
 entries:
-    # # SIGN UP FLOW
-    # # FLOW
+    # GROUPS
 
-    # - model: authentik_flows.flow
-    #   id: sign-up-flow
+    - model: authentik_core.group
+      id: task-manager-group
+      identifiers:
+          name: Task Manager
+      attrs:
+          name: Task Manager
+
+    # COMMON POLICIES
+
+    - model: authentik_policies_expression.expressionpolicy
+      id: check-if-email-unique
+      identifiers:
+          name: check-if-email-unique
+      attrs:
+          name: check-if-email-unique
+          expression: |
+              from authentik.core.models import User
+              from django.core.exceptions import ValidationError
+
+              email = context.get('prompt_data', {}).get('email')
+
+              if not email:
+                  return True
+
+              existing_users = User.objects.filter(email__iexact=email)
+
+              if request.user.is_authenticated:
+                  existing_users = existing_users.exclude(pk=request.user.pk)
+
+              if existing_users.exists():
+                  raise ValidationError("User with this email already exists.")
+
+              return True
+
+    # SIGN UP FLOW
+    # FLOW
+
+    - model: authentik_flows.flow
+      id: task-manager-sign-up-flow
+      identifiers:
+          slug: task-manager-sign-up-flow
+          name: task-manager-sign-up-flow
+      attrs:
+          slug: task-manager-sign-up-flow
+          name: task-manager-sign-up-flow
+          designation: enrollment
+          compatibility_mode: true
+          title: Sign Up
+
+    # STAGES
+
+    - model: authentik_stages_prompt.promptstage
+      id: task-manager-sign-up-flow-prompt-stage
+      identifiers:
+          name: task-manager-sign-up-flow-prompt-stage
+      attrs:
+          name: task-manager-sign-up-flow-prompt-stage
+          validation_policies:
+              - !KeyOf check-if-email-unique
+          fields:
+              - !Find [
+                    authentik_stages_prompt.prompt,
+                    [name, default-source-enrollment-field-username]
+                ]
+              - !Find [authentik_stages_prompt.prompt, [name, initial-setup-field-email]]
+              - !Find [authentik_stages_prompt.prompt, [name, initial-setup-field-password]]
+              - !Find [authentik_stages_prompt.prompt, [name, initial-setup-field-password-repeat]]
+
+    - model: authentik_stages_user_write.userwritestage
+      id: task-manager-sign-up-flow-user-write-stage
+      identifiers:
+          name: task-manager-sign-up-flow-user-write-stage
+      attrs:
+          name: task-manager-sign-up-flow-user-write-stage
+          user_type: internal
+          create_users_group: !KeyOf task-manager-group
+          create_users_as_inactive: false
+
+    # STAGE -> FLOW BINDINGS
+
+    - model: authentik_flows.flowstagebinding
+      id: task-manager-sign-up-flow-prompt-stage-binding
+      identifiers:
+          target: !KeyOf task-manager-sign-up-flow
+          stage: !KeyOf task-manager-sign-up-flow-prompt-stage
+      attrs:
+          target: !KeyOf task-manager-sign-up-flow
+          stage: !KeyOf task-manager-sign-up-flow-prompt-stage
+          policy_engine_mode: any
+          order: 10
+
+    - model: authentik_flows.flowstagebinding
+      id: task-manager-sign-up-flow-user-write-stage-binding
+      identifiers:
+          target: !KeyOf task-manager-sign-up-flow
+          stage: !KeyOf task-manager-sign-up-flow-user-write-stage
+      attrs:
+          target: !KeyOf task-manager-sign-up-flow
+          stage: !KeyOf task-manager-sign-up-flow-user-write-stage
+          policy_engine_mode: any
+          order: 20
+          policy: []
+
+    - model: authentik_flows.flowstagebinding
+      id: task-manager-sign-up-flow-user-login-stage-binding
+      identifiers:
+          target: !KeyOf task-manager-sign-up-flow
+          stage:
+              !Find [
+                  authentik_stages_user_login.userloginstage,
+                  [name, default-authentication-login]
+              ]
+      attrs:
+          target: !KeyOf task-manager-sign-up-flow
+          stage:
+              !Find [
+                  authentik_stages_user_login.userloginstage,
+                  [name, default-authentication-login]
+              ]
+          policy: []
+          order: 100
+          re_evaluate_policies: true
+
+    # POLICY -> STAGE BINGING
+
+    # - model: authentik_policies.policybinding
     #   identifiers:
-    #       slug: sign-up-flow
-    #       name: Sign Up Flow
+    #     policy: !KeyOf check-if-email-unique
+    #     target: !KeyOf task-manager-sign-up-flow-user-write-stage-binding
     #   attrs:
-    #       slug: sign-up-flow
-    #       name: Sign Up Flow
-    #       designation: enrollment
-    #       compatibility_mode: true
-    #       title: Sign Up
-
-    # # STAGES
-
-    # - model: authentik_stages_prompt.promptstage
-    #   id: sign-up-flow-prompt-stage
-    #   identifiers:
-    #       name: sign-up-flow-prompt-stage
-    #   attrs:
-    #       name: sign-up-flow-prompt-stage
-    #       fields:
-    #           - !Find [
-    #                 authentik_stages_prompt.promptstage,
-    #                 [name, default-source-enrollment-field-username]
-    #             ]
-    #           - !Find [authentik_stages_prompt.promptstage, [name, initial-setup-field-email]]
-    #           - !Find [authentik_stages_prompt.promptstage, [name, initial-setup-field-password]]
-    #           - !Find [
-    #                 authentik_stages_prompt.promptstage,
-    #                 [name, initial-setup-field-password-repeat]
-    #             ]
-
-    # # STAGE -> FLOW BINDINGS
+    #     policy: !KeyOf check-if-email-unique
+    #     target: !KeyOf task-manager-sign-up-flow-user-write-stage-binding
+    #     order: 0
+    #     enabled: true
+    #     failure_result: false
 
     # AUTH FLOW COMBINED
     # FLOW
@@ -72,6 +173,7 @@ entries:
                   authentik_stages_password.passwordstage,
                   [name, default-authentication-password]
               ]
+          enrollment_flow: !KeyOf task-manager-sign-up-flow
           user_fields:
               - email
               - username
@@ -82,7 +184,7 @@ entries:
     # STAGE -> FLOW BINGINGS
 
     - model: authentik_flows.flowstagebinding
-      id: auth-flow-combined-identification-stage-binging
+      id: auth-flow-combined-identification-stage-binding
       identifiers:
           target: !KeyOf auth-flow-combined
           stage: !KeyOf auth-flow-combined-identification-stage
@@ -94,7 +196,7 @@ entries:
           re_evaluate_policies: true
 
     - model: authentik_flows.flowstagebinding
-      id: auth-flow-combined-authenticator-validation-stage-binging
+      id: auth-flow-combined-authenticator-validation-stage-binding
       identifiers:
           target: !KeyOf auth-flow-combined
           stage:
@@ -113,7 +215,7 @@ entries:
           policy: []
 
     - model: authentik_flows.flowstagebinding
-      id: auth-flow-combined-user-login-stage-binging
+      id: auth-flow-combined-user-login-stage-binding
       identifiers:
           target: !KeyOf auth-flow-combined
           stage:
@@ -135,16 +237,16 @@ entries:
     # POLICY -> STAGE BINGINGS
 
     - model: authentik_policies.policybinding
-      id: auth-flow-combined-user-login-stage-binging-flow-password-policy
+      id: auth-flow-combined-user-login-stage-binding-flow-password-policy
       identifiers:
-          target: !KeyOf auth-flow-combined-identification-stage-binging
+          target: !KeyOf auth-flow-combined-identification-stage-binding
           policy:
               !Find [
                   authentik_policies_expression.expressionpolicy,
                   [name, default-authentication-flow-password-stage]
               ]
       attrs:
-          target: !KeyOf auth-flow-combined-identification-stage-binging
+          target: !KeyOf auth-flow-combined-identification-stage-binding
           policy:
               !Find [
                   authentik_policies_expression.expressionpolicy,
