@@ -32,7 +32,7 @@ RUN mix compile
 
 RUN mix release ${APP_NAME}
 
-FROM alpine:3.22 AS runtime
+FROM alpine:3.23 AS runtime
 
 RUN apk add --no-cache \
     openssl \
