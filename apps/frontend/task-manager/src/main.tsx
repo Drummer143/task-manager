@@ -1,5 +1,6 @@
 // import { StrictMode } from "react";
 
+import "@ant-design/v5-patch-for-react-19";
 import { insertAccessToken } from "@task-manager/api";
 import "antd/dist/reset.css";
 import { createRoot } from "react-dom/client";
