@@ -21,6 +21,6 @@ updates:
       interval: "monthly"
 
   - package-ecosystem: "docker" # See documentation for possible values
-    directory: "/" # Location of package manifests
+    directory: "/docker" # Location of Dockerfiles
     schedule:
       interval: "monthly"
