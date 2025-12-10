@@ -6,47 +6,49 @@
 	"targets": {
 		"build": {
 			"cache": true,
-			"executor": "@monodon/rust:build",
-			"outputs": ["{options.target-dir}"],
+			"executor": "nx:run-commands",
+			"outputs": ["target/debug/storage", "target/release/storage"],
 			"options": {
-				"target-dir": "dist/target/storage"
+				"cwd": ".",
+				"command": "cargo build -p storage"
 			},
 			"configurations": {
 				"production": {
-					"release": true
+					"command": "cargo build -p storage --release"
 				}
 			}
 		},
 		"test": {
 			"cache": true,
-			"executor": "@monodon/rust:test",
-			"outputs": ["{options.target-dir}"],
+			"executor": "nx:run-commands",
+			"outputs": [],
 			"options": {
-				"target-dir": "dist/target/storage"
+				"cwd": ".",
+				"command": "cargo test -p storage"
 			},
 			"configurations": {
 				"production": {
-					"release": true
+					"command": "cargo test -p storage --release"
 				}
 			}
 		},
 		"lint": {
 			"cache": true,
-			"executor": "@monodon/rust:lint",
-			"outputs": ["{options.target-dir}"],
+			"executor": "nx:run-commands",
 			"options": {
-				"target-dir": "dist/target/storage"
+				"cwd": ".",
+				"command": "cargo clippy -p storage -- -D warnings"
 			}
 		},
 		"dev": {
-			"executor": "@monodon/rust:run",
-			"outputs": ["{options.target-dir}"],
+			"executor": "nx:run-commands",
 			"options": {
-				"target-dir": "dist/target/storage"
+				"cwd": ".",
+				"command": "cargo run -p storage"
 			},
 			"configurations": {
 				"production": {
-					"release": true
+					"command": "cargo run -p storage --release"
 				}
 			}
 		}
