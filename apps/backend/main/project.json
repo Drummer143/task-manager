@@ -7,7 +7,7 @@
 		"build": {
 			"cache": true,
 			"executor": "nx:run-commands",
-			"outputs": ["target/debug/main", "target/release/main"],
+			"outputs": ["{workspaceRoot}/target/debug/main", "{workspaceRoot}/target/release/main"],
 			"options": {
 				"cwd": ".",
 				"command": "cargo build -p main"
