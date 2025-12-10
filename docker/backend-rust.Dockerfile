@@ -1,6 +1,7 @@
-FROM rust:1.90.0 AS builder
+FROM rust:1.91.1 AS builder
 
 ARG APP_NAME
+ARG PROFILE=release
 
 WORKDIR /app
 
@@ -8,17 +9,16 @@ COPY Cargo.toml Cargo.lock ./
 COPY apps/backend/ ./apps/backend/
 COPY libs/ ./libs/
 
-ENV APP_NAME=${APP_NAME}
+RUN cargo build -p ${APP_NAME} --profile ${PROFILE}
 
-RUN cargo build -p ${APP_NAME}
-
-FROM rust:1.90.0 as runner
+FROM rust:1.91.1 as runner
 
 ARG APP_NAME
+ARG PROFILE=release
 
 WORKDIR /app
 
-COPY --from=builder /app/target/debug/ ./
+COPY --from=builder /app/target/${PROFILE}/${APP_NAME} ./${APP_NAME}
 
 COPY migrations/ ./migrations/
 
