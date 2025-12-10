@@ -5,31 +5,34 @@
 	"sourceRoot": "libs/backend/error-handlers/src",
 	"targets": {
 		"build": {
-			"executor": "@monodon/rust:check",
-			"outputs": ["{options.target-dir}"],
+			"cache": true,
+			"executor": "nx:run-commands",
+			"outputs": [],
 			"options": {
-				"target-dir": "dist/target/error-handlers"
+				"cwd": ".",
+				"command": "cargo check -p error_handlers"
 			}
 		},
 		"test": {
 			"cache": true,
-			"executor": "@monodon/rust:test",
-			"outputs": ["{options.target-dir}"],
+			"executor": "nx:run-commands",
+			"outputs": [],
 			"options": {
-				"target-dir": "dist/target/error-handlers"
+				"cwd": ".",
+				"command": "cargo test -p error_handlers"
 			},
 			"configurations": {
 				"production": {
-					"release": true
+					"command": "cargo test -p error_handlers --release"
 				}
 			}
 		},
 		"lint": {
 			"cache": true,
-			"executor": "@monodon/rust:lint",
-			"outputs": ["{options.target-dir}"],
+			"executor": "nx:run-commands",
 			"options": {
-				"target-dir": "dist/target/error-handlers"
+				"cwd": ".",
+				"command": "cargo clippy -p error_handlers -- -D warnings"
 			}
 		}
 	},

@@ -1,11 +1,10 @@
-/// <reference types='vitest' />
 import { nxCopyAssetsPlugin } from "@nx/vite/plugins/nx-copy-assets.plugin";
 import { nxViteTsPaths } from "@nx/vite/plugins/nx-tsconfig-paths.plugin";
 import react from "@vitejs/plugin-react";
 import { visualizer } from "rollup-plugin-visualizer";
-import { defineConfig } from "vite";
+import { defineConfig } from "vitest/config";
 
-export default defineConfig(() => ({
+export default defineConfig({
 	root: __dirname,
 	cacheDir: "../../../node_modules/.vite/apps/task-manager",
 	server: {
@@ -60,8 +59,9 @@ export default defineConfig(() => ({
 		reporters: ["default"],
 		coverage: {
 			reportsDirectory: "../../../coverage/apps/task-manager",
-			provider: "v8" as const
+			provider: "v8" as const,
+			include: ["src/**/*.{ts,tsx}"]
 		}
 	}
-}));
+});
 
