@@ -3,7 +3,7 @@ import { ThemeConfig } from "antd";
 import { lightExtra } from "./extraToken";
 
 export default {
-	cssVar: true,
+	cssVar: {},
 	components: {
 		Layout: {
 			triggerColor: "#000",
