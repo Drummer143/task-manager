@@ -5,7 +5,7 @@ import Chat, { PresenceInfo, UserInfo } from "@task-manager/chat";
 import { type ChatProps } from "@task-manager/chat";
 import { useDisclosure } from "@task-manager/react-utils";
 import { Button } from "antd";
-import { DrawerClassNames } from "antd/es/drawer/DrawerPanel";
+import { DrawerClassNamesType } from "antd/es/drawer/DrawerPanel";
 import { createStyles } from "antd-style";
 import { Channel, Presence } from "phoenix";
 import { useSearchParams } from "react-router";
@@ -58,7 +58,7 @@ const TaskChat: React.FC = () => {
 
 	const styles = useStyles().styles;
 
-	const drawerClassnames = useMemo<DrawerClassNames>(
+	const drawerClassnames = useMemo<DrawerClassNamesType>(
 		() => ({
 			body: styles.drawerBody,
 			wrapper: styles.drawer

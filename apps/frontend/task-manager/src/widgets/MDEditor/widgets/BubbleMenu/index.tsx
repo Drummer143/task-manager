@@ -62,7 +62,7 @@ const BubbleMenu: React.FC<BubbleMenuProps> = ({ editor, selectionParams, onItem
 			>
 				{bubbleMenuButtons.map(({ action, icon, shortcut }) => (
 					<Tooltip
-						classNames={{ body: styles.buttonTooltip }}
+						classNames={{ root: styles.buttonTooltip }}
 						title={
 							<Typography.Text>
 								{action}{" "}

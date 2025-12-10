@@ -3,7 +3,7 @@ import { ThemeConfig } from "antd";
 import { darkExtra } from "./extraToken";
 
 export default {
-	cssVar: true,
+	cssVar: {},
 	components: {
 		Layout: {
 			triggerBg: "#080808",
