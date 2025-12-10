@@ -10,7 +10,7 @@
 			"outputs": [],
 			"options": {
 				"cwd": ".",
-				"command": "cargo check -p rust-api"
+				"command": "cargo check -p rust_api"
 			}
 		},
 		"test": {
@@ -19,11 +19,11 @@
 			"outputs": [],
 			"options": {
 				"cwd": ".",
-				"command": "cargo test -p rust-api"
+				"command": "cargo test -p rust_api"
 			},
 			"configurations": {
 				"production": {
-					"command": "cargo test -p rust-api --release"
+					"command": "cargo test -p rust_api --release"
 				}
 			}
 		},
@@ -32,7 +32,7 @@
 			"executor": "nx:run-commands",
 			"options": {
 				"cwd": ".",
-				"command": "cargo clippy -p rust-api -- -D warnings"
+				"command": "cargo clippy -p rust_api -- -D warnings"
 			}
 		}
 	},

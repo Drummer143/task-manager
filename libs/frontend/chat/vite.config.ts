@@ -1,11 +1,10 @@
-/// <reference types='vitest' />
 import { nxCopyAssetsPlugin } from "@nx/vite/plugins/nx-copy-assets.plugin";
 import { nxViteTsPaths } from "@nx/vite/plugins/nx-tsconfig-paths.plugin";
 import * as path from "path";
-import { defineConfig } from "vite";
 import dts from "vite-plugin-dts";
+import { defineConfig } from "vitest/config";
 
-export default defineConfig(() => ({
+export default defineConfig({
 	root: __dirname,
 	cacheDir: "../../../node_modules/.vite/libs/frontend/chat",
 	plugins: [
@@ -45,10 +44,12 @@ export default defineConfig(() => ({
 		globals: true,
 		environment: "node",
 		include: ["src/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],
+		passWithNoTests: true,
 		reporters: ["default"],
 		coverage: {
 			reportsDirectory: "../../../coverage/libs/frontend/chat",
-			provider: "v8" as const
+			provider: "v8" as const,
+			include: ["src/**/*.{ts,tsx}"]
 		}
 	}
-}));
+});

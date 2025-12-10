@@ -10,7 +10,7 @@
 			"outputs": [],
 			"options": {
 				"cwd": ".",
-				"command": "cargo check -p error-handlers"
+				"command": "cargo check -p error_handlers"
 			}
 		},
 		"test": {
@@ -19,11 +19,11 @@
 			"outputs": [],
 			"options": {
 				"cwd": ".",
-				"command": "cargo test -p error-handlers"
+				"command": "cargo test -p error_handlers"
 			},
 			"configurations": {
 				"production": {
-					"command": "cargo test -p error-handlers --release"
+					"command": "cargo test -p error_handlers --release"
 				}
 			}
 		},
@@ -32,7 +32,7 @@
 			"executor": "nx:run-commands",
 			"options": {
 				"cwd": ".",
-				"command": "cargo clippy -p error-handlers -- -D warnings"
+				"command": "cargo clippy -p error_handlers -- -D warnings"
 			}
 		}
 	},
