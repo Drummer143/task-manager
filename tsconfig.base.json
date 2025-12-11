@@ -27,7 +27,8 @@
 				"libs/frontend/tiptap-plugin-file-renderer/src/index.ts"
 			],
 			"@task-manager/utils": ["libs/frontend/utils/src/index.ts"],
-			"@task-manager/video-player": ["libs/frontend/video-player/src/index.ts"]
+			"@task-manager/video-player": ["libs/frontend/video-player/src/index.ts"],
+			"@task-manager/event-emitter": ["libs/frontend/event-emitter/src/index.ts"]
 		}
 	},
 	"exclude": ["node_modules", "tmp"]
