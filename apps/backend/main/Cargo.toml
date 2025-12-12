@@ -5,6 +5,7 @@ edition = "2024"
 
 
 [dependencies]
+mimalloc = { version = "0.1", default-features = false }
 axum = "0.8"
 axum-extra = { version = "0.10", features = ["cookie"] }
 axum-macros = "0.5"
@@ -20,9 +21,17 @@ serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 serde_urlencoded = "0.7"
 serde_path_to_error = "0.1"
-jsonwebtoken = { version = "10", default-features = false, features = ["rust_crypto"] }
-lapin = "2.5"
-reqwest = { version = "0.12", features = ["json", "rustls-tls"] }
+jsonwebtoken = { version = "10", default-features = false, features = [
+    "rust_crypto",
+] }
+lapin = { version = "2.5", default-features = false, features = ["rustls"] }
+reqwest = { version = "0.12", default-features = false, features = [
+    "json",
+    "rustls-tls",
+    "charset",
+    "http2",
+    "macos-system-configuration",
+] }
 form_urlencoded = "1.2"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["fmt", "env-filter"] }

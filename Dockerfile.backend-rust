@@ -1,0 +1,61 @@
+# Stage 1: Chef (env prepare)
+FROM rust:1.91.1-slim-bookworm AS chef
+
+# perl for ring
+# curl for utoipa
+# gcc for build
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    pkg-config \
+    curl \
+    perl \
+    unzip \
+    && rm -rf /var/lib/apt/lists/*
+
+ENV CARGO_TARGET_DIR=/app/dist/target
+
+RUN cargo install cargo-chef
+WORKDIR /app
+
+# Stage 2: Planner (dependencies calculate)
+FROM chef AS planner
+
+COPY . .
+
+RUN cargo chef prepare --recipe-path recipe.json
+
+# Stage 3: Builder (build)
+FROM chef AS builder
+
+ARG APP_NAME
+ARG PROFILE=build-optimized
+
+COPY --from=planner /app/recipe.json recipe.json
+
+RUN cargo chef cook --profile ${PROFILE} --recipe-path recipe.json
+
+COPY Cargo.toml Cargo.lock ./
+COPY apps/backend/ ./apps/backend/
+COPY libs/ ./libs/
+
+RUN cargo build -p ${APP_NAME} --profile ${PROFILE}
+
+# Stage 4: Runtime (final image)
+FROM debian:bookworm-slim AS runtime
+
+ARG APP_NAME
+ARG PROFILE=build-optimized
+
+WORKDIR /app
+
+RUN apt-get update && apt-get install -y \
+    ca-certificates \
+    libssl3 \
+    && rm -rf /var/lib/apt/lists/*
+
+COPY --from=builder /app/dist/target/${PROFILE}/${APP_NAME} ./server
+
+COPY migrations/ ./migrations
+ENV MIGRATIONS_DIR=/app/migrations
+
+CMD ["./server"]

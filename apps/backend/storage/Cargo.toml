@@ -1,10 +1,11 @@
 [package]
 name = "storage"
 version = "0.1.0"
-edition = "2021"
+edition = "2024"
 
 
 [dependencies]
+mimalloc = { version = "0.1", default-features = false }
 axum = { version = "0.8", features = ["multipart"] }
 axum-macros = "0.5"
 dotenvy = "0.15"

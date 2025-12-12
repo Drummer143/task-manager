@@ -1,0 +1,10 @@
+.git
+_build
+.elixir_ls
+.nx
+deps
+dist
+node_modules
+coverage
+target
+.env

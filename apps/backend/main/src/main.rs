@@ -2,6 +2,7 @@ use std::sync::Arc;
 
 use axum::http;
 // use tracing_subscriber::{EnvFilter, layer::SubscriberExt, util::SubscriberInitExt};
+use mimalloc::MiMalloc;
 use utoipa::OpenApi;
 
 use crate::types::app_state::JwkSet;
@@ -12,6 +13,9 @@ mod shared;
 mod swagger;
 mod types;
 mod webhooks;
+
+#[global_allocator]
+static GLOBAL: MiMalloc = MiMalloc;
 
 #[tokio::main]
 async fn main() {
