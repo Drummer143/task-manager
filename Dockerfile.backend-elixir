@@ -1,55 +1,58 @@
-FROM elixir:1.15-alpine AS builder
+# --- Stage 1: Builder ---
+FROM elixir:1.18-slim as builder
 
-RUN apk add --no-cache \
-    build-base \
+RUN apt-get update -y && apt-get install -y \
+    build-essential \
     git \
-    nodejs \
-    npm
-
-ENV MIX_ENV=prod
+    && apt-get clean && rm -f /var/lib/apt/lists/*_*
 
 WORKDIR /app
-
-ARG APP_NAME
-ENV APP_NAME=${APP_NAME}
-
-RUN if [ -z "$APP_NAME" ]; then \
-    echo "ERROR: APP_NAME build argument is required" && exit 1; \
-    fi
-
-COPY mix.exs mix.lock ./
-COPY config/ ./config/
-COPY apps/elixir/ ./apps/elixir/
 
 RUN mix local.hex --force && \
     mix local.rebar --force
 
-RUN mix deps.get --only=prod
+ENV MIX_ENV="prod"
 
+COPY mix.exs mix.lock ./
+
+COPY config/ config/
+COPY apps/elixir/ ./apps/elixir/
+
+RUN mix deps.get --only $MIX_ENV
 RUN mix deps.compile
 
 RUN mix compile
 
+ARG APP_NAME
+RUN if [ -z "$APP_NAME" ]; then echo "APP_NAME required"; exit 1; fi
 RUN mix release ${APP_NAME}
 
-FROM alpine:3.23 AS runtime
+# --- Stage 2: Runtime ---
+FROM debian:bookworm-slim
 
-RUN apk add --no-cache \
+RUN apt-get update -y && apt-get install -y \
+    libstdc++6 \
     openssl \
-    ncurses-libs \
-    libstdc++ \
-    libgcc
+    libncurses6 \
+    locales \
+    && apt-get clean && rm -f /var/lib/apt/lists/*_*
 
-RUN addgroup -g 1001 -S elixir && \
-    adduser -S -D -H -u 1001 -h /app -s /bin/sh -G elixir elixir
+RUN sed -i '/en_US.UTF-8/s/^# //g' /etc/locale.gen && locale-gen
+ENV LANG en_US.UTF-8
+ENV LANGUAGE en_US:en
+ENV LC_ALL en_US.UTF-8
 
 WORKDIR /app
 
-ARG APP_NAME
-ENV APP_NAME=${APP_NAME}
-
-COPY --from=builder --chown=elixir:elixir /app/_build/prod/rel/${APP_NAME} ./
+RUN addgroup --gid 1000 elixir && \
+    adduser --uid 1000 --gid 1000 --home /app --shell /bin/sh --disabled-password elixir
 
 USER elixir
+
+ARG APP_NAME
+ENV APP_NAME=${APP_NAME}
+ENV HOME=/app
+
+COPY --from=builder --chown=elixir:elixir /app/_build/prod/rel/${APP_NAME} ./
 
 CMD ["sh", "-c", "./bin/${APP_NAME} start"]
