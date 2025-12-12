@@ -1,0 +1,64 @@
+ARG RUST_VERSION=1.91.1
+
+# --- Stage 1: Chef (Подготовка окружения) ---
+FROM rust:${RUST_VERSION}-slim-bookworm AS chef
+
+# Устанавливаем зависимости (perl для ring, curl для utoipa, gcc для сборки)
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    pkg-config \
+    curl \
+    perl \
+    unzip \
+    && rm -rf /var/lib/apt/lists/*
+
+# !!! ВАЖНО: Говорим Cargo (и cargo-chef), где лежат билды !!!
+ENV CARGO_TARGET_DIR=/app/dist/target
+
+RUN cargo install cargo-chef
+WORKDIR /app
+
+# --- Stage 2: Planner (Вычисление зависимостей) ---
+FROM chef AS planner
+COPY . .
+RUN cargo chef prepare --recipe-path recipe.json
+
+# --- Stage 3: Builder (Сборка) ---
+FROM chef AS builder
+ARG APP_NAME
+
+COPY --from=planner /app/recipe.json recipe.json
+
+# Собираем зависимости. Теперь chef знает про /app/dist/target и не упадет.
+RUN cargo chef cook --profile build-optimized --recipe-path recipe.json
+
+# Копируем исходники
+COPY Cargo.toml Cargo.lock ./
+COPY apps/backend/ ./apps/backend/
+COPY libs/ ./libs/
+
+# Собираем приложение
+RUN cargo build -p ${APP_NAME} --profile build-optimized
+
+# Стрипаем бинарник (уменьшаем размер), указывая правильный путь
+# RUN strip /app/dist/target/build-optimized/${APP_NAME}
+
+# --- Stage 4: Runtime (Финальный образ) ---
+FROM debian:bookworm-slim AS runtime
+
+ARG APP_NAME
+WORKDIR /app
+
+# Runtime зависимости
+RUN apt-get update && apt-get install -y \
+    ca-certificates \
+    libssl3 \
+    && rm -rf /var/lib/apt/lists/*
+
+# Копируем бинарник из ПРАВИЛЬНОЙ папки
+COPY --from=builder /app/dist/target/build-optimized/${APP_NAME} ./server
+
+COPY migrations/ ./migrations
+ENV MIGRATIONS_DIR=/app/migrations
+
+CMD ["./server"]

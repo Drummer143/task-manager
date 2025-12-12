@@ -10,7 +10,10 @@ RUN npm install -g pnpm
 
 RUN pnpm install --frozen-lockfile
 
-COPY . .
+COPY apps/frontend/${APP_NAME} apps/frontend/${APP_NAME}
+COPY libs/frontend/ libs/frontend/
+COPY nx.json ./
+COPY tsconfig.base.json ./
 
 ARG APP_NAME
 

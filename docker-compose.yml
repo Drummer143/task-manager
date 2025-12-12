@@ -8,8 +8,6 @@ services:
             interval: 10s
             timeout: 5s
             retries: 10
-        mem_limit: 256M
-        cpus: "0.5"
         deploy:
             resources:
                 limits:
@@ -113,7 +111,7 @@ services:
         # restart: unless-stopped
         container_name: authentik_server
         command: server
-        env_file: ../.env
+        env_file: ./.env
         healthcheck:
             test: ["CMD-SHELL", "python3 -c 'import urllib.request; urllib.request.urlopen(\"http://localhost:9000/-/health/live/\")'"]
             interval: 30s
@@ -150,7 +148,7 @@ services:
         # restart: unless-stopped
         container_name: authentik_worker
         command: worker
-        env_file: ../.env
+        env_file: ./.env
         environment:
             AUTHENTIK_REDIS__DB: 9
             AUTHENTIK_REDIS__HOST: redis
@@ -190,11 +188,11 @@ services:
         deploy:
             resources:
                 limits:
-                    memory: 256M
-                    cpus: "0.5"
+                    memory: 512M
+                    cpus: "1.0"
         build:
-            context: ..
-            dockerfile: docker/backend-rust.Dockerfile
+            context: .
+            dockerfile: Dockerfile.backend-rust
             args:
                 APP_NAME: main
         environment:
@@ -223,8 +221,8 @@ services:
                     memory: 256M
                     cpus: "0.5"
         build:
-            context: ..
-            dockerfile: docker/backend-rust.Dockerfile
+            context: .
+            dockerfile: Dockerfile.backend-rust
             args:
                 APP_NAME: storage
         environment:
@@ -254,8 +252,8 @@ services:
                     memory: 256M
                     cpus: "0.5"
         build:
-            context: ..
-            dockerfile: docker/backend-elixir.Dockerfile
+            context: .
+            dockerfile: Dockerfile.backend-elixir
             args:
                 APP_NAME: notifications
         environment:
@@ -286,8 +284,8 @@ services:
                     memory: 256M
                     cpus: "0.5"
         build:
-            context: ..
-            dockerfile: docker/backend-elixir.Dockerfile
+            context: .
+            dockerfile: Dockerfile.backend-elixir
             args:
                 APP_NAME: chat
         environment:
@@ -303,8 +301,8 @@ services:
     task-manager:
         # restart: always
         build:
-            context: ..
-            dockerfile: docker/frontend.Dockerfile
+            context: .
+            dockerfile: Dockerfile.frontend
             args:
                 APP_NAME: task-manager
         container_name: task-manager

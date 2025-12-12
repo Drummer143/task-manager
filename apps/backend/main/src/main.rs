@@ -1,8 +1,10 @@
 use std::sync::Arc;
 
-use axum::http;
+use axum::{http, Json};
+use uuid::Uuid;
 // use tracing_subscriber::{EnvFilter, layer::SubscriberExt, util::SubscriberInitExt};
 use utoipa::OpenApi;
+use mimalloc::MiMalloc;
 
 use crate::types::app_state::JwkSet;
 mod db_connections;
@@ -12,6 +14,33 @@ mod shared;
 mod swagger;
 mod types;
 mod webhooks;
+
+#[global_allocator]
+static GLOBAL: MiMalloc = MiMalloc;
+
+#[derive(serde::Serialize)]
+struct BenchmarkItem {
+    id: Uuid,
+    name: String,
+    values: Vec<i32>, // Вектор провоцирует аллокации
+    tags: Vec<String>, // Еще аллокации
+}
+
+async fn benchmark_handler() -> impl axum::response::IntoResponse {
+    // Генерируем вектор из 500 элементов.
+    // Это заставит аллокатор попотеть, выделяя и освобождая память.
+    let items: Vec<BenchmarkItem> = (0..500)
+        .map(|i| BenchmarkItem {
+            id: Uuid::new_v4(),
+            name: format!("Item number {}", i),
+            values: vec![1, 2, 3, 4, 5, i],
+            tags: vec!["fast".to_string(), "rust".to_string(), "test".to_string()],
+        })
+        .collect();
+
+    // Сериализация в JSON тоже сильно нагружает CPU и память
+    Json(items)
+}
 
 #[tokio::main]
 async fn main() {
@@ -76,6 +105,7 @@ async fn main() {
     };
 
     let app = axum::Router::new()
+        .route("/benchmark", axum::routing::get(benchmark_handler))
         .merge(entities::user::router::init(app_state.clone()))
         .merge(entities::profile::router::init(app_state.clone()))
         // .merge(entities::auth::router::init())

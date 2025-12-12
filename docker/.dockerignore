@@ -1,8 +1,0 @@
-node_modules
-dist
-coverage
-*prettier*
-tmp
-.env
-_build
-target
