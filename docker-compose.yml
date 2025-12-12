@@ -188,13 +188,14 @@ services:
         deploy:
             resources:
                 limits:
-                    memory: 512M
-                    cpus: "1.0"
+                    memory: 128M
+                    cpus: "0.25"
         build:
             context: .
             dockerfile: Dockerfile.backend-rust
             args:
                 APP_NAME: main
+                PROFILE: ${PROFILE:-build-optimized}
         environment:
             DATABASE_URL: ${DATABASE_URL}
             PORT: ${MAIN_SERVICE_PORT}
@@ -218,13 +219,14 @@ services:
         deploy:
             resources:
                 limits:
-                    memory: 256M
-                    cpus: "0.5"
+                    memory: 192M
+                    cpus: "0.25"
         build:
             context: .
             dockerfile: Dockerfile.backend-rust
             args:
                 APP_NAME: storage
+                PROFILE: ${PROFILE:-build-optimized}
         environment:
             SELF_PORT: ${STORAGE_SERVICE_PORT}
             SELF_HOST: ${STORAGE_SERVICE_HOST}
