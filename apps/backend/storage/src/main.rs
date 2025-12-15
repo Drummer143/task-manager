@@ -1,10 +1,14 @@
 use axum::http;
 use utoipa::OpenApi;
+use mimalloc::MiMalloc;
 
 mod db_connections;
 mod entities;
 mod swagger;
 mod types;
+
+#[global_allocator]
+static GLOBAL: MiMalloc = MiMalloc;
 
 #[tokio::main]
 async fn main() {
