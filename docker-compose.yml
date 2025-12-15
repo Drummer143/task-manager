@@ -111,7 +111,12 @@ services:
         # restart: unless-stopped
         container_name: authentik_server
         command: server
-        env_file: ./.env
+        deploy:
+            resources:
+                limits:
+                    memory: 1GB
+                    cpus: "1.0"
+        # env_file: ./.env
         healthcheck:
             test: ["CMD-SHELL", "python3 -c 'import urllib.request; urllib.request.urlopen(\"http://localhost:9000/-/health/live/\")'"]
             interval: 30s
@@ -148,7 +153,12 @@ services:
         # restart: unless-stopped
         container_name: authentik_worker
         command: worker
-        env_file: ./.env
+        deploy:
+            resources:
+                limits:
+                    memory: 1GB
+                    cpus: "1.0"
+        # env_file: ./.env
         environment:
             AUTHENTIK_REDIS__DB: 9
             AUTHENTIK_REDIS__HOST: redis
