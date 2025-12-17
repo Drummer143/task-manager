@@ -4,7 +4,7 @@ defmodule AuthVerifier.TokenStrategy do
   use JokenJwks.DefaultStrategyTemplate
 
   def init_opts(opts) do
-    url = Keyword.fetch!(opts, :url)
+    url = Application.get_env(:auth_verifier, :jwks_url)
 
     [
       jwks_url: url,

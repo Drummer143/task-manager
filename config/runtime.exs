@@ -21,6 +21,11 @@ if System.get_env("PHX_SERVER") do
   config :chat, ChatWeb.Endpoint, server: true
 end
 
+config :auth_verifier,
+  jwks_url: System.get_env("AUTHENTIK_JWKS_URL"),
+  issuer: System.get_env("AUTHENTIK_ISSUER"),
+  audience: System.get_env("AUTHENTIK_AUDIENCE")
+
 if config_env() == :prod do
   database_url =
     System.get_env("DATABASE_URL") ||
@@ -84,11 +89,6 @@ if config_env() == :prod do
       port: port
     ],
     secret_key_base: secret_key_base
-
-  config :auth_verifier,
-    jwks_url: System.get_env("AUTHENTIK_JWKS_URL"),
-    issuer: System.get_env("AUTHENTIK_ISSUER"),
-    audience: System.get_env("AUTHENTIK_AUDIENCE")
 
   # ## SSL Support
   #

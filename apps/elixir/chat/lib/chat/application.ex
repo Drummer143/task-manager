@@ -8,7 +8,7 @@ defmodule Chat.Application do
   @impl true
   def start(_type, _args) do
     children = [
-      {AuthVerifier.TokenStrategy, url: Application.get_env(:auth_verifier, :jwks_url)},
+      AuthVerifier.TokenStrategy,
       ChatWeb.Telemetry,
       Chat.Repo,
       {DNSCluster, query: Application.get_env(:chat, :dns_cluster_query) || :ignore},
