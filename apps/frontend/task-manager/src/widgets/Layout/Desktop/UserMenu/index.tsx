@@ -20,10 +20,13 @@ const UserMenu: React.FC = () => {
 	}
 
 	return (
-		<Dropdown menu={menu} trigger={["click"]} placement="bottomRight">
-			<UserMenuInfo username={user.username} picture={user.picture} />
+		<Dropdown menu={menu} trigger={["click"]}>
+			<div>
+				<UserMenuInfo username={user.username} picture={user.picture} />
+			</div>
 		</Dropdown>
 	);
 };
 
 export default UserMenu;
+

@@ -32,6 +32,7 @@ export const useStyles = createStyles(({ css }, { mobile }: { mobile?: boolean }
 
 		p {
 			margin: 0;
+			line-height: 1;
 		}
 	`
 }));
