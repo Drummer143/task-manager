@@ -80,12 +80,24 @@ pub struct Page {
     pub id: Uuid,
     pub r#type: PageType,
     pub title: String,
-    #[sqlx(skip)]
-    pub text: Option<Doc>,
     pub owner_id: Uuid,
     pub workspace_id: Uuid,
     pub parent_page_id: Option<Uuid>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
     pub deleted_at: Option<DateTime<Utc>>,
+}
+
+#[derive(Debug, FromRow, Clone)]
+pub struct PageContent {
+    page_id: Uuid,
+    content: sqlx::types::Json<Doc>,
+    updated_at: DateTime<Utc>,
+}
+
+#[derive(Debug, FromRow, Clone)]
+pub struct PageWithContent {
+    #[sqlx(flatten)]
+    pub page: Page,
+    pub content: Option<sqlx::types::Json<Doc>>,
 }

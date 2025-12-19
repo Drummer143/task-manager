@@ -1,9 +1,12 @@
 use sqlx::{Executor, Postgres};
 use uuid::Uuid;
 
-use crate::shared::traits::{
-    PostgresqlRepositoryCreate, PostgresqlRepositoryDelete, PostgresqlRepositoryGetOneById,
-    PostgresqlRepositoryUpdate, RepositoryBase, UpdateDto,
+use crate::{
+    entities::page::model::PageWithContent,
+    shared::traits::{
+        PostgresqlRepositoryCreate, PostgresqlRepositoryDelete, PostgresqlRepositoryGetOneById,
+        PostgresqlRepositoryUpdate, RepositoryBase, UpdateDto,
+    },
 };
 
 use super::model::Page;
@@ -103,6 +106,18 @@ impl PageRepository {
             .bind(page_id)
             .fetch_all(executor)
             .await
+    }
+
+    pub async fn get_page_with_content<'a>(
+        executor: impl Executor<'a, Database = Postgres>,
+        page_id: Uuid,
+    ) -> Result<PageWithContent, sqlx::Error> {
+        sqlx::query_as::<_, PageWithContent>(
+            "SELECT p.*, pt.content as content FROM pages p LEFT JOIN text_page_contents pt ON p.id = pt.page_id WHERE p.id = $1",
+        )
+        .bind(page_id)
+        .fetch_one(executor)
+        .await
     }
 
     // MongoDB api
