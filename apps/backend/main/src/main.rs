@@ -82,7 +82,6 @@ async fn main() {
     let app = axum::Router::new()
         .merge(entities::user::router::init(app_state.clone()))
         .merge(entities::profile::router::init(app_state.clone()))
-        // .merge(entities::auth::router::init())
         .merge(entities::workspace::router::init(app_state.clone()))
         .merge(entities::workspace_access::router::init(app_state.clone()))
         .merge(entities::page::router::init(app_state.clone()))

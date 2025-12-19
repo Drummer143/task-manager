@@ -1,9 +1,6 @@
 #[derive(utoipa::OpenApi)]
 #[openapi(
     paths(
-        // crate::entities::auth::controller::login::login,
-        // crate::entities::auth::controller::register::register,
-
         crate::entities::board_statuses::controller::create_board_status::create_board_status,
         crate::entities::board_statuses::controller::get_board_statuses::get_board_statuses,
 
@@ -42,7 +39,6 @@
     ),
     components(schemas(
         rust_api::entities::user::model::User,
-        // rust_api::entities::user_credentials::model::UserCredentials,
         rust_api::entities::workspace_access::model::Role,
 
         error_handlers::handlers::ErrorResponse,

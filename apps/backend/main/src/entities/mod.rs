@@ -1,4 +1,3 @@
-pub mod auth;
 pub mod board_statuses;
 pub mod page;
 pub mod page_access;
