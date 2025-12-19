@@ -1,5 +1,5 @@
 # --- Stage 1: Builder ---
-FROM elixir:1.18-slim as builder
+FROM hexpm/elixir:1.18-erlang-27.2.4-debian-bookworm-20251208-slim as builder
 
 RUN apt-get update -y && apt-get install -y \
     build-essential \

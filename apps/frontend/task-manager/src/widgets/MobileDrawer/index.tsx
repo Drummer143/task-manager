@@ -1,6 +1,7 @@
 import React, { memo, useCallback, useState } from "react";
 
 import { Drawer, DrawerProps } from "antd";
+import { MaskType } from "antd/es/_util/hooks";
 import { createStyles } from "antd-style";
 
 const SWIPE_DISTANCE_TO_CLOSE = 50;
@@ -21,6 +22,8 @@ const useStyles = createStyles(({ css }, { shiftX }: { shiftX: number }) => ({
 		}
 	`
 }));
+
+const defaultMask: MaskType = { blur: false };
 
 const MobileDrawer: React.FC<MobileDrawerProps> = props => {
 	const [touchStartX, setTouchStartX] = useState(0);
@@ -82,6 +85,7 @@ const MobileDrawer: React.FC<MobileDrawerProps> = props => {
 		<Drawer
 			placement="left"
 			keyboard={false}
+			mask={defaultMask}
 			afterOpenChange={handleAfterOpenChange}
 			drawerRender={drawerRender}
 			{...props}

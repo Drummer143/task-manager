@@ -9,8 +9,10 @@ import {
 	FormProps,
 	Space
 } from "antd";
+import { MaskType } from "antd/es/_util/hooks";
 
-interface DrawerProps<Values extends object = never> extends Omit<AntDrawerProps, "open" | "onClose"> {
+interface DrawerProps<Values extends object = never>
+	extends Omit<AntDrawerProps, "open" | "onClose"> {
 	open: boolean;
 
 	onClose: AntDrawerProps["onClose"];
@@ -27,16 +29,21 @@ interface DrawerProps<Values extends object = never> extends Omit<AntDrawerProps
 
 	form?: true | FormProps<Values>;
 
-	onOk?: Values extends never ? React.MouseEventHandler<HTMLElement> : FormProps<Values>["onFinish"];
+	onOk?: Values extends never
+		? React.MouseEventHandler<HTMLElement>
+		: FormProps<Values>["onFinish"];
 	onCancel?: React.MouseEventHandler<HTMLElement>;
 
 	afterClose?: () => void;
 }
 
+const defaultMask: MaskType = { blur: false };
+
 const Drawer = <Values extends object = never>({
 	form,
 	extra: propsExtra,
 	drawerRender: propsDrawerRender,
+	mask = defaultMask,
 	onOk,
 	okText,
 	okType,
@@ -104,7 +111,9 @@ const Drawer = <Values extends object = never>({
 			okButtonProps.type ??= okType ?? "primary";
 			okButtonProps.children ??= okText ?? "Save";
 			okButtonProps.htmlType = form ? "submit" : (okButtonProps.htmlType ?? "button");
-			okButtonProps.onClick ??= form ? undefined : (onOk as React.MouseEventHandler<HTMLElement>);
+			okButtonProps.onClick ??= form
+				? undefined
+				: (onOk as React.MouseEventHandler<HTMLElement>);
 		}
 
 		if (onCancel || form) {
@@ -149,7 +158,16 @@ const Drawer = <Values extends object = never>({
 		}
 	}, [afterClose, afterOpenChange]);
 
-	return <AntDrawer {...props} afterOpenChange={handleAfterOpenChange} drawerRender={drawerRender} extra={extra} />;
+	return (
+		<AntDrawer
+			{...props}
+			mask={mask}
+			afterOpenChange={handleAfterOpenChange}
+			drawerRender={drawerRender}
+			extra={extra}
+		/>
+	);
 };
 
 export default memo(Drawer) as typeof Drawer;
+
