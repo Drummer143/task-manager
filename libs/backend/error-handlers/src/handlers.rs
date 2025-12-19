@@ -146,9 +146,3 @@ impl From<sqlx::Error> for ErrorResponse {
         }
     }
 }
-
-impl From<mongodb::error::Error> for ErrorResponse {
-    fn from(error: mongodb::error::Error) -> Self {
-        Self::internal_server_error(Some(error.to_string()))
-    }
-}

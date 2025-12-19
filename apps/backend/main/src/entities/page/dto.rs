@@ -50,7 +50,6 @@ pub struct PageResponseWithoutInclude {
     pub id: Uuid,
     pub r#type: PageType,
     pub title: String,
-    pub text: Option<DocResponse>,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -63,7 +62,6 @@ impl From<Page> for PageResponseWithoutInclude {
             id: page.id,
             r#type: page.r#type,
             title: page.title,
-            text: page.text.map(DocResponse::from),
             created_at: page.created_at,
             updated_at: page.updated_at,
             deleted_at: page.deleted_at,
@@ -77,7 +75,6 @@ impl From<&Page> for PageResponseWithoutInclude {
             id: page.id,
             r#type: page.r#type.clone(),
             title: page.title.clone(),
-            text: page.text.clone().map(DocResponse::from),
             created_at: page.created_at,
             updated_at: page.updated_at,
             deleted_at: page.deleted_at,
@@ -91,7 +88,6 @@ pub struct ChildPageResponse {
     pub id: Uuid,
     pub r#type: PageType,
     pub title: String,
-    pub text: Option<DocResponse>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub owner: Option<User>,
@@ -108,7 +104,6 @@ impl From<Page> for ChildPageResponse {
             id: page.id,
             r#type: page.r#type,
             title: page.title,
-            text: page.text.map(DocResponse::from),
             owner: None,
             created_at: page.created_at,
             updated_at: page.updated_at,
@@ -123,7 +118,6 @@ impl From<PageResponse> for ChildPageResponse {
             id: page.id,
             r#type: page.r#type,
             title: page.title,
-            text: page.text.map(DocResponse::from),
             owner: page.owner,
             created_at: page.created_at,
             updated_at: page.updated_at,
@@ -140,8 +134,6 @@ pub struct PageResponse {
     pub title: String,
     pub role: Option<rust_api::entities::page_access::model::Role>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub text: Option<DocResponse>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub owner: Option<User>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -173,7 +165,6 @@ impl From<Page> for PageResponse {
             id: page.id,
             r#type: page.r#type,
             title: page.title,
-            text: page.text.map(DocResponse::from),
             role: None,
             owner: None,
             workspace: None,

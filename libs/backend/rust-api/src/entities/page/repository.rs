@@ -104,45 +104,4 @@ impl PageRepository {
             .fetch_all(executor)
             .await
     }
-
-    // MongoDB api
-
-    pub async fn get_page_text<'a>(
-        executor: &mongodb::Database,
-        page_id: Uuid,
-    ) -> Result<Option<super::model::Doc>, mongodb::error::Error> {
-        let find_options = mongodb::options::FindOneOptions::builder()
-            .sort(mongodb::bson::doc! { "version": -1 })
-            .build();
-
-        executor
-            .collection::<super::model::Doc>(crate::shared::constants::PAGE_TEXT_COLLECTION)
-            .find_one(mongodb::bson::doc! { "page_id": page_id.to_string() })
-            .with_options(find_options)
-            .await
-    }
-
-    pub async fn update_page_text(
-        executor: &mongodb::Database,
-        text: super::model::Doc,
-    ) -> Result<Option<super::model::Doc>, mongodb::error::Error> {
-        let collection = executor
-            .collection::<super::model::Doc>(crate::shared::constants::PAGE_TEXT_COLLECTION);
-
-        let result = collection.insert_one(text).await?;
-
-        collection
-            .find_one(mongodb::bson::doc! { "_id": result.inserted_id })
-            .await
-    }
-
-    pub async fn delete_page_text(
-        executor: &mongodb::Database,
-        page_id: Uuid,
-    ) -> Result<mongodb::results::DeleteResult, mongodb::error::Error> {
-        executor
-            .collection::<super::model::Doc>(crate::shared::constants::PAGE_TEXT_COLLECTION)
-            .delete_many(mongodb::bson::doc! { "page_id": page_id.to_string() })
-            .await
-    }
 }

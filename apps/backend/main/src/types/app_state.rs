@@ -17,7 +17,6 @@ pub struct Jwk {
 #[derive(Clone)]
 pub struct AppState {
     pub postgres: sqlx::postgres::PgPool,
-    pub mongo: mongodb::Client,
     pub rabbitmq: std::sync::Arc<lapin::Channel>,
     pub jwks: std::sync::Arc<tokio::sync::RwLock<JwkSet>>,
     pub authentik_jwks_url: String,

@@ -2,20 +2,13 @@ use sqlx::{postgres::PgPoolOptions, PgPool};
 
 pub async fn init_databases(
     postgres_url: &str,
-    // mongo_url: &str,
     // rabbitmq_url: &str,
-) -> /* ( */PgPool/* , mongodb::Client, lapin::Channel) */ {
+) -> /* ( */PgPool/* , lapin::Channel) */ {
     let db = PgPoolOptions::new()
         .max_connections(5)
         .connect(postgres_url)
         .await
         .expect("Failed to connect to Postgres");
-
-    // let mongo_options = mongodb::options::ClientOptions::parse(mongo_url)
-    //     .await
-    //     .expect("Failed to connect to MongoDB");
-
-    // let mongo = mongodb::Client::with_options(mongo_options).expect("Failed to connect to MongoDB");
 
     // let rabbitmq = lapin::Connection::connect(rabbitmq_url, lapin::ConnectionProperties::default())
     //     .await
@@ -38,5 +31,5 @@ pub async fn init_databases(
     //     .await
     //     .expect("Failed to declare queue");
 
-    /* ( */db/* , mongo, channel) */
+    /* ( */db/* , channel) */
 }

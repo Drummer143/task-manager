@@ -27,7 +27,6 @@ async fn main() {
     let _ = dotenvy::dotenv();
 
     let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL not found");
-    let mongo_url = std::env::var("MONGODB_URL").expect("MONGODB_URL not found");
     let rabbitmq_url = std::env::var("RABBITMQ_URL").expect("RABBITMQ_URL not found");
     let jwks_url = std::env::var("AUTHENTIK_JWKS_URL").expect("AUTHENTIK_JWKS_URL must be set");
     let authentik_audience =
@@ -40,8 +39,8 @@ async fn main() {
         .await
         .expect("Failed to parse JWKS");
 
-    let (postgres, mongo, rabbitmq) =
-        db_connections::init_databases(&db_url, &mongo_url, &rabbitmq_url).await;
+    let (postgres, rabbitmq) =
+        db_connections::init_databases(&db_url, &rabbitmq_url).await;
 
     migrator::migrator::migrate(migrator::MigrationDirection::Up)
         .await
@@ -72,7 +71,6 @@ async fn main() {
 
     let app_state = types::app_state::AppState {
         postgres,
-        mongo,
         rabbitmq: Arc::new(rabbitmq),
         jwks: Arc::new(tokio::sync::RwLock::new(jwks)),
         authentik_jwks_url: jwks_url,
