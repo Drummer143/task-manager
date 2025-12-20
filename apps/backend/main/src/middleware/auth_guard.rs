@@ -24,6 +24,16 @@ pub async fn fetch_jwks(url: &str) -> Result<JwkSet, String> {
         .map_err(|e| e.to_string())
 }
 
+#[cfg(feature = "test_auth_guard")]
+pub async fn auth_guard(
+    State(_state): State<AppState>,
+    mut _req: Request<Body>,
+    next: Next,
+) -> Response<Body> {
+    next.run(Request::new(Body::empty())).await
+}
+
+#[cfg(not(feature = "test_auth_guard"))]
 pub async fn auth_guard(
     State(state): State<AppState>,
     mut req: Request<Body>,

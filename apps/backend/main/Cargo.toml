@@ -3,6 +3,12 @@ name = "main"
 version = "0.1.0"
 edition = "2024"
 
+[features]
+test_auth_guard = []
+
+[lib]
+name = "app"
+path = "src/app.rs"
 
 [dependencies]
 mimalloc = { version = "0.1", default-features = false }
@@ -11,6 +17,8 @@ axum-extra = { version = "0.10", features = ["cookie"] }
 axum-macros = "0.5"
 bcrypt = "0.17"
 error_handlers = { path = "../../../libs/backend/error-handlers" }
+insta = { version = "1.45", features = ["json", "redactions"] }
+http-body-util = "0.1"
 rust_api = { path = "../../../libs/backend/rust-api" }
 migrator = { path = "../../../libs/backend/migrator" }
 tokio = { version = "1", features = ["full"] }
