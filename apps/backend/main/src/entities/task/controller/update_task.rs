@@ -1,12 +1,12 @@
-use axum::{
-    extract::{Path, State},
-    Json,
-};
+use axum::extract::{Path, State};
 use error_handlers::handlers::ErrorResponse;
 use rust_api::entities::task::dto::UpdateTaskDto;
 use uuid::Uuid;
 
-use crate::{entities::task::dto::TaskResponse, shared::traits::ServiceUpdateMethod};
+use crate::{
+    entities::task::dto::TaskResponse,
+    shared::{extractors::json::ValidatedJson, traits::ServiceUpdateMethod},
+};
 
 #[utoipa::path(
     put,
@@ -27,7 +27,7 @@ use crate::{entities::task::dto::TaskResponse, shared::traits::ServiceUpdateMeth
 pub async fn update_task<'a>(
     State(state): State<crate::types::app_state::AppState>,
     Path((_, _, task_id)): Path<(Uuid, Uuid, Uuid)>,
-    Json(dto): Json<UpdateTaskDto>,
+    ValidatedJson(dto): ValidatedJson<UpdateTaskDto>,
 ) -> Result<TaskResponse, ErrorResponse> {
     crate::entities::task::TaskService::update(&state, task_id, dto)
         .await

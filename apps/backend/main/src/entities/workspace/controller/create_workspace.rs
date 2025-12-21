@@ -1,9 +1,9 @@
-use axum::{extract::State, Extension, Json};
+use axum::{Extension, extract::State};
 use error_handlers::handlers::ErrorResponse;
 
 use crate::{
     entities::workspace::dto::{CreateWorkspaceDto, WorkspaceResponse},
-    shared::traits::ServiceCreateMethod,
+    shared::{extractors::json::ValidatedJson, traits::ServiceCreateMethod},
 };
 
 #[utoipa::path(
@@ -22,7 +22,7 @@ use crate::{
 pub async fn create_workspace(
     State(state): State<crate::types::app_state::AppState>,
     Extension(user_id): Extension<uuid::Uuid>,
-    Json(dto): Json<CreateWorkspaceDto>,
+    ValidatedJson(dto): ValidatedJson<CreateWorkspaceDto>,
 ) -> Result<WorkspaceResponse, ErrorResponse> {
     let workspace = crate::entities::workspace::WorkspaceService::create(
         &state,

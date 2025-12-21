@@ -1,13 +1,13 @@
 use axum::{
+    Extension,
     extract::{Path, State},
-    Extension, Json,
 };
 use error_handlers::handlers::ErrorResponse;
 use uuid::Uuid;
 
 use crate::{
     entities::page::dto::{CreatePageDto, PageResponse},
-    shared::traits::ServiceCreateMethod,
+    shared::{extractors::json::ValidatedJson, traits::ServiceCreateMethod},
     types::app_state::AppState,
 };
 
@@ -30,7 +30,7 @@ pub async fn create_page(
     State(state): State<AppState>,
     Extension(user_id): Extension<Uuid>,
     Path(workspace_id): Path<Uuid>,
-    Json(create_page_dto): Json<CreatePageDto>,
+    ValidatedJson(create_page_dto): ValidatedJson<CreatePageDto>,
 ) -> Result<PageResponse, ErrorResponse> {
     crate::entities::page::PageService::create(
         &state,

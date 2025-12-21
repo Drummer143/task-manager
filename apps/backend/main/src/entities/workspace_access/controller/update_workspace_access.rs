@@ -1,14 +1,14 @@
 use std::collections::HashMap;
 
 use axum::{
+    Extension,
     extract::{Path, State},
-    Extension, Json,
 };
 use uuid::Uuid;
 
 use crate::{
     entities::workspace_access::dto::{UpdateWorkspaceAccessDto, WorkspaceAccessResponse},
-    shared::traits::ServiceUpdateMethod,
+    shared::{extractors::json::ValidatedJson, traits::ServiceUpdateMethod},
 };
 
 #[utoipa::path(
@@ -32,7 +32,7 @@ pub async fn update_workspace_access(
     State(state): State<crate::types::app_state::AppState>,
     Extension(user_id): Extension<Uuid>,
     Path(workspace_id): Path<Uuid>,
-    Json(dto): Json<UpdateWorkspaceAccessDto>,
+    ValidatedJson(dto): ValidatedJson<UpdateWorkspaceAccessDto>,
 ) -> impl axum::response::IntoResponse {
     let user_workspace_access =
         crate::entities::workspace_access::WorkspaceAccessService::get_workspace_access(

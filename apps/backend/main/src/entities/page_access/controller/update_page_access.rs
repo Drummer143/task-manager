@@ -1,15 +1,15 @@
 use std::collections::HashMap;
 
 use axum::{
+    Extension,
     extract::{Path, State},
-    Extension, Json,
 };
 use error_handlers::handlers::ErrorResponse;
 use uuid::Uuid;
 
 use crate::{
     entities::page_access::dto::{PageAccessResponse, UpdatePageAccessDto},
-    shared::traits::ServiceUpdateMethod,
+    shared::{extractors::json::ValidatedJson, traits::ServiceUpdateMethod},
 };
 
 #[utoipa::path(
@@ -34,7 +34,7 @@ pub async fn update_page_access(
     State(state): State<crate::types::app_state::AppState>,
     Extension(user_id): Extension<Uuid>,
     Path((_, page_id)): Path<(Uuid, Uuid)>,
-    Json(dto): Json<UpdatePageAccessDto>,
+    ValidatedJson(dto): ValidatedJson<UpdatePageAccessDto>,
 ) -> Result<PageAccessResponse, ErrorResponse> {
     let user_page_access =
         crate::entities::page_access::PageAccessService::get_page_access(&state, user_id, page_id)

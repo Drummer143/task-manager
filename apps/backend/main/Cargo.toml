@@ -21,6 +21,7 @@ insta = { version = "1.45", features = ["json", "redactions"] }
 http-body-util = "0.1"
 rust_api = { path = "../../../libs/backend/rust-api" }
 migrator = { path = "../../../libs/backend/migrator" }
+mime = "0.3"
 tokio = { version = "1", features = ["full"] }
 tower = "0.5"
 tower-http = { version = "0.6", features = ["trace", "cors"] }

@@ -15,6 +15,7 @@ pub struct ErrorResponse {
     pub status_code: u16,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub details: Option<HashMap<String, String>>,
+    // TODO: #[cfg(debug_assertions)]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub dev_details: Option<String>,
 }

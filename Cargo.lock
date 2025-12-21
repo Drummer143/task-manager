@@ -1429,6 +1429,7 @@ dependencies = [
  "jsonwebtoken",
  "migrator",
  "mimalloc",
+ "mime",
  "reqwest",
  "rust_api",
  "serde",
