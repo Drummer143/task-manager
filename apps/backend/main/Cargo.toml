@@ -3,6 +3,12 @@ name = "main"
 version = "0.1.0"
 edition = "2024"
 
+[features]
+test_auth_guard = []
+
+[lib]
+name = "app"
+path = "src/app.rs"
 
 [dependencies]
 mimalloc = { version = "0.1", default-features = false }
@@ -11,9 +17,11 @@ axum-extra = { version = "0.10", features = ["cookie"] }
 axum-macros = "0.5"
 bcrypt = "0.17"
 error_handlers = { path = "../../../libs/backend/error-handlers" }
+insta = { version = "1.45", features = ["json", "redactions"] }
+http-body-util = "0.1"
 rust_api = { path = "../../../libs/backend/rust-api" }
 migrator = { path = "../../../libs/backend/migrator" }
-mongodb = "3.3"
+mime = "0.3"
 tokio = { version = "1", features = ["full"] }
 tower = "0.5"
 tower-http = { version = "0.6", features = ["trace", "cors"] }
@@ -24,7 +32,7 @@ serde_path_to_error = "0.1"
 jsonwebtoken = { version = "10", default-features = false, features = [
     "rust_crypto",
 ] }
-lapin = { version = "2.5", default-features = false, features = ["rustls"] }
+# lapin = { version = "2.5", default-features = false, features = ["rustls"] }
 reqwest = { version = "0.12", default-features = false, features = [
     "json",
     "rustls-tls",

@@ -1,13 +1,13 @@
 // use std::fs;
 
-use axum::{Json, extract::State};
+use axum::extract::State;
 use chrono::{DateTime, Utc};
 use error_handlers::handlers::ErrorResponse;
 use rust_api::shared::traits::PostgresqlRepositoryCreate;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use crate::shared::traits::ServiceCreateMethod;
+use crate::shared::{extractors::json::ValidatedJson, traits::ServiceCreateMethod};
 
 #[derive(Debug, Deserialize, Serialize, utoipa::ToSchema)]
 pub struct UserData {
@@ -45,7 +45,7 @@ pub enum Events {
 )]
 pub async fn user_sync(
     State(state): State<crate::types::app_state::AppState>,
-    Json(payload): Json<Events>,
+    ValidatedJson(payload): ValidatedJson<Events>,
 ) -> Result<axum::http::StatusCode, ErrorResponse> {
     use rust_api::entities::user;
 

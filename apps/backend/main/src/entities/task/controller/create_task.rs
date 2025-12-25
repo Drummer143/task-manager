@@ -1,13 +1,10 @@
-use axum::{
-    extract::{Extension, Path, State},
-    Json,
-};
+use axum::extract::{Extension, Path, State};
 use error_handlers::handlers::ErrorResponse;
 use uuid::Uuid;
 
 use crate::{
     entities::task::dto::{CreateTaskDto, TaskResponse},
-    shared::traits::ServiceCreateMethod,
+    shared::{extractors::json::ValidatedJson, traits::ServiceCreateMethod},
 };
 
 #[utoipa::path(
@@ -29,15 +26,13 @@ pub async fn create_task(
     State(state): State<crate::types::app_state::AppState>,
     Extension(reporter_id): Extension<Uuid>,
     Path((_, page_id)): Path<(Uuid, Uuid)>,
-    Json(dto): Json<CreateTaskDto>,
+    ValidatedJson(dto): ValidatedJson<CreateTaskDto>,
 ) -> Result<TaskResponse, ErrorResponse> {
-    let last_position = rust_api::entities::task::TaskRepository::get_last_position(
-        &state.postgres,
-        dto.status_id,
-    )
-    .await
-    .map_err(ErrorResponse::from)?
-    .unwrap_or_default();
+    let last_position =
+        rust_api::entities::task::TaskRepository::get_last_position(&state.postgres, dto.status_id)
+            .await
+            .map_err(ErrorResponse::from)?
+            .unwrap_or_default();
 
     crate::entities::task::TaskService::create(
         &state,

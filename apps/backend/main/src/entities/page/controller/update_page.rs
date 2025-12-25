@@ -1,13 +1,11 @@
-use axum::{
-    extract::{Path, State},
-    Json,
-};
+use axum::extract::{Path, State};
 use error_handlers::handlers::ErrorResponse;
 use rust_api::entities::page::dto::UpdatePageDto;
 use uuid::Uuid;
 
 use crate::{
-    entities::page::dto::PageResponse, shared::traits::ServiceUpdateMethod,
+    entities::page::dto::PageResponse,
+    shared::{extractors::json::ValidatedJson, traits::ServiceUpdateMethod},
     types::app_state::AppState,
 };
 
@@ -31,7 +29,7 @@ use crate::{
 pub async fn update_page(
     State(state): State<AppState>,
     Path((_, page_id)): Path<(Uuid, Uuid)>,
-    Json(update_page_dto): Json<UpdatePageDto>,
+    ValidatedJson(update_page_dto): ValidatedJson<UpdatePageDto>,
 ) -> Result<PageResponse, ErrorResponse> {
     crate::entities::page::PageService::update(&state, page_id, update_page_dto)
         .await

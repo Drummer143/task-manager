@@ -1,15 +1,15 @@
 use std::collections::HashMap;
 
 use axum::{
+    Extension,
     extract::{Path, State},
-    Extension, Json,
 };
 
 use error_handlers::handlers::ErrorResponse;
 
 use crate::{
     entities::workspace_access::dto::CreateWorkspaceAccessDto,
-    shared::traits::{ServiceCreateMethod, ServiceGetOneByIdMethod},
+    shared::{extractors::json::ValidatedJson, traits::{ServiceCreateMethod, ServiceGetOneByIdMethod}},
 };
 
 #[utoipa::path(
@@ -35,7 +35,7 @@ pub async fn create_workspace_access(
         rust_api::entities::workspace_access::model::WorkspaceAccess,
     >,
     Path(workspace_id): Path<uuid::Uuid>,
-    Json(dto): Json<CreateWorkspaceAccessDto>,
+    ValidatedJson(dto): ValidatedJson<CreateWorkspaceAccessDto>,
 ) -> impl axum::response::IntoResponse {
     if user_workspace_access.role < rust_api::entities::workspace_access::model::Role::Admin {
         return Err(error_handlers::handlers::ErrorResponse::forbidden(

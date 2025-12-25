@@ -1,12 +1,9 @@
-use axum::{
-    extract::{Path, State},
-    Json,
-};
+use axum::extract::{Path, State};
 use error_handlers::handlers::ErrorResponse;
 use rust_api::entities::task::dto::ChangeStatusDto;
 use uuid::Uuid;
 
-use crate::entities::task::dto::TaskResponse;
+use crate::{entities::task::dto::TaskResponse, shared::extractors::json::ValidatedJson};
 
 #[utoipa::path(
     patch,
@@ -31,7 +28,7 @@ use crate::entities::task::dto::TaskResponse;
 pub async fn change_status(
     State(state): State<crate::types::app_state::AppState>,
     Path((_, _, task_id)): Path<(Uuid, Uuid, Uuid)>,
-    Json(dto): Json<ChangeStatusDto>,
+    ValidatedJson(dto): ValidatedJson<ChangeStatusDto>,
 ) -> Result<TaskResponse, ErrorResponse> {
     crate::entities::task::TaskService::change_status(&state, task_id, dto)
         .await

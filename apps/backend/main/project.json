@@ -24,11 +24,11 @@
 			"outputs": [],
 			"options": {
 				"cwd": ".",
-				"command": "cargo test -p main"
+				"command": "cargo test -p main --features test_auth_guard"
 			},
 			"configurations": {
 				"production": {
-					"command": "cargo test -p main --release"
+					"command": "cargo test -p main --release --features test_auth_guard"
 				}
 			}
 		},

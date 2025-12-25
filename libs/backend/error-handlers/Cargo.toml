@@ -5,7 +5,6 @@ edition = "2021"
 
 [dependencies]
 axum = "0.8"
-mongodb = "3.3"
 serde = { version = "1", features = ["derive"] }
 sqlx = "0.8"
 utoipa = { version = "5.4", features = ["uuid", "chrono"] }

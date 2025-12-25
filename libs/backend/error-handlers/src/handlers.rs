@@ -15,6 +15,7 @@ pub struct ErrorResponse {
     pub status_code: u16,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub details: Option<HashMap<String, String>>,
+    // TODO: #[cfg(debug_assertions)]
     #[serde(skip_serializing_if = "Option::is_none")]
     pub dev_details: Option<String>,
 }
@@ -144,11 +145,5 @@ impl From<sqlx::Error> for ErrorResponse {
             ),
             _ => Self::internal_server_error(Some(error.to_string())),
         }
-    }
-}
-
-impl From<mongodb::error::Error> for ErrorResponse {
-    fn from(error: mongodb::error::Error) -> Self {
-        Self::internal_server_error(Some(error.to_string()))
     }
 }

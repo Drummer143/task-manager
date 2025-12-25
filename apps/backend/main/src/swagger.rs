@@ -1,9 +1,22 @@
+use utoipa::openapi::security::{SecurityScheme, Http, HttpAuthScheme};
+use utoipa::Modify;
+
+struct SecurityAddon;
+
+impl Modify for SecurityAddon {
+    fn modify(&self, openapi: &mut utoipa::openapi::OpenApi) {
+        if let Some(components) = &mut openapi.components {
+            components.add_security_scheme(
+                "bearer_auth",
+                SecurityScheme::Http(Http::new(HttpAuthScheme::Bearer)),
+            )
+        }
+    }
+}
+
 #[derive(utoipa::OpenApi)]
 #[openapi(
     paths(
-        // crate::entities::auth::controller::login::login,
-        // crate::entities::auth::controller::register::register,
-
         crate::entities::board_statuses::controller::create_board_status::create_board_status,
         crate::entities::board_statuses::controller::get_board_statuses::get_board_statuses,
 
@@ -42,7 +55,6 @@
     ),
     components(schemas(
         rust_api::entities::user::model::User,
-        // rust_api::entities::user_credentials::model::UserCredentials,
         rust_api::entities::workspace_access::model::Role,
 
         error_handlers::handlers::ErrorResponse,
@@ -59,7 +71,11 @@
         crate::entities::workspace::dto::Include,
         crate::entities::workspace::dto::WorkspaceInfo,
         crate::entities::workspace::dto::WorkspaceSortBy,
-    ))
+    )),
+    security(
+        ("bearer_auth" = [])
+    ),
+    modifiers(&SecurityAddon)
 )]
 pub struct ApiDoc;
 

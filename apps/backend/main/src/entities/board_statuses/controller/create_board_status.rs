@@ -1,17 +1,17 @@
 use axum::{
+    Json,
     extract::{Path, State},
     http::HeaderMap,
-    Json,
 };
 use error_handlers::handlers::ErrorResponse;
 use uuid::Uuid;
 
 use crate::{
     entities::board_statuses::{
-        dto::{BoardStatusResponseDto, CreateBoardStatusDto},
         BoardStatusService,
+        dto::{BoardStatusResponseDto, CreateBoardStatusDto},
     },
-    shared::traits::ServiceCreateMethod,
+    shared::{extractors::json::ValidatedJson, traits::ServiceCreateMethod},
     types::app_state::AppState,
 };
 
@@ -34,7 +34,7 @@ pub async fn create_board_status(
     header_map: HeaderMap,
     State(app_state): State<AppState>,
     Path((_, page_id)): Path<(Uuid, Uuid)>,
-    Json(dto): Json<CreateBoardStatusDto>,
+    ValidatedJson(dto): ValidatedJson<CreateBoardStatusDto>,
 ) -> Result<Json<BoardStatusResponseDto>, ErrorResponse> {
     BoardStatusService::create(
         &app_state,

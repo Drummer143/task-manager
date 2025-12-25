@@ -80,8 +80,6 @@ pub struct Page {
     pub id: Uuid,
     pub r#type: PageType,
     pub title: String,
-    #[sqlx(skip)]
-    pub text: Option<Doc>,
     pub owner_id: Uuid,
     pub workspace_id: Uuid,
     pub parent_page_id: Option<Uuid>,
