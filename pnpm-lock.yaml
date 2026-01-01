@@ -24,8 +24,8 @@ importers:
         specifier: 2.11.9
         version: 2.11.9(@tiptap/pm@2.11.9)
       '@tiptap/extension-placeholder':
-        specifier: 2.11.9
-        version: 2.11.9(@tiptap/core@2.11.9(@tiptap/pm@2.11.9))(@tiptap/pm@2.11.9)
+        specifier: 3.14.0
+        version: 3.14.0(@tiptap/extensions@3.14.0(@tiptap/core@2.11.9(@tiptap/pm@2.11.9))(@tiptap/pm@2.11.9))
       '@tiptap/pm':
         specifier: 2.11.9
         version: 2.11.9
@@ -899,8 +899,8 @@ packages:
     resolution: {integrity: sha512-6zABk/ECA/QYSCQ1NGiVwwbQerUCZ+TQbp64Q3AgmfNvurHH0j8TtXa1qbShXA6qqkpAj4V5W8pP6mLe1mcMqA==}
     engines: {node: '>=18'}
 
-  '@bufbuild/protobuf@2.10.1':
-    resolution: {integrity: sha512-ckS3+vyJb5qGpEYv/s1OebUHDi/xSNtfgw1wqKZo7MR9F2z+qXr0q5XagafAG/9O0QPVIUfST0smluYSTpYFkg==}
+  '@bufbuild/protobuf@2.10.2':
+    resolution: {integrity: sha512-uFsRXwIGyu+r6AMdz+XijIIZJYpoWeYzILt5yZ2d3mCjQrWUTVpVD9WL/jZAbvp+Ed04rOhrsk7FiTcEDseB5A==}
 
   '@cspotcode/source-map-support@0.8.1':
     resolution: {integrity: sha512-IchNf6dN4tHoMFIn/7OE8LWZ19Y6q/67Bmf6vnGREv8RSbBVb9LPJxEcnwrcwX6ixSvaiGoomAUvu4YSxXrVgw==}
@@ -2597,11 +2597,10 @@ packages:
     peerDependencies:
       '@tiptap/core': ^2.7.0
 
-  '@tiptap/extension-placeholder@2.11.9':
-    resolution: {integrity: sha512-bUlvLKjLK4TUf3XKWZpReuIxMPvXfhKrtzxLnE2RJerHpLjiACliqVwMN0XJ3JyEW0DwBax6tSH0jlBSo4c4Vg==}
+  '@tiptap/extension-placeholder@3.14.0':
+    resolution: {integrity: sha512-sBiAs1gumdSZXO0ezMSmOkHnlzZNZ1fttm6GriAMIp5xfCvo/0LD6bHPXtvOAbT9ovLQX8mH5+iPZh2jKta7oQ==}
     peerDependencies:
-      '@tiptap/core': ^2.7.0
-      '@tiptap/pm': ^2.7.0
+      '@tiptap/extensions': ^3.14.0
 
   '@tiptap/extension-strike@2.11.9':
     resolution: {integrity: sha512-YFZ/Mjv/wA13oO8wEK4DVw6zSuYfEz4NLF6EA2mMo8N6UUSrBFEWiGE3pHBysIwcRXTaUzzGoYN+lohbmpHwBQ==}
@@ -2617,6 +2616,12 @@ packages:
     resolution: {integrity: sha512-OGjdsXN+d3UZFQZ+r+ozX20G7BcHWCGkn9XZUVItJwzpNa9x4EiPsKCJVk17jVFRAsAHdMBcsBRdErzdO6/Hrg==}
     peerDependencies:
       '@tiptap/core': ^2.7.0
+
+  '@tiptap/extensions@3.14.0':
+    resolution: {integrity: sha512-qQBVKqzU4ZVjRn8W0UbdfE4LaaIgcIWHOMrNnJ+PutrRzQ6ZzhmD/kRONvRWBfG9z3DU7pSKGwVYSR2hztsGuQ==}
+    peerDependencies:
+      '@tiptap/core': ^3.14.0
+      '@tiptap/pm': ^3.14.0
 
   '@tiptap/pm@2.11.9':
     resolution: {integrity: sha512-hhonYVcL3fRkWyiCFJQ7HHXtmFviwnof8VDRFX1vm69GskGeqUTJUFR+1as2hZYekHe5rO4FZUm1dlETDWTnzQ==}
@@ -7113,6 +7118,7 @@ packages:
   whatwg-encoding@2.0.0:
     resolution: {integrity: sha512-p41ogyeMUrw3jWclHWTQg1k05DSVXPLcVxRTYsXUk+ZooOCZLcoYgPZ/HL/D/N+uQPOtcp1me1WhBEaX02mhWg==}
     engines: {node: '>=12'}
+    deprecated: Use @exodus/bytes instead for a more spec-conformant and faster implementation
 
   whatwg-mimetype@3.0.0:
     resolution: {integrity: sha512-nt+N2dzIutVRxARx1nghPKGv1xHikU7HKdfafKkLNLindmPU/ch3U31NOCGGA/dmPcmb1VlofO0vnKAcsm0o/Q==}
@@ -8102,7 +8108,7 @@ snapshots:
 
   '@bcoe/v8-coverage@1.0.2': {}
 
-  '@bufbuild/protobuf@2.10.1':
+  '@bufbuild/protobuf@2.10.2':
     optional: true
 
   '@cspotcode/source-map-support@0.8.1':
@@ -10028,10 +10034,9 @@ snapshots:
     dependencies:
       '@tiptap/core': 2.11.9(@tiptap/pm@2.11.9)
 
-  '@tiptap/extension-placeholder@2.11.9(@tiptap/core@2.11.9(@tiptap/pm@2.11.9))(@tiptap/pm@2.11.9)':
+  '@tiptap/extension-placeholder@3.14.0(@tiptap/extensions@3.14.0(@tiptap/core@2.11.9(@tiptap/pm@2.11.9))(@tiptap/pm@2.11.9))':
     dependencies:
-      '@tiptap/core': 2.11.9(@tiptap/pm@2.11.9)
-      '@tiptap/pm': 2.11.9
+      '@tiptap/extensions': 3.14.0(@tiptap/core@2.11.9(@tiptap/pm@2.11.9))(@tiptap/pm@2.11.9)
 
   '@tiptap/extension-strike@2.11.9(@tiptap/core@2.11.9(@tiptap/pm@2.11.9))':
     dependencies:
@@ -10044,6 +10049,11 @@ snapshots:
   '@tiptap/extension-text@2.11.9(@tiptap/core@2.11.9(@tiptap/pm@2.11.9))':
     dependencies:
       '@tiptap/core': 2.11.9(@tiptap/pm@2.11.9)
+
+  '@tiptap/extensions@3.14.0(@tiptap/core@2.11.9(@tiptap/pm@2.11.9))(@tiptap/pm@2.11.9)':
+    dependencies:
+      '@tiptap/core': 2.11.9(@tiptap/pm@2.11.9)
+      '@tiptap/pm': 2.11.9
 
   '@tiptap/pm@2.11.9':
     dependencies:
@@ -14295,7 +14305,7 @@ snapshots:
 
   sass-embedded@1.89.0:
     dependencies:
-      '@bufbuild/protobuf': 2.10.1
+      '@bufbuild/protobuf': 2.10.2
       buffer-builder: 0.2.0
       colorjs.io: 0.5.2
       immutable: 5.1.4
