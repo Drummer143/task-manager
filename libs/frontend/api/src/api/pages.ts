@@ -20,7 +20,7 @@ interface CreatePageArgs extends Ids {
 		type: PageType;
 		title: string;
 
-		text?: JSONContent;
+		content?: JSONContent;
 		parentId?: string;
 	};
 }

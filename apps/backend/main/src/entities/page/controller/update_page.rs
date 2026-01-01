@@ -1,10 +1,9 @@
 use axum::extract::{Path, State};
 use error_handlers::handlers::ErrorResponse;
-use rust_api::entities::page::dto::UpdatePageDto;
 use uuid::Uuid;
 
 use crate::{
-    entities::page::dto::PageResponse,
+    entities::page::dto::{PageResponse, UpdatePageDto},
     shared::{extractors::json::ValidatedJson, traits::ServiceUpdateMethod},
     types::app_state::AppState,
 };

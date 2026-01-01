@@ -38,7 +38,7 @@ pub async fn create_page(
             title: create_page_dto.title,
             r#type: create_page_dto.r#type,
             parent_page_id: create_page_dto.parent_page_id,
-            text: create_page_dto.text,
+            content: create_page_dto.content,
             workspace_id,
             owner_id: user_id,
         },

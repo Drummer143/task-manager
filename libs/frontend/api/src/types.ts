@@ -1,4 +1,4 @@
-import { JSONContent } from "@tiptap/react";
+import { JSONContent as TipTapContent } from "@tiptap/react";
 
 export type UserRole = "guest" | "commentator" | "member" | "admin" | "owner";
 
@@ -69,7 +69,7 @@ export interface Page extends Timestamps {
 	title: string;
 	role: UserRole;
 
-	text?: JSONContent;
+	content?: TipTapContent;
 
 	boardStatuses: BoardStatus[];
 	owner: User;

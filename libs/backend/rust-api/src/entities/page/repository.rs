@@ -1,9 +1,12 @@
 use sqlx::{Executor, Postgres};
 use uuid::Uuid;
 
-use crate::shared::traits::{
-    PostgresqlRepositoryCreate, PostgresqlRepositoryDelete, PostgresqlRepositoryGetOneById,
-    PostgresqlRepositoryUpdate, RepositoryBase, UpdateDto,
+use crate::{
+    entities::page::model::{Doc, PageWithContent},
+    shared::traits::{
+        PostgresqlRepositoryCreate, PostgresqlRepositoryDelete, PostgresqlRepositoryGetOneById,
+        PostgresqlRepositoryUpdate, RepositoryBase, UpdateDto,
+    },
 };
 
 use super::model::Page;
@@ -33,12 +36,26 @@ impl PostgresqlRepositoryCreate for PageRepository {
         executor: impl Executor<'a, Database = Postgres>,
         dto: Self::CreateDto,
     ) -> Result<Self::Response, sqlx::Error> {
-        sqlx::query_as::<_, Page>("INSERT INTO pages (title, parent_page_id, type, workspace_id, owner_id) VALUES ($1, $2, $3, $4, $5) RETURNING *")
+        sqlx::query_as::<_, Page>(
+            r#"
+            WITH new_page AS (
+                INSERT INTO pages (title, parent_page_id, type, workspace_id, owner_id)
+                VALUES ($1, $2, $3, $4, $5)
+                RETURNING *
+            )
+
+            INSERT INTO text_page_contents (page_id, content)
+            VALUES ((SELECT id FROM new_page), $6);
+
+            SELECT * FROM new_page;
+            "#,
+        )
         .bind(dto.title)
         .bind(dto.parent_page_id)
         .bind(dto.r#type)
         .bind(dto.workspace_id)
         .bind(dto.owner_id)
+        .bind(sqlx::types::Json(dto.content))
         .fetch_one(executor)
         .await
     }
@@ -103,5 +120,31 @@ impl PageRepository {
             .bind(page_id)
             .fetch_all(executor)
             .await
+    }
+
+    pub async fn get_page_with_content<'a>(
+        executor: impl Executor<'a, Database = Postgres>,
+        page_id: Uuid,
+    ) -> Result<PageWithContent, sqlx::Error> {
+        sqlx::query_as::<_, PageWithContent>(
+            "SELECT p.*, pt.content as content FROM pages p LEFT JOIN text_page_contents pt ON p.id = pt.page_id WHERE p.id = $1",
+        )
+        .bind(page_id)
+        .fetch_one(executor)
+        .await
+    }
+
+    pub async fn update_content<'a>(
+        executor: impl Executor<'a, Database = Postgres>,
+        page_id: Uuid,
+        content: Option<Doc>,
+    ) -> Result<(), sqlx::Error> {
+        sqlx::query("UPDATE text_page_contents SET content = $1 WHERE page_id = $2")
+            .bind(sqlx::types::Json(content))
+            .bind(page_id)
+            .execute(executor)
+            .await?;
+
+        Ok(())
     }
 }

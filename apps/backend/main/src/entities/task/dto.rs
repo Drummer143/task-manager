@@ -1,5 +1,5 @@
 use chrono::{DateTime, Utc};
-use rust_api::entities::{task::model::Task, user::model::User};
+use rust_api::entities::{page::model::Doc, task::model::Task, user::model::User};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -10,7 +10,7 @@ use crate::entities::board_statuses::dto::BoardStatusResponseDto;
 pub struct CreateTaskDto {
     pub title: String,
     pub status_id: Uuid,
-    pub description: Option<serde_json::Value>,
+    pub description: Option<Doc>,
     pub due_date: Option<DateTime<Utc>>,
     pub assignee_id: Option<Uuid>,
 }
@@ -20,7 +20,7 @@ pub struct TaskResponse {
     pub id: Uuid,
     pub title: String,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub description: Option<serde_json::Value>,
+    pub description: Option<Doc>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub due_date: Option<DateTime<Utc>>,
     pub position: i32,
@@ -42,7 +42,7 @@ impl From<Task> for TaskResponse {
         Self {
             id: value.id,
             title: value.title,
-            description: None,
+            description: value.description.map(|json| json.0),
             due_date: value.due_date,
             position: value.position,
             status: None,

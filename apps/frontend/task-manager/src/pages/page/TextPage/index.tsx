@@ -42,22 +42,22 @@ const TextPage: React.FC<TextPageProps> = ({ page }) => {
 	}, []);
 
 	const handleReset = useCallback(() => {
-		editorRef.current?.commands.setContent(page.text || "");
+		editorRef.current?.commands.setContent(page.content || "");
 
 		setEditing(false);
-	}, [page.text]);
+	}, [page.content]);
 
 	const handleSave = async () => {
 		mutateAsync({
 			pageId: page.id,
-			page: { text: editorRef.current?.getJSON() },
+			page: { content: editorRef.current?.getJSON() },
 			workspaceId: useAuthStore.getState().user.workspace.id
 		});
 	};
 
 	return (
 		<>
-			<MDEditor ref={editorRef} editable={editing} value={page.text} />
+			<MDEditor ref={editorRef} editable={editing} value={page.content} />
 
 			<div className={controlsWrapper}>
 				{editing ? (

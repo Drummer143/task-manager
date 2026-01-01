@@ -143,6 +143,7 @@ pub async fn get_list_in_workspace(
                 } else {
                     None
                 },
+                content: None,
                 parent_page: None,
                 child_pages: None,
                 tasks: None,

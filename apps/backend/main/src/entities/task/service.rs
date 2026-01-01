@@ -172,18 +172,6 @@ impl TaskService {
 
         let current_task = current_task.unwrap();
 
-        // if let Some(position) = dto.position.clone() {
-        //     TaskRepository::shift_tasks_position(
-        //         &mut *tx,
-        //         status_id,
-        //         Some(position),
-        //         None,
-        //         ShiftAction::Plus,
-        //     )
-        //     .await
-        //     .map_err(ErrorResponse::from)?;
-        // }
-
         let shift_tasks_position = TaskRepository::shift_tasks_position(
             &mut *tx,
             current_task.status_id,
@@ -219,6 +207,7 @@ impl TaskService {
                 assignee_id: None,
                 due_date: None,
                 title: None,
+                description: None,
                 position: Some(last_position.unwrap_or_default() + 1),
             },
         )

@@ -6,8 +6,8 @@ use uuid::Uuid;
 use rust_api::{
     entities::page::{
         PageRepository,
-        dto::{CreatePageDto, UpdatePageDto},
-        model::{Page, PageType},
+        dto::CreatePageDto,
+        model::{Page, PageType, PageWithContent},
     },
     shared::traits::{
         PostgresqlRepositoryCreate, PostgresqlRepositoryDelete, PostgresqlRepositoryGetOneById,
@@ -16,6 +16,7 @@ use rust_api::{
 };
 
 use crate::{
+    entities::page::dto::UpdatePageDto,
     shared::traits::{
         ServiceBase, ServiceCreateMethod, ServiceDeleteMethod, ServiceGetOneByIdMethod,
         ServiceUpdateMethod,
@@ -96,15 +97,33 @@ impl ServiceUpdateMethod for PageService {
         id: Uuid,
         dto: Self::UpdateDto,
     ) -> Result<Self::Response, ErrorResponse> {
+        let mut tx = app_state
+            .postgres
+            .begin()
+            .await
+            .map_err(ErrorResponse::from)?;
+
         let page = if dto.title.is_some() {
-            PageRepository::update(&app_state.postgres, id, dto)
-                .await
-                .map_err(ErrorResponse::from)?
+            PageRepository::update(
+                &mut *tx,
+                id,
+                rust_api::entities::page::dto::UpdatePageDto { title: dto.title },
+            )
+            .await
+            .map_err(ErrorResponse::from)?
         } else {
             PageRepository::get_one_by_id(&app_state.postgres, id)
                 .await
                 .map_err(ErrorResponse::from)?
         };
+
+        if let Some(content) = dto.content {
+            PageRepository::update_content(&mut *tx, id, content)
+                .await
+                .map_err(ErrorResponse::from)?;
+        }
+
+        tx.commit().await.map_err(ErrorResponse::from)?;
 
         Ok(page)
     }
@@ -130,6 +149,15 @@ impl ServiceDeleteMethod for PageService {
 }
 
 impl PageService {
+    pub async fn get_one_with_content_by_id(
+        app_state: &AppState,
+        id: Uuid,
+    ) -> Result<PageWithContent, ErrorResponse> {
+        PageRepository::get_page_with_content(&app_state.postgres, id)
+            .await
+            .map_err(ErrorResponse::from)
+    }
+
     pub async fn get_all_in_workspace(
         app_state: &AppState,
         workspace_id: Uuid,
