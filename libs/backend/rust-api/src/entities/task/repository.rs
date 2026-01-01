@@ -23,7 +23,14 @@ impl PostgresqlRepositoryCreate for TaskRepository {
         executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
         dto: Self::CreateDto,
     ) -> Result<Self::Response, sqlx::Error> {
-        sqlx::query_as::<_, Task>("INSERT INTO tasks (title, status_id, position, due_date, assignee_id, page_id, reporter_id) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *")
+        sqlx::query_as::<_, Task>(
+            r#"
+            INSERT INTO tasks 
+            (title, status_id, position, due_date, assignee_id, page_id, reporter_id, description) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8) 
+            RETURNING *
+            "#,
+        )
             .bind(dto.title)
             .bind(dto.status_id)
             .bind(dto.position)
@@ -31,6 +38,7 @@ impl PostgresqlRepositoryCreate for TaskRepository {
             .bind(dto.assignee_id)
             .bind(dto.page_id)
             .bind(dto.reporter_id)
+            .bind(sqlx::types::Json(&dto.description))
             .fetch_one(executor)
             .await
     }
@@ -74,6 +82,12 @@ impl PostgresqlRepositoryUpdate for TaskRepository {
             separated
                 .push("assignee_id = ")
                 .push_bind_unseparated(assignee_id);
+        }
+
+        if let Some(description) = dto.description {
+            separated
+                .push("description = ")
+                .push_bind_unseparated(sqlx::types::Json(description));
         }
 
         query_builder

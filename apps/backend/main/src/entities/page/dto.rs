@@ -2,46 +2,31 @@ use std::collections::HashMap;
 
 use chrono::{DateTime, Utc};
 use error_handlers::{codes, handlers::ErrorResponse};
-use rust_api::entities::{page::{dto::PageTextDto, model::{Doc, Page, PageType}}, user::model::User};
+use rust_api::entities::{
+    page::model::{Doc, Page, PageType, PageWithContent},
+    user::model::User,
+};
 use serde::Serialize;
 use uuid::Uuid;
 
-use crate::entities::{board_statuses::dto::BoardStatusResponseDto, task::dto::TaskResponse, workspace::dto::WorkspaceResponseWithoutInclude};
+use crate::entities::{
+    board_statuses::dto::BoardStatusResponseDto, task::dto::TaskResponse,
+    workspace::dto::WorkspaceResponseWithoutInclude,
+};
 
 #[derive(Debug, serde::Deserialize, utoipa::ToSchema)]
 pub struct CreatePageDto {
     pub title: String,
     pub r#type: PageType,
     pub parent_page_id: Option<Uuid>,
-    pub text: Option<PageTextDto>,
+    pub content: Option<Doc>,
 }
 
-#[derive(Debug, Serialize, Clone, utoipa::ToSchema)]
-#[serde(rename_all = "camelCase")]
-pub struct DocResponse {
-    pub text: Option<String>,
-    pub r#type: String,
-    pub version: i32,
+#[derive(Debug, utoipa::ToSchema, serde::Deserialize)]
+pub struct UpdatePageDto {
+    pub title: Option<String>,
 
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub attrs: Option<serde_json::Value>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub content: Option<serde_json::Value>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub marks: Option<serde_json::Value>,
-}
-
-impl From<Doc> for DocResponse {
-    fn from(doc: Doc) -> Self {
-        Self {
-            text: doc.text,
-            r#type: doc.r#type,
-            version: doc.version,
-            attrs: doc.attrs,
-            content: doc.content,
-            marks: doc.marks,
-        }
-    }
+    pub content: Option<Option<Doc>>,
 }
 
 #[derive(Debug, Serialize, Clone, utoipa::ToSchema)]
@@ -146,6 +131,8 @@ pub struct PageResponse {
     pub tasks: Option<Vec<TaskResponse>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub board_statuses: Option<Vec<BoardStatusResponseDto>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub content: Option<Doc>,
 
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
@@ -156,6 +143,27 @@ pub struct PageResponse {
 impl axum::response::IntoResponse for PageResponse {
     fn into_response(self) -> axum::response::Response {
         (axum::http::StatusCode::OK, axum::Json(self)).into_response()
+    }
+}
+
+impl From<PageWithContent> for PageResponse {
+    fn from(page: PageWithContent) -> Self {
+        Self {
+            id: page.page.id,
+            r#type: page.page.r#type,
+            title: page.page.title,
+            role: None,
+            owner: None,
+            workspace: None,
+            parent_page: None,
+            child_pages: None,
+            tasks: None,
+            board_statuses: None,
+            content: page.content.map(|c| c.0),
+            created_at: page.page.created_at,
+            updated_at: page.page.updated_at,
+            deleted_at: page.page.deleted_at,
+        }
     }
 }
 
@@ -171,6 +179,7 @@ impl From<Page> for PageResponse {
             parent_page: None,
             child_pages: None,
             tasks: None,
+            content: None,
             board_statuses: None,
             created_at: page.created_at,
             updated_at: page.updated_at,

@@ -67,6 +67,7 @@ pub async fn get_tasks_in_page(
 
         let mut task_response = TaskResponse::from(task);
 
+        task_response.description = None;
         task_response.reporter = Some(reporter);
         task_response.assignee = assignee;
         task_response.status = status;

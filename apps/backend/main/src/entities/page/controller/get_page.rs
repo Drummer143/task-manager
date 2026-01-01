@@ -36,7 +36,7 @@ pub async fn get_page(
     Path((_, page_id)): Path<(Uuid, Uuid)>,
     headers: axum::http::header::HeaderMap,
 ) -> Result<PageResponse, ErrorResponse> {
-    let page = crate::entities::page::PageService::get_one_by_id(&state, page_id).await?;
+    let page = crate::entities::page::PageService::get_one_with_content_by_id(&state, page_id).await?;
 
     let mut include_owner = false;
     let mut include_workspace = false;
@@ -59,8 +59,8 @@ pub async fn get_page(
     page_response.role = Some(
         rust_api::entities::page_access::PageAccessRepository::get_one(
             &state.postgres,
-            page.owner_id,
-            page.id,
+            page.page.owner_id,
+            page.page.id,
         )
         .await
         .map_err(|e| match e {
@@ -76,7 +76,7 @@ pub async fn get_page(
 
     if include_owner {
         page_response.owner = Some(
-            crate::entities::user::UserService::get_one_by_id(&state, page.owner_id.clone())
+            crate::entities::user::UserService::get_one_by_id(&state, page.page.owner_id.clone())
                 .await?,
         );
     }
@@ -85,18 +85,18 @@ pub async fn get_page(
         page_response.workspace = Some(
             crate::entities::workspace::WorkspaceService::get_one_by_id(
                 &state,
-                page.workspace_id.clone(),
+                page.page.workspace_id.clone(),
             )
             .await
             .map(|w| WorkspaceResponseWithoutInclude::from(w.workspace))?,
         );
     }
 
-    if include_parent_page && page.parent_page_id.is_some() {
+    if include_parent_page && page.page.parent_page_id.is_some() {
         page_response.parent_page = Some(
             crate::entities::page::PageService::get_one_by_id(
                 &state,
-                page.parent_page_id.unwrap().clone(),
+                page.page.parent_page_id.unwrap().clone(),
             )
             .await
             .map(ChildPageResponse::from)?,
@@ -105,7 +105,7 @@ pub async fn get_page(
 
     if include_child_pages {
         page_response.child_pages = Some(
-            crate::entities::page::PageService::get_child_pages(&state, page.id.clone())
+            crate::entities::page::PageService::get_child_pages(&state, page.page.id.clone())
                 .await
                 .map(|pages| pages.into_iter().map(ChildPageResponse::from).collect())?,
         );
@@ -113,13 +113,13 @@ pub async fn get_page(
 
     if include_tasks {
         page_response.tasks = Some(
-            crate::entities::task::TaskService::get_all_tasks_by_page_id(&state, page.id.clone())
+            crate::entities::task::TaskService::get_all_tasks_by_page_id(&state, page.page.id.clone())
                 .await
                 .map(|tasks| tasks.into_iter().map(TaskResponse::from).collect())?,
         );
     }
 
-    if include_board_statuses && page.r#type == PageType::Board {
+    if include_board_statuses && page.page.r#type == PageType::Board {
         let lang = headers
             .get("User-Language")
             .map(|v| v.to_str().unwrap_or("en"))
@@ -128,7 +128,7 @@ pub async fn get_page(
         let statuses =
             crate::entities::board_statuses::BoardStatusService::get_board_statuses_by_page_id(
                 &state,
-                page.id.clone(),
+                page.page.id.clone(),
             )
             .await
             .map(|statuses| {
