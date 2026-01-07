@@ -272,7 +272,7 @@ services:
             args:
                 APP_NAME: notifications
         environment:
-            PORT: 8078
+            PORT: 8079
             RABBITMQ_URL: ${RABBITMQ_URL}
             DATABASE_URL: ${DATABASE_URL}
             SECRET_KEY_BASE: ${SECRET_KEY_BASE}

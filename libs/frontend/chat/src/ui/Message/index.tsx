@@ -103,8 +103,7 @@ const Message: React.FC<MessageProps> = ({
 
 	const { styles, cx } = useStyles({
 		senderClickable: !!handleSenderClick,
-		showUserInfo,
-		contextMenuOpened: chatStore.ctxItemId === id
+		showUserInfo
 	});
 
 	useEffect(() => {

@@ -11,6 +11,7 @@ import {
 	extractClosestEdge
 } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
 import { Task } from "@task-manager/api";
+import { registerContextMenu } from "@task-manager/context-menu";
 import { Avatar, Flex, Typography } from "antd";
 
 import { useStyles } from "./styles";
@@ -121,6 +122,25 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, draggable: taskDraggable, onC
 			})
 		);
 	}, [task, taskDraggable]);
+
+	useEffect(() => {
+		const element = taskRef.current;
+
+		if (!element) {
+			return;
+		}
+
+		return registerContextMenu({
+			element,
+			name: `Task "${task.title}"`,
+			menu: [
+				{
+					onClick: () => onClick?.(task),
+					title: "Open"
+				}
+			]
+		});
+	}, [onClick, task]);
 
 	return (
 		<div style={{ position: "relative" }}>
