@@ -26,9 +26,9 @@ impl Modify for SecurityAddon {
         crate::entities::page::controller::update_page::update_page,
         crate::entities::page::controller::delete_page::delete_page,
 
-        crate::entities::page_access::controller::get_page_access_list::get_page_access_list,
-        crate::entities::page_access::controller::create_page_access::create_page_access,
-        crate::entities::page_access::controller::update_page_access::update_page_access,
+        crate::entities::page::controller::get_page_access_list::get_page_access_list,
+        crate::entities::page::controller::create_page_access::create_page_access,
+        crate::entities::page::controller::update_page_access::update_page_access,
 
         crate::entities::profile::controller::get_profile::get_profile,
 

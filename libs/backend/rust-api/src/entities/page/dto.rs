@@ -1,9 +1,12 @@
+use serde::Deserialize;
 use uuid::Uuid;
 
 use crate::{
-    entities::page::model::{Doc, Page, PageType},
+    entities::page::model::{Doc, Page, PageType, Role},
     shared::traits::UpdateDto,
 };
+
+// PAGE
 
 #[derive(Debug)]
 pub struct CreatePageDto {
@@ -30,4 +33,20 @@ impl UpdateDto for UpdatePageDto {
     fn has_changes(&self, _: &Self::Model) -> bool {
         todo!("has_changes for UpdatePageDto")
     }
+}
+
+// PAGE ACCESS
+
+#[derive(Debug, Deserialize, utoipa::ToSchema)]
+pub struct CreatePageAccessDto {
+    pub user_id: Uuid,
+    pub role: Role,
+    pub page_id: Uuid,
+}
+
+#[derive(Debug, Deserialize, utoipa::ToSchema)]
+pub struct UpdatePageAccessDto {
+    pub user_id: Uuid,
+    pub role: Option<Role>,
+    pub page_id: Uuid,
 }

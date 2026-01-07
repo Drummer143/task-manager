@@ -7,7 +7,7 @@ use uuid::Uuid;
     get,
     path = "/workspaces/{workspace_id}/pages/{page_id}/access",
     responses(
-        (status = 200, description = "Page access list retrieved successfully", body = crate::entities::page_access::dto::PageAccessResponse),
+        (status = 200, description = "Page access list retrieved successfully", body = crate::entities::page::dto::PageAccessResponse),
         (status = 400, description = "Invalid request", body = error_handlers::handlers::ErrorResponse),
         (status = 401, description = "Unauthorized", body = error_handlers::handlers::ErrorResponse),
         (status = 403, description = "Forbidden", body = error_handlers::handlers::ErrorResponse),
@@ -25,10 +25,10 @@ pub async fn get_page_access_list(
     Extension(user_id): Extension<Uuid>,
     Path((_, page_id)): Path<(Uuid, Uuid)>,
 ) -> Result<
-    axum::Json<Vec<crate::entities::page_access::dto::PageAccessResponse>>,
+    axum::Json<Vec<crate::entities::page::dto::PageAccessResponse>>,
     error_handlers::handlers::ErrorResponse,
 > {
-    let user_page_access = crate::entities::page_access::PageAccessService::get_page_access(
+    let user_page_access = crate::entities::page::PageService::get_page_access(
         &state,
         user_id,
         page_id,
@@ -46,7 +46,7 @@ pub async fn get_page_access_list(
         e
     })?;
 
-    if user_page_access.role < rust_api::entities::page_access::model::Role::Member {
+    if user_page_access.role < rust_api::entities::page::model::Role::Member {
         return Err(
             error_handlers::handlers::ErrorResponse::forbidden(
                 error_handlers::codes::ForbiddenErrorCode::InsufficientPermissions,
@@ -57,7 +57,7 @@ pub async fn get_page_access_list(
     }
 
     let page_access_list =
-        crate::entities::page_access::PageAccessService::get_page_access_list(
+        crate::entities::page::PageService::get_page_access_list(
             &state,
             page_id,
         )

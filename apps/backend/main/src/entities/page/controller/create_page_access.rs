@@ -9,18 +9,15 @@ use uuid::Uuid;
 use error_handlers::handlers::ErrorResponse;
 
 use crate::{
-    entities::page_access::dto::{CreatePageAccessDto, PageAccessResponse},
-    shared::{
-        extractors::json::ValidatedJson,
-        traits::{ServiceCreateMethod, ServiceGetOneByIdMethod},
-    },
+    entities::page::dto::{CreatePageAccessDto, PageAccessResponse},
+    shared::{extractors::json::ValidatedJson, traits::ServiceGetOneByIdMethod},
 };
 
 #[utoipa::path(
     post,
     path = "/workspaces/{workspace_id}/pages/{page_id}/access",
     responses(
-        (status = 200, description = "Page access created successfully", body = crate::entities::page_access::dto::PageAccessResponse),
+        (status = 200, description = "Page access created successfully", body = crate::entities::page::dto::PageAccessResponse),
         (status = 400, description = "Invalid request", body = ErrorResponse),
         (status = 401, description = "Unauthorized", body = ErrorResponse),
         (status = 403, description = "Forbidden", body = ErrorResponse),
@@ -41,7 +38,7 @@ pub async fn create_page_access(
     ValidatedJson(dto): ValidatedJson<CreatePageAccessDto>,
 ) -> Result<PageAccessResponse, ErrorResponse> {
     let user_page_access =
-        crate::entities::page_access::PageAccessService::get_page_access(&state, user_id, page_id)
+        crate::entities::page::PageService::get_page_access(&state, user_id, page_id)
             .await
             .map_err(|e| {
                 if e.status_code == 404 {
@@ -55,7 +52,7 @@ pub async fn create_page_access(
                 e
             })?;
 
-    if user_page_access.role < rust_api::entities::page_access::model::Role::Admin {
+    if user_page_access.role < rust_api::entities::page::model::Role::Admin {
         return Err(error_handlers::handlers::ErrorResponse::forbidden(
             error_handlers::codes::ForbiddenErrorCode::InsufficientPermissions,
             Some(HashMap::from([(
@@ -66,8 +63,8 @@ pub async fn create_page_access(
         ));
     }
 
-    if dto.role > rust_api::entities::page_access::model::Role::Admin
-        && user_page_access.role < rust_api::entities::page_access::model::Role::Owner
+    if dto.role > rust_api::entities::page::model::Role::Admin
+        && user_page_access.role < rust_api::entities::page::model::Role::Owner
     {
         return Err(error_handlers::handlers::ErrorResponse::forbidden(
             error_handlers::codes::ForbiddenErrorCode::InsufficientPermissions,
@@ -93,9 +90,9 @@ pub async fn create_page_access(
             e
         })?;
 
-    let page_access = crate::entities::page_access::PageAccessService::create(
+    let page_access = crate::entities::page::PageService::create_page_access(
         &state,
-        rust_api::entities::page_access::dto::CreatePageAccessDto {
+        rust_api::entities::page::dto::CreatePageAccessDto {
             user_id: target_user.id,
             page_id,
             role: dto.role,
@@ -103,7 +100,7 @@ pub async fn create_page_access(
     )
     .await?;
 
-    Ok(crate::entities::page_access::dto::PageAccessResponse {
+    Ok(crate::entities::page::dto::PageAccessResponse {
         id: page_access.id,
         user: target_user,
         role: page_access.role,

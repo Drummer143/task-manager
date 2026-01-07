@@ -38,7 +38,7 @@ pub async fn page_access_guard(
     let user_id = user_id.unwrap().clone();
     let page_id = page_id.unwrap();
 
-    let page_access = rust_api::entities::page_access::PageAccessRepository::get_one(
+    let page_access = rust_api::entities::page::PageRepository::get_one_page_access(
         &state.postgres,
         user_id,
         page_id,

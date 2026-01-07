@@ -57,7 +57,7 @@ pub async fn get_page(
     let mut page_response = PageResponse::from(page.clone());
 
     page_response.role = Some(
-        rust_api::entities::page_access::PageAccessRepository::get_one(
+        rust_api::entities::page::PageRepository::get_one_page_access(
             &state.postgres,
             page.page.owner_id,
             page.page.id,

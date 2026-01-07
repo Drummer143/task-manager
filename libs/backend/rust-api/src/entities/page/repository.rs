@@ -2,7 +2,7 @@ use sqlx::{Executor, Postgres};
 use uuid::Uuid;
 
 use crate::{
-    entities::page::model::{Doc, PageWithContent},
+    entities::page::model::{Doc, PageType, PageWithContent, Role},
     shared::traits::{
         PostgresqlRepositoryCreate, PostgresqlRepositoryDelete, PostgresqlRepositoryGetOneById,
         PostgresqlRepositoryUpdate, RepositoryBase, UpdateDto,
@@ -42,10 +42,18 @@ impl PostgresqlRepositoryCreate for PageRepository {
                 INSERT INTO pages (title, parent_page_id, type, workspace_id, owner_id)
                 VALUES ($1, $2, $3, $4, $5)
                 RETURNING *
+            ),
+            created_access AS (
+                INSERT INTO page_accesses (user_id, page_id, role)
+                SELECT $5, id, $6 
+                FROM new_page
+            ),
+            created_content AS (
+                INSERT INTO text_page_contents (page_id, content)
+                SELECT id, $7
+                FROM new_page
+                WHERE $3 = $8
             )
-
-            INSERT INTO text_page_contents (page_id, content)
-            VALUES ((SELECT id FROM new_page), $6);
 
             SELECT * FROM new_page;
             "#,
@@ -55,7 +63,9 @@ impl PostgresqlRepositoryCreate for PageRepository {
         .bind(dto.r#type)
         .bind(dto.workspace_id)
         .bind(dto.owner_id)
+        .bind(Role::Owner)
         .bind(sqlx::types::Json(dto.content))
+        .bind(PageType::Text)
         .fetch_one(executor)
         .await
     }
@@ -146,5 +156,90 @@ impl PageRepository {
             .await?;
 
         Ok(())
+    }
+
+    // PAGE ACCESS
+
+    pub async fn create_page_access<'a>(
+        executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
+        dto: super::dto::CreatePageAccessDto,
+    ) -> Result<super::model::PageAccess, sqlx::Error> {
+        sqlx::query_as::<_, super::model::PageAccess>(
+            r#"
+        INSERT INTO page_accesses (user_id, page_id, role)
+        VALUES ($1, $2, $3)
+        RETURNING *
+        "#,
+        )
+        .bind(dto.user_id)
+        .bind(dto.page_id)
+        .bind(dto.role)
+        .fetch_one(executor)
+        .await
+    }
+
+    pub async fn get_one_page_access<'a>(
+        executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
+        user_id: Uuid,
+        page_id: Uuid,
+    ) -> Result<super::model::PageAccess, sqlx::Error> {
+        sqlx::query_as::<_, super::model::PageAccess>(
+            r#"
+        SELECT * FROM page_accesses
+        WHERE user_id = $1 AND page_id = $2
+        "#,
+        )
+        .bind(user_id)
+        .bind(page_id)
+        .fetch_one(executor)
+        .await
+    }
+
+    pub async fn get_page_access_list<'a>(
+        executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
+        page_id: Uuid,
+    ) -> Result<Vec<super::model::PageAccess>, sqlx::Error> {
+        sqlx::query_as::<_, super::model::PageAccess>(
+            r#"
+        SELECT * FROM page_accesses
+        WHERE page_id = $1
+        "#,
+        )
+        .bind(page_id)
+        .fetch_all(executor)
+        .await
+    }
+
+    pub async fn update_page_access<'a>(
+        executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
+        dto: super::dto::UpdatePageAccessDto,
+    ) -> Result<super::model::PageAccess, sqlx::Error> {
+        if dto.role.is_none() {
+            return sqlx::query_as::<_, super::model::PageAccess>(
+                r#"
+            DELETE FROM page_accesses
+            WHERE user_id = $1 AND page_id = $2
+            RETURNING *
+            "#,
+            )
+            .bind(dto.user_id)
+            .bind(dto.page_id)
+            .fetch_one(executor)
+            .await;
+        }
+
+        sqlx::query_as::<_, super::model::PageAccess>(
+            r#"
+            UPDATE page_accesses
+            SET role = $3
+            WHERE user_id = $1 AND page_id = $2
+            RETURNING *
+            "#,
+        )
+        .bind(dto.user_id)
+        .bind(dto.page_id)
+        .bind(dto.role)
+        .fetch_one(executor)
+        .await
     }
 }
