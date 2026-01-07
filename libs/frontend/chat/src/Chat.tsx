@@ -2,6 +2,7 @@
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { ArrowDownOutlined } from "@ant-design/icons";
+import { ContextMenu as ContextMenuManager } from "@task-manager/context-menu";
 import { App, Button } from "antd";
 import { AnimatePresence, motion } from "framer-motion";
 import { GroupedVirtuoso, GroupedVirtuosoHandle } from "react-virtuoso";
@@ -95,6 +96,7 @@ const Chat: React.FC<ChatProps> = ({
 
 		return async (id: string) => {
 			modal.confirm({
+				mask: { blur: false },
 				title: "Delete message",
 				content: "Are you sure you want to delete this message?",
 				onOk: () => deleteMessage(id)
@@ -165,14 +167,10 @@ const Chat: React.FC<ChatProps> = ({
 		);
 	}, [loadMessages]);
 
-	const handleIsScrolling = useCallback((isScrolling: boolean) => {
-		setIsScrolling(isScrolling);
-
-		if (isScrolling && chatStore.ctxOpen) {
-			chatStore.ctxItemId = undefined;
-			chatStore.ctxOpen = false;
-		}
-	}, []);
+	const handleIsScrolling = useCallback(
+		(isScrolling: boolean) => setIsScrolling(isScrolling),
+		[]
+	);
 
 	const handleScrollToMessage = useCallback(
 		(messageId: string) => {
@@ -441,7 +439,7 @@ const Chat: React.FC<ChatProps> = ({
 	}, [atBottom]);
 
 	return (
-		<div className={cx(styles.wrapper, className)}>
+		<ContextMenuManager className={cx(styles.wrapper, className)}>
 			<PinnedBar pins={pins} onPinClick={handleScrollToMessage} />
 
 			{!loading && (
@@ -518,7 +516,7 @@ const Chat: React.FC<ChatProps> = ({
 					onSend={sendMessage}
 				/>
 			</div>
-		</div>
+		</ContextMenuManager>
 	);
 };
 

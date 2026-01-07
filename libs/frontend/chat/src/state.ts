@@ -7,7 +7,6 @@ export const LOAD_MORE_LIMIT = 10;
 export const INITIAL_MAX_ITEMS = 1_000_000;
 
 interface ChatStore {
-	ctxOpen: boolean;
 	firstItemIndex: number;
 	listInfo: {
 		items: MessageListItem[];
@@ -19,7 +18,6 @@ interface ChatStore {
 		text?: string;
 		messageId: string;
 	};
-	ctxItemId?: string;
 	replayMessage?: {
 		id: string;
 		text: string;
@@ -32,7 +30,6 @@ interface ChatStore {
 }
 
 export const chatStore = proxy<ChatStore>({
-	ctxOpen: false,
 	firstItemIndex: INITIAL_MAX_ITEMS - INITIAL_LIMIT,
 	listInfo: {
 		items: [],

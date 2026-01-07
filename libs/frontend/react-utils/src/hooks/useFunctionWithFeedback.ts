@@ -11,8 +11,10 @@ interface useFunctionWithFeedbackProps<T extends unknown[]> {
 	successMessage?: false | JointContent;
 }
 
-const getMessage = (message: useFunctionWithFeedbackProps<unknown[]>["message"], error?: unknown) =>
-	typeof message === "function" ? message(error) : message;
+const getMessage = (
+	message: useFunctionWithFeedbackProps<unknown[]>["message"],
+	error?: unknown
+) => (typeof message === "function" ? message(error) : message);
 
 export const useFunctionWithFeedback = <T extends unknown[]>({
 	callback,
@@ -25,7 +27,7 @@ export const useFunctionWithFeedback = <T extends unknown[]>({
 	const callbackWithError = useCallback(
 		async (...args: T) => {
 			try {
-				if (confirm && !(await modal.confirm(confirm))) {
+				if (confirm && !(await modal.confirm({ ...confirm, mask: { blur: false } }))) {
 					return;
 				}
 

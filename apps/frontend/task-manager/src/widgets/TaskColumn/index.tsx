@@ -3,6 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { PlusOutlined } from "@ant-design/icons";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { BoardStatus, Task } from "@task-manager/api";
+import { registerContextMenu } from "@task-manager/context-menu";
 import { Button, Typography } from "antd";
 
 import { useStyles } from "./styles";
@@ -63,6 +64,25 @@ const TaskColumn: React.FC<TaskColumnProps> = ({
 			onDragLeave: () => setIsDragTarget(false)
 		});
 	}, [draggable, status]);
+
+	useEffect(() => {
+		const element = taskGroupRef.current;
+
+		if (!element) {
+			return;
+		}
+
+		return registerContextMenu({
+			element,
+			name: `Status "${status.title}"`,
+			menu: [
+				{
+					title: "Create task",
+					onClick: () => onTaskCreateButtonClick?.(status.id)
+				}
+			]
+		});
+	}, [onTaskCreateButtonClick, status.id, status.title]);
 
 	return (
 		<div className={styles.taskGroup} ref={taskGroupRef}>

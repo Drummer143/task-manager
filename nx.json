@@ -8,7 +8,8 @@
 			"!{projectRoot}/.eslintrc.json",
 			"!{projectRoot}/eslint.config.mjs",
 			"!{projectRoot}/**/?(*.)+(spec|test).[jt]s?(x)?(.snap)",
-			"!{projectRoot}/tsconfig.spec.json"
+			"!{projectRoot}/tsconfig.spec.json",
+			"!{projectRoot}/src/test-setup.[jt]s"
 		],
 		"sharedGlobals": ["{workspaceRoot}/.github/workflows/ci.yml"]
 	},
@@ -53,7 +54,8 @@
 				"bundler": "vite"
 			},
 			"library": {
-				"linter": "eslint"
+				"linter": "eslint",
+				"unitTestRunner": "vitest"
 			}
 		}
 	}
