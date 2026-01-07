@@ -7,15 +7,15 @@ use axum::{
 use uuid::Uuid;
 
 use crate::{
-    entities::workspace_access::dto::{UpdateWorkspaceAccessDto, WorkspaceAccessResponse},
-    shared::{extractors::json::ValidatedJson, traits::ServiceUpdateMethod},
+    entities::workspace::dto::{UpdateWorkspaceAccessDto, WorkspaceAccessResponse},
+    shared::extractors::json::ValidatedJson,
 };
 
 #[utoipa::path(
     put,
     path = "/workspaces/{workspace_id}/access",
     responses(
-        (status = 200, description = "Workspace access updated successfully", body = crate::entities::workspace_access::dto::WorkspaceAccessResponse),
+        (status = 200, description = "Workspace access updated successfully", body = crate::entities::workspace::dto::WorkspaceAccessResponse),
         (status = 400, description = "Invalid request", body = error_handlers::handlers::ErrorResponse),
         (status = 401, description = "Unauthorized", body = error_handlers::handlers::ErrorResponse),
         (status = 403, description = "Forbidden", body = error_handlers::handlers::ErrorResponse),
@@ -34,29 +34,28 @@ pub async fn update_workspace_access(
     Path(workspace_id): Path<Uuid>,
     ValidatedJson(dto): ValidatedJson<UpdateWorkspaceAccessDto>,
 ) -> impl axum::response::IntoResponse {
-    let user_workspace_access =
-        crate::entities::workspace_access::WorkspaceAccessService::get_workspace_access(
-            &state,
-            user_id,
-            workspace_id,
-        )
-        .await
-        .map_err(|e| {
-            if e.status_code == 404 {
-                return error_handlers::handlers::ErrorResponse::forbidden(
-                    error_handlers::codes::ForbiddenErrorCode::InsufficientPermissions,
-                    Some(HashMap::from([(
-                        "message".to_string(),
-                        "Insufficient permissions".to_string(),
-                    )])),
-                    None,
-                );
-            }
+    let user_workspace_access = crate::entities::workspace::WorkspaceService::get_workspace_access(
+        &state,
+        user_id,
+        workspace_id,
+    )
+    .await
+    .map_err(|e| {
+        if e.status_code == 404 {
+            return error_handlers::handlers::ErrorResponse::forbidden(
+                error_handlers::codes::ForbiddenErrorCode::InsufficientPermissions,
+                Some(HashMap::from([(
+                    "message".to_string(),
+                    "Insufficient permissions".to_string(),
+                )])),
+                None,
+            );
+        }
 
-            e
-        })?;
+        e
+    })?;
 
-    if user_workspace_access.role < rust_api::entities::workspace_access::model::Role::Admin {
+    if user_workspace_access.role < rust_api::entities::workspace::model::Role::Admin {
         return Err(error_handlers::handlers::ErrorResponse::forbidden(
             error_handlers::codes::ForbiddenErrorCode::InsufficientPermissions,
             Some(HashMap::from([(
@@ -69,18 +68,15 @@ pub async fn update_workspace_access(
 
     // TODO: complete access checks
 
-    let workspace_access = crate::entities::workspace_access::WorkspaceAccessService::update(
+    let workspace_access = crate::entities::workspace::WorkspaceService::update_workspace_access(
         &state,
-        Uuid::nil(),
-        rust_api::entities::workspace_access::dto::UpdateWorkspaceAccessDto {
+        rust_api::entities::workspace::dto::UpdateWorkspaceAccessDto {
             user_id: dto.user_id,
             workspace_id,
             role: dto.role,
         },
     )
     .await?;
-
-    dbg!(&workspace_access);
 
     Ok(WorkspaceAccessResponse {
         id: workspace_access.id,

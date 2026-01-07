@@ -1,12 +1,20 @@
 use error_handlers::handlers::ErrorResponse;
 use rust_api::{
-    entities::workspace::{dto::WorkspaceSortBy, model::Workspace},
-    shared::{traits::{PostgresqlRepositoryCreate, PostgresqlRepositoryGetOneById, PostgresqlRepositoryUpdate}, types::SortOrder},
+    entities::workspace::{
+        dto::{CreateWorkspaceAccessDto, UpdateWorkspaceAccessDto, WorkspaceSortBy},
+        model::{Workspace, WorkspaceAccess},
+    },
+    shared::{
+        traits::{
+            PostgresqlRepositoryCreate, PostgresqlRepositoryGetOneById, PostgresqlRepositoryUpdate,
+        },
+        types::SortOrder,
+    },
 };
 use uuid::Uuid;
 
 use crate::{
-    entities::page::dto::PageResponseWithoutInclude,
+    entities::{page::dto::PageResponseWithoutInclude, workspace::dto::WorkspaceAccessResponse},
     shared::traits::{
         ServiceBase, ServiceCreateMethod, ServiceGetOneByIdMethod, ServiceUpdateMethod,
     },
@@ -28,42 +36,13 @@ impl ServiceCreateMethod for WorkspaceService {
         app_state: &AppState,
         dto: Self::CreateDto,
     ) -> Result<Self::Response, ErrorResponse> {
-        let mut tx = app_state
-            .postgres
-            .begin()
-            .await
-            .map_err(ErrorResponse::from)?;
-
-        let workspace = rust_api::entities::workspace::WorkspaceRepository::create(&mut *tx, dto).await;
-
-        if let Err(err) = workspace {
-            let _ = tx.rollback().await;
-            return Err(ErrorResponse::from(err));
-        }
-
-        let workspace = workspace.unwrap();
-
-        let workspace_access =
-            rust_api::entities::workspace_access::WorkspaceAccessRepository::create(
-                &mut *tx,
-                rust_api::entities::workspace_access::dto::CreateWorkspaceAccessDto {
-                    user_id: workspace.owner_id,
-                    workspace_id: workspace.id,
-                    role: rust_api::entities::workspace_access::model::Role::Owner,
-                },
-            )
-            .await;
-
-        if let Err(err) = workspace_access {
-            let _ = tx.rollback().await;
-            return Err(ErrorResponse::from(err));
-        }
-
-        tx.commit().await.map_err(ErrorResponse::from)?;
+        let workspace =
+            rust_api::entities::workspace::WorkspaceRepository::create(&app_state.postgres, dto)
+                .await?;
 
         Ok(WorkspaceInfo {
             workspace,
-            role: Some(rust_api::entities::workspace_access::model::Role::Owner),
+            role: Some(rust_api::entities::workspace::model::Role::Owner),
             owner: None,
             pages: None,
         })
@@ -78,10 +57,13 @@ impl ServiceUpdateMethod for WorkspaceService {
         id: Uuid,
         dto: Self::UpdateDto,
     ) -> Result<Self::Response, ErrorResponse> {
-        let workspace =
-            rust_api::entities::workspace::WorkspaceRepository::update(&app_state.postgres, id, dto)
-                .await
-                .map_err(ErrorResponse::from)?;
+        let workspace = rust_api::entities::workspace::WorkspaceRepository::update(
+            &app_state.postgres,
+            id,
+            dto,
+        )
+        .await
+        .map_err(ErrorResponse::from)?;
 
         Ok(WorkspaceInfo {
             workspace,
@@ -97,10 +79,12 @@ impl ServiceGetOneByIdMethod for WorkspaceService {
         app_state: &AppState,
         id: Uuid,
     ) -> Result<Self::Response, ErrorResponse> {
-        let workspace =
-            rust_api::entities::workspace::WorkspaceRepository::get_one_by_id(&app_state.postgres, id)
-                .await
-                .map_err(ErrorResponse::from)?;
+        let workspace = rust_api::entities::workspace::WorkspaceRepository::get_one_by_id(
+            &app_state.postgres,
+            id,
+        )
+        .await
+        .map_err(ErrorResponse::from)?;
 
         Ok(WorkspaceInfo {
             workspace,
@@ -189,9 +173,12 @@ impl WorkspaceService {
         app_state: &AppState,
         workspace_id: Uuid,
     ) -> Result<(), ErrorResponse> {
-        rust_api::entities::workspace::WorkspaceRepository::soft_delete(&app_state.postgres, workspace_id)
-            .await
-            .map_err(ErrorResponse::from)
+        rust_api::entities::workspace::WorkspaceRepository::soft_delete(
+            &app_state.postgres,
+            workspace_id,
+        )
+        .await
+        .map_err(ErrorResponse::from)
     }
 
     pub async fn cancel_soft_delete(
@@ -216,5 +203,94 @@ impl WorkspaceService {
         )
         .await
         .map_err(ErrorResponse::from)
+    }
+
+    // Workspace Access
+
+    pub async fn create_workspace_access(
+        app_state: &crate::types::app_state::AppState,
+        dto: CreateWorkspaceAccessDto,
+    ) -> Result<WorkspaceAccess, ErrorResponse> {
+        rust_api::entities::workspace::WorkspaceRepository::create_workspace_access(
+            &app_state.postgres,
+            dto,
+        )
+        .await
+        .map_err(ErrorResponse::from)
+    }
+
+    pub async fn update_workspace_access(
+        app_state: &crate::types::app_state::AppState,
+        dto: UpdateWorkspaceAccessDto,
+    ) -> Result<WorkspaceAccess, ErrorResponse> {
+        rust_api::entities::workspace::WorkspaceRepository::update_workspace_access(
+            &app_state.postgres,
+            dto,
+        )
+        .await
+        .map_err(ErrorResponse::from)
+    }
+
+    pub async fn get_workspace_access<'a>(
+        app_state: &crate::types::app_state::AppState,
+        user_id: Uuid,
+        workspace_id: Uuid,
+    ) -> Result<WorkspaceAccessResponse, ErrorResponse> {
+        let workspace_access =
+            rust_api::entities::workspace::WorkspaceRepository::get_one_workspace_access(
+                &app_state.postgres,
+                user_id,
+                workspace_id,
+            )
+            .await
+            .map_err(ErrorResponse::from)?;
+
+        let user = rust_api::entities::user::UserRepository::get_one_by_id(
+            &app_state.postgres,
+            workspace_access.user_id,
+        )
+        .await?;
+
+        Ok(WorkspaceAccessResponse {
+            created_at: workspace_access.created_at,
+            updated_at: workspace_access.updated_at,
+            deleted_at: workspace_access.deleted_at,
+            id: workspace_access.id,
+            user,
+            role: workspace_access.role,
+        })
+    }
+
+    pub async fn get_workspace_access_list<'a>(
+        app_state: &crate::types::app_state::AppState,
+        workspace_id: Uuid,
+    ) -> Result<Vec<WorkspaceAccessResponse>, ErrorResponse> {
+        let workspace_access_list =
+            rust_api::entities::workspace::WorkspaceRepository::get_workspace_access_list(
+                &app_state.postgres,
+                workspace_id,
+            )
+            .await
+            .map_err(ErrorResponse::from)?;
+
+        let mut workspace_access_list_response = Vec::new();
+
+        for workspace_access in workspace_access_list {
+            let user = rust_api::entities::user::UserRepository::get_one_by_id(
+                &app_state.postgres,
+                workspace_access.user_id,
+            )
+            .await?;
+            workspace_access_list_response.push(WorkspaceAccessResponse {
+                created_at: workspace_access.created_at,
+                updated_at: workspace_access.updated_at,
+                deleted_at: workspace_access.deleted_at,
+                id: workspace_access.id,
+                user,
+                role: workspace_access.role,
+            });
+        }
+
+        Ok(workspace_access_list_response)
     }
 }

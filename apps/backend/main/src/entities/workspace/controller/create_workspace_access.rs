@@ -8,15 +8,15 @@ use axum::{
 use error_handlers::handlers::ErrorResponse;
 
 use crate::{
-    entities::workspace_access::dto::CreateWorkspaceAccessDto,
-    shared::{extractors::json::ValidatedJson, traits::{ServiceCreateMethod, ServiceGetOneByIdMethod}},
+    entities::workspace::dto::CreateWorkspaceAccessDto,
+    shared::{extractors::json::ValidatedJson, traits::ServiceGetOneByIdMethod},
 };
 
 #[utoipa::path(
     post,
     path = "/workspaces/{workspace_id}/access",
     responses(
-        (status = 200, description = "Workspace access created successfully", body = crate::entities::workspace_access::dto::WorkspaceAccessResponse),
+        (status = 200, description = "Workspace access created successfully", body = crate::entities::workspace::dto::WorkspaceAccessResponse),
         (status = 400, description = "Invalid request", body = ErrorResponse),
         (status = 401, description = "Unauthorized", body = ErrorResponse),
         (status = 403, description = "Forbidden", body = ErrorResponse),
@@ -32,12 +32,12 @@ use crate::{
 pub async fn create_workspace_access(
     State(state): State<crate::types::app_state::AppState>,
     Extension(user_workspace_access): Extension<
-        rust_api::entities::workspace_access::model::WorkspaceAccess,
+        rust_api::entities::workspace::model::WorkspaceAccess,
     >,
     Path(workspace_id): Path<uuid::Uuid>,
     ValidatedJson(dto): ValidatedJson<CreateWorkspaceAccessDto>,
 ) -> impl axum::response::IntoResponse {
-    if user_workspace_access.role < rust_api::entities::workspace_access::model::Role::Admin {
+    if user_workspace_access.role < rust_api::entities::workspace::model::Role::Admin {
         return Err(error_handlers::handlers::ErrorResponse::forbidden(
             error_handlers::codes::ForbiddenErrorCode::InsufficientPermissions,
             Some(HashMap::from([(
@@ -48,8 +48,8 @@ pub async fn create_workspace_access(
         ));
     }
 
-    if dto.role > rust_api::entities::workspace_access::model::Role::Admin
-        && user_workspace_access.role < rust_api::entities::workspace_access::model::Role::Owner
+    if dto.role > rust_api::entities::workspace::model::Role::Admin
+        && user_workspace_access.role < rust_api::entities::workspace::model::Role::Owner
     {
         return Err(error_handlers::handlers::ErrorResponse::forbidden(
             error_handlers::codes::ForbiddenErrorCode::InsufficientPermissions,
@@ -78,9 +78,9 @@ pub async fn create_workspace_access(
             e
         })?;
 
-    let workspace_access = crate::entities::workspace_access::WorkspaceAccessService::create(
+    let workspace_access = crate::entities::workspace::WorkspaceService::create_workspace_access(
         &state,
-        rust_api::entities::workspace_access::dto::CreateWorkspaceAccessDto {
+        rust_api::entities::workspace::dto::CreateWorkspaceAccessDto {
             user_id: dto.user_id,
             workspace_id,
             role: dto.role,
@@ -89,7 +89,7 @@ pub async fn create_workspace_access(
     .await?;
 
     Ok(
-        crate::entities::workspace_access::dto::WorkspaceAccessResponse {
+        crate::entities::workspace::dto::WorkspaceAccessResponse {
             id: workspace_access.id,
             user: target_user,
             role: workspace_access.role,

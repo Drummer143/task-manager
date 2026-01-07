@@ -1,7 +1,7 @@
 use serde::Deserialize;
 use uuid::Uuid;
 
-use crate::{entities::workspace::model::Workspace, shared::traits::UpdateDto};
+use crate::{entities::workspace::model::{Role, Workspace}, shared::traits::UpdateDto};
 
 #[derive(Debug, Deserialize, utoipa::ToSchema)]
 #[serde(rename_all = "camelCase")]
@@ -43,4 +43,20 @@ impl std::fmt::Display for WorkspaceSortBy {
             WorkspaceSortBy::UpdatedAt => write!(f, "updated_at"),
         }
     }
+}
+
+#[derive(Debug, Deserialize, utoipa::ToSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct CreateWorkspaceAccessDto {
+    pub user_id: Uuid,
+    pub role: Role,
+    pub workspace_id: Uuid,
+}
+
+#[derive(Debug, Deserialize, utoipa::ToSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct UpdateWorkspaceAccessDto {
+    pub user_id: Uuid,
+    pub role: Option<Role>,
+    pub workspace_id: Uuid,
 }

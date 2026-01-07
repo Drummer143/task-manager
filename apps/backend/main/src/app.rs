@@ -74,7 +74,6 @@ pub async fn build() -> axum::Router {
         .merge(entities::user::router::init(app_state.clone()))
         .merge(entities::profile::router::init(app_state.clone()))
         .merge(entities::workspace::router::init(app_state.clone()))
-        .merge(entities::workspace_access::router::init(app_state.clone()))
         .merge(entities::page::router::init(app_state.clone()))
         .merge(entities::page_access::router::init(app_state.clone()))
         .merge(entities::task::router::init(app_state.clone()))

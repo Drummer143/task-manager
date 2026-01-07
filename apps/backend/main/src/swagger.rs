@@ -49,13 +49,13 @@ impl Modify for SecurityAddon {
         crate::entities::workspace::controller::soft_delete::soft_delete,
         crate::entities::workspace::controller::cancel_soft_delete::cancel_soft_delete,
 
-        crate::entities::workspace_access::controller::get_workspace_access_list::get_workspace_access_list,
-        crate::entities::workspace_access::controller::create_workspace_access::create_workspace_access,
-        crate::entities::workspace_access::controller::update_workspace_access::update_workspace_access,
+        crate::entities::workspace::controller::get_workspace_access_list::get_workspace_access_list,
+        crate::entities::workspace::controller::create_workspace_access::create_workspace_access,
+        crate::entities::workspace::controller::update_workspace_access::update_workspace_access,
     ),
     components(schemas(
         rust_api::entities::user::model::User,
-        rust_api::entities::workspace_access::model::Role,
+        rust_api::entities::workspace::model::Role,
 
         error_handlers::handlers::ErrorResponse,
         

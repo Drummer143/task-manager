@@ -11,7 +11,7 @@ use error_handlers::{codes, handlers::ErrorResponse};
     get,
     path = "/workspaces/{workspace_id}/access",
     responses(
-        (status = 200, description = "Workspace access list retrieved successfully", body = crate::entities::workspace_access::dto::WorkspaceAccessResponse),
+        (status = 200, description = "Workspace access list retrieved successfully", body = crate::entities::workspace::dto::WorkspaceAccessResponse),
         (status = 400, description = "Invalid request", body = ErrorResponse),
         (status = 401, description = "Unauthorized", body = ErrorResponse),
         (status = 403, description = "Forbidden", body = ErrorResponse),
@@ -28,11 +28,11 @@ pub async fn get_workspace_access_list(
     Extension(user_id): Extension<uuid::Uuid>,
     Path(workspace_id): Path<uuid::Uuid>,
 ) -> Result<
-    axum::Json<Vec<crate::entities::workspace_access::dto::WorkspaceAccessResponse>>,
+    axum::Json<Vec<crate::entities::workspace::dto::WorkspaceAccessResponse>>,
     ErrorResponse,
 > {
     let user_workspace_access =
-        crate::entities::workspace_access::WorkspaceAccessService::get_workspace_access(
+        crate::entities::workspace::WorkspaceService::get_workspace_access(
             &state,
             user_id,
             workspace_id,
@@ -53,7 +53,7 @@ pub async fn get_workspace_access_list(
             e
         })?;
 
-    if user_workspace_access.role < rust_api::entities::workspace_access::model::Role::Member {
+    if user_workspace_access.role < rust_api::entities::workspace::model::Role::Member {
         return Err(ErrorResponse::forbidden(
             codes::ForbiddenErrorCode::InsufficientPermissions,
             Some(HashMap::from([(
@@ -65,7 +65,7 @@ pub async fn get_workspace_access_list(
     }
 
     let workspace_access_list =
-        crate::entities::workspace_access::WorkspaceAccessService::get_workspace_access_list(
+        crate::entities::workspace::WorkspaceService::get_workspace_access_list(
             &state,
             workspace_id,
         )

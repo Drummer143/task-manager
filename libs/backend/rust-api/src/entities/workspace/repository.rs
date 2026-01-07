@@ -2,7 +2,7 @@ use chrono::Duration;
 use uuid::Uuid;
 
 use crate::{
-    entities::workspace::model::Workspace,
+    entities::workspace::model::{Role, Workspace},
     shared::{
         traits::{
             PostgresqlRepositoryCreate, PostgresqlRepositoryGetOneById, PostgresqlRepositoryUpdate,
@@ -27,11 +27,28 @@ impl PostgresqlRepositoryCreate for WorkspaceRepository {
         executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
         dto: Self::CreateDto,
     ) -> Result<Workspace, sqlx::Error> {
-        sqlx::query_as::<_, Workspace>("INSERT INTO workspaces (name, owner_id) VALUES ($1, $2) RETURNING *")
-            .bind(dto.name)
-            .bind(dto.owner_id)
-            .fetch_one(executor)
-            .await
+        sqlx::query_as::<_, Workspace>(
+            r#"
+            WITH new_workspace AS (
+                INSERT INTO workspaces (name, owner_id)
+                VALUES ($1, $2)
+                RETURNING *
+            ),
+
+            created_access AS (
+                INSERT INTO workspace_accesses (user_id, workspace_id, role)
+                SELECT $2, id, $3 
+                FROM new_workspace
+            )
+
+            SELECT * FROM new_workspace;
+            "#,
+        )
+        .bind(dto.name)
+        .bind(dto.owner_id)
+        .bind(Role::Owner)
+        .fetch_one(executor)
+        .await
     }
 }
 
@@ -184,5 +201,92 @@ impl WorkspaceRepository {
     .await?;
 
         Ok(row)
+    }
+
+    pub async fn create_workspace_access<'a>(
+        executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
+        dto: super::dto::CreateWorkspaceAccessDto,
+    ) -> Result<super::model::WorkspaceAccess, sqlx::Error> {
+        sqlx::query_as::<_, super::model::WorkspaceAccess>(
+            r#"
+        INSERT INTO workspace_accesses (user_id, workspace_id, role)
+        VALUES ($1, $2, $3)
+        RETURNING *
+        "#,
+        )
+        .bind(dto.user_id)
+        .bind(dto.workspace_id)
+        .bind(dto.role)
+        .fetch_one(executor)
+        .await
+    }
+
+    // WORKSPACE_ACCESS QUERIES
+
+    pub async fn update_workspace_access<'a>(
+        executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
+        dto: super::dto::UpdateWorkspaceAccessDto,
+    ) -> Result<super::model::WorkspaceAccess, sqlx::Error> {
+        if dto.role.is_none() {
+            return sqlx::query_as::<_, super::model::WorkspaceAccess>(
+                r#"
+            DELETE FROM workspace_accesses
+            WHERE user_id = $1 AND workspace_id = $2
+            RETURNING *
+            "#,
+            )
+            .bind(dto.user_id)
+            .bind(dto.workspace_id)
+            .fetch_one(executor)
+            .await;
+        }
+
+        let workspace_access = sqlx::query_as::<_, super::model::WorkspaceAccess>(
+            r#"
+            UPDATE workspace_accesses
+            SET role = $3
+            WHERE user_id = $1 AND workspace_id = $2
+            RETURNING *
+            "#,
+        )
+        .bind(dto.user_id)
+        .bind(dto.workspace_id)
+        .bind(dto.role.unwrap())
+        .fetch_one(executor)
+        .await?;
+
+        Ok(workspace_access)
+    }
+
+    pub async fn get_one_workspace_access<'a>(
+        executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
+        user_id: Uuid,
+        workspace_id: Uuid,
+    ) -> Result<super::model::WorkspaceAccess, sqlx::Error> {
+        sqlx::query_as::<_, super::model::WorkspaceAccess>(
+            r#"
+        SELECT * FROM workspace_accesses
+        WHERE user_id = $1 AND workspace_id = $2
+        "#,
+        )
+        .bind(user_id)
+        .bind(workspace_id)
+        .fetch_one(executor)
+        .await
+    }
+
+    pub async fn get_workspace_access_list<'a>(
+        executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
+        workspace_id: Uuid,
+    ) -> Result<Vec<super::model::WorkspaceAccess>, sqlx::Error> {
+        sqlx::query_as::<_, super::model::WorkspaceAccess>(
+            r#"
+        SELECT * FROM workspace_accesses
+        WHERE workspace_id = $1
+        "#,
+        )
+        .bind(workspace_id)
+        .fetch_all(executor)
+        .await
     }
 }

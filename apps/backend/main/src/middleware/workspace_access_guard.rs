@@ -39,7 +39,7 @@ pub async fn workspace_access_guard(
     let workspace_id = workspace_id.unwrap();
 
     let workspace_access =
-        rust_api::entities::workspace_access::WorkspaceAccessRepository::get_one(
+        rust_api::entities::workspace::WorkspaceRepository::get_one_workspace_access(
             &state.postgres,
             user_id,
             workspace_id,

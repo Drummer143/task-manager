@@ -1,9 +1,11 @@
 use chrono::{DateTime, Utc};
-use rust_api::entities::{user::model::User, workspace::model::Workspace, workspace_access::model::Role};
+use rust_api::entities::{user::model::User, workspace::model::Role, workspace::model::Workspace};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 use crate::entities::page::dto::PageResponseWithoutInclude;
+
+// WORKSPACE
 
 #[derive(Debug, Deserialize, utoipa::ToSchema)]
 pub struct CreateWorkspaceDto {
@@ -172,4 +174,37 @@ pub struct GetListQueryDto {
         deserialize_with = "crate::shared::deserialization::deserialize_comma_separated_query_param"
     )]
     pub include: Option<Vec<Include>>,
+}
+
+// WORKSPACE ACCESS
+
+#[derive(Debug, serde::Deserialize, utoipa::ToSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct CreateWorkspaceAccessDto {
+    pub user_id: Uuid,
+    pub role: Role,
+}
+
+#[derive(Debug, serde::Deserialize, utoipa::ToSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct UpdateWorkspaceAccessDto {
+    pub user_id: Uuid,
+    pub role: Option<Role>,
+}
+
+#[derive(Debug, serde::Serialize, utoipa::ToSchema, Clone)]
+pub struct WorkspaceAccessResponse {
+    pub id: Uuid,
+    pub user: rust_api::entities::user::model::User,
+    pub role: Role,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub deleted_at: Option<DateTime<Utc>>,
+}
+
+impl axum::response::IntoResponse for WorkspaceAccessResponse {
+    fn into_response(self) -> axum::response::Response {
+        (axum::http::StatusCode::OK, axum::Json(self)).into_response()
+    }
 }
