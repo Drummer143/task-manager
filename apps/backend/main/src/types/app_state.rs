@@ -1,3 +1,5 @@
+use std::sync::Arc;
+
 use serde::Deserialize;
 
 #[derive(Debug, Deserialize, Clone)]
@@ -18,7 +20,7 @@ pub struct Jwk {
 pub struct AppState {
     pub postgres: sqlx::postgres::PgPool,
     // pub rabbitmq: std::sync::Arc<lapin::Channel>,
-    pub jwks: std::sync::Arc<tokio::sync::RwLock<JwkSet>>,
-    pub authentik_jwks_url: String,
-    pub authentik_audience: String,
+    pub jwks: Arc<tokio::sync::RwLock<JwkSet>>,
+    pub authentik_jwks_url: Arc<String>,
+    pub authentik_audience: Arc<String>,
 }
