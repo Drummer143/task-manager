@@ -32,12 +32,12 @@ use crate::{
 pub async fn create_workspace_access(
     State(state): State<crate::types::app_state::AppState>,
     Extension(user_workspace_access): Extension<
-        rust_api::entities::workspace::model::WorkspaceAccess,
+        sql::entities::workspace::model::WorkspaceAccess,
     >,
     Path(workspace_id): Path<uuid::Uuid>,
     ValidatedJson(dto): ValidatedJson<CreateWorkspaceAccessDto>,
 ) -> impl axum::response::IntoResponse {
-    if user_workspace_access.role < rust_api::entities::workspace::model::Role::Admin {
+    if user_workspace_access.role < sql::entities::workspace::model::Role::Admin {
         return Err(error_handlers::handlers::ErrorResponse::forbidden(
             error_handlers::codes::ForbiddenErrorCode::InsufficientPermissions,
             Some(HashMap::from([(
@@ -48,8 +48,8 @@ pub async fn create_workspace_access(
         ));
     }
 
-    if dto.role > rust_api::entities::workspace::model::Role::Admin
-        && user_workspace_access.role < rust_api::entities::workspace::model::Role::Owner
+    if dto.role > sql::entities::workspace::model::Role::Admin
+        && user_workspace_access.role < sql::entities::workspace::model::Role::Owner
     {
         return Err(error_handlers::handlers::ErrorResponse::forbidden(
             error_handlers::codes::ForbiddenErrorCode::InsufficientPermissions,
@@ -80,7 +80,7 @@ pub async fn create_workspace_access(
 
     let workspace_access = crate::entities::workspace::WorkspaceService::create_workspace_access(
         &state,
-        rust_api::entities::workspace::dto::CreateWorkspaceAccessDto {
+        sql::entities::workspace::dto::CreateWorkspaceAccessDto {
             user_id: dto.user_id,
             workspace_id,
             role: dto.role,

@@ -46,7 +46,7 @@ pub async fn get_page_access_list(
         e
     })?;
 
-    if user_page_access.role < rust_api::entities::page::model::Role::Member {
+    if user_page_access.role < sql::entities::page::model::Role::Member {
         return Err(
             error_handlers::handlers::ErrorResponse::forbidden(
                 error_handlers::codes::ForbiddenErrorCode::InsufficientPermissions,

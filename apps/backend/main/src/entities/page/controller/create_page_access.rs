@@ -52,7 +52,7 @@ pub async fn create_page_access(
                 e
             })?;
 
-    if user_page_access.role < rust_api::entities::page::model::Role::Admin {
+    if user_page_access.role < sql::entities::page::model::Role::Admin {
         return Err(error_handlers::handlers::ErrorResponse::forbidden(
             error_handlers::codes::ForbiddenErrorCode::InsufficientPermissions,
             Some(HashMap::from([(
@@ -63,8 +63,8 @@ pub async fn create_page_access(
         ));
     }
 
-    if dto.role > rust_api::entities::page::model::Role::Admin
-        && user_page_access.role < rust_api::entities::page::model::Role::Owner
+    if dto.role > sql::entities::page::model::Role::Admin
+        && user_page_access.role < sql::entities::page::model::Role::Owner
     {
         return Err(error_handlers::handlers::ErrorResponse::forbidden(
             error_handlers::codes::ForbiddenErrorCode::InsufficientPermissions,
@@ -92,7 +92,7 @@ pub async fn create_page_access(
 
     let page_access = crate::entities::page::PageService::create_page_access(
         &state,
-        rust_api::entities::page::dto::CreatePageAccessDto {
+        sql::entities::page::dto::CreatePageAccessDto {
             user_id: target_user.id,
             page_id,
             role: dto.role,

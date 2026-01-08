@@ -26,7 +26,7 @@ pub async fn create_workspace(
 ) -> Result<WorkspaceResponse, ErrorResponse> {
     let workspace = crate::entities::workspace::WorkspaceService::create(
         &state,
-        rust_api::entities::workspace::dto::CreateWorkspaceDto {
+        sql::entities::workspace::dto::CreateWorkspaceDto {
             name: dto.name,
             owner_id: user_id,
         },

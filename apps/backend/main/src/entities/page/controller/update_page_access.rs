@@ -54,7 +54,7 @@ pub async fn update_page_access(
                 e
             })?;
 
-    if user_page_access.role < rust_api::entities::page::model::Role::Admin {
+    if user_page_access.role < sql::entities::page::model::Role::Admin {
         return Err(error_handlers::handlers::ErrorResponse::forbidden(
             error_handlers::codes::ForbiddenErrorCode::InsufficientPermissions,
             Some(HashMap::from([(
@@ -69,7 +69,7 @@ pub async fn update_page_access(
 
     let page_access = crate::entities::page::PageService::update_page_access(
         &state,
-        rust_api::entities::page::dto::UpdatePageAccessDto {
+        sql::entities::page::dto::UpdatePageAccessDto {
             user_id: dto.user_id,
             page_id,
             role: dto.role,

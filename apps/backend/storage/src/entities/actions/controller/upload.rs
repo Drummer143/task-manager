@@ -120,7 +120,7 @@ pub async fn upload(
 
     let create_asset_result = crate::entities::asset::service::create_asset(
         &state.postgres,
-        rust_api::entities::asset::dto::CreateAssetDto {
+        sql::entities::asset::dto::CreateAssetDto {
             id: Some(file_id),
             name,
             path: file_path.to_str().unwrap().to_string(),

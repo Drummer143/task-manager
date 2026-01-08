@@ -1,8 +1,8 @@
 {
-	"name": "rust-api",
+	"name": "sql",
 	"$schema": "../../../node_modules/nx/schemas/project-schema.json",
 	"projectType": "library",
-	"sourceRoot": "libs/backend/rust-api/src",
+	"sourceRoot": "libs/backend/sql/src",
 	"targets": {
 		"build": {
 			"cache": true,
@@ -10,7 +10,7 @@
 			"outputs": [],
 			"options": {
 				"cwd": ".",
-				"command": "cargo check -p rust_api"
+				"command": "cargo check -p sql"
 			}
 		},
 		"test": {
@@ -19,11 +19,11 @@
 			"outputs": [],
 			"options": {
 				"cwd": ".",
-				"command": "cargo test -p rust_api"
+				"command": "cargo test -p sql"
 			},
 			"configurations": {
 				"production": {
-					"command": "cargo test -p rust_api --release"
+					"command": "cargo test -p sql --release"
 				}
 			}
 		},
@@ -32,7 +32,7 @@
 			"executor": "nx:run-commands",
 			"options": {
 				"cwd": ".",
-				"command": "cargo clippy -p rust_api -- -D warnings"
+				"command": "cargo clippy -p sql -- -D warnings"
 			}
 		}
 	},

@@ -3,7 +3,7 @@
 use axum::extract::State;
 use chrono::{DateTime, Utc};
 use error_handlers::handlers::ErrorResponse;
-use rust_api::shared::traits::PostgresqlRepositoryCreate;
+use sql::shared::traits::PostgresqlRepositoryCreate;
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -47,7 +47,7 @@ pub async fn user_sync(
     State(state): State<crate::types::app_state::AppState>,
     ValidatedJson(payload): ValidatedJson<Events>,
 ) -> Result<axum::http::StatusCode, ErrorResponse> {
-    use rust_api::entities::user;
+    use sql::entities::user;
 
     match payload {
         Events::UserUpdated(payload) => {
@@ -85,7 +85,7 @@ pub async fn user_sync(
 
             crate::entities::workspace::WorkspaceService::create(
                 &state,
-                rust_api::entities::workspace::dto::CreateWorkspaceDto {
+                sql::entities::workspace::dto::CreateWorkspaceDto {
                     name: format!("{}'s workspace", user.username),
                     owner_id: user.id,
                 },
@@ -93,7 +93,7 @@ pub async fn user_sync(
             .await?;
         }
         Events::UserDeleted(payload) => {
-            rust_api::entities::user::UserRepository::delete_by_authentik_id(
+            sql::entities::user::UserRepository::delete_by_authentik_id(
                 &state.postgres,
                 payload.pk,
             )

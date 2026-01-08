@@ -54,8 +54,8 @@ impl Modify for SecurityAddon {
         crate::entities::workspace::controller::update_workspace_access::update_workspace_access,
     ),
     components(schemas(
-        rust_api::entities::user::model::User,
-        rust_api::entities::workspace::model::Role,
+        sql::entities::user::model::User,
+        sql::entities::workspace::model::Role,
 
         error_handlers::handlers::ErrorResponse,
         

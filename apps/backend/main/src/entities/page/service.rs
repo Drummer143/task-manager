@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use error_handlers::handlers::ErrorResponse;
 use uuid::Uuid;
 
-use rust_api::{
+use sql::{
     entities::page::{
         PageRepository,
         dto::{CreatePageAccessDto, CreatePageDto, UpdatePageAccessDto},
@@ -55,9 +55,9 @@ impl ServiceCreateMethod for PageService {
                     .map(|(k, v)| (k.to_string(), v.to_string()))
                     .collect::<HashMap<String, String>>();
 
-                rust_api::entities::board_statuses::BoardStatusRepository::create(
+                sql::entities::board_statuses::BoardStatusRepository::create(
                     &mut *tx,
-                    rust_api::entities::board_statuses::dto::CreateBoardStatusDto {
+                    sql::entities::board_statuses::dto::CreateBoardStatusDto {
                         page_id: page.id,
                         position: status.position,
                         // parent_status_id: None,
@@ -94,7 +94,7 @@ impl ServiceUpdateMethod for PageService {
             PageRepository::update(
                 &mut *tx,
                 id,
-                rust_api::entities::page::dto::UpdatePageDto { title: dto.title },
+                sql::entities::page::dto::UpdatePageDto { title: dto.title },
             )
             .await
             .map_err(ErrorResponse::from)?
@@ -169,7 +169,7 @@ impl PageService {
         app_state: &crate::types::app_state::AppState,
         dto: CreatePageAccessDto,
     ) -> Result<PageAccess, ErrorResponse> {
-        rust_api::entities::page::PageRepository::create_page_access(&app_state.postgres, dto)
+        sql::entities::page::PageRepository::create_page_access(&app_state.postgres, dto)
             .await
             .map_err(|e| match e {
                 sqlx::Error::Database(e) => {
@@ -191,7 +191,7 @@ impl PageService {
         app_state: &crate::types::app_state::AppState,
         dto: UpdatePageAccessDto,
     ) -> Result<PageAccess, ErrorResponse> {
-        rust_api::entities::page::PageRepository::update_page_access(&app_state.postgres, dto)
+        sql::entities::page::PageRepository::update_page_access(&app_state.postgres, dto)
             .await
             .map_err(|e| match e {
                 sqlx::Error::RowNotFound => ErrorResponse::not_found(
@@ -207,7 +207,7 @@ impl PageService {
         user_id: Uuid,
         page_id: Uuid,
     ) -> Result<PageAccessResponse, ErrorResponse> {
-        let page_access = rust_api::entities::page::PageRepository::get_one_page_access(
+        let page_access = sql::entities::page::PageRepository::get_one_page_access(
             &app_state.postgres,
             user_id,
             page_id,
@@ -240,7 +240,7 @@ impl PageService {
         app_state: &crate::types::app_state::AppState,
         page_id: Uuid,
     ) -> Result<Vec<PageAccessResponse>, ErrorResponse> {
-        let page_access_list = rust_api::entities::page::PageRepository::get_page_access_list(
+        let page_access_list = sql::entities::page::PageRepository::get_page_access_list(
             &app_state.postgres,
             page_id,
         )

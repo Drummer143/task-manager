@@ -1,6 +1,6 @@
 use axum::extract::{Path, State};
 use error_handlers::handlers::ErrorResponse;
-use rust_api::entities::task::dto::UpdateTaskDto;
+use sql::entities::task::dto::UpdateTaskDto;
 use uuid::Uuid;
 
 use crate::{

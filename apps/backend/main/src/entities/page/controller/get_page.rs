@@ -1,6 +1,6 @@
 use axum::extract::{Path, State};
 use error_handlers::{codes, handlers::ErrorResponse};
-use rust_api::entities::page::model::PageType;
+use sql::entities::page::model::PageType;
 use uuid::Uuid;
 
 use crate::{
@@ -57,7 +57,7 @@ pub async fn get_page(
     let mut page_response = PageResponse::from(page.clone());
 
     page_response.role = Some(
-        rust_api::entities::page::PageRepository::get_one_page_access(
+        sql::entities::page::PageRepository::get_one_page_access(
             &state.postgres,
             page.page.owner_id,
             page.page.id,
@@ -143,7 +143,7 @@ pub async fn get_page(
             })?;
 
         // for status in statuses.iter_mut() {
-        //     let child_statuses = rust_api::entities::board_statuses::BoardStatusRepository::get_child_statuses_by_parent_status_id(
+        //     let child_statuses = sql::entities::board_statuses::BoardStatusRepository::get_child_statuses_by_parent_status_id(
         //             &state.postgres, status.status.id,
         //         )
         //         .await
