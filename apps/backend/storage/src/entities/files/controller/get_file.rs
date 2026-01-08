@@ -36,7 +36,7 @@ pub async fn get_file(
     request: Request,
 ) -> Result<(StatusCode, HeaderMap, Body), ErrorResponse> {
     let asset =
-        sql::entities::asset::AssetRepository::get_one_by_id(&app_state.postgres, file_id)
+        sql::asset::AssetRepository::get_one_by_id(&app_state.postgres, file_id)
             .await
             .map_err(ErrorResponse::from)?;
 

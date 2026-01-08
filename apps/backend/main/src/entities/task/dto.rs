@@ -1,5 +1,5 @@
 use chrono::{DateTime, Utc};
-use sql::entities::{page::model::Doc, task::model::Task, user::model::User};
+use sql::{page::model::Doc, task::model::Task, user::model::User};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 

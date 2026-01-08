@@ -1,6 +1,6 @@
 use error_handlers::handlers::ErrorResponse;
 use sql::{
-    entities::task::{TaskRepository, model::Task},
+    task::{TaskRepository, model::Task},
     shared::{
         traits::{
             PostgresqlRepositoryCreate, PostgresqlRepositoryDelete, PostgresqlRepositoryGetOneById,
@@ -23,7 +23,7 @@ impl ServiceBase for TaskService {
 }
 
 impl ServiceCreateMethod for TaskService {
-    type CreateDto = sql::entities::task::dto::CreateTaskDto;
+    type CreateDto = sql::task::dto::CreateTaskDto;
 
     async fn create(
         app_state: &crate::types::app_state::AppState,
@@ -36,7 +36,7 @@ impl ServiceCreateMethod for TaskService {
 }
 
 impl ServiceUpdateMethod for TaskService {
-    type UpdateDto = sql::entities::task::dto::UpdateTaskDto;
+    type UpdateDto = sql::task::dto::UpdateTaskDto;
 
     async fn update(
         app_state: &crate::types::app_state::AppState,
@@ -157,7 +157,7 @@ impl TaskService {
     pub async fn change_status<'a>(
         app_state: &crate::types::app_state::AppState,
         task_id: Uuid,
-        dto: sql::entities::task::dto::ChangeStatusDto,
+        dto: sql::task::dto::ChangeStatusDto,
     ) -> Result<Task, ErrorResponse> {
         let mut tx = app_state.postgres.begin().await?;
 
@@ -188,7 +188,7 @@ impl TaskService {
         }
 
         let last_position =
-            sql::entities::task::TaskRepository::get_last_position(&mut *tx, dto.status_id)
+            sql::task::TaskRepository::get_last_position(&mut *tx, dto.status_id)
                 .await
                 .map_err(ErrorResponse::from);
 
@@ -202,7 +202,7 @@ impl TaskService {
         let updated_task = TaskRepository::update(
             &mut *tx,
             task_id,
-            sql::entities::task::dto::UpdateTaskDto {
+            sql::task::dto::UpdateTaskDto {
                 status_id: Some(dto.status_id),
                 assignee_id: None,
                 due_date: None,

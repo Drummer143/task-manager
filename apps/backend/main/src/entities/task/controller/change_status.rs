@@ -1,6 +1,6 @@
 use axum::extract::{Path, State};
 use error_handlers::handlers::ErrorResponse;
-use sql::entities::task::dto::ChangeStatusDto;
+use sql::task::dto::ChangeStatusDto;
 use uuid::Uuid;
 
 use crate::{entities::task::dto::TaskResponse, shared::extractors::json::ValidatedJson};

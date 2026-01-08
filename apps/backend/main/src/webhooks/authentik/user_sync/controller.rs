@@ -47,7 +47,7 @@ pub async fn user_sync(
     State(state): State<crate::types::app_state::AppState>,
     ValidatedJson(payload): ValidatedJson<Events>,
 ) -> Result<axum::http::StatusCode, ErrorResponse> {
-    use sql::entities::user;
+    use sql::user;
 
     match payload {
         Events::UserUpdated(payload) => {
@@ -85,7 +85,7 @@ pub async fn user_sync(
 
             crate::entities::workspace::WorkspaceService::create(
                 &state,
-                sql::entities::workspace::dto::CreateWorkspaceDto {
+                sql::workspace::dto::CreateWorkspaceDto {
                     name: format!("{}'s workspace", user.username),
                     owner_id: user.id,
                 },
@@ -93,7 +93,7 @@ pub async fn user_sync(
             .await?;
         }
         Events::UserDeleted(payload) => {
-            sql::entities::user::UserRepository::delete_by_authentik_id(
+            sql::user::UserRepository::delete_by_authentik_id(
                 &state.postgres,
                 payload.pk,
             )

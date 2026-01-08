@@ -4,7 +4,7 @@ use error_handlers::handlers::ErrorResponse;
 use uuid::Uuid;
 
 use sql::{
-    entities::page::{
+    page::{
         PageRepository,
         dto::{CreatePageAccessDto, CreatePageDto, UpdatePageAccessDto},
         model::{Page, PageAccess, PageType, PageWithContent},
@@ -55,9 +55,9 @@ impl ServiceCreateMethod for PageService {
                     .map(|(k, v)| (k.to_string(), v.to_string()))
                     .collect::<HashMap<String, String>>();
 
-                sql::entities::board_statuses::BoardStatusRepository::create(
+                sql::board_statuses::BoardStatusRepository::create(
                     &mut *tx,
-                    sql::entities::board_statuses::dto::CreateBoardStatusDto {
+                    sql::board_statuses::dto::CreateBoardStatusDto {
                         page_id: page.id,
                         position: status.position,
                         // parent_status_id: None,
@@ -94,7 +94,7 @@ impl ServiceUpdateMethod for PageService {
             PageRepository::update(
                 &mut *tx,
                 id,
-                sql::entities::page::dto::UpdatePageDto { title: dto.title },
+                sql::page::dto::UpdatePageDto { title: dto.title },
             )
             .await
             .map_err(ErrorResponse::from)?
@@ -169,7 +169,7 @@ impl PageService {
         app_state: &crate::types::app_state::AppState,
         dto: CreatePageAccessDto,
     ) -> Result<PageAccess, ErrorResponse> {
-        sql::entities::page::PageRepository::create_page_access(&app_state.postgres, dto)
+        sql::page::PageRepository::create_page_access(&app_state.postgres, dto)
             .await
             .map_err(|e| match e {
                 sqlx::Error::Database(e) => {
@@ -191,7 +191,7 @@ impl PageService {
         app_state: &crate::types::app_state::AppState,
         dto: UpdatePageAccessDto,
     ) -> Result<PageAccess, ErrorResponse> {
-        sql::entities::page::PageRepository::update_page_access(&app_state.postgres, dto)
+        sql::page::PageRepository::update_page_access(&app_state.postgres, dto)
             .await
             .map_err(|e| match e {
                 sqlx::Error::RowNotFound => ErrorResponse::not_found(
@@ -207,7 +207,7 @@ impl PageService {
         user_id: Uuid,
         page_id: Uuid,
     ) -> Result<PageAccessResponse, ErrorResponse> {
-        let page_access = sql::entities::page::PageRepository::get_one_page_access(
+        let page_access = sql::page::PageRepository::get_one_page_access(
             &app_state.postgres,
             user_id,
             page_id,
@@ -240,7 +240,7 @@ impl PageService {
         app_state: &crate::types::app_state::AppState,
         page_id: Uuid,
     ) -> Result<Vec<PageAccessResponse>, ErrorResponse> {
-        let page_access_list = sql::entities::page::PageRepository::get_page_access_list(
+        let page_access_list = sql::page::PageRepository::get_page_access_list(
             &app_state.postgres,
             page_id,
         )

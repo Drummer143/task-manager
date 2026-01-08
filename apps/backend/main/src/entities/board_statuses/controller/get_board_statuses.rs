@@ -53,7 +53,7 @@ pub async fn get_board_statuses(
     })
 
     // for status in statuses.iter_mut() {
-    //     let child_statuses: Vec<ChildBoardStatusResponseDto> = sql::entities::board_statuses::BoardStatusRepository::get_child_statuses_by_parent_status_id(
+    //     let child_statuses: Vec<ChildBoardStatusResponseDto> = sql::board_statuses::BoardStatusRepository::get_child_statuses_by_parent_status_id(
     //         &state.postgres, status.status.id,
     //     )
     //     .await

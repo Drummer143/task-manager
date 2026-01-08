@@ -1,5 +1,5 @@
 use chrono::{DateTime, Utc};
-use sql::entities::{user::model::User, workspace::model::Role, workspace::model::Workspace};
+use sql::{user::model::User, workspace::model::Role, workspace::model::Workspace};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
@@ -14,7 +14,7 @@ pub struct CreateWorkspaceDto {
 
 #[derive(Debug, utoipa::ToSchema)]
 pub struct WorkspaceInfo {
-    pub workspace: sql::entities::workspace::model::Workspace,
+    pub workspace: sql::workspace::model::Workspace,
     pub role: Option<Role>,
     pub owner: Option<User>,
     pub pages: Option<Vec<PageResponseWithoutInclude>>,
@@ -167,7 +167,7 @@ pub struct GetListQueryDto {
     pub limit: Option<i64>,
     pub offset: Option<i64>,
     pub search: Option<String>,
-    pub sort_by: Option<sql::entities::workspace::dto::WorkspaceSortBy>,
+    pub sort_by: Option<sql::workspace::dto::WorkspaceSortBy>,
     pub sort_order: Option<sql::shared::types::SortOrder>,
     #[serde(
         default,
@@ -195,7 +195,7 @@ pub struct UpdateWorkspaceAccessDto {
 #[derive(Debug, serde::Serialize, utoipa::ToSchema, Clone)]
 pub struct WorkspaceAccessResponse {
     pub id: Uuid,
-    pub user: sql::entities::user::model::User,
+    pub user: sql::user::model::User,
     pub role: Role,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,

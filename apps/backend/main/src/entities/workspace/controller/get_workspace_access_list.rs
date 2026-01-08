@@ -53,7 +53,7 @@ pub async fn get_workspace_access_list(
             e
         })?;
 
-    if user_workspace_access.role < sql::entities::workspace::model::Role::Member {
+    if user_workspace_access.role < sql::workspace::model::Role::Member {
         return Err(ErrorResponse::forbidden(
             codes::ForbiddenErrorCode::InsufficientPermissions,
             Some(HashMap::from([(

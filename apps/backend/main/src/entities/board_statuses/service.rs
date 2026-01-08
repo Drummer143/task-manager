@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use error_handlers::{codes, handlers::ErrorResponse};
 
 use sql::{
-    entities::board_statuses::{
+    board_statuses::{
         dto::{CreateBoardStatusDto, UpdateBoardStatusDto},
         model::BoardStatus,
         BoardStatusRepository,

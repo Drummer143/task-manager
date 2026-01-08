@@ -41,7 +41,7 @@ pub async fn get_by_id(
 
     let owner = if include.contains(&Include::Owner) {
         Some(
-            sql::entities::user::UserRepository::get_one_by_id(
+            sql::user::UserRepository::get_one_by_id(
                 &state.postgres,
                 workspace.workspace.owner_id,
             )
@@ -65,7 +65,7 @@ pub async fn get_by_id(
         None
     };
 
-    let role = sql::entities::workspace::WorkspaceRepository::get_one_workspace_access(
+    let role = sql::workspace::WorkspaceRepository::get_one_workspace_access(
         &state.postgres,
         user_id,
         workspace_id,

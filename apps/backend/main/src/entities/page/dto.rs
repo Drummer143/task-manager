@@ -2,7 +2,7 @@ use std::collections::HashMap;
 
 use chrono::{DateTime, Utc};
 use error_handlers::{codes, handlers::ErrorResponse};
-use sql::entities::{
+use sql::{
     page::model::{Doc, Page, PageType, PageWithContent, Role},
     user::model::User,
 };
@@ -119,7 +119,7 @@ pub struct PageResponse {
     pub id: Uuid,
     pub r#type: PageType,
     pub title: String,
-    pub role: Option<sql::entities::page::model::Role>,
+    pub role: Option<sql::page::model::Role>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub owner: Option<User>,
@@ -293,7 +293,7 @@ pub struct UpdatePageAccessDto {
 #[derive(Debug, Serialize, utoipa::ToSchema, Clone)]
 pub struct PageAccessResponse {
     pub id: Uuid,
-    pub user: sql::entities::user::model::User,
+    pub user: sql::user::model::User,
     pub role: Role,
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,

@@ -38,7 +38,7 @@ pub async fn create_board_status(
 ) -> Result<Json<BoardStatusResponseDto>, ErrorResponse> {
     BoardStatusService::create(
         &app_state,
-        sql::entities::board_statuses::dto::CreateBoardStatusDto {
+        sql::board_statuses::dto::CreateBoardStatusDto {
             // parent_status_id: dto.parent_status_id,
             page_id,
             initial: dto.initial,

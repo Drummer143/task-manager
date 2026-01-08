@@ -29,14 +29,14 @@ pub async fn create_task(
     ValidatedJson(dto): ValidatedJson<CreateTaskDto>,
 ) -> Result<TaskResponse, ErrorResponse> {
     let last_position =
-        sql::entities::task::TaskRepository::get_last_position(&state.postgres, dto.status_id)
+        sql::task::TaskRepository::get_last_position(&state.postgres, dto.status_id)
             .await
             .map_err(ErrorResponse::from)?
             .unwrap_or_default();
 
     crate::entities::task::TaskService::create(
         &state,
-        sql::entities::task::dto::CreateTaskDto {
+        sql::task::dto::CreateTaskDto {
             title: dto.title,
             status_id: dto.status_id,
             description: dto.description,

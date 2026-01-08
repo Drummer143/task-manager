@@ -55,7 +55,7 @@ pub async fn update_workspace_access(
         e
     })?;
 
-    if user_workspace_access.role < sql::entities::workspace::model::Role::Admin {
+    if user_workspace_access.role < sql::workspace::model::Role::Admin {
         return Err(error_handlers::handlers::ErrorResponse::forbidden(
             error_handlers::codes::ForbiddenErrorCode::InsufficientPermissions,
             Some(HashMap::from([(
@@ -70,7 +70,7 @@ pub async fn update_workspace_access(
 
     let workspace_access = crate::entities::workspace::WorkspaceService::update_workspace_access(
         &state,
-        sql::entities::workspace::dto::UpdateWorkspaceAccessDto {
+        sql::workspace::dto::UpdateWorkspaceAccessDto {
             user_id: dto.user_id,
             workspace_id,
             role: dto.role,
