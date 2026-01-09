@@ -6,7 +6,6 @@ import { App, Flex } from "antd";
 import dayjs from "dayjs";
 import { useNavigate, useParams, useSearchParams } from "react-router";
 
-import { useAuthStore } from "../../../../../app/store/auth";
 import TaskChat from "../TaskChat";
 import TaskForm from "../TaskForm";
 import { FormValues } from "../TaskForm/types";
@@ -31,10 +30,10 @@ const EditTaskForm: React.FC = () => {
 		enabled: !!taskId,
 		queryFn: async (): Promise<FormValues> => {
 			const result = await getTask({
-				pageId,
-				taskId: taskId!,
-				workspaceId: useAuthStore.getState().user.workspace.id,
-				include: ["assignee"]
+				pathParams: {
+					taskId: taskId!,
+					include: ["assignee"]
+				}
 			});
 
 			return {
@@ -59,15 +58,15 @@ const EditTaskForm: React.FC = () => {
 	const handleSubmit = useCallback(
 		async (values: FormValues) =>
 			mutateAsync({
-				taskId: taskId!,
-				pageId,
-				workspaceId: useAuthStore.getState().user.workspace.id,
+				pathParams: {
+					taskId: taskId!
+				},
 				body: {
 					...values,
 					dueDate: values.dueDate?.toISOString()
 				}
 			}),
-		[mutateAsync, taskId, pageId]
+		[mutateAsync, taskId]
 	);
 
 	return (

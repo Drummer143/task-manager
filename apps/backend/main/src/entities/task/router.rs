@@ -1,6 +1,6 @@
 use axum::{
-    routing::{delete, get, patch, post, put},
     Router,
+    routing::{delete, get, patch, post, put},
 };
 
 use crate::{
@@ -12,33 +12,25 @@ use crate::{
 };
 
 pub fn init(state: AppState) -> Router<AppState> {
-    Router::new()
-        .route(
-            "/workspaces/{workspace_id}/pages/{page_id}/tasks",
-            post(create_task),
-        )
-        .route(
-            "/workspaces/{workspace_id}/pages/{page_id}/tasks/{task_id}",
-            delete(delete_task),
-        )
-        .route(
-            "/workspaces/{workspace_id}/pages/{page_id}/tasks/{task_id}",
-            put(update_task),
-        )
-        .route(
-            "/workspaces/{workspace_id}/pages/{page_id}/tasks/{task_id}/status",
-            patch(change_status),
-        )
-        .route(
-            "/workspaces/{workspace_id}/pages/{page_id}/tasks/{task_id}",
-            get(get_task),
-        )
-        .route(
-            "/workspaces/{workspace_id}/pages/{page_id}/tasks",
-            get(get_tasks_in_page),
-        )
+    let general = Router::new()
+        .route("/pages/{page_id}/tasks", post(create_task))
+        .route("/pages/{page_id}/tasks", get(get_tasks_in_page))
         .layer(axum::middleware::from_fn_with_state(
-            state,
-            crate::middleware::auth_guard::auth_guard,
-        ))
+            state.clone(),
+            crate::middleware::page_access_guard::page_access_guard_by_page_route,
+        ));
+
+    let scoped = Router::new()
+        .route("/tasks/{task_id}", delete(delete_task))
+        .route("/tasks/{task_id}", put(update_task))
+        .route("/tasks/{task_id}/status", patch(change_status))
+        .route("/tasks/{task_id}", get(get_task))
+        .layer(axum::middleware::from_fn_with_state(
+            state.clone(),
+            crate::middleware::page_access_guard::page_access_guard_task_route,
+        ));
+
+    return axum::Router::new().merge(general).merge(scoped).layer(
+        axum::middleware::from_fn_with_state(state, crate::middleware::auth_guard::auth_guard),
+    );
 }

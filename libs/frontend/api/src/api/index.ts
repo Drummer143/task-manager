@@ -1,6 +1,6 @@
 export * from "./profile";
 
-export { insertAccessToken } from "./base";
+export { insertAccessToken, type BaseRequest } from "./base";
 
 export * from "./auth";
 
@@ -11,7 +11,6 @@ export * from "./pages";
 export * from "./pageAccess";
 
 export * from "./tasks";
-export * from "./taskChat";
 
 export * from "./users";
 

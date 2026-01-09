@@ -13,3 +13,22 @@ export const insertAccessToken = (getToken: () => Promise<string>) => {
 	});
 };
 
+type RemoveNever<T> = {
+	[K in keyof T as T[K] extends never ? never : K]: T[K];
+};
+
+type AtLeastOneNotNever<A, B> =
+	[A] extends [never]
+		? ([B] extends [never] ? never : unknown)
+		: unknown;
+
+export type BaseRequest<
+	PathParams = never,
+	Body = never
+> = AtLeastOneNotNever<PathParams, Body> &
+	RemoveNever<{
+		pathParams: PathParams;
+		body: Body;
+	}>;
+
+

@@ -6,10 +6,9 @@ use crate::{entities::page::dto::PageResponse, shared::traits::ServiceDeleteMeth
 
 #[utoipa::path(
     delete,
-    path = "/workspaces/{workspace_id}/pages/{page_id}",
+    path = "/pages/{page_id}",
     operation_id = "delete_page",
     params(
-        ("workspace_id", Path, description = "Workspace ID"),
         ("page_id", Path, description = "Page ID"),
     ),
     responses(
@@ -21,7 +20,7 @@ use crate::{entities::page::dto::PageResponse, shared::traits::ServiceDeleteMeth
 )]
 pub async fn delete_page(
     State(state): State<AppState>,
-    Path((_, page_id)): Path<(Uuid, Uuid)>,
+    Path(page_id): Path<Uuid>,
 ) -> Result<PageResponse, ErrorResponse> {
     crate::entities::page::PageService::delete(&state, page_id)
         .await

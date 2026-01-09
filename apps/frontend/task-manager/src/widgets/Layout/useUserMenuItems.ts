@@ -15,7 +15,7 @@ export const useUserMenuItems = () => {
 
 	const { data, isLoading } = useQuery({
 		queryKey: ["workspaces"],
-		queryFn: () => getWorkspaceList({ limit: -1 })
+		queryFn: () => getWorkspaceList({ pathParams: { limit: -1 } })
 	});
 
 	const menu = useMemo<MenuProps>(

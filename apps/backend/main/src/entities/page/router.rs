@@ -18,32 +18,32 @@ pub fn init(state: AppState) -> Router<AppState> {
 
     let scoped = Router::new()
         .route(
-            "/workspaces/{workspace_id}/pages/{page_id}",
+            "/pages/{page_id}",
             routing::get(controller::get_page::get_page),
         )
         .route(
-            "/workspaces/{workspace_id}/pages/{page_id}",
+            "/pages/{page_id}",
             routing::put(controller::update_page::update_page),
         )
         .route(
-            "/workspaces/{workspace_id}/pages/{page_id}",
+            "/pages/{page_id}",
             routing::delete(controller::delete_page::delete_page),
         )
         .route(
-            "/workspaces/{workspace_id}/pages/{page_id}/access",
+            "/pages/{page_id}/access",
             axum::routing::get(controller::get_page_access_list::get_page_access_list),
         )
         .route(
-            "/workspaces/{workspace_id}/pages/{page_id}/access",
+            "/pages/{page_id}/access",
             axum::routing::post(controller::create_page_access::create_page_access),
         )
         .route(
-            "/workspaces/{workspace_id}/pages/{page_id}/access",
+            "/pages/{page_id}/access",
             axum::routing::put(controller::update_page_access::update_page_access),
         )
         .layer(axum::middleware::from_fn_with_state(
             state.clone(),
-            crate::middleware::page_access_guard::page_access_guard,
+            crate::middleware::page_access_guard::page_access_guard_by_page_route,
         ));
 
     axum::Router::new()

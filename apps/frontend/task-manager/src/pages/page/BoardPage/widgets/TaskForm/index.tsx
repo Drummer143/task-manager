@@ -35,9 +35,9 @@ const TaskForm: React.FC<TaskFormProps> = ({
 	const workspaceId = useAuthStore(state => state.user.workspace.id);
 
 	const { data: statuses, isLoading: statusesLoading } = useQuery({
-		queryKey: ["statuses", workspaceId, pageId],
+		queryKey: ["statuses", pageId],
 		enabled: open,
-		queryFn: () => getBoardStatuses({ workspaceId, pageId })
+		queryFn: () => getBoardStatuses({ pathParams: { pageId } })
 	});
 
 	const statusSelectOptions = useMemo(

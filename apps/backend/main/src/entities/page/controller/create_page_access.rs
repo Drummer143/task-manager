@@ -15,7 +15,7 @@ use crate::{
 
 #[utoipa::path(
     post,
-    path = "/workspaces/{workspace_id}/pages/{page_id}/access",
+    path = "/pages/{page_id}/access",
     responses(
         (status = 200, description = "Page access created successfully", body = crate::entities::page::dto::PageAccessResponse),
         (status = 400, description = "Invalid request", body = ErrorResponse),
@@ -25,7 +25,6 @@ use crate::{
         (status = 500, description = "Internal server error", body = ErrorResponse),
     ),
     params(
-        ("workspace_id" = Uuid, Path, description = "Workspace ID"),
         ("page_id" = Uuid, Path, description = "Page ID"),
     ),
     request_body = CreatePageAccessDto,
@@ -34,7 +33,7 @@ use crate::{
 pub async fn create_page_access(
     State(state): State<crate::types::app_state::AppState>,
     Extension(user_id): Extension<Uuid>,
-    Path((_, page_id)): Path<(Uuid, Uuid)>,
+    Path(page_id): Path<Uuid>,
     ValidatedJson(dto): ValidatedJson<CreatePageAccessDto>,
 ) -> Result<PageAccessResponse, ErrorResponse> {
     let user_page_access =

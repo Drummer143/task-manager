@@ -7,7 +7,7 @@ use error_handlers::handlers::ErrorResponse;
 
 #[utoipa::path(
     delete,
-    path = "/workspaces/{id}/cancel-soft-delete",
+    path = "/workspaces/{workspace_id}/cancel-soft-delete",
     responses(
         (status = 200, description = "Workspace soft deleted successfully"),
         (status = 401, description = "Unauthorized", body = ErrorResponse),

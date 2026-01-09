@@ -13,9 +13,8 @@ use crate::{
 
 #[utoipa::path(
     get,
-    path = "/workspaces/{workspace_id}/pages/{page_id}/board-statuses",
+    path = "/pages/{page_id}/board-statuses",
     params(
-        ("workspace_id", Path, description = "Workspace ID"),
         ("page_id", Path, description = "Page ID"),
     ),
     responses(
@@ -27,7 +26,7 @@ use crate::{
 )]
 pub async fn get_board_statuses(
     State(state): State<AppState>,
-    Path((_, page_id)): Path<(Uuid, Uuid)>,
+    Path(page_id): Path<Uuid>,
     headers: HeaderMap,
 ) -> Result<Json<Vec<BoardStatusResponseDto>>, ErrorResponse> {
     let lang = headers

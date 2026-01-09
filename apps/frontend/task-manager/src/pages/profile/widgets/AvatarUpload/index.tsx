@@ -38,7 +38,7 @@ const AvatarUploader: React.FC<AvatarUploaderProps> = ({ avatarUrl }) => {
 				return;
 			}
 
-			mutateAsync({ ...area, file: image });
+			mutateAsync({ body: { ...area, file: image } });
 		},
 		[image, mutateAsync]
 	);
@@ -51,7 +51,12 @@ const AvatarUploader: React.FC<AvatarUploaderProps> = ({ avatarUrl }) => {
 				Update avatar
 			</FileInput>
 
-			<ImageCrop image={image} isOpen={!!image} onCancel={handleCropClose} onCropFinish={handleUpload} />
+			<ImageCrop
+				image={image}
+				isOpen={!!image}
+				onCancel={handleCropClose}
+				onCropFinish={handleUpload}
+			/>
 		</Flex>
 	);
 };

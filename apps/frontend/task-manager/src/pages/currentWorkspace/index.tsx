@@ -30,15 +30,32 @@ const CurrentWorkspace: React.FC = () => {
 		error: errorWorkspace
 	} = useQuery({
 		queryKey: ["workspace", "owner", workspaceId],
-		queryFn: () => getWorkspace({ workspaceId, include: ["owner"] })
+		queryFn: () =>
+			getWorkspace({
+				pathParams: {
+					workspaceId,
+					include: ["owner"]
+				}
+			})
 	});
 
 	const accessListProps = useMemo<AccessListProps>(
 		() => ({
 			queryKey: ["access", workspaceId],
-			updateAccess: body => updateWorkspaceAccess({ workspaceId, body }),
-			getAccessList: () => getWorkspaceAccess({ workspaceId }),
-			createAccess: body => createWorkspaceAccess({ workspaceId, body })
+			updateAccess: body =>
+				updateWorkspaceAccess({
+					pathParams: { workspaceId },
+					body
+				}),
+			getAccessList: () =>
+				getWorkspaceAccess({
+					pathParams: { workspaceId }
+				}),
+			createAccess: body =>
+				createWorkspaceAccess({
+					pathParams: { workspaceId },
+					body
+				})
 		}),
 		[workspaceId]
 	);
@@ -81,3 +98,4 @@ const CurrentWorkspace: React.FC = () => {
 };
 
 export default CurrentWorkspace;
+

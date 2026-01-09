@@ -19,7 +19,7 @@ impl RepositoryBase for PageRepository {
 
 impl PostgresqlRepositoryGetOneById for PageRepository {
     async fn get_one_by_id<'a>(
-        executor: impl sqlx::Executor<'a, Database = Postgres>,
+        executor: impl Executor<'a, Database = Postgres>,
         id: Uuid,
     ) -> Result<Self::Response, sqlx::Error> {
         sqlx::query_as::<_, Page>("SELECT * FROM pages WHERE id = $1")
@@ -158,10 +158,26 @@ impl PageRepository {
         Ok(())
     }
 
+    pub async fn get_page_by_task_id<'a>(
+        executor: impl Executor<'a, Database = Postgres>,
+        task_id: Uuid,
+    ) -> Result<Page, sqlx::Error> {
+        sqlx::query_as::<_, Page>(
+            r#"
+            SELECT p.* from pages p
+            INNER JOIN tasks t on t.page_id = p.id
+            WHERE t.id = $1
+            "#,
+        )
+        .bind(task_id)
+        .fetch_one(executor)
+        .await
+    }
+
     // PAGE ACCESS
 
     pub async fn create_page_access<'a>(
-        executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
+        executor: impl Executor<'a, Database = sqlx::Postgres>,
         dto: super::dto::CreatePageAccessDto,
     ) -> Result<super::model::PageAccess, sqlx::Error> {
         sqlx::query_as::<_, super::model::PageAccess>(
@@ -179,7 +195,7 @@ impl PageRepository {
     }
 
     pub async fn get_one_page_access<'a>(
-        executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
+        executor: impl Executor<'a, Database = sqlx::Postgres>,
         user_id: Uuid,
         page_id: Uuid,
     ) -> Result<super::model::PageAccess, sqlx::Error> {
@@ -196,7 +212,7 @@ impl PageRepository {
     }
 
     pub async fn get_page_access_list<'a>(
-        executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
+        executor: impl Executor<'a, Database = sqlx::Postgres>,
         page_id: Uuid,
     ) -> Result<Vec<super::model::PageAccess>, sqlx::Error> {
         sqlx::query_as::<_, super::model::PageAccess>(
@@ -211,7 +227,7 @@ impl PageRepository {
     }
 
     pub async fn update_page_access<'a>(
-        executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
+        executor: impl Executor<'a, Database = sqlx::Postgres>,
         dto: super::dto::UpdatePageAccessDto,
     ) -> Result<super::model::PageAccess, sqlx::Error> {
         if dto.role.is_none() {

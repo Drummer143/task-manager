@@ -6,7 +6,6 @@ import { useDisclosure } from "@task-manager/react-utils";
 import { Form } from "antd";
 import { useParams } from "react-router";
 
-import { useAuthStore } from "../../../../../app/store/auth";
 import TaskForm from "../TaskForm";
 import { FormValues } from "../TaskForm/types";
 
@@ -27,9 +26,10 @@ const NewTaskForm: React.FC = () => {
 	const handleSubmit = useCallback(
 		async (values: FormValues) => {
 			await mutateAsync({
-				task: { ...values, dueDate: values.dueDate?.toISOString() },
-				workspaceId: useAuthStore.getState().user.workspace.id,
-				pageId
+				pathParams: {
+					pageId
+				},
+				body: { ...values, dueDate: values.dueDate?.toISOString() }
 			});
 
 			onClose();
@@ -70,3 +70,4 @@ const NewTaskForm: React.FC = () => {
 };
 
 export default NewTaskForm;
+

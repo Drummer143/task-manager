@@ -16,10 +16,9 @@ use crate::{
 
 #[utoipa::path(
     get,
-    path = "/workspaces/{workspace_id}/pages/{page_id}",
+    path = "/pages/{page_id}",
     operation_id = "get_page",
     params(
-        ("workspace_id", Path, description = "Workspace ID"),
         ("page_id", Path, description = "Page ID"),
         ("include" = Option<Vec<PageInclude>>, Query, explode = false, description = "Include related entities"),
     ),
@@ -33,7 +32,7 @@ use crate::{
 pub async fn get_page(
     State(state): State<AppState>,
     ValidatedQuery(query): ValidatedQuery<PageQuery>,
-    Path((_, page_id)): Path<(Uuid, Uuid)>,
+    Path(page_id): Path<Uuid>,
     headers: axum::http::header::HeaderMap,
 ) -> Result<PageResponse, ErrorResponse> {
     let page = crate::entities::page::PageService::get_one_with_content_by_id(&state, page_id).await?;

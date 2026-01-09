@@ -5,7 +5,7 @@ use uuid::Uuid;
 
 #[utoipa::path(
     get,
-    path = "/workspaces/{workspace_id}/pages/{page_id}/access",
+    path = "/pages/{page_id}/access",
     responses(
         (status = 200, description = "Page access list retrieved successfully", body = crate::entities::page::dto::PageAccessResponse),
         (status = 400, description = "Invalid request", body = error_handlers::handlers::ErrorResponse),
@@ -15,7 +15,6 @@ use uuid::Uuid;
         (status = 500, description = "Internal server error", body = error_handlers::handlers::ErrorResponse),
     ),
     params(
-        ("workspace_id" = Uuid, Path, description = "Workspace ID"),
         ("page_id" = Uuid, Path, description = "Page ID"),
     ),
     tags = ["Page Access"],
@@ -23,7 +22,7 @@ use uuid::Uuid;
 pub async fn get_page_access_list(
     State(state): State<crate::types::app_state::AppState>,
     Extension(user_id): Extension<Uuid>,
-    Path((_, page_id)): Path<(Uuid, Uuid)>,
+    Path(page_id): Path<Uuid>,
 ) -> Result<
     axum::Json<Vec<crate::entities::page::dto::PageAccessResponse>>,
     error_handlers::handlers::ErrorResponse,

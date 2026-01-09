@@ -9,22 +9,20 @@ use crate::{
 
 #[utoipa::path(
     get,
-    path = "/workspaces/{workspace_id}/pages/{page_id}/tasks/{task_id}",
+    path = "/tasks/{task_id}",
     responses(
         (status = 200, description = "Task retrieved successfully", body = TaskResponse),
         (status = 400, description = "Invalid request", body = ErrorResponse),
         (status = 500, description = "Internal server error", body = ErrorResponse),
     ),
     params(
-        ("workspace_id" = Uuid, Path, description = "Workspace ID"),
-        ("page_id" = Uuid, Path, description = "Page ID"),
         ("task_id" = Uuid, Path, description = "Task ID"),
     ),
     tag = "Tasks",
 )]
 pub async fn get_task<'a>(
     State(state): State<crate::types::app_state::AppState>,
-    Path((_, _, task_id)): Path<(Uuid, Uuid, Uuid)>,
+    Path(task_id): Path<Uuid>,
     headers: axum::http::header::HeaderMap,
 ) -> Result<TaskResponse, ErrorResponse> {
     let task = crate::entities::task::TaskService::get_one_by_id(&state, task_id).await?;
