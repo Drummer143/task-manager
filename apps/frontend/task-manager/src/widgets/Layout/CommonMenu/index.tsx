@@ -17,7 +17,7 @@ const CommonMenu: React.FC = () => {
 
 	const { data: workspace, isLoading } = useQuery({
 		queryKey: ["workspace", workspaceId],
-		queryFn: () => getWorkspace({ workspaceId }),
+		queryFn: () => getWorkspace({ pathParams: { workspaceId } }),
 		enabled: !!workspaceId
 	});
 

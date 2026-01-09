@@ -2,11 +2,11 @@ use std::collections::HashMap;
 
 use chrono::{DateTime, Utc};
 use error_handlers::{codes, handlers::ErrorResponse};
-use rust_api::entities::{
-    page::model::{Doc, Page, PageType, PageWithContent},
+use sql::{
+    page::model::{Doc, Page, PageType, PageWithContent, Role},
     user::model::User,
 };
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 use crate::entities::{
@@ -14,7 +14,9 @@ use crate::entities::{
     workspace::dto::WorkspaceResponseWithoutInclude,
 };
 
-#[derive(Debug, serde::Deserialize, utoipa::ToSchema)]
+// PAGE
+
+#[derive(Debug, Deserialize, utoipa::ToSchema)]
 pub struct CreatePageDto {
     pub title: String,
     pub r#type: PageType,
@@ -22,7 +24,7 @@ pub struct CreatePageDto {
     pub content: Option<Doc>,
 }
 
-#[derive(Debug, utoipa::ToSchema, serde::Deserialize)]
+#[derive(Debug, utoipa::ToSchema, Deserialize)]
 pub struct UpdatePageDto {
     pub title: Option<String>,
 
@@ -67,7 +69,7 @@ impl From<&Page> for PageResponseWithoutInclude {
     }
 }
 
-#[derive(Debug, serde::Serialize, Clone, utoipa::ToSchema)]
+#[derive(Debug, Serialize, Clone, utoipa::ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct ChildPageResponse {
     pub id: Uuid,
@@ -111,13 +113,13 @@ impl From<PageResponse> for ChildPageResponse {
     }
 }
 
-#[derive(Debug, serde::Serialize, Clone, utoipa::ToSchema)]
+#[derive(Debug, Serialize, Clone, utoipa::ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct PageResponse {
     pub id: Uuid,
     pub r#type: PageType,
     pub title: String,
-    pub role: Option<rust_api::entities::page_access::model::Role>,
+    pub role: Option<sql::page::model::Role>,
 
     #[serde(skip_serializing_if = "Option::is_none")]
     pub owner: Option<User>,
@@ -188,14 +190,14 @@ impl From<Page> for PageResponse {
     }
 }
 
-#[derive(Debug, serde::Deserialize, utoipa::ToSchema, PartialEq)]
+#[derive(Debug, Deserialize, utoipa::ToSchema, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub enum PageListFormat {
     List,
     Tree,
 }
 
-#[derive(Debug, serde::Deserialize, utoipa::ToSchema, PartialEq)]
+#[derive(Debug, Deserialize, utoipa::ToSchema, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub enum PageInclude {
     Owner,
@@ -228,7 +230,7 @@ impl std::str::FromStr for PageInclude {
     }
 }
 
-#[derive(Debug, serde::Deserialize)]
+#[derive(Debug, Deserialize)]
 pub struct PageQuery {
     #[serde(
         default,
@@ -237,7 +239,7 @@ pub struct PageQuery {
     pub include: Option<Vec<PageInclude>>,
 }
 
-#[derive(Debug, serde::Deserialize, utoipa::ToSchema, PartialEq)]
+#[derive(Debug, Deserialize, utoipa::ToSchema, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub enum PageListInclude {
     Owner,
@@ -262,7 +264,7 @@ impl std::str::FromStr for PageListInclude {
     }
 }
 
-#[derive(serde::Deserialize)]
+#[derive(Deserialize)]
 pub struct PageListQuery {
     pub format: Option<PageListFormat>,
     #[serde(
@@ -270,4 +272,37 @@ pub struct PageListQuery {
         deserialize_with = "crate::shared::deserialization::deserialize_comma_separated_query_param"
     )]
     pub include: Option<Vec<PageListInclude>>,
+}
+
+// PAGE ACCESS
+
+#[derive(Debug, utoipa::ToSchema, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CreatePageAccessDto {
+    pub user_id: Uuid,
+    pub role: Role,
+}
+
+#[derive(Debug, utoipa::ToSchema, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct UpdatePageAccessDto {
+    pub user_id: Uuid,
+    pub role: Option<Role>,
+}
+
+#[derive(Debug, Serialize, utoipa::ToSchema, Clone)]
+pub struct PageAccessResponse {
+    pub id: Uuid,
+    pub user: sql::user::model::User,
+    pub role: Role,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub deleted_at: Option<DateTime<Utc>>,
+}
+
+impl axum::response::IntoResponse for PageAccessResponse {
+    fn into_response(self) -> axum::response::Response {
+        (axum::http::StatusCode::OK, axum::Json(self)).into_response()
+    }
 }

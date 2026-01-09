@@ -1,84 +1,83 @@
 import { JSONContent } from "@tiptap/react";
 
-import { axiosInstance } from "./base";
+import { axiosInstance, BaseRequest } from "./base";
 
 import { Page, PageType } from "../types";
 
-type GetPageIncludes = "tasks" | "owner" | "childPages" | "parentPage" | "workspace" | "boardStatuses";
-
-interface Ids {
-	workspaceId: string;
-}
+type GetPageIncludes =
+	| "tasks"
+	| "owner"
+	| "childPages"
+	| "parentPage"
+	| "workspace"
+	| "boardStatuses";
 
 type ResponseWithIncludeFilter<T extends GetPageIncludes | undefined = undefined> = Omit<
 	Page,
 	Exclude<GetPageIncludes, T>
 >;
 
-interface CreatePageArgs extends Ids {
-	page: {
+type CreatePageRequest = BaseRequest<
+	{ workspaceId: string },
+	{
 		type: PageType;
 		title: string;
 
 		content?: JSONContent;
 		parentId?: string;
-	};
-}
+	}
+>;
 
-export const createPage = async ({ workspaceId, page }: CreatePageArgs) =>
-	(await axiosInstance.post<Page>(`/workspaces/${workspaceId}/pages`, page)).data;
-
-interface GetSinglePageArgs<T extends GetPageIncludes | undefined = undefined> extends Ids {
-	pageId: string;
-	include?: T[];
-}
-
-export const getPage = async <T extends GetPageIncludes | undefined = undefined>({
-	workspaceId,
-	pageId,
-	include
-}: GetSinglePageArgs<T>) =>
+export const createPage = async (params: CreatePageRequest) =>
 	(
-		await axiosInstance.get<ResponseWithIncludeFilter<T>>(
-			`workspaces/${workspaceId}/pages/${pageId}`,
-			{
-				params: { include: include?.join(",") }
-			}
+		await axiosInstance.post<Page>(
+			`workspaces/${params.pathParams.workspaceId}/pages`,
+			params.body
 		)
 	).data;
 
 type ListFormat = "list" | "tree";
 
-interface GetPageListArgs<T extends ListFormat = "list"> extends Ids {
+export type GetPageListRequest<T extends ListFormat = "list"> = BaseRequest<{
+	workspaceId: string;
 	format?: T;
-}
+}>;
 
-export const getPageList = async <T extends ListFormat = "list">({
-	workspaceId,
-	format
-}: GetPageListArgs<T>) =>
+export const getPageList = async <T extends ListFormat = "list">(params: GetPageListRequest<T>) =>
 	(
 		await axiosInstance.get<
 			T extends "list"
 				? ResponseWithIncludeFilter[]
 				: ResponseWithIncludeFilter<"childPages">[]
-		>(`workspaces/${workspaceId}/pages`, {
-			params: { format }
+		>(`workspaces/${params.pathParams.workspaceId}/pages`, {
+			params: { format: params.pathParams.format }
 		})
 	).data;
 
-interface UpdatePageArgs extends Ids {
+export type GetPageRequest<T extends GetPageIncludes | undefined = undefined> = BaseRequest<{
 	pageId: string;
+	include?: T[];
+}>;
 
-	page: Omit<Partial<CreatePageArgs["page"]>, "parentId" | "type">;
-}
+export const getPage = async <T extends GetPageIncludes | undefined = undefined>(
+	params: GetPageRequest<T>
+) =>
+	(
+		await axiosInstance.get<ResponseWithIncludeFilter<T>>(`pages/${params.pathParams.pageId}`, {
+			params: { include: params.pathParams.include?.join(",") }
+		})
+	).data;
 
-export const updatePage = async ({ pageId, workspaceId, page }: UpdatePageArgs) =>
-	(await axiosInstance.put<Page>(`/workspaces/${workspaceId}/pages/${pageId}`, page)).data;
+export type UpdatePageRequest = BaseRequest<
+	{ pageId: string },
+	Omit<Partial<CreatePageRequest["body"]>, "parentId" | "type">
+>;
 
-interface DeletePageArgs extends Ids {
-	pageId: string;
-}
+export const updatePage = async (params: UpdatePageRequest) =>
+	(await axiosInstance.put<Page>(`pages/${params.pathParams.pageId}`, params.body)).data;
 
-export const deletePage = async ({ pageId, workspaceId }: DeletePageArgs) =>
-	(await axiosInstance.delete<void>(`/workspaces/${workspaceId}/pages/${pageId}`)).data;
+export type DeletePageRequest = BaseRequest<{ pageId: string }>;
+
+export const deletePage = async (params: DeletePageRequest) =>
+	(await axiosInstance.delete<void>(`pages/${params.pathParams.pageId}`)).data;
+

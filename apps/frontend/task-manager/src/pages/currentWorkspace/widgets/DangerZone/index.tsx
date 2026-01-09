@@ -34,7 +34,9 @@ const DangerZone: React.FC<DangerZoneProps> = ({ workspaceId, deletedAt }) => {
 		mutationKey: ["workspace", workspaceId],
 		mutationFn: deletedAt ? cancelSoftDeleteWorkspace : softDeleteWorkspace,
 		onSuccess: () =>
-			queryClient.invalidateQueries({ predicate: queryKey => queryKey.queryKey.includes(workspaceId) })
+			queryClient.invalidateQueries({
+				predicate: queryKey => queryKey.queryKey.includes(workspaceId)
+			})
 	});
 
 	const timeUntilDelete = useMemo(
@@ -44,12 +46,16 @@ const DangerZone: React.FC<DangerZoneProps> = ({ workspaceId, deletedAt }) => {
 
 	const handleDeleteWorkspace = useFunctionWithFeedback({
 		callback: async () => {
-			await mutateAsync({ workspaceId });
+			await mutateAsync({
+				pathParams: { workspaceId }
+			});
 
 			return true;
 		},
 		message: deletedAt ? "Falled to cancel workspace deletion" : "Failed to delete workspace",
-		successMessage: deletedAt ? "Workspace deletion cancelled" : "Workspace will be deleted in 14 days",
+		successMessage: deletedAt
+			? "Workspace deletion cancelled"
+			: "Workspace will be deleted in 14 days",
 		confirm: deletedAt
 			? undefined
 			: {
@@ -73,7 +79,12 @@ const DangerZone: React.FC<DangerZoneProps> = ({ workspaceId, deletedAt }) => {
 							</Typography.Text>
 						</div>
 
-						<Button danger type="primary" icon={<UndoOutlined />} onClick={handleDeleteWorkspace}>
+						<Button
+							danger
+							type="primary"
+							icon={<UndoOutlined />}
+							onClick={handleDeleteWorkspace}
+						>
 							Cancel workspace deletion
 						</Button>
 					</Flex>
@@ -86,7 +97,12 @@ const DangerZone: React.FC<DangerZoneProps> = ({ workspaceId, deletedAt }) => {
 							</Typography.Text>
 						</div>
 
-						<Button danger type="primary" icon={<DeleteOutlined />} onClick={handleDeleteWorkspace}>
+						<Button
+							danger
+							type="primary"
+							icon={<DeleteOutlined />}
+							onClick={handleDeleteWorkspace}
+						>
 							Delete workspace
 						</Button>
 					</Flex>
@@ -97,3 +113,4 @@ const DangerZone: React.FC<DangerZoneProps> = ({ workspaceId, deletedAt }) => {
 };
 
 export default DangerZone;
+

@@ -15,7 +15,10 @@ interface PageTreeProps {
 const PageTree: React.FC<PageTreeProps> = ({ workspaceId, editable }) => {
 	const { data: pages, isLoading } = useQuery({
 		queryKey: ["pages", "tree", workspaceId],
-		queryFn: () => getPageList({ workspaceId, format: "tree" })
+		queryFn: () =>
+			getPageList({
+				pathParams: { workspaceId, format: "tree" }
+			})
 	});
 
 	const pageTree = useMemo(() => preparePageTree(pages, editable), [editable, pages]);
@@ -34,3 +37,4 @@ const PageTree: React.FC<PageTreeProps> = ({ workspaceId, editable }) => {
 };
 
 export default memo(PageTree);
+

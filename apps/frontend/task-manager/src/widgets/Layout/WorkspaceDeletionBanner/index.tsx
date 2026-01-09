@@ -17,7 +17,7 @@ const WorkspaceDeletionBanner: React.FC = () => {
 
 	const { data } = useQuery({
 		queryKey: ["workspace", workspaceId],
-		queryFn: () => getWorkspace({ workspaceId }),
+		queryFn: () => getWorkspace({ pathParams: { workspaceId } }),
 		enabled: !closed && !!workspaceId && !location.pathname.startsWith("/profile")
 	});
 

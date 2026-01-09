@@ -17,9 +17,8 @@ use crate::{
 
 #[utoipa::path(
     post,
-    path = "/workspaces/{workspace_id}/pages/{page_id}/board-statuses",
+    path = "/pages/{page_id}/board-statuses",
     params(
-        ("workspace_id", Path, description = "Workspace ID"),
         ("page_id", Path, description = "Page ID"),
     ),
     request_body = CreateBoardStatusDto,
@@ -33,12 +32,12 @@ use crate::{
 pub async fn create_board_status(
     header_map: HeaderMap,
     State(app_state): State<AppState>,
-    Path((_, page_id)): Path<(Uuid, Uuid)>,
+    Path(page_id): Path<Uuid>,
     ValidatedJson(dto): ValidatedJson<CreateBoardStatusDto>,
 ) -> Result<Json<BoardStatusResponseDto>, ErrorResponse> {
     BoardStatusService::create(
         &app_state,
-        rust_api::entities::board_statuses::dto::CreateBoardStatusDto {
+        sql::board_statuses::dto::CreateBoardStatusDto {
             // parent_status_id: dto.parent_status_id,
             page_id,
             initial: dto.initial,

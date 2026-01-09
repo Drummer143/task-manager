@@ -34,7 +34,7 @@ pub async fn create_page(
 ) -> Result<PageResponse, ErrorResponse> {
     crate::entities::page::PageService::create(
         &state,
-        rust_api::entities::page::dto::CreatePageDto {
+        sql::page::dto::CreatePageDto {
             title: create_page_dto.title,
             r#type: create_page_dto.r#type,
             parent_page_id: create_page_dto.parent_page_id,

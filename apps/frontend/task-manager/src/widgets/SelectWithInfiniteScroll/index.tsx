@@ -1,7 +1,7 @@
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { InfiniteData, QueryKey, useInfiniteQuery } from "@tanstack/react-query";
-import { PaginationQuery, ResponseWithPagination } from "@task-manager/api";
+import { BaseRequest, PaginationQuery, ResponseWithPagination } from "@task-manager/api";
 import { useDebouncedEffect } from "@task-manager/react-utils";
 import { GetProp, GetRef, Select, Spin, Tooltip } from "antd";
 import { DefaultOptionType, SelectProps } from "antd/es/select";
@@ -9,7 +9,6 @@ import { DefaultOptionType, SelectProps } from "antd/es/select";
 interface SelectWithInfiniteScrollProps<
 	ItemType,
 	Response extends ResponseWithPagination<ItemType>,
-	ExtraQuery extends object
 > extends Omit<
 		SelectProps,
 		| "options"
@@ -21,7 +20,7 @@ interface SelectWithInfiniteScrollProps<
 		| "maxTagPlaceholder"
 		| "optionRender"
 	> {
-	fetchItems: (query?: PaginationQuery<ExtraQuery>) => Promise<Response>;
+	fetchItems: (params: BaseRequest<PaginationQuery>) => Promise<Response>;
 	transformItem: (item: Response["data"][number]) => DefaultOptionType;
 	optionRender?: (
 		item: Response["data"][number],
@@ -32,7 +31,7 @@ interface SelectWithInfiniteScrollProps<
 
 	enabled?: boolean;
 	filterQueryName?: string;
-	extraQueryParams?: ExtraQuery;
+	extraQueryParams?: Record<string, string>;
 	/** if equals to "withTooltip" then tag will open tooltip on hover */
 	maxTagPlaceholder?:
 		| "withTooltip"
@@ -51,7 +50,6 @@ interface SelectWithInfiniteScrollProps<
 const SelectWithInfiniteScroll = <
 	ItemType,
 	Response extends ResponseWithPagination<ItemType>,
-	ExtraQuery extends object
 >({
 	fetchItems,
 	transformItem,
@@ -64,16 +62,16 @@ const SelectWithInfiniteScroll = <
 	optionRender: propsOptionRender,
 	enabled,
 	...props
-}: SelectWithInfiniteScrollProps<ItemType, Response, ExtraQuery>) => {
+}: SelectWithInfiniteScrollProps<ItemType, Response>) => {
 	const [mounted, setMounted] = useState(false);
 	const [searchText, setSearchText] = useState("");
 	const [debouncedSearchText, setDebouncedSearchText] = useState("");
 
-	const extraParams = useMemo<ExtraQuery>(() => {
+	const extraParams = useMemo(() => {
 		return {
 			...extraQueryParams,
 			...(filterQueryName ? { [filterQueryName]: debouncedSearchText } : {})
-		} as ExtraQuery;
+		};
 	}, [debouncedSearchText, extraQueryParams, filterQueryName]);
 
 	const selectRef = useRef<GetRef<typeof Select> | null>(null);
@@ -87,7 +85,7 @@ const SelectWithInfiniteScroll = <
 	>({
 		queryKey,
 		queryFn: ({ pageParam }) => {
-			return fetchItems({ ...extraParams, offset: pageParam, limit: 10 });
+			return fetchItems({ pathParams: { ...extraParams, offset: pageParam, limit: 10 } });
 		},
 		getNextPageParam: lastPage =>
 			lastPage.meta.hasMore ? lastPage.meta.offset + lastPage.meta.limit : undefined,

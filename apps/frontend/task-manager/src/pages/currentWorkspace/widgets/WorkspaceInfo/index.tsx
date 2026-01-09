@@ -35,11 +35,15 @@ const WorkspaceInfo: React.FC<WorkspaceInfoProps> = ({ workspace, editable }) =>
 				throw new Error("Cancelled");
 			}
 
-			return updateWorkspace({ workspaceId: workspace.id, body });
+			return updateWorkspace({
+				pathParams: { workspaceId: workspace.id },
+				body
+			});
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({
-				predicate: query => query.queryKey.includes("workspace") || query.queryKey.includes(workspace.id)
+				predicate: query =>
+					query.queryKey.includes("workspace") || query.queryKey.includes(workspace.id)
 			});
 		}
 	});
@@ -68,3 +72,4 @@ const WorkspaceInfo: React.FC<WorkspaceInfoProps> = ({ workspace, editable }) =>
 };
 
 export default memo(WorkspaceInfo);
+

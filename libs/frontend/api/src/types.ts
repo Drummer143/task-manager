@@ -88,7 +88,7 @@ export interface Task extends Timestamps {
 	position: number;
 
 	dueDate?: string;
-	description?: string;
+	description?: TipTapContent;
 
 	page: Page;
 	assignee?: User;
@@ -137,11 +137,4 @@ export type ShortUserInfo = Pick<User, "id" | "picture" | "username">;
 // 	changes: ChangeList<Keys>;
 // 	createdAt: string;
 // }
-
-export interface TaskChatMessage {
-	id: string;
-	author: ShortUserInfo;
-	text: string;
-	createdAt: string;
-}
 

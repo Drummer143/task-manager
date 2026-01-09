@@ -1,29 +1,43 @@
-import { axiosInstance } from "./base";
+import { axiosInstance, BaseRequest } from "./base";
 
 import { PageAccess } from "../types";
 
-interface GetPageAccessArgs {
-	workspaceId: string;
+interface Ids {
 	pageId: string;
 }
 
-export const getPageAccess = async ({ pageId, workspaceId }: GetPageAccessArgs) =>
-	(await axiosInstance.get<PageAccess[]>(`/workspaces/${workspaceId}/pages/${pageId}/access`))
-		.data;
+export type GetPageAccessRequest = BaseRequest<Ids>;
 
-interface UpdatePageAccessArgs extends GetPageAccessArgs {
-	body: {
+export const getPageAccess = async (params: GetPageAccessRequest) =>
+	(await axiosInstance.get<PageAccess[]>(`pages/${params.pathParams.pageId}/access`)).data;
+
+export type UpdatePageAccessRequest = BaseRequest<
+	Ids,
+	{
 		role?: string;
 
 		userId: string;
-	};
-}
+	}
+>;
 
-export const updatePageAccess = async ({ pageId, body, workspaceId }: UpdatePageAccessArgs) =>
-	(await axiosInstance.put<"Success">(`/workspaces/${workspaceId}/pages/${pageId}/access`, body))
+export const updatePageAccess = async (params: UpdatePageAccessRequest) =>
+	(await axiosInstance.put<"Success">(`pages/${params.pathParams.pageId}/access`, params.body))
 		.data;
 
-export const createPageAccess = async ({ pageId, body, workspaceId }: UpdatePageAccessArgs) =>
-	(await axiosInstance.post<"Success">(`/workspaces/${workspaceId}/pages/${pageId}/access`, body))
-		.data;
+export type CreatePageAccessRequest = BaseRequest<
+	Ids,
+	{
+		role: string;
+
+		userId: string;
+	}
+>;
+
+export const createPageAccess = async (params: CreatePageAccessRequest) =>
+	(
+		await axiosInstance.post<"Success">(
+			`pages/${params.pathParams.pageId}/access`,
+			params.body
+		)
+	).data;
 

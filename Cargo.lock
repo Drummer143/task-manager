@@ -1431,11 +1431,11 @@ dependencies = [
  "mimalloc",
  "mime",
  "reqwest",
- "rust_api",
  "serde",
  "serde_json",
  "serde_path_to_error",
  "serde_urlencoded",
+ "sql",
  "sqlx",
  "tokio",
  "tower",
@@ -2117,21 +2117,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "rust_api"
-version = "0.1.0"
-dependencies = [
- "bcrypt",
- "chrono",
- "serde",
- "serde_json",
- "sqlx",
- "utoipa",
- "utoipa-axum",
- "utoipa-swagger-ui",
- "uuid",
-]
-
-[[package]]
 name = "rustc-hash"
 version = "2.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2442,6 +2427,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "sql"
+version = "0.1.0"
+dependencies = [
+ "bcrypt",
+ "chrono",
+ "serde",
+ "serde_json",
+ "sqlx",
+ "utoipa",
+ "utoipa-axum",
+ "utoipa-swagger-ui",
+ "uuid",
+]
+
+[[package]]
 name = "sqlx"
 version = "0.8.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2657,9 +2657,9 @@ dependencies = [
  "infer",
  "migrator",
  "mimalloc",
- "rust_api",
  "serde",
  "serde_json",
+ "sql",
  "sqlx",
  "tokio",
  "tokio-util",

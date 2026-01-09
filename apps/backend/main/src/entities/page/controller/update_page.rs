@@ -10,10 +10,9 @@ use crate::{
 
 #[utoipa::path(
     put,
-    path = "/workspaces/{workspace_id}/pages/{page_id}",
+    path = "/pages/{page_id}",
     operation_id = "update_page",
     params(
-        ("workspace_id" = Uuid, Path, description = "Workspace ID"),
         ("page_id" = Uuid, Path, description = "Page ID"),
     ),
     request_body = UpdatePageDto,
@@ -27,7 +26,7 @@ use crate::{
 )]
 pub async fn update_page(
     State(state): State<AppState>,
-    Path((_, page_id)): Path<(Uuid, Uuid)>,
+    Path(page_id): Path<Uuid>,
     ValidatedJson(update_page_dto): ValidatedJson<UpdatePageDto>,
 ) -> Result<PageResponse, ErrorResponse> {
     crate::entities::page::PageService::update(&state, page_id, update_page_dto)

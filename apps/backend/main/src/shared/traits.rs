@@ -1,5 +1,5 @@
 use error_handlers::handlers::ErrorResponse;
-use rust_api::shared::types::SortOrder;
+use sql::shared::types::SortOrder;
 use uuid::Uuid;
 
 use crate::types::app_state::AppState;

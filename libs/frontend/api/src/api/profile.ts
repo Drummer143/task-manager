@@ -1,46 +1,58 @@
 import { removeEmptyFields } from "@task-manager/utils";
 
-import { axiosInstance } from "./base";
+import { axiosInstance, BaseRequest } from "./base";
 
 import { User, Workspace } from "../types";
 
 type GetProfileIncludes = "workspace";
+
+type GetProfileRequest<T extends GetProfileIncludes | undefined = undefined> = BaseRequest<{
+	include?: T[];
+}>;
 
 type ResponseWithIncludeFilter<T extends GetProfileIncludes | undefined = undefined> = Omit<
 	User & { workspace: Workspace },
 	Exclude<GetProfileIncludes, T>
 >;
 
-export const getProfile = async <T extends GetProfileIncludes | undefined = undefined>({
-	include
-}: {
-	include?: T[];
-}) =>
-	(await axiosInstance.get<ResponseWithIncludeFilter<T>>("/profile", { params: { include: include?.toString() } }))
-		.data;
+export const getProfile = async <T extends GetProfileIncludes | undefined = undefined>(
+	params: GetProfileRequest<T>
+) =>
+	(
+		await axiosInstance.get<ResponseWithIncludeFilter<T>>("/profile", {
+			params: { include: params.pathParams.include?.toString() }
+		})
+	).data;
 
-export const updateProfile = async (data: { username: string }) =>
-	(await axiosInstance.patch<User>("/profile", removeEmptyFields(data))).data;
+export type updateProfileRequest = BaseRequest<never, { username: string }>;
 
-export const changeEmail = async (body: { email: string }) =>
-	(await axiosInstance.patch<User>("/profile/email", body)).data;
+export const updateProfile = async (params: updateProfileRequest) =>
+	(await axiosInstance.patch<User>("/profile", removeEmptyFields(params.body))).data;
 
-interface AvatarUploaderProps {
-	file: File;
-	x: number;
-	y: number;
-	width: number;
-	height: number;
-}
+export type changeEmailRequest = BaseRequest<never, { email: string }>;
 
-export const uploadAvatar = async ({ file, height, width, x, y }: AvatarUploaderProps) => {
+export const changeEmail = async (params: changeEmailRequest) =>
+	(await axiosInstance.patch<User>("/profile/email", params.body)).data;
+
+export type uploadAvatarRequest = BaseRequest<
+	never,
+	{
+		file: File;
+		x: number;
+		y: number;
+		width: number;
+		height: number;
+	}
+>;
+
+export const uploadAvatar = async (params: uploadAvatarRequest) => {
 	const formData = new FormData();
 
-	formData.append("file", file);
-	formData.append("x", String(x));
-	formData.append("y", String(y));
-	formData.append("width", String(width));
-	formData.append("height", String(height));
+	formData.append("file", params.body.file);
+	formData.append("x", String(params.body.x));
+	formData.append("y", String(params.body.y));
+	formData.append("width", String(params.body.width));
+	formData.append("height", String(params.body.height));
 
 	return (
 		await axiosInstance.patch<User>("/profile/avatar", formData, {
@@ -50,3 +62,4 @@ export const uploadAvatar = async ({ file, height, width, x, y }: AvatarUploader
 		})
 	).data;
 };
+

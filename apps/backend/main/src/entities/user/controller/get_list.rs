@@ -1,6 +1,6 @@
 use axum::extract::State;
 use error_handlers::handlers::ErrorResponse;
-use rust_api::entities::user::model::User;
+use sql::user::model::User;
 use uuid::Uuid;
 
 use crate::{
@@ -21,8 +21,8 @@ pub struct GetListQuery {
         deserialize_with = "crate::shared::deserialization::deserialize_comma_separated_query_param"
     )]
     exclude: Option<Vec<Uuid>>,
-    sort_by: Option<rust_api::entities::user::dto::UserSortBy>,
-    sort_order: Option<rust_api::shared::types::SortOrder>,
+    sort_by: Option<sql::user::dto::UserSortBy>,
+    sort_order: Option<sql::shared::types::SortOrder>,
 }
 
 #[utoipa::path(
@@ -52,7 +52,7 @@ pub async fn get_list(
     State(state): State<AppState>,
     ValidatedQuery(query): ValidatedQuery<GetListQuery>,
 ) -> Result<Pagination<User>, ErrorResponse> {
-    let filters = rust_api::entities::user::dto::UserFilterBy {
+    let filters = sql::user::dto::UserFilterBy {
         email: query.email,
         username: query.username,
         query: query.query,
@@ -87,9 +87,9 @@ pub async fn get_list(
         total,
         query
             .limit
-            .unwrap_or(rust_api::shared::constants::DEFAULT_LIMIT),
+            .unwrap_or(sql::shared::constants::DEFAULT_LIMIT),
         query
             .offset
-            .unwrap_or(rust_api::shared::constants::DEFAULT_OFFSET),
+            .unwrap_or(sql::shared::constants::DEFAULT_OFFSET),
     ))
 }

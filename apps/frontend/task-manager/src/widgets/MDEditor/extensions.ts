@@ -17,7 +17,7 @@ export const extensions = [
 	FileUploadPlugin.configure({
 		uploadFn: {
 			"**/**": async file => {
-				const { link } = await uploadFile({ file });
+				const { link } = await uploadFile({ body: { file } });
 
 				return {
 					name: file.name,

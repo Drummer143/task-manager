@@ -2,8 +2,8 @@ use std::collections::HashMap;
 
 use error_handlers::{codes, handlers::ErrorResponse};
 
-use rust_api::{
-    entities::board_statuses::{
+use sql::{
+    board_statuses::{
         dto::{CreateBoardStatusDto, UpdateBoardStatusDto},
         model::BoardStatus,
         BoardStatusRepository,

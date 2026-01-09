@@ -1,9 +1,11 @@
 use chrono::{DateTime, Utc};
-use rust_api::entities::{user::model::User, workspace::model::Workspace, workspace_access::model::Role};
+use sql::{user::model::User, workspace::model::Role, workspace::model::Workspace};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 use crate::entities::page::dto::PageResponseWithoutInclude;
+
+// WORKSPACE
 
 #[derive(Debug, Deserialize, utoipa::ToSchema)]
 pub struct CreateWorkspaceDto {
@@ -12,7 +14,7 @@ pub struct CreateWorkspaceDto {
 
 #[derive(Debug, utoipa::ToSchema)]
 pub struct WorkspaceInfo {
-    pub workspace: rust_api::entities::workspace::model::Workspace,
+    pub workspace: sql::workspace::model::Workspace,
     pub role: Option<Role>,
     pub owner: Option<User>,
     pub pages: Option<Vec<PageResponseWithoutInclude>>,
@@ -165,11 +167,44 @@ pub struct GetListQueryDto {
     pub limit: Option<i64>,
     pub offset: Option<i64>,
     pub search: Option<String>,
-    pub sort_by: Option<rust_api::entities::workspace::dto::WorkspaceSortBy>,
-    pub sort_order: Option<rust_api::shared::types::SortOrder>,
+    pub sort_by: Option<sql::workspace::dto::WorkspaceSortBy>,
+    pub sort_order: Option<sql::shared::types::SortOrder>,
     #[serde(
         default,
         deserialize_with = "crate::shared::deserialization::deserialize_comma_separated_query_param"
     )]
     pub include: Option<Vec<Include>>,
+}
+
+// WORKSPACE ACCESS
+
+#[derive(Debug, serde::Deserialize, utoipa::ToSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct CreateWorkspaceAccessDto {
+    pub user_id: Uuid,
+    pub role: Role,
+}
+
+#[derive(Debug, serde::Deserialize, utoipa::ToSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct UpdateWorkspaceAccessDto {
+    pub user_id: Uuid,
+    pub role: Option<Role>,
+}
+
+#[derive(Debug, serde::Serialize, utoipa::ToSchema, Clone)]
+pub struct WorkspaceAccessResponse {
+    pub id: Uuid,
+    pub user: sql::user::model::User,
+    pub role: Role,
+    pub created_at: DateTime<Utc>,
+    pub updated_at: DateTime<Utc>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub deleted_at: Option<DateTime<Utc>>,
+}
+
+impl axum::response::IntoResponse for WorkspaceAccessResponse {
+    fn into_response(self) -> axum::response::Response {
+        (axum::http::StatusCode::OK, axum::Json(self)).into_response()
+    }
 }

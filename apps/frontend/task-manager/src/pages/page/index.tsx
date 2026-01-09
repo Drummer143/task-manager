@@ -9,7 +9,6 @@ import Settings from "./Settings";
 import { useStyles } from "./styles";
 import PageHeader from "./widgets/PageHeader";
 
-import { useAuthStore } from "../../app/store/auth";
 import { withAuthPageCheck } from "../../shared/HOCs/withAuthPageCheck";
 import FullSizeLoader from "../../shared/ui/FullSizeLoader";
 
@@ -24,18 +23,16 @@ const Page: React.FC = () => {
 	// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 	const pageId = useParams<{ id: string }>().id!;
 
-	const workspaceId = useAuthStore.getState().user.workspace.id;
-
 	const navigate = useNavigate();
 
 	const { data: page, isLoading } = useQuery({
 		queryKey: [pageId],
-		enabled: !!workspaceId,
 		queryFn: () =>
 			getPage({
-				pageId,
-				workspaceId,
-				include: ["childPages", "workspace", "boardStatuses"]
+				pathParams: {
+					pageId,
+					include: ["childPages", "workspace", "boardStatuses"]
+				}
 			}).catch(error => {
 				navigate("/profile", { replace: true });
 

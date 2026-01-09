@@ -9,14 +9,13 @@ use crate::{
 
 #[utoipa::path(
     post,
-    path = "/workspaces/{workspace_id}/pages/{page_id}/tasks",
+    path = "/pages/{page_id}/tasks",
     responses(
         (status = 200, description = "Task created successfully", body = TaskResponse),
         (status = 400, description = "Invalid request", body = ErrorResponse),
         (status = 500, description = "Internal server error", body = ErrorResponse),
     ),
     params(
-        ("workspace_id" = Uuid, Path, description = "Workspace ID"),
         ("page_id" = Uuid, Path, description = "Page ID"),
     ),
     request_body(content = CreateTaskDto),
@@ -25,18 +24,18 @@ use crate::{
 pub async fn create_task(
     State(state): State<crate::types::app_state::AppState>,
     Extension(reporter_id): Extension<Uuid>,
-    Path((_, page_id)): Path<(Uuid, Uuid)>,
+    Path(page_id): Path<Uuid>,
     ValidatedJson(dto): ValidatedJson<CreateTaskDto>,
 ) -> Result<TaskResponse, ErrorResponse> {
     let last_position =
-        rust_api::entities::task::TaskRepository::get_last_position(&state.postgres, dto.status_id)
+        sql::task::TaskRepository::get_last_position(&state.postgres, dto.status_id)
             .await
             .map_err(ErrorResponse::from)?
             .unwrap_or_default();
 
     crate::entities::task::TaskService::create(
         &state,
-        rust_api::entities::task::dto::CreateTaskDto {
+        sql::task::dto::CreateTaskDto {
             title: dto.title,
             status_id: dto.status_id,
             description: dto.description,

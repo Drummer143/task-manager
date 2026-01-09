@@ -53,8 +53,10 @@ const NavPagesMenu: React.FC = () => {
 		enabled: !!workspaceId,
 		queryFn: () =>
 			getPageList({
-				workspaceId,
-				format: "tree"
+				pathParams: {
+					workspaceId,
+					format: "tree"
+				}
 			})
 	});
 
@@ -77,8 +79,8 @@ const NavPagesMenu: React.FC = () => {
 			form,
 			onFinish: async (values: FormValues) => {
 				await mutateAsync({
-					workspaceId,
-					page: {
+					pathParams: { workspaceId },
+					body: {
 						...values,
 						parentId: typeof creatingPageType === "string" ? creatingPageType : undefined
 					}

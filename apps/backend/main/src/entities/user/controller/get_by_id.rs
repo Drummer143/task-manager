@@ -1,6 +1,6 @@
 use axum::{extract::State, Json};
 use error_handlers::handlers::ErrorResponse;
-use rust_api::entities::user::model::User;
+use sql::user::model::User;
 
 use crate::shared::{extractors::path::ValidatedPath, traits::ServiceGetOneByIdMethod};
 

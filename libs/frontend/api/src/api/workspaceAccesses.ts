@@ -1,4 +1,4 @@
-import { axiosInstance } from "./base";
+import { axiosInstance, BaseRequest } from "./base";
 
 import { WorkspaceAccess } from "../types";
 
@@ -6,27 +6,38 @@ interface GetWorkspaceAccessArgs {
 	workspaceId: string;
 }
 
-export const getWorkspaceAccess = async ({ workspaceId }: GetWorkspaceAccessArgs) =>
-	(await axiosInstance.get<WorkspaceAccess[]>(`/workspaces/${workspaceId}/access`)).data;
+export type GetWorkspaceAccessRequest = BaseRequest<GetWorkspaceAccessArgs>;
 
-interface CreateWorkspaceAccessArgs extends GetWorkspaceAccessArgs {
-	body: {
-		role: string;
+export const getWorkspaceAccess = async (params: GetWorkspaceAccessRequest) =>
+	(
+		await axiosInstance.get<WorkspaceAccess[]>(
+			`/workspaces/${params.pathParams.workspaceId}/access`
+		)
+	).data;
 
-		userId: string;
-	};
-}
+export type CreateWorkspaceAccessRequest = BaseRequest<
+	GetWorkspaceAccessArgs,
+	{ role: string; userId: string }
+>;
 
-export const createWorkspaceAccess = async ({ workspaceId, body }: CreateWorkspaceAccessArgs) =>
-	(await axiosInstance.post<"Success">(`/workspaces/${workspaceId}/access`, body)).data;
+export const createWorkspaceAccess = async (params: CreateWorkspaceAccessRequest) =>
+	(
+		await axiosInstance.post<"Success">(
+			`/workspaces/${params.pathParams.workspaceId}/access`,
+			params.body
+		)
+	).data;
 
-interface UpdateWorkspaceAccessArgs extends GetWorkspaceAccessArgs {
-	body: {
-		role?: string;
+export type UpdateWorkspaceAccessRequest = BaseRequest<
+	GetWorkspaceAccessArgs,
+	{ role?: string; userId: string }
+>;
 
-		userId: string;
-	};
-}
+export const updateWorkspaceAccess = async (params: UpdateWorkspaceAccessRequest) =>
+	(
+		await axiosInstance.put<"Success">(
+			`/workspaces/${params.pathParams.workspaceId}/access`,
+			params.body
+		)
+	).data;
 
-export const updateWorkspaceAccess = async ({ workspaceId, body }: UpdateWorkspaceAccessArgs) =>
-	(await axiosInstance.put<"Success">(`/workspaces/${workspaceId}/access`, body)).data;

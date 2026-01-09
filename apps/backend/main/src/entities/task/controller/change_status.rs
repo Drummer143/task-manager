@@ -1,13 +1,13 @@
 use axum::extract::{Path, State};
 use error_handlers::handlers::ErrorResponse;
-use rust_api::entities::task::dto::ChangeStatusDto;
+use sql::task::dto::ChangeStatusDto;
 use uuid::Uuid;
 
 use crate::{entities::task::dto::TaskResponse, shared::extractors::json::ValidatedJson};
 
 #[utoipa::path(
     patch,
-    path = "/workspaces/{workspace_id}/pages/{page_id}/tasks/{task_id}/status",
+    path = "/tasks/{task_id}/status",
     request_body = ChangeStatusDto,
     responses(
         (status = 200, description = "Task status changed successfully", body = TaskResponse),
@@ -18,8 +18,6 @@ use crate::{entities::task::dto::TaskResponse, shared::extractors::json::Validat
         (status = 500, description = "Internal server error", body = ErrorResponse),
     ),
     params(
-        ("workspace_id" = Uuid, Path, description = "Workspace ID"),
-        ("page_id" = Uuid, Path, description = "Page ID"),
         ("task_id" = Uuid, Path, description = "Task ID"),
     ),
     tag = "Tasks",
@@ -27,7 +25,7 @@ use crate::{entities::task::dto::TaskResponse, shared::extractors::json::Validat
 #[deprecated]
 pub async fn change_status(
     State(state): State<crate::types::app_state::AppState>,
-    Path((_, _, task_id)): Path<(Uuid, Uuid, Uuid)>,
+    Path(task_id): Path<Uuid>,
     ValidatedJson(dto): ValidatedJson<ChangeStatusDto>,
 ) -> Result<TaskResponse, ErrorResponse> {
     crate::entities::task::TaskService::change_status(&state, task_id, dto)

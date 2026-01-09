@@ -12,21 +12,20 @@ use crate::{
 
 #[utoipa::path(
     get,
-    path = "/workspaces/{workspace_id}/pages/{page_id}/tasks",
+    path = "/pages/{page_id}/tasks",
     responses(
         (status = 200, description = "Tasks retrieved successfully", body = Vec<TaskResponse>),
         (status = 400, description = "Invalid request", body = ErrorResponse),
         (status = 500, description = "Internal server error", body = ErrorResponse),
     ),
     params(
-        ("workspace_id" = Uuid, Path, description = "Workspace ID"),
         ("page_id" = Uuid, Path, description = "Page ID"),
     ),
     tag = "Tasks",
 )]
 pub async fn get_tasks_in_page(
     State(state): State<crate::types::app_state::AppState>,
-    Path((_, page_id)): Path<(Uuid, Uuid)>,
+    Path(page_id): Path<Uuid>,
     headers: axum::http::header::HeaderMap,
 ) -> Result<Json<Vec<TaskResponse>>, ErrorResponse> {
     let tasks =

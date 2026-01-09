@@ -1,4 +1,4 @@
-import { axiosInstance } from "./base";
+import { axiosInstance, BaseRequest } from "./base";
 
 import { PaginationQuery, ResponseWithPagination, User } from "../types";
 
@@ -12,5 +12,12 @@ interface GetUsersFilters {
 	username?: string;
 }
 
-export const getUserList = async (query?: PaginationQuery<GetUsersFilters>) =>
-	(await axiosInstance.get<ResponseWithPagination<User>>("/users", { params: query })).data;
+export type GetUsersRequest = BaseRequest<PaginationQuery & GetUsersFilters>;
+
+export const getUserList = async (params: GetUsersRequest) =>
+	(
+		await axiosInstance.get<ResponseWithPagination<User>>("/users", {
+			params: params.pathParams
+		})
+	).data;
+

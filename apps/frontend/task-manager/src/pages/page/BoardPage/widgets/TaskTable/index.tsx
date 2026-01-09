@@ -9,7 +9,6 @@ import { useNavigate } from "react-router";
 
 import { useStyles } from "./styles";
 
-import { useAuthStore } from "../../../../../app/store/auth";
 import {
 	isColumnTarget,
 	isTaskSource,
@@ -36,9 +35,10 @@ const TaskTable: React.FC<TaskTableProps> = ({ pageId, statuses }) => {
 		queryKey: [pageId, "tasks"],
 		queryFn: () =>
 			getTaskList({
-				pageId,
-				workspaceId: useAuthStore.getState().user.workspace.id,
-				include: ["assignee"]
+				pathParams: {
+					pageId,
+					include: ["assignee"]
+				}
 			}).then(tasks =>
 				tasks.reduce(
 					(acc, task) =>
@@ -62,9 +62,9 @@ const TaskTable: React.FC<TaskTableProps> = ({ pageId, statuses }) => {
 			position?: number;
 		}) =>
 			updateTask({
-				workspaceId: useAuthStore.getState().user.workspace.id,
-				pageId,
-				taskId,
+				pathParams: {
+					taskId
+				},
 				body: {
 					statusId,
 					position

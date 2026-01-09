@@ -1,16 +1,14 @@
-import { axiosInstance } from "./base";
+import { axiosInstance, BaseRequest } from "./base";
 
 import { BoardStatus } from "../types";
 
 interface Ids {
-	workspaceId: string;
 	pageId: string;
 }
 
-export const getBoardStatuses = async ({ workspaceId, pageId }: Ids) =>
-	(
-		await axiosInstance.get<BoardStatus[]>(
-			`/workspaces/${workspaceId}/pages/${pageId}/board-statuses`
-		)
-	).data;
+export type GetBoardStatusesRequest = BaseRequest<Ids>;
+
+export const getBoardStatuses = async (params: GetBoardStatusesRequest) =>
+	(await axiosInstance.get<BoardStatus[]>(`pages/${params.pathParams.pageId}/board-statuses`))
+		.data;
 

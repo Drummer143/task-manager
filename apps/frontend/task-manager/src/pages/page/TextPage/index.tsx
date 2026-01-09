@@ -7,7 +7,6 @@ import { App, Button } from "antd";
 
 import { useStyles } from "./styled";
 
-import { useAuthStore } from "../../../app/store/auth";
 import MDEditor from "../../../widgets/MDEditor";
 
 interface TextPageProps {
@@ -49,9 +48,12 @@ const TextPage: React.FC<TextPageProps> = ({ page }) => {
 
 	const handleSave = async () => {
 		mutateAsync({
-			pageId: page.id,
-			page: { content: editorRef.current?.getJSON() },
-			workspaceId: useAuthStore.getState().user.workspace.id
+			pathParams: {
+				pageId: page.id
+			},
+			body: {
+				content: editorRef.current?.getJSON()
+			}
 		});
 	};
 

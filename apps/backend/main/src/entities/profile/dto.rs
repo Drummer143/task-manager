@@ -2,7 +2,7 @@ use std::convert::Infallible;
 
 use serde::{Deserialize, Serialize};
 
-use rust_api::entities::{user::model::User, workspace::model::Workspace};
+use sql::{user::model::User, workspace::model::Workspace};
 
 #[derive(Serialize, utoipa::ToSchema)]
 pub struct GetProfileDto {

@@ -43,8 +43,11 @@ const AccessSettings: React.FC<AccessSettingsProps> = ({ page }) => {
 
 	const { data, error } = useQuery({
 		queryFn: async () =>
-			await getPageAccess({ workspaceId: currentUser.workspace.id, pageId: page.id }),
-		enabled: !!currentUser.workspace.id,
+			await getPageAccess({
+				pathParams: {
+					pageId: page.id
+				}
+			}),
 		queryKey: ["pageAccesses"]
 	});
 
@@ -55,8 +58,9 @@ const AccessSettings: React.FC<AccessSettingsProps> = ({ page }) => {
 	} = useMutation({
 		mutationFn: ({ userId, role }: { userId: string; role?: string }) =>
 			updatePageAccess({
-				pageId: page.id,
-				workspaceId: currentUser.workspace.id,
+				pathParams: {
+					pageId: page.id
+				},
 				body: { userId, role }
 			}),
 		retry: (_, error) => (error.response?.status || 0) > 499,
@@ -74,10 +78,11 @@ const AccessSettings: React.FC<AccessSettingsProps> = ({ page }) => {
 	});
 
 	const { mutateAsync: createAccess } = useMutation({
-		mutationFn: ({ userId, role }: { userId: string; role?: string }) =>
+		mutationFn: ({ userId, role }: { userId: string; role: string }) =>
 			createPageAccess({
-				pageId: page.id,
-				workspaceId: currentUser.workspace.id,
+				pathParams: {
+					pageId: page.id
+				},
 				body: { userId, role }
 			}),
 		retry: (_, error) => (error.response?.status || 0) > 499,

@@ -1,3 +1,4 @@
+import { JSONContent } from "@tiptap/core";
 import { FormInstance } from "antd";
 import { Dayjs } from "dayjs";
 
@@ -7,7 +8,7 @@ export interface FormValues {
 
 	dueDate?: Dayjs;
 	assigneeId?: string;
-	description?: string;
+	description?: JSONContent;
 }
 
 export interface TaskFormProps {

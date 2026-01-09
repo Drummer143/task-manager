@@ -2,7 +2,7 @@ use axum::http;
 use std::sync::Arc;
 use utoipa::OpenApi;
 
-use crate::types::app_state::JwkSet;
+use crate::types::app_state::{AppState, JwkSet};
 
 mod db_connections;
 mod entities;
@@ -62,21 +62,18 @@ pub async fn build() -> axum::Router {
         ])
         .allow_credentials(true);
 
-    let app_state = types::app_state::AppState {
+    let app_state = AppState {
         postgres,
-        // rabbitmq: Arc::new(rabbitmq),
         jwks: Arc::new(tokio::sync::RwLock::new(jwks)),
-        authentik_jwks_url: jwks_url,
-        authentik_audience,
+        authentik_jwks_url: Arc::new(jwks_url),
+        authentik_audience: Arc::new(authentik_audience),
     };
 
     let app = axum::Router::new()
         .merge(entities::user::router::init(app_state.clone()))
         .merge(entities::profile::router::init(app_state.clone()))
         .merge(entities::workspace::router::init(app_state.clone()))
-        .merge(entities::workspace_access::router::init(app_state.clone()))
         .merge(entities::page::router::init(app_state.clone()))
-        .merge(entities::page_access::router::init(app_state.clone()))
         .merge(entities::task::router::init(app_state.clone()))
         .merge(entities::board_statuses::router::init(app_state.clone()))
         .merge(

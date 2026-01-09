@@ -1,6 +1,6 @@
-pub fn init(
-    state: crate::types::app_state::AppState,
-) -> axum::Router<crate::types::app_state::AppState> {
+use crate::types::app_state::AppState;
+
+pub fn init(state: AppState) -> axum::Router<AppState> {
     axum::Router::new()
         .route(
             "/users/{id}",
