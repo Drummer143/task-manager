@@ -33,7 +33,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
 		const { loading, user, identity } = get();
 
-		if (loading || user) {
+		if (loading && user) {
 			return { user, identity };
 		}
 
@@ -41,7 +41,7 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 
 		try {
 			promise = Promise.all([
-				getProfile({ include: ["workspace"] }),
+				getProfile({ pathParams: { include: ["workspace"] } }),
 				userManager.getUser()
 			]).then(([user, identity]) => {
 				if (!identity) {
