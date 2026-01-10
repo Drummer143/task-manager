@@ -4,7 +4,11 @@ use rand::Rng;
 use uuid::Uuid;
 
 use crate::{
-    redis::{TransactionRepository, transaction::{TransactionType, VerifyRange as RepoVerifyRange}},
+    entities::actions::shared::build_path_to_temp_file,
+    redis::{
+        TransactionRepository,
+        transaction::{TransactionType, VerifyRange as RepoVerifyRange},
+    },
     types::app_state::AppState,
 };
 
@@ -126,21 +130,23 @@ pub async fn upload_init(
     Json(body): Json<UploadChunkedInitRequest>,
 ) -> Result<Json<UploadChunkedInitResponse>, ErrorResponse> {
     let blob: Result<sql::blobs::model::Blob, sqlx::Error> =
-        sql::blobs::BlobsRepository::get_one_by_hash(&state.postgres, &body.hash)
-            .await;
+        sql::blobs::BlobsRepository::get_one_by_hash(&state.postgres, &body.hash).await;
 
     match blob {
         Ok(blob) => {
             let transaction_id = Uuid::new_v4();
             let ranges = generate_challenge_ranges(blob.size, 10, 1024 * 1024);
-            let repo_ranges: Vec<RepoVerifyRange> = ranges.iter().cloned().map(Into::into).collect();
+            let repo_ranges: Vec<RepoVerifyRange> =
+                ranges.iter().cloned().map(Into::into).collect();
 
             TransactionRepository::create(
                 &state.redis,
                 transaction_id,
                 body.hash,
                 body.size,
-                TransactionType::VerifyRanges { ranges: repo_ranges },
+                TransactionType::VerifyRanges {
+                    ranges: repo_ranges,
+                },
             )
             .await?;
 
@@ -154,18 +160,48 @@ pub async fn upload_init(
         Err(sqlx::Error::RowNotFound) => {
             let transaction_id = Uuid::new_v4();
 
+            let path_to_file = build_path_to_temp_file(&state.temp_folder_path, &transaction_id);
+
             // 5 MB threshold
             let (response, transaction_type) = if body.size > 5 * 1024 * 1024 {
                 (
-                    UploadChunkedInitResponse::StartUploadChunked(UploadResponse { transaction_id }),
-                    TransactionType::ChunkedUpload,
+                    UploadChunkedInitResponse::StartUploadChunked(UploadResponse {
+                        transaction_id,
+                    }),
+                    TransactionType::ChunkedUpload {
+                        path_to_file: path_to_file.clone(),
+                    },
                 )
             } else {
                 (
-                    UploadChunkedInitResponse::StartUploadWholeFile(UploadResponse { transaction_id }),
-                    TransactionType::WholeFileUpload,
+                    UploadChunkedInitResponse::StartUploadWholeFile(UploadResponse {
+                        transaction_id,
+                    }),
+                    TransactionType::WholeFileUpload {
+                        path_to_file: path_to_file.clone(),
+                    },
                 )
             };
+
+            let file = tokio::fs::File::create(&path_to_file)
+                .await
+                .map_err(|e| ErrorResponse::internal_server_error(Some(e.to_string())))?;
+
+            if let Err(error) = file.set_len(body.size).await {
+                if error.kind() == std::io::ErrorKind::OutOfMemory {
+                    return Err(ErrorResponse {
+                        status_code: 507,
+                        error_code: "out_of_memory".into(),
+                        error: "Out of memory".into(),
+                        details: None,
+                        dev_details: None,
+                    });
+                }
+
+                return Err(ErrorResponse::internal_server_error(Some(
+                    error.to_string(),
+                )));
+            }
 
             TransactionRepository::create(
                 &state.redis,

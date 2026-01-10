@@ -69,13 +69,22 @@ async fn main() {
         std::env::var("STATIC_FOLDER_PATH").expect("STATIC_FOLDER_PATH not found"),
     );
 
-    if !static_folder_path.exists() {
-        std::fs::create_dir_all(&static_folder_path).expect("Failed to create static folder");
+    let assets_folder_path = static_folder_path.join("assets");
+    let temp_folder_path = static_folder_path.join("temp");
+
+    if !assets_folder_path.exists() {
+        std::fs::create_dir_all(&assets_folder_path).expect("Failed to create assets folder");
+    }
+
+    if !temp_folder_path.exists() {
+        std::fs::create_dir_all(&temp_folder_path).expect("Failed to create temp folder");
     }
 
     let app_state = types::app_state::AppState {
         postgres: db,
         redis: Arc::new(redis),
+        assets_folder_path: assets_folder_path.to_str().unwrap().to_string(),
+        temp_folder_path: temp_folder_path.to_str().unwrap().to_string(),
     };
 
     let app = axum::Router::new()

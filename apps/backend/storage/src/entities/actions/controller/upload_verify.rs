@@ -103,7 +103,7 @@ pub async fn upload_verify(
                 ))
             }
         }
-        TransactionType::ChunkedUpload | TransactionType::WholeFileUpload => {
+        TransactionType::ChunkedUpload { .. } | TransactionType::WholeFileUpload { .. } => {
             Err(ErrorResponse::bad_request(
                 error_handlers::codes::BadRequestErrorCode::InvalidBody,
                 None,

@@ -1,5 +1,3 @@
-use std::{env, path::PathBuf};
-
 use axum::{
     Json,
     extract::{Path, State},
@@ -9,6 +7,7 @@ use sql::shared::traits::PostgresqlRepositoryCreate;
 use uuid::Uuid;
 
 use crate::{
+    entities::actions::shared::build_path_to_assets_file,
     redis::{TransactionRepository, transaction::TransactionType},
     types::app_state::AppState,
 };
@@ -45,7 +44,7 @@ pub async fn upload_complete(
                 None,
             ));
         }
-        TransactionType::ChunkedUpload | TransactionType::WholeFileUpload => {
+        TransactionType::ChunkedUpload { .. } | TransactionType::WholeFileUpload { .. } => {
             // Check if all chunks are uploaded
             let is_complete =
                 TransactionRepository::is_upload_complete(&state.redis, transaction_id).await?;
@@ -61,13 +60,14 @@ pub async fn upload_complete(
                 }));
             }
 
-            let static_folder = env::var("STATIC_FOLDER_PATH").map_err(|_| {
-                ErrorResponse::internal_server_error(Some("STATIC_FOLDER_PATH not set".into()))
-            })?;
-            let path_to_file = PathBuf::from(format!("{}/{}", static_folder, transaction_id));
+            let path_to_temp_file = match meta.transaction_type {
+                TransactionType::ChunkedUpload { path_to_file } => path_to_file,
+                TransactionType::WholeFileUpload { path_to_file } => path_to_file,
+                _ => unreachable!(),
+            };
 
             // Use mmap + rayon for parallel hashing (much faster for large files)
-            let path_clone = path_to_file.clone();
+            let path_clone = path_to_temp_file.clone();
             let hash = tokio::task::spawn_blocking(move || -> Result<String, std::io::Error> {
                 let file = std::fs::File::open(&path_clone)?;
                 let mmap = unsafe { memmap2::Mmap::map(&file)? };
@@ -82,7 +82,7 @@ pub async fn upload_complete(
             .map_err(|e| ErrorResponse::internal_server_error(Some(e.to_string())))?;
 
             if meta.hash != hash {
-                tokio::fs::remove_file(&path_to_file)
+                tokio::fs::remove_file(&path_to_temp_file)
                     .await
                     .map_err(|e| ErrorResponse::internal_server_error(Some(e.to_string())))?;
 
@@ -95,20 +95,22 @@ pub async fn upload_complete(
                 ));
             }
 
-            TransactionRepository::delete(&state.redis, transaction_id).await?;
+            let path_to_asset_file =
+                build_path_to_assets_file(&state.assets_folder_path, &hash, meta.size);
 
-            let size = tokio::fs::metadata(&path_to_file)
+            tokio::fs::rename(&path_to_temp_file, &path_to_asset_file)
                 .await
-                .map_err(|e| ErrorResponse::internal_server_error(Some(e.to_string())))?
-                .len() as i64;
+                .map_err(|e| ErrorResponse::internal_server_error(Some(e.to_string())))?;
+
+            TransactionRepository::delete(&state.redis, transaction_id).await?;
 
             let blob = sql::blobs::BlobsRepository::create(
                 &state.postgres,
                 sql::blobs::dto::CreateBlobDto {
                     hash,
-                    size,
+                    size: meta.size.try_into().unwrap(),
                     mime_type: "asd".into(),
-                    path: path_to_file.to_str().unwrap().to_string(),
+                    path: path_to_asset_file,
                 },
             )
             .await

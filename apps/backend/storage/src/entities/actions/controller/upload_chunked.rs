@@ -1,4 +1,4 @@
-use std::{env, io::SeekFrom, path::PathBuf};
+use std::io::SeekFrom;
 
 use axum::{
     body::Bytes,
@@ -50,21 +50,23 @@ pub async fn upload_chunked(
                 None,
             ));
         }
-        TransactionType::ChunkedUpload | TransactionType::WholeFileUpload => {}
+        TransactionType::ChunkedUpload { .. } | TransactionType::WholeFileUpload { .. } => {}
     }
 
-    let (start, end) = content_range
-        .bytes_range()
-        .ok_or_else(|| ErrorResponse::bad_request(
+    let (start, end) = content_range.bytes_range().ok_or_else(|| {
+        ErrorResponse::bad_request(
             error_handlers::codes::BadRequestErrorCode::InvalidBody,
             None,
             Some("Missing Content-Range bytes".into()),
-        ))?;
+        )
+    })?;
 
     let chunk_size = end - start;
 
     // Validate chunk size for chunked uploads
-    if matches!(meta.transaction_type, TransactionType::ChunkedUpload) && chunk_size > 5 * 1024 * 1024 {
+    if matches!(meta.transaction_type, TransactionType::ChunkedUpload { .. })
+        && chunk_size > 5 * 1024 * 1024
+    {
         return Err(ErrorResponse {
             error_code: "Chunk size is too large. Max chunk size is 5 MB".into(),
             error: "Payload too large".into(),
@@ -75,7 +77,10 @@ pub async fn upload_chunked(
     }
 
     // Validate whole file upload size
-    if matches!(meta.transaction_type, TransactionType::WholeFileUpload) {
+    if matches!(
+        meta.transaction_type,
+        TransactionType::WholeFileUpload { .. }
+    ) {
         let total_size = content_range.bytes_len();
         if total_size != Some(meta.size) || chunk_size != meta.size {
             return Err(ErrorResponse::bad_request(
@@ -94,21 +99,13 @@ pub async fn upload_chunked(
         ));
     }
 
-    // Write to file
-    let static_folder = env::var("STATIC_FOLDER_PATH")
-        .map_err(|_| ErrorResponse::internal_server_error(Some("STATIC_FOLDER_PATH not set".into())))?;
-    let path_to_file = PathBuf::from(format!("{}/{}", static_folder, transaction_id));
-
-    if let Some(parent) = path_to_file.parent() {
-        if !parent.exists() {
-            tokio::fs::create_dir_all(parent)
-                .await
-                .map_err(|e| ErrorResponse::internal_server_error(Some(e.to_string())))?;
-        }
-    }
+    let path_to_file = match meta.transaction_type {
+        TransactionType::ChunkedUpload { path_to_file } => path_to_file,
+        TransactionType::WholeFileUpload { path_to_file } => path_to_file,
+        _ => unreachable!(),
+    };
 
     let mut file = OpenOptions::new()
-        .create(true)
         .write(true)
         .open(&path_to_file)
         .await

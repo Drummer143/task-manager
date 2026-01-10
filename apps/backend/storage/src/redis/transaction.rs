@@ -22,8 +22,8 @@ pub struct TransactionMeta {
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum TransactionType {
-    ChunkedUpload,
-    WholeFileUpload,
+    ChunkedUpload { path_to_file: String },
+    WholeFileUpload { path_to_file: String },
     VerifyRanges { ranges: Vec<VerifyRange> },
 }
 
