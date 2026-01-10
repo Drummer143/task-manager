@@ -147,3 +147,16 @@ impl From<sqlx::Error> for ErrorResponse {
         }
     }
 }
+
+#[cfg(feature = "redis")]
+impl From<deadpool_redis::redis::RedisError> for ErrorResponse {
+    fn from(error: deadpool_redis::redis::RedisError) -> Self {
+        Self::internal_server_error(Some(error.to_string()))
+    }
+}
+
+impl From<serde_json::Error> for ErrorResponse {
+    fn from(value: serde_json::Error) -> Self {
+        Self::internal_server_error(Some(value.to_string()))
+    }
+}

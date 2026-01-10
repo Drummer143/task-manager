@@ -1,9 +1,12 @@
+use std::sync::Arc;
+
 use axum::http;
-use utoipa::OpenApi;
 use mimalloc::MiMalloc;
+use utoipa::OpenApi;
 
 mod db_connections;
 mod entities;
+mod redis;
 mod swagger;
 mod types;
 
@@ -14,9 +17,12 @@ static GLOBAL: MiMalloc = MiMalloc;
 async fn main() {
     let _ = dotenvy::dotenv();
 
-    // tracing_subscriber::registry()
-    //     .with(tracing_subscriber::fmt::layer())
-    //     .init();
+    use tracing_subscriber::{EnvFilter, layer::SubscriberExt, util::SubscriberInitExt};
+
+    tracing_subscriber::registry()
+        .with(EnvFilter::new("debug,lapin=warn,sqlx=warn"))
+        .with(tracing_subscriber::fmt::layer())
+        .init();
 
     let cors = tower_http::cors::CorsLayer::new()
         .allow_origin(tower_http::cors::AllowOrigin::list([
@@ -49,8 +55,9 @@ async fn main() {
     let port = std::env::var("SELF_PORT").unwrap_or("3000".to_string());
     let addr = format!("0.0.0.0:{}", port);
 
-    let db = db_connections::init_databases(
+    let (db, redis) = db_connections::init_databases(
         &std::env::var("DATABASE_URL").expect("DATABASE_URL not found"),
+        &std::env::var("REDIS_URL").expect("REDIS_URL not found"),
     )
     .await;
 
@@ -66,7 +73,10 @@ async fn main() {
         std::fs::create_dir_all(&static_folder_path).expect("Failed to create static folder");
     }
 
-    let app_state = types::app_state::AppState { postgres: db };
+    let app_state = types::app_state::AppState {
+        postgres: db,
+        redis: Arc::new(redis),
+    };
 
     let app = axum::Router::new()
         .merge(entities::actions::router::init())
@@ -76,8 +86,8 @@ async fn main() {
                 .url("/api/openapi.json", swagger::ApiDoc::openapi()),
         )
         .with_state(app_state)
+        .layer(tower_http::trace::TraceLayer::new_for_http())
         .layer(cors);
-        // .layer(tower_http::trace::TraceLayer::new_for_http());
 
     tracing::info!("Listening on {}", addr);
     println!("Listening on {}", addr);

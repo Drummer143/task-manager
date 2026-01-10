@@ -8,13 +8,19 @@ edition = "2024"
 mimalloc = { version = "0.1", default-features = false }
 axum = { version = "0.8", features = ["multipart"] }
 axum-macros = "0.5"
+axum-extra = { version = "0.12", features = ["typed-header"] }
+blake3 = "1.8"
 dotenvy = "0.15"
-error_handlers = { path = "../../../libs/backend/error-handlers" }
+error_handlers = { path = "../../../libs/backend/error-handlers", features = [
+    "redis",
+] }
 infer = "0.19"
 migrator = { path = "../../../libs/backend/migrator" }
 tokio = { version = "1", features = ["full"] }
 tokio-util = "0.7"
 sql = { path = "../../../libs/backend/sql" }
+deadpool-redis = "0.22"
+rand = "0.9"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 sqlx = { version = "0.8", features = [
@@ -26,7 +32,7 @@ sqlx = { version = "0.8", features = [
 ] }
 tower-http = { version = "0.6", features = ["trace", "cors", "fs"] }
 tracing = "0.1"
-tracing-subscriber = { version = "0.3", features = ["fmt"] }
+tracing-subscriber = { version = "0.3", features = ["fmt", "env-filter"] }
 utoipa = { version = "5.4", features = ["uuid", "chrono"] }
 utoipa-axum = "0.2"
 utoipa-swagger-ui = { version = "9.0", features = ["axum"] }
