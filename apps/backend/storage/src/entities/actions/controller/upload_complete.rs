@@ -6,7 +6,6 @@ use axum::{
 };
 use error_handlers::handlers::ErrorResponse;
 use sql::shared::traits::PostgresqlRepositoryCreate;
-use tokio::io::AsyncReadExt;
 use uuid::Uuid;
 
 use crate::{
@@ -67,28 +66,20 @@ pub async fn upload_complete(
             })?;
             let path_to_file = PathBuf::from(format!("{}/{}", static_folder, transaction_id));
 
-            let mut file = tokio::fs::File::open(&path_to_file)
-                .await
-                .map_err(|e| ErrorResponse::internal_server_error(Some(e.to_string())))?;
-
-            let mut buf = [0u8; 8192];
-
-            let mut hasher = blake3::Hasher::new();
-
-            loop {
-                let read_bytes = file
-                    .read(&mut buf)
-                    .await
-                    .map_err(|e| ErrorResponse::internal_server_error(Some(e.to_string())))?;
-
-                if read_bytes == 0 {
-                    break;
-                }
-
-                hasher.update(&buf[..read_bytes]);
-            }
-
-            let hash = hasher.finalize().to_string();
+            // Use mmap + rayon for parallel hashing (much faster for large files)
+            let path_clone = path_to_file.clone();
+            let hash = tokio::task::spawn_blocking(move || -> Result<String, std::io::Error> {
+                let file = std::fs::File::open(&path_clone)?;
+                let mmap = unsafe { memmap2::Mmap::map(&file)? };
+                let hash = blake3::Hasher::new()
+                    .update_rayon(&mmap)
+                    .finalize()
+                    .to_string();
+                Ok(hash)
+            })
+            .await
+            .map_err(|e| ErrorResponse::internal_server_error(Some(e.to_string())))?
+            .map_err(|e| ErrorResponse::internal_server_error(Some(e.to_string())))?;
 
             if meta.hash != hash {
                 tokio::fs::remove_file(&path_to_file)
@@ -106,8 +97,7 @@ pub async fn upload_complete(
 
             TransactionRepository::delete(&state.redis, transaction_id).await?;
 
-            let size = file
-                .metadata()
+            let size = tokio::fs::metadata(&path_to_file)
                 .await
                 .map_err(|e| ErrorResponse::internal_server_error(Some(e.to_string())))?
                 .len() as i64;

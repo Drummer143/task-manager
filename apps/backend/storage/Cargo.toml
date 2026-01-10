@@ -9,7 +9,8 @@ mimalloc = { version = "0.1", default-features = false }
 axum = { version = "0.8", features = ["multipart"] }
 axum-macros = "0.5"
 axum-extra = { version = "0.12", features = ["typed-header"] }
-blake3 = "1.8"
+blake3 = { version = "1.8", features = ["rayon"] }
+memmap2 = "0.9"
 dotenvy = "0.15"
 error_handlers = { path = "../../../libs/backend/error-handlers", features = [
     "redis",
