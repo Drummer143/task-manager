@@ -1,10 +1,10 @@
 import React from "react";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { required } from "@task-manager/ant-validation";
 import { updateProfile } from "@task-manager/api";
 import { App, Button, Form, Input } from "antd";
 
-import { required } from "../../../../shared/validation";
 
 interface UserInfoFormProps {
 	username: string;

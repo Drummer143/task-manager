@@ -1,10 +1,9 @@
 import React, { useMemo } from "react";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { composeRules, email, required } from "@task-manager/ant-validation";
 import { changeEmail } from "@task-manager/api";
 import { App, Button, Form, Input } from "antd";
-
-import { composeRules, email, required } from "../../../../shared/validation";
 
 interface EmailFormProps {
 	email: string;
@@ -26,7 +25,12 @@ const EmailForm: React.FC<EmailFormProps> = ({ email }) => {
 	});
 
 	return (
-		<Form layout="vertical" initialValues={initialValues} onFinish={mutateAsync} className="w-full">
+		<Form
+			layout="vertical"
+			initialValues={initialValues}
+			onFinish={mutateAsync}
+			className="w-full"
+		>
 			<Form.Item label="Email" name="email" rules={requiredRule}>
 				<Input placeholder="Enter your email" />
 			</Form.Item>

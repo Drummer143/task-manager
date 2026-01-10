@@ -1,3 +1,3 @@
-import { required } from "../../../../../shared/validation";
+import { required } from "@task-manager/ant-validation";
 
 export const requiredRule = required();

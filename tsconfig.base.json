@@ -16,7 +16,7 @@
 		"baseUrl": ".",
 		"paths": {
 			"@task-manager/ant-config": ["libs/frontend/ant-config/src/index.ts"],
-			"@task-manager/ant-vatidation": ["libs/frontend/ant-vatidation/src/index.ts"],
+			"@task-manager/ant-validation": ["libs/frontend/ant-validation/src/index.ts"],
 			"@task-manager/api": ["libs/frontend/api/src/index.ts"],
 			"@task-manager/chat": ["libs/frontend/chat/src/index.ts"],
 			"@task-manager/react-utils": ["libs/frontend/react-utils/src/index.ts"],

@@ -41,46 +41,22 @@ export const range: MakeRuleFunc<{
 	{ message: generateLengthMessage(args.type, "max", args.max), max: args.max }
 ];
 
-export const password: MakeRuleFunc<{
-	min?: number;
-	max?: number;
-	lowercase?: boolean;
-	uppercase?: boolean;
-	digit?: boolean;
-	special?: boolean;
-}> = ({ min = 8, max = 16, lowercase = true, uppercase = true, digit = true, special = true }) => {
-	const rules = [...range({ min, max, type: "string" })];
+export const password: MakeRuleFunc = () => [
+	...range({ min: 8, max: 16, type: "string" }),
+	{ pattern: /(?=.*[a-z])/, message: "Password must contain at least one lowercase letter" },
+	{ pattern: /(?=.*[A-Z])/, message: "Password must contain at least one uppercase letter" },
+	{ pattern: /(?=.*[0-9])/, message: "Password must contain at least one digit" },
+	{
+		pattern: /(?=.*[!@#$%^&*()\-_=+[\]{}|;:'",<.>/?])/,
+		message: "Password must contain at least one special character"
+	}
+];
 
-	if (lowercase) {
-		rules.push({
-			pattern: /(?=.*[a-z])/,
-			message: "Password must contain at least one lowercase letter"
-		});
-	}
-	if (uppercase) {
-		rules.push({
-			pattern: /(?=.*[A-Z])/,
-			message: "Password must contain at least one uppercase letter"
-		});
-	}
-	if (digit) {
-		rules.push({ pattern: /(?=.*[0-9])/, message: "Password must contain at least one digit" });
-	}
-	if (special) {
-		rules.push({
-			pattern: /(?=.*[!@#$%^&*()\-_=+[\]{}|;:'",<.>/?])/,
-			message: "Password must contain at least one special character"
-		});
-	}
-
-	return rules;
-};
-
-export const confirmPassword: MakeRuleFunc<string | void | undefined> = (field = "password") => [
+export const confirmPassword: MakeRuleFunc = () => [
 	...required(),
 	({ getFieldValue }) => ({
 		validator: (_, value) => {
-			if (!value || getFieldValue(field) === value) {
+			if (!value || getFieldValue("password") === value) {
 				return Promise.resolve();
 			}
 
@@ -90,4 +66,3 @@ export const confirmPassword: MakeRuleFunc<string | void | undefined> = (field =
 ];
 
 export const composeRules = (...rules: Array<Rule[] | Rule>) => rules.flat();
-
