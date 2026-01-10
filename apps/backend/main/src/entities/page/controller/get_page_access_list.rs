@@ -1,7 +1,7 @@
 use std::collections::HashMap;
 
-use axum::{extract::{Path, State}, Extension};
-use uuid::Uuid;
+use axum::{Extension, extract::State};
+use sql::page::model::PageAccess;
 
 #[utoipa::path(
     get,
@@ -21,57 +21,40 @@ use uuid::Uuid;
 )]
 pub async fn get_page_access_list(
     State(state): State<crate::types::app_state::AppState>,
-    Extension(user_id): Extension<Uuid>,
-    Path(page_id): Path<Uuid>,
+    Extension(user_page_access): Extension<PageAccess>,
+    // Path(page_id): Path<Uuid>,
 ) -> Result<
     axum::Json<Vec<crate::entities::page::dto::PageAccessResponse>>,
     error_handlers::handlers::ErrorResponse,
 > {
-    let user_page_access = crate::entities::page::PageService::get_page_access(
-        &state,
-        user_id,
-        page_id,
-    )
-    .await
-    .map_err(|e| {
-        if e.status_code == 404 {
-            return error_handlers::handlers::ErrorResponse::forbidden(
-                error_handlers::codes::ForbiddenErrorCode::InsufficientPermissions,
-                Some(HashMap::from([("message".to_string(), "Insufficient permissions".to_string())])),
-                None,
-            );
-        }
-
-        e
-    })?;
-
     if user_page_access.role < sql::page::model::Role::Member {
-        return Err(
-            error_handlers::handlers::ErrorResponse::forbidden(
-                error_handlers::codes::ForbiddenErrorCode::InsufficientPermissions,
-                Some(HashMap::from([("message".to_string(), "Insufficient permissions".to_string())])),
-                None,
-            ),
-        );
+        return Err(error_handlers::handlers::ErrorResponse::forbidden(
+            error_handlers::codes::ForbiddenErrorCode::InsufficientPermissions,
+            Some(HashMap::from([(
+                "message".to_string(),
+                "Insufficient permissions".to_string(),
+            )])),
+            None,
+        ));
     }
 
     let page_access_list =
-        crate::entities::page::PageService::get_page_access_list(
-            &state,
-            page_id,
-        )
-        .await
-        .map_err(|e| {
-            if e.status_code == 404 {
-                return error_handlers::handlers::ErrorResponse::forbidden(
-                error_handlers::codes::ForbiddenErrorCode::InsufficientPermissions,
-                Some(HashMap::from([("message".to_string(), "Insufficient permissions".to_string())])),
-                None,
-            );
-            }
+        crate::entities::page::PageService::get_page_access_list(&state, user_page_access.page_id)
+            .await
+            .map_err(|e| {
+                if e.status_code == 404 {
+                    return error_handlers::handlers::ErrorResponse::forbidden(
+                        error_handlers::codes::ForbiddenErrorCode::InsufficientPermissions,
+                        Some(HashMap::from([(
+                            "message".to_string(),
+                            "Insufficient permissions".to_string(),
+                        )])),
+                        None,
+                    );
+                }
 
-            e
-        })?;
+                e
+            })?;
 
     Ok(axum::Json(page_access_list))
 }

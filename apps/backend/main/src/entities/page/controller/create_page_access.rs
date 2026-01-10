@@ -1,10 +1,7 @@
 use std::collections::HashMap;
 
-use axum::{
-    Extension,
-    extract::{Path, State},
-};
-use uuid::Uuid;
+use axum::{Extension, extract::State};
+use sql::page::model::PageAccess;
 
 use error_handlers::handlers::ErrorResponse;
 
@@ -32,25 +29,9 @@ use crate::{
 )]
 pub async fn create_page_access(
     State(state): State<crate::types::app_state::AppState>,
-    Extension(user_id): Extension<Uuid>,
-    Path(page_id): Path<Uuid>,
+    Extension(user_page_access): Extension<PageAccess>,
     ValidatedJson(dto): ValidatedJson<CreatePageAccessDto>,
 ) -> Result<PageAccessResponse, ErrorResponse> {
-    let user_page_access =
-        crate::entities::page::PageService::get_page_access(&state, user_id, page_id)
-            .await
-            .map_err(|e| {
-                if e.status_code == 404 {
-                    return error_handlers::handlers::ErrorResponse::forbidden(
-                        error_handlers::codes::ForbiddenErrorCode::InsufficientPermissions,
-                        e.details,
-                        e.dev_details,
-                    );
-                }
-
-                e
-            })?;
-
     if user_page_access.role < sql::page::model::Role::Admin {
         return Err(error_handlers::handlers::ErrorResponse::forbidden(
             error_handlers::codes::ForbiddenErrorCode::InsufficientPermissions,
@@ -93,7 +74,7 @@ pub async fn create_page_access(
         &state,
         sql::page::dto::CreatePageAccessDto {
             user_id: target_user.id,
-            page_id,
+            page_id: user_page_access.page_id,
             role: dto.role,
         },
     )

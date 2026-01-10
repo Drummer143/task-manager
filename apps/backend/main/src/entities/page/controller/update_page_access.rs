@@ -1,11 +1,8 @@
 use std::collections::HashMap;
 
-use axum::{
-    Extension,
-    extract::{Path, State},
-};
+use axum::{Extension, extract::State};
 use error_handlers::handlers::ErrorResponse;
-use uuid::Uuid;
+use sql::{page::model::PageAccess, shared::traits::PostgresqlRepositoryGetOneById};
 
 use crate::{
     entities::page::dto::{PageAccessResponse, UpdatePageAccessDto},
@@ -31,28 +28,10 @@ use crate::{
 )]
 pub async fn update_page_access(
     State(state): State<crate::types::app_state::AppState>,
-    Extension(user_id): Extension<Uuid>,
-    Path(page_id): Path<Uuid>,
+    Extension(user_page_access): Extension<PageAccess>,
+    // Path(page_id): Path<Uuid>,
     ValidatedJson(dto): ValidatedJson<UpdatePageAccessDto>,
 ) -> Result<PageAccessResponse, ErrorResponse> {
-    let user_page_access =
-        crate::entities::page::PageService::get_page_access(&state, user_id, page_id)
-            .await
-            .map_err(|e| {
-                if e.status_code == 404 {
-                    return error_handlers::handlers::ErrorResponse::forbidden(
-                        error_handlers::codes::ForbiddenErrorCode::InsufficientPermissions,
-                        Some(HashMap::from([(
-                            "message".to_string(),
-                            "Insufficient permissions".to_string(),
-                        )])),
-                        None,
-                    );
-                }
-
-                e
-            })?;
-
     if user_page_access.role < sql::page::model::Role::Admin {
         return Err(error_handlers::handlers::ErrorResponse::forbidden(
             error_handlers::codes::ForbiddenErrorCode::InsufficientPermissions,
@@ -70,7 +49,7 @@ pub async fn update_page_access(
         &state,
         sql::page::dto::UpdatePageAccessDto {
             user_id: dto.user_id,
-            page_id,
+            page_id: user_page_access.page_id,
             role: dto.role,
         },
     )
@@ -78,7 +57,8 @@ pub async fn update_page_access(
 
     Ok(PageAccessResponse {
         id: page_access.id,
-        user: user_page_access.user,
+        user: sql::user::UserRepository::get_one_by_id(&state.postgres, page_access.user_id)
+            .await?,
         role: page_access.role,
         created_at: page_access.created_at,
         updated_at: page_access.updated_at,

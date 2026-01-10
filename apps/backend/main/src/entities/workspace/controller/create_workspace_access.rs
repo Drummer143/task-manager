@@ -6,6 +6,7 @@ use axum::{
 };
 
 use error_handlers::handlers::ErrorResponse;
+use sql::workspace::model::WorkspaceAccess;
 
 use crate::{
     entities::workspace::dto::CreateWorkspaceAccessDto,
@@ -31,9 +32,7 @@ use crate::{
 )]
 pub async fn create_workspace_access(
     State(state): State<crate::types::app_state::AppState>,
-    Extension(user_workspace_access): Extension<
-        sql::workspace::model::WorkspaceAccess,
-    >,
+    Extension(user_workspace_access): Extension<WorkspaceAccess>,
     Path(workspace_id): Path<uuid::Uuid>,
     ValidatedJson(dto): ValidatedJson<CreateWorkspaceAccessDto>,
 ) -> impl axum::response::IntoResponse {
@@ -88,14 +87,12 @@ pub async fn create_workspace_access(
     )
     .await?;
 
-    Ok(
-        crate::entities::workspace::dto::WorkspaceAccessResponse {
-            id: workspace_access.id,
-            user: target_user,
-            role: workspace_access.role,
-            created_at: workspace_access.created_at,
-            updated_at: workspace_access.updated_at,
-            deleted_at: workspace_access.deleted_at,
-        },
-    )
+    Ok(crate::entities::workspace::dto::WorkspaceAccessResponse {
+        id: workspace_access.id,
+        user: target_user,
+        role: workspace_access.role,
+        created_at: workspace_access.created_at,
+        updated_at: workspace_access.updated_at,
+        deleted_at: workspace_access.deleted_at,
+    })
 }

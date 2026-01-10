@@ -4,6 +4,7 @@ use axum::{
     Extension,
     extract::{Path, State},
 };
+use sql::shared::traits::PostgresqlRepositoryGetOneById;
 use uuid::Uuid;
 
 use crate::{
@@ -80,7 +81,7 @@ pub async fn update_workspace_access(
 
     Ok(WorkspaceAccessResponse {
         id: workspace_access.id,
-        user: user_workspace_access.user,
+        user: sql::user::UserRepository::get_one_by_id(&state.postgres, dto.user_id).await?,
         role: workspace_access.role,
         created_at: workspace_access.created_at,
         updated_at: workspace_access.updated_at,
