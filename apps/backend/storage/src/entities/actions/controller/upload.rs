@@ -23,7 +23,7 @@ use crate::{
         (status = 201, description = "File uploaded successfully", body = UploadResponse),
         (status = 400, description = "Invalid request body", body = ErrorResponse),
     ),
-    tags = ["File"],
+    tags = ["Upload file"],
 )]
 #[axum_macros::debug_handler]
 pub async fn upload(
