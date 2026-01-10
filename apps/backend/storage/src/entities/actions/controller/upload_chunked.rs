@@ -42,6 +42,33 @@ pub async fn upload_chunked(
 ) -> Result<(), ErrorResponse> {
     let meta = TransactionRepository::get(&state.redis, transaction_id).await?;
 
+    // Try to acquire upload slot (limit concurrent uploads)
+    let acquired = TransactionRepository::try_acquire_upload_slot(&state.redis, transaction_id).await?;
+    if !acquired {
+        return Err(ErrorResponse {
+            error_code: "too_many_concurrent_uploads".into(),
+            error: "Too many concurrent uploads for this transaction".into(),
+            status_code: 429,
+            details: None,
+            dev_details: None,
+        });
+    }
+
+    // Ensure slot is released on any exit path
+    let result = upload_chunk_inner(&state, &meta, transaction_id, content_range, body).await;
+
+    TransactionRepository::release_upload_slot(&state.redis, transaction_id).await?;
+
+    result
+}
+
+async fn upload_chunk_inner(
+    state: &AppState,
+    meta: &crate::redis::transaction::TransactionMeta,
+    transaction_id: Uuid,
+    content_range: axum_extra::headers::ContentRange,
+    body: Bytes,
+) -> Result<(), ErrorResponse> {
     match meta.transaction_type {
         TransactionType::VerifyRanges { .. } => {
             return Err(ErrorResponse::forbidden(
@@ -65,7 +92,7 @@ pub async fn upload_chunked(
 
     // Validate chunk size for chunked uploads
     if matches!(meta.transaction_type, TransactionType::ChunkedUpload { .. })
-        && chunk_size > 5 * 1024 * 1024
+        && chunk_size > crate::redis::transaction::CHUNK_SIZE
     {
         return Err(ErrorResponse {
             error_code: "Chunk size is too large. Max chunk size is 5 MB".into(),
@@ -99,7 +126,7 @@ pub async fn upload_chunked(
         ));
     }
 
-    let path_to_file = match meta.transaction_type {
+    let path_to_file = match &meta.transaction_type {
         TransactionType::ChunkedUpload { path_to_file } => path_to_file,
         TransactionType::WholeFileUpload { path_to_file } => path_to_file,
         _ => unreachable!(),

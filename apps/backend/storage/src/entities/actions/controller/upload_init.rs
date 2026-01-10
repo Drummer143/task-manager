@@ -19,8 +19,15 @@ pub struct UploadChunkedInitRequest {
 }
 
 #[derive(utoipa::ToSchema, serde::Serialize)]
-pub struct UploadResponse {
+pub struct UploadWholeFileResponse {
     pub transaction_id: Uuid,
+}
+
+#[derive(utoipa::ToSchema, serde::Serialize)]
+pub struct UploadChunkedResponse {
+    pub transaction_id: Uuid,
+    pub max_concurrent_uploads: u64,
+    pub chunk_size: u64,
 }
 
 #[derive(utoipa::ToSchema, serde::Serialize, Clone, serde::Deserialize)]
@@ -56,8 +63,8 @@ pub struct VerifyRangesResponse {
 #[derive(utoipa::ToSchema, serde::Serialize)]
 #[serde(tag = "next_step", content = "data", rename_all = "camelCase")]
 pub enum UploadChunkedInitResponse {
-    StartUploadChunked(UploadResponse),
-    StartUploadWholeFile(UploadResponse),
+    StartUploadChunked(UploadChunkedResponse),
+    StartUploadWholeFile(UploadWholeFileResponse),
     VerifyRanges(VerifyRangesResponse),
 }
 
@@ -162,27 +169,6 @@ pub async fn upload_init(
 
             let path_to_file = build_path_to_temp_file(&state.temp_folder_path, &transaction_id);
 
-            // 5 MB threshold
-            let (response, transaction_type) = if body.size > 5 * 1024 * 1024 {
-                (
-                    UploadChunkedInitResponse::StartUploadChunked(UploadResponse {
-                        transaction_id,
-                    }),
-                    TransactionType::ChunkedUpload {
-                        path_to_file: path_to_file.clone(),
-                    },
-                )
-            } else {
-                (
-                    UploadChunkedInitResponse::StartUploadWholeFile(UploadResponse {
-                        transaction_id,
-                    }),
-                    TransactionType::WholeFileUpload {
-                        path_to_file: path_to_file.clone(),
-                    },
-                )
-            };
-
             let file = tokio::fs::File::create(&path_to_file)
                 .await
                 .map_err(|e| ErrorResponse::internal_server_error(Some(e.to_string())))?;
@@ -202,6 +188,28 @@ pub async fn upload_init(
                     error.to_string(),
                 )));
             }
+
+            let (response, transaction_type) = if body.size > crate::redis::transaction::CHUNK_SIZE {
+                (
+                    UploadChunkedInitResponse::StartUploadChunked(UploadChunkedResponse {
+                        transaction_id,
+                        max_concurrent_uploads: crate::redis::transaction::MAX_CONCURRENT_UPLOADS,
+                        chunk_size: crate::redis::transaction::CHUNK_SIZE,
+                    }),
+                    TransactionType::ChunkedUpload {
+                        path_to_file: path_to_file.clone(),
+                    },
+                )
+            } else {
+                (
+                    UploadChunkedInitResponse::StartUploadWholeFile(UploadWholeFileResponse {
+                        transaction_id,
+                    }),
+                    TransactionType::WholeFileUpload {
+                        path_to_file: path_to_file.clone(),
+                    },
+                )
+            };
 
             TransactionRepository::create(
                 &state.redis,

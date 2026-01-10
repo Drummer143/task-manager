@@ -8,8 +8,14 @@ use super::error::RedisError;
 /// Default TTL: 3 days in seconds
 const DEFAULT_TTL_SECONDS: u64 = 3 * 24 * 60 * 60;
 
+/// TTL for active uploads counter: 1 minute
+pub const ACTIVE_UPLOADS_TTL_SECONDS: u64 = 60;
+
+/// Max concurrent chunk uploads per transaction
+pub const MAX_CONCURRENT_UPLOADS: u64 = 5;
+
 /// Chunk size: 5MB
-const CHUNK_SIZE: u64 = 5 * 1024 * 1024;
+pub const CHUNK_SIZE: u64 = 5 * 1024 * 1024;
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
 pub struct TransactionMeta {
@@ -44,6 +50,11 @@ impl TransactionRepository {
     /// Generates key for uploaded chunks bitmap
     fn chunks_key(transaction_id: Uuid) -> String {
         format!("tx:{}:chunks", transaction_id)
+    }
+
+    /// Generates key for active uploads counter
+    fn active_uploads_key(transaction_id: Uuid) -> String {
+        format!("tx:{}:active", transaction_id)
     }
 
     /// Creates a new upload transaction
@@ -90,7 +101,7 @@ impl TransactionRepository {
         }
     }
 
-    /// Deletes transaction (metadata + chunks bitmap)
+    /// Deletes transaction (metadata + chunks bitmap + active counter)
     pub async fn delete(
         pool: &Arc<deadpool_redis::Pool>,
         transaction_id: Uuid,
@@ -99,8 +110,49 @@ impl TransactionRepository {
 
         let meta_key = Self::meta_key(transaction_id);
         let chunks_key = Self::chunks_key(transaction_id);
+        let active_key = Self::active_uploads_key(transaction_id);
 
-        conn.del::<_, ()>(&[&meta_key, &chunks_key]).await?;
+        conn.del::<_, ()>(&[&meta_key, &chunks_key, &active_key]).await?;
+
+        Ok(())
+    }
+
+    /// Tries to acquire upload slot. Returns Ok(true) if acquired, Ok(false) if limit reached.
+    pub async fn try_acquire_upload_slot(
+        pool: &Arc<deadpool_redis::Pool>,
+        transaction_id: Uuid,
+    ) -> Result<bool, RedisError> {
+        let mut conn = pool.get().await?;
+        let key = Self::active_uploads_key(transaction_id);
+
+        // INCR and check if within limit
+        let count: u64 = conn.incr(&key, 1).await?;
+
+        // Set TTL on first increment (or refresh)
+        conn.expire::<_, ()>(&key, ACTIVE_UPLOADS_TTL_SECONDS as i64).await?;
+
+        if count > MAX_CONCURRENT_UPLOADS {
+            // Over limit - decrement and reject
+            conn.decr::<_, _, ()>(&key, 1).await?;
+            Ok(false)
+        } else {
+            Ok(true)
+        }
+    }
+
+    /// Releases upload slot after chunk upload completes
+    pub async fn release_upload_slot(
+        pool: &Arc<deadpool_redis::Pool>,
+        transaction_id: Uuid,
+    ) -> Result<(), RedisError> {
+        let mut conn = pool.get().await?;
+        let key = Self::active_uploads_key(transaction_id);
+
+        // Decrement, but don't go below 0
+        let count: i64 = conn.decr(&key, 1).await?;
+        if count < 0 {
+            conn.set::<_, _, ()>(&key, 0).await?;
+        }
 
         Ok(())
     }
