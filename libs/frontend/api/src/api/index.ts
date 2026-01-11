@@ -15,6 +15,7 @@ export * from "./tasks";
 export * from "./users";
 
 export * from "./files";
+export * from "./chunkedUpload";
 
 export * from "./boardStatus";
 

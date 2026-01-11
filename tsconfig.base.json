@@ -30,7 +30,8 @@
 			"@task-manager/video-player": ["libs/frontend/video-player/src/index.ts"],
 			"@task-manager/context-menu": [
 				"libs/frontend/context-menu/src/index.ts"
-			]
+			],
+			"@task-manager/file-transfer-worker": ["libs/workers/file-transfer-worker/src/index.ts"]
 		}
 	},
 	"exclude": ["node_modules", "tmp"]
