@@ -33,7 +33,7 @@ pub enum TransactionType {
     VerifyRanges { ranges: Vec<VerifyRange> },
 }
 
-#[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
+#[derive(Debug, Clone, serde::Serialize, serde::Deserialize, utoipa::ToSchema)]
 pub struct VerifyRange {
     pub start: i64,
     pub end: i64,

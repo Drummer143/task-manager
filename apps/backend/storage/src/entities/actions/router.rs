@@ -16,7 +16,7 @@ pub fn init() -> Router<AppState> {
         )
         .route(
             "/actions/upload/{transaction_id}/chunk",
-            post(super::controller::upload_chunked::upload_chunked)
+            post(super::controller::upload_chunk::upload_chunk)
                 .layer(DefaultBodyLimit::max(10 * 1024 * 1024)),
         )
         .route(

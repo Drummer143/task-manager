@@ -28,6 +28,8 @@ async fn main() {
         .allow_origin(tower_http::cors::AllowOrigin::list([
             "http://0.0.0.0:1346".parse().unwrap(),
             "http://0.0.0.0:80".parse().unwrap(),
+            "http://localhost:1346".parse().unwrap(),
+            "http://localhost:80".parse().unwrap(),
         ]))
         .allow_methods([
             http::Method::GET,
