@@ -23,7 +23,7 @@ use crate::{
     responses(
         (status = 200, description = "Verification result", body = UploadVerifyResponse),
     ),
-    tags = ["Upload file chunked"],
+    tags = ["Upload file"],
 )]
 pub async fn upload_verify(
     State(state): State<AppState>,

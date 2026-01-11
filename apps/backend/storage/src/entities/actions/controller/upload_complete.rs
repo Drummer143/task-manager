@@ -19,7 +19,7 @@ use crate::{
     responses(
         (status = 200, description = "Upload completion result", body = UploadCompleteResponse),
     ),
-    tags = ["Upload file chunked"],
+    tags = ["Upload file"],
 )]
 pub async fn upload_complete(
     State(state): State<AppState>,

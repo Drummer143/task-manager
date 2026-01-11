@@ -23,7 +23,7 @@ use crate::{entities::actions::service::ActionsService, types::app_state::AppSta
     responses(
         (status = 201, description = "File uploaded successfully")
     ),
-    tags = ["Upload file chunked"],
+    tags = ["Upload file"],
 )]
 pub async fn upload_chunk(
     State(state): State<AppState>,

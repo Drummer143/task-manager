@@ -19,7 +19,7 @@ use crate::{
     responses(
         (status = 200, description = "Upload chunked init", body = UploadInitResponse),
     ),
-    tags = ["Upload file chunked"],
+    tags = ["Upload file"],
 )]
 #[axum_macros::debug_handler]
 pub async fn upload_init(

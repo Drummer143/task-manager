@@ -62,12 +62,33 @@ pub struct UploadVerifyDto {
 
 #[derive(serde::Serialize, utoipa::ToSchema)]
 pub struct UploadVerifyResponse {
-    pub blob_id: Option<Uuid>,
+    pub blob_id: Uuid,
 }
 
 #[derive(serde::Serialize, utoipa::ToSchema)]
+#[serde(rename_all = "camelCase")]
 pub struct UploadCompleteResponse {
-    pub success: bool,
-    pub blob_id: Option<Uuid>,
+    pub blob_id: Uuid,
+}
+
+#[derive(serde::Serialize, utoipa::ToSchema)]
+#[serde(rename_all = "camelCase")]
+pub struct UploadChunkedStatusResponse {
+    pub max_concurrent_uploads: u64,
+    pub chunk_size: u64,
     pub missing_chunks: Option<Vec<u64>>,
+}
+
+#[derive(serde::Serialize, utoipa::ToSchema)]
+pub struct VerifyRangesStatusResponse {
+    pub ranges: Vec<VerifyRange>,
+}
+
+#[derive(serde::Serialize, utoipa::ToSchema)]
+#[serde(tag = "currentStep", content = "data", rename_all = "camelCase")]
+pub enum UploadStatusResponse {
+    UploadChunked(UploadChunkedStatusResponse),
+    UploadWholeFile,
+    VerifyRanges(VerifyRangesStatusResponse),
+    Complete,
 }

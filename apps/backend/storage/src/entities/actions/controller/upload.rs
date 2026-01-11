@@ -25,7 +25,7 @@ use crate::{
     ),
     tags = ["Upload file"],
 )]
-#[axum_macros::debug_handler]
+#[deprecated]
 pub async fn upload(
     State(state): State<types::app_state::AppState>,
     mut multipart: Multipart,

@@ -112,7 +112,8 @@ impl TransactionRepository {
         let chunks_key = Self::chunks_key(transaction_id);
         let active_key = Self::active_uploads_key(transaction_id);
 
-        conn.del::<_, ()>(&[&meta_key, &chunks_key, &active_key]).await?;
+        conn.del::<_, ()>(&[&meta_key, &chunks_key, &active_key])
+            .await?;
 
         Ok(())
     }
@@ -129,7 +130,8 @@ impl TransactionRepository {
         let count: u64 = conn.incr(&key, 1).await?;
 
         // Set TTL on first increment (or refresh)
-        conn.expire::<_, ()>(&key, ACTIVE_UPLOADS_TTL_SECONDS as i64).await?;
+        conn.expire::<_, ()>(&key, ACTIVE_UPLOADS_TTL_SECONDS as i64)
+            .await?;
 
         if count > MAX_CONCURRENT_UPLOADS {
             // Over limit - decrement and reject
@@ -177,19 +179,19 @@ impl TransactionRepository {
         Ok(())
     }
 
-    /// Checks if a specific chunk is uploaded
-    pub async fn is_chunk_uploaded(
-        pool: &Arc<deadpool_redis::Pool>,
-        transaction_id: Uuid,
-        chunk_index: u64,
-    ) -> Result<bool, RedisError> {
-        let mut conn = pool.get().await?;
-        let key = Self::chunks_key(transaction_id);
+    // /// Checks if a specific chunk is uploaded
+    // pub async fn is_chunk_uploaded(
+    //     pool: &Arc<deadpool_redis::Pool>,
+    //     transaction_id: Uuid,
+    //     chunk_index: u64,
+    // ) -> Result<bool, RedisError> {
+    //     let mut conn = pool.get().await?;
+    //     let key = Self::chunks_key(transaction_id);
 
-        let bit: bool = conn.getbit(&key, chunk_index as usize).await?;
+    //     let bit: bool = conn.getbit(&key, chunk_index as usize).await?;
 
-        Ok(bit)
-    }
+    //     Ok(bit)
+    // }
 
     /// Returns the count of uploaded chunks
     pub async fn get_uploaded_chunks_count(
@@ -215,28 +217,42 @@ impl TransactionRepository {
         Ok(uploaded >= meta.total_chunks)
     }
 
-    /// Returns the index of the first missing chunk (or None if all uploaded)
-    pub async fn get_first_missing_chunk(
+    /// Returns all missing chunk indices (or empty vec if all uploaded)
+    pub async fn get_all_missing_chunks(
         pool: &Arc<deadpool_redis::Pool>,
         transaction_id: Uuid,
-    ) -> Result<Option<u64>, RedisError> {
+    ) -> Result<Vec<u64>, RedisError> {
         let mut conn = pool.get().await?;
         let meta = Self::get(pool, transaction_id).await?;
         let key = Self::chunks_key(transaction_id);
 
-        // BITPOS finds the first bit with the specified value
-        // Returns -1 if not found
-        let pos: i64 = deadpool_redis::redis::cmd("BITPOS")
-            .arg(&key)
-            .arg(0)
-            .query_async(&mut *conn)
-            .await?;
+        let bitmap: Option<Vec<u8>> = conn.get(&key).await?;
 
-        if pos < 0 || pos as u64 >= meta.total_chunks {
-            Ok(None)
-        } else {
-            Ok(Some(pos as u64))
+        let mut missing = Vec::new();
+
+        match bitmap {
+            None => {
+                // No bitmap exists — all chunks are missing
+                missing.extend(0..meta.total_chunks);
+            }
+            Some(bytes) => {
+                for chunk_idx in 0..meta.total_chunks {
+                    let byte_idx = (chunk_idx / 8) as usize;
+                    let bit_idx = 7 - (chunk_idx % 8); // Redis stores bits in MSB order
+
+                    let is_uploaded = bytes
+                        .get(byte_idx)
+                        .map(|b| (b >> bit_idx) & 1 == 1)
+                        .unwrap_or(false);
+
+                    if !is_uploaded {
+                        missing.push(chunk_idx);
+                    }
+                }
+            }
         }
+
+        Ok(missing)
     }
 
     /// Calculates chunk index from byte offset
@@ -244,12 +260,12 @@ impl TransactionRepository {
         offset / CHUNK_SIZE
     }
 
-    /// Calculates expected byte range for a chunk
-    pub fn chunk_byte_range(chunk_index: u64, file_size: u64) -> (u64, u64) {
-        let start = chunk_index * CHUNK_SIZE;
-        let end = std::cmp::min(start + CHUNK_SIZE, file_size);
-        (start, end)
-    }
+    // /// Calculates expected byte range for a chunk
+    // pub fn chunk_byte_range(chunk_index: u64, file_size: u64) -> (u64, u64) {
+    //     let start = chunk_index * CHUNK_SIZE;
+    //     let end = std::cmp::min(start + CHUNK_SIZE, file_size);
+    //     (start, end)
+    // }
 }
 
 #[cfg(test)]
@@ -273,21 +289,21 @@ mod tests {
         );
     }
 
-    #[test]
-    fn test_chunk_byte_range() {
-        let file_size = 12 * 1024 * 1024; // 12MB = 3 chunks (5, 5, 2)
+    // #[test]
+    // fn test_chunk_byte_range() {
+    //     let file_size = 12 * 1024 * 1024; // 12MB = 3 chunks (5, 5, 2)
 
-        assert_eq!(
-            TransactionRepository::chunk_byte_range(0, file_size),
-            (0, 5 * 1024 * 1024)
-        );
-        assert_eq!(
-            TransactionRepository::chunk_byte_range(1, file_size),
-            (5 * 1024 * 1024, 10 * 1024 * 1024)
-        );
-        assert_eq!(
-            TransactionRepository::chunk_byte_range(2, file_size),
-            (10 * 1024 * 1024, 12 * 1024 * 1024)
-        );
-    }
+    //     assert_eq!(
+    //         TransactionRepository::chunk_byte_range(0, file_size),
+    //         (0, 5 * 1024 * 1024)
+    //     );
+    //     assert_eq!(
+    //         TransactionRepository::chunk_byte_range(1, file_size),
+    //         (5 * 1024 * 1024, 10 * 1024 * 1024)
+    //     );
+    //     assert_eq!(
+    //         TransactionRepository::chunk_byte_range(2, file_size),
+    //         (10 * 1024 * 1024, 12 * 1024 * 1024)
+    //     );
+    // }
 }

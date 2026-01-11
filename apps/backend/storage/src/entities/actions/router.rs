@@ -1,10 +1,18 @@
-use axum::{Router, extract::DefaultBodyLimit, routing::post};
+use axum::{Router, extract::DefaultBodyLimit, routing::{delete, get, post}};
 
 use crate::types::app_state::AppState;
 
 pub fn init() -> Router<AppState> {
     Router::new()
         .route("/actions/upload", post(super::controller::upload::upload))
+        .route(
+            "/actions/upload/{transaction_id}/status",
+            get(super::controller::upload_status::upload_status),
+        )
+        .route(
+            "/actions/upload/{transaction_id}/cancel",
+            delete(super::controller::upload_cancel::upload_cancel),
+        )
         .route(
             "/actions/upload/init",
             post(super::controller::upload_init::upload_init),

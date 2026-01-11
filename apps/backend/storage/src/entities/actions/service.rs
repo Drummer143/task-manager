@@ -1,4 +1,4 @@
-use std::io::SeekFrom;
+use std::{collections::HashMap, io::SeekFrom};
 
 use axum::body::Bytes;
 use error_handlers::handlers::ErrorResponse;
@@ -14,7 +14,8 @@ use crate::{
     entities::actions::{
         dto::{
             UploadChunkedResponse, UploadCompleteResponse, UploadInitDto, UploadInitResponse,
-            UploadVerifyDto, UploadVerifyResponse, UploadWholeFileResponse, VerifyRangesResponse,
+            UploadVerifyDto, UploadVerifyResponse, UploadWholeFileResponse,
+            VerifyRangesResponse,
         },
         shared::{build_path_to_assets_file, build_path_to_temp_file},
     },
@@ -230,7 +231,7 @@ impl ActionsService {
                     TransactionRepository::delete(&state.redis, transaction_id).await?;
 
                     Ok(UploadVerifyResponse {
-                        blob_id: Some(blob.id),
+                        blob_id: blob.id,
                     })
                 } else {
                     TransactionRepository::delete(&state.redis, transaction_id).await?;
@@ -253,7 +254,7 @@ impl ActionsService {
         let meta = TransactionRepository::get(&state.redis, transaction_id).await?;
 
         let path_to_file = match meta.transaction_type {
-            TransactionType::ChunkedUpload { path_to_file } => Ok(build_path_to_assets_file(
+            TransactionType::WholeFileUpload { path_to_file } => Ok(build_path_to_assets_file(
                 &path_to_file,
                 &meta.hash,
                 meta.size,
@@ -303,11 +304,7 @@ impl ActionsService {
         }?;
 
         if let Some(blob) = blob {
-            return Ok(UploadCompleteResponse {
-                success: true,
-                blob_id: Some(blob.id),
-                missing_chunks: None,
-            });
+            return Ok(UploadCompleteResponse { blob_id: blob.id });
         }
 
         let mut file = OpenOptions::new()
@@ -333,11 +330,7 @@ impl ActionsService {
 
         TransactionRepository::delete(&state.redis, transaction_id).await?;
 
-        Ok(UploadCompleteResponse {
-            success: true,
-            blob_id: Some(blob.id),
-            missing_chunks: None,
-        })
+        Ok(UploadCompleteResponse { blob_id: blob.id })
     }
 
     async fn upload_chunk_inner(
@@ -422,8 +415,7 @@ impl ActionsService {
         }
 
         // Ensure slot is released on any exit path
-        let result =
-            Self::upload_chunk_inner(&state, &meta, transaction_id, start, body).await;
+        let result = Self::upload_chunk_inner(&state, &meta, transaction_id, start, body).await;
 
         TransactionRepository::release_upload_slot(&state.redis, transaction_id).await?;
 
@@ -444,29 +436,26 @@ impl ActionsService {
                     None,
                 ));
             }
-            TransactionType::ChunkedUpload { .. } | TransactionType::WholeFileUpload { .. } => {
+            TransactionType::ChunkedUpload {
+                path_to_file: path_to_temp_file,
+            }
+            | TransactionType::WholeFileUpload {
+                path_to_file: path_to_temp_file,
+            } => {
                 // Check if all chunks are uploaded
                 let is_complete =
                     TransactionRepository::is_upload_complete(&state.redis, transaction_id).await?;
 
                 if !is_complete {
-                    let first_missing = TransactionRepository::get_first_missing_chunk(
-                        &state.redis,
-                        transaction_id,
-                    )
-                    .await?;
-                    return Ok(UploadCompleteResponse {
-                        success: false,
-                        blob_id: None,
-                        missing_chunks: first_missing.map(|idx| vec![idx]),
-                    });
+                    return Err(ErrorResponse::forbidden(
+                        error_handlers::codes::ForbiddenErrorCode::AccessDenied,
+                        Some(HashMap::from([(
+                            "details".to_string(),
+                            "Upload is not complete".to_string(),
+                        )])),
+                        None,
+                    ));
                 }
-
-                let path_to_temp_file = match meta.transaction_type {
-                    TransactionType::ChunkedUpload { path_to_file } => path_to_file,
-                    TransactionType::WholeFileUpload { path_to_file } => path_to_file,
-                    _ => unreachable!(),
-                };
 
                 // Use mmap + rayon for parallel hashing (much faster for large files)
                 let path_clone = path_to_temp_file.clone();
@@ -519,11 +508,7 @@ impl ActionsService {
                 .await
                 .map_err(|e| ErrorResponse::internal_server_error(Some(e.to_string())))?;
 
-                Ok(UploadCompleteResponse {
-                    success: true,
-                    blob_id: Some(blob.id),
-                    missing_chunks: None,
-                })
+                Ok(UploadCompleteResponse { blob_id: blob.id })
             }
         }
     }
