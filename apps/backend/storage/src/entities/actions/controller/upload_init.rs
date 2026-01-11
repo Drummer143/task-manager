@@ -19,11 +19,13 @@ pub struct UploadChunkedInitRequest {
 }
 
 #[derive(utoipa::ToSchema, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct UploadWholeFileResponse {
     pub transaction_id: Uuid,
 }
 
 #[derive(utoipa::ToSchema, serde::Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct UploadChunkedResponse {
     pub transaction_id: Uuid,
     pub max_concurrent_uploads: u64,
@@ -55,13 +57,14 @@ impl From<RepoVerifyRange> for VerifyRange {
 }
 
 #[derive(utoipa::ToSchema, serde::Serialize, serde::Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct VerifyRangesResponse {
     pub transaction_id: Uuid,
     pub ranges: Vec<VerifyRange>,
 }
 
 #[derive(utoipa::ToSchema, serde::Serialize)]
-#[serde(tag = "next_step", content = "data", rename_all = "camelCase")]
+#[serde(tag = "nextStep", content = "data", rename_all = "camelCase")]
 pub enum UploadChunkedInitResponse {
     StartUploadChunked(UploadChunkedResponse),
     StartUploadWholeFile(UploadWholeFileResponse),
@@ -189,7 +192,9 @@ pub async fn upload_init(
                 )));
             }
 
-            let (response, transaction_type) = if body.size > crate::redis::transaction::CHUNK_SIZE {
+            let (response, transaction_type) = if body.size
+                > crate::redis::transaction::CHUNK_SIZE * 3
+            {
                 (
                     UploadChunkedInitResponse::StartUploadChunked(UploadChunkedResponse {
                         transaction_id,

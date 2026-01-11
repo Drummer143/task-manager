@@ -19,7 +19,7 @@ use crate::{
 
 #[utoipa::path(
     post,
-    path = "/actions/upload/{transaction_id}",
+    path = "/actions/upload/{transaction_id}/chunk",
     params(
         ("transaction_id" = Uuid, Path, description = "Transaction id"),
         ("Content-Range" = String, Header, description = "Format: bytes start-end/total (e.g. bytes 0-1024/5000)"),
@@ -42,8 +42,18 @@ pub async fn upload_chunked(
 ) -> Result<(), ErrorResponse> {
     let meta = TransactionRepository::get(&state.redis, transaction_id).await?;
 
+    if !matches!(meta.transaction_type, TransactionType::ChunkedUpload { .. }) {
+        return Err(ErrorResponse::conflict(
+            error_handlers::codes::ConflictErrorCode::WrongStep,
+            None,
+            Some(format!("Current step: {:?}", meta.transaction_type)),
+        ));
+    }
+
     // Try to acquire upload slot (limit concurrent uploads)
-    let acquired = TransactionRepository::try_acquire_upload_slot(&state.redis, transaction_id).await?;
+    let acquired =
+        TransactionRepository::try_acquire_upload_slot(&state.redis, transaction_id).await?;
+
     if !acquired {
         return Err(ErrorResponse {
             error_code: "too_many_concurrent_uploads".into(),
@@ -69,17 +79,6 @@ async fn upload_chunk_inner(
     content_range: axum_extra::headers::ContentRange,
     body: Bytes,
 ) -> Result<(), ErrorResponse> {
-    match meta.transaction_type {
-        TransactionType::VerifyRanges { .. } => {
-            return Err(ErrorResponse::forbidden(
-                error_handlers::codes::ForbiddenErrorCode::AccessDenied,
-                None,
-                None,
-            ));
-        }
-        TransactionType::ChunkedUpload { .. } | TransactionType::WholeFileUpload { .. } => {}
-    }
-
     let (start, end) = content_range.bytes_range().ok_or_else(|| {
         ErrorResponse::bad_request(
             error_handlers::codes::BadRequestErrorCode::InvalidBody,
@@ -90,10 +89,13 @@ async fn upload_chunk_inner(
 
     let chunk_size = end - start;
 
+    let path_to_file = match &meta.transaction_type {
+        TransactionType::ChunkedUpload { path_to_file } => path_to_file,
+        _ => unreachable!(),
+    };
+
     // Validate chunk size for chunked uploads
-    if matches!(meta.transaction_type, TransactionType::ChunkedUpload { .. })
-        && chunk_size > crate::redis::transaction::CHUNK_SIZE
-    {
+    if chunk_size > crate::redis::transaction::CHUNK_SIZE || body.len() != chunk_size as usize {
         return Err(ErrorResponse {
             error_code: "Chunk size is too large. Max chunk size is 5 MB".into(),
             error: "Payload too large".into(),
@@ -102,35 +104,6 @@ async fn upload_chunk_inner(
             dev_details: None,
         });
     }
-
-    // Validate whole file upload size
-    if matches!(
-        meta.transaction_type,
-        TransactionType::WholeFileUpload { .. }
-    ) {
-        let total_size = content_range.bytes_len();
-        if total_size != Some(meta.size) || chunk_size != meta.size {
-            return Err(ErrorResponse::bad_request(
-                error_handlers::codes::BadRequestErrorCode::InvalidBody,
-                None,
-                Some("File size mismatch".into()),
-            ));
-        }
-    }
-
-    if body.len() != chunk_size as usize {
-        return Err(ErrorResponse::bad_request(
-            error_handlers::codes::BadRequestErrorCode::InvalidBody,
-            None,
-            Some("Content-Range header does not match body size".into()),
-        ));
-    }
-
-    let path_to_file = match &meta.transaction_type {
-        TransactionType::ChunkedUpload { path_to_file } => path_to_file,
-        TransactionType::WholeFileUpload { path_to_file } => path_to_file,
-        _ => unreachable!(),
-    };
 
     let mut file = OpenOptions::new()
         .write(true)

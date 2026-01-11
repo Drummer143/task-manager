@@ -74,6 +74,7 @@ impl std::fmt::Display for NotFoundErrorCode {
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "snake_case")]
 pub enum ConflictErrorCode {
+    WrongStep,
     EmailTaken,
     InstanceInUse,
     AccessAlreadyGiven,
@@ -82,6 +83,7 @@ pub enum ConflictErrorCode {
 impl std::fmt::Display for ConflictErrorCode {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
+            ConflictErrorCode::WrongStep => write!(f, "wrong_step"),
             ConflictErrorCode::EmailTaken => write!(f, "email_taken"),
             ConflictErrorCode::InstanceInUse => write!(f, "instance_in_use"),
             ConflictErrorCode::AccessAlreadyGiven => write!(f, "access_already_given"),

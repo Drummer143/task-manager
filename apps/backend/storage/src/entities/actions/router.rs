@@ -10,8 +10,14 @@ pub fn init() -> Router<AppState> {
             post(super::controller::upload_init::upload_init),
         )
         .route(
-            "/actions/upload/{transaction_id}",
-            post(super::controller::upload_chunked::upload_chunked),
+            "/actions/upload/{transaction_id}/whole-file",
+            post(super::controller::upload_whole_file::upload_whole_file)
+                .layer(DefaultBodyLimit::max(20 * 1024 * 1024)),
+        )
+        .route(
+            "/actions/upload/{transaction_id}/chunk",
+            post(super::controller::upload_chunked::upload_chunked)
+                .layer(DefaultBodyLimit::max(10 * 1024 * 1024)),
         )
         .route(
             "/actions/upload/{transaction_id}/verify",
@@ -22,5 +28,4 @@ pub fn init() -> Router<AppState> {
             "/actions/upload/{transaction_id}/complete",
             post(super::controller::upload_complete::upload_complete),
         )
-        .layer(DefaultBodyLimit::max(10 * 1024 * 1024)) // 10MB limit
 }
