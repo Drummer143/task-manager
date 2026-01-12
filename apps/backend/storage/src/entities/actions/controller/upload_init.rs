@@ -26,8 +26,7 @@ pub async fn upload_init(
     State(state): State<AppState>,
     Json(body): Json<UploadInitDto>,
 ) -> Result<Json<UploadInitResponse>, ErrorResponse> {
-    match ActionsService::upload_init(&state, body).await {
-        Ok(response) => Ok(Json(response)),
-        Err(error) => Err(error),
-    }
+    ActionsService::upload_init(&state, body)
+        .await
+        .map(Json)
 }

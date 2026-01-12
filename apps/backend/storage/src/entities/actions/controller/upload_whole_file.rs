@@ -29,8 +29,7 @@ pub async fn upload_whole_file(
     Path(transaction_id): Path<Uuid>,
     body: Bytes,
 ) -> Result<Json<UploadCompleteResponse>, ErrorResponse> {
-    match ActionsService::upload_whole_file(&state, transaction_id, body).await {
-        Ok(response) => Ok(Json(response)),
-        Err(error) => Err(error),
-    }
+    ActionsService::upload_whole_file(&state, transaction_id, body)
+        .await
+        .map(Json)
 }

@@ -85,8 +85,8 @@ async fn main() {
     let app_state = types::app_state::AppState {
         postgres: db,
         redis: Arc::new(redis),
-        assets_folder_path: assets_folder_path.to_str().unwrap().to_string(),
-        temp_folder_path: temp_folder_path.to_str().unwrap().to_string(),
+        assets_folder_path: Arc::new(assets_folder_path.to_str().unwrap().to_string()),
+        temp_folder_path: Arc::new(temp_folder_path.to_str().unwrap().to_string()),
     };
 
     let app = axum::Router::new()

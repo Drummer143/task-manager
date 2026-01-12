@@ -1,8 +1,5 @@
 use crate::{
-    entities::actions::dto::{
-        UploadChunkedStatusResponse, UploadStatusResponse, VerifyRangesStatusResponse,
-    },
-    redis::{TransactionRepository, transaction::TransactionType},
+    entities::actions::{dto::UploadStatusResponse, service::ActionsService},
     types::app_state::AppState,
 };
 use axum::{
@@ -27,28 +24,7 @@ pub async fn upload_status(
     State(state): State<AppState>,
     Path(transaction_id): Path<Uuid>,
 ) -> Result<Json<UploadStatusResponse>, ErrorResponse> {
-    let meta = TransactionRepository::get(&state.redis, transaction_id).await?;
-
-    let response: UploadStatusResponse = match meta.transaction_type {
-        TransactionType::ChunkedUpload { .. } => {
-            let missing_chunks =
-                TransactionRepository::get_all_missing_chunks(&state.redis, transaction_id).await?;
-
-            if missing_chunks.is_empty() {
-                UploadStatusResponse::Complete
-            } else {
-                UploadStatusResponse::UploadChunked(UploadChunkedStatusResponse {
-                    missing_chunks: Some(missing_chunks),
-                    max_concurrent_uploads: crate::redis::transaction::MAX_CONCURRENT_UPLOADS,
-                    chunk_size: crate::redis::transaction::CHUNK_SIZE,
-                })
-            }
-        }
-        TransactionType::WholeFileUpload { .. } => UploadStatusResponse::UploadWholeFile,
-        TransactionType::VerifyRanges { ranges } => {
-            UploadStatusResponse::VerifyRanges(VerifyRangesStatusResponse { ranges })
-        }
-    };
-
-    Ok(Json(response))
+    ActionsService::upload_status(&state, transaction_id)
+        .await
+        .map(Json)
 }

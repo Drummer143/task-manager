@@ -30,8 +30,7 @@ pub async fn upload_verify(
     Path(transaction_id): Path<Uuid>,
     Json(body): Json<UploadVerifyDto>,
 ) -> Result<Json<UploadVerifyResponse>, ErrorResponse> {
-    match ActionsService::upload_verify(&state, transaction_id, body).await {
-        Ok(response) => Ok(Json(response)),
-        Err(error) => Err(error),
-    }
+    ActionsService::upload_verify(&state, transaction_id, body)
+        .await
+        .map(Json)
 }

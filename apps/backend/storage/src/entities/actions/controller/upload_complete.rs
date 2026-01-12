@@ -25,8 +25,7 @@ pub async fn upload_complete(
     State(state): State<AppState>,
     Path(transaction_id): Path<Uuid>,
 ) -> Result<Json<UploadCompleteResponse>, ErrorResponse> {
-    match ActionsService::upload_complete(&state, transaction_id).await {
-        Ok(response) => Ok(Json(response)),
-        Err(error) => Err(error),
-    }
+    ActionsService::upload_complete(&state, transaction_id)
+        .await
+        .map(Json)
 }

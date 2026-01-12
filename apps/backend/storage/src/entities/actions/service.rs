@@ -13,9 +13,10 @@ use uuid::Uuid;
 use crate::{
     entities::actions::{
         dto::{
-            UploadChunkedResponse, UploadCompleteResponse, UploadInitDto, UploadInitResponse,
-            UploadVerifyDto, UploadVerifyResponse, UploadWholeFileResponse,
-            VerifyRangesResponse,
+            UploadChunkedResponse, UploadChunkedStatusResponse, UploadCompleteResponse,
+            UploadInitDto, UploadInitResponse, UploadStatusResponse, UploadVerifyDto,
+            UploadVerifyResponse, UploadWholeFileResponse, VerifyRangesResponse,
+            VerifyRangesStatusResponse,
         },
         shared::{build_path_to_assets_file, build_path_to_temp_file},
     },
@@ -420,6 +421,60 @@ impl ActionsService {
         TransactionRepository::release_upload_slot(&state.redis, transaction_id).await?;
 
         result
+    }
+
+    pub async fn upload_status(
+        state: &AppState,
+        transaction_id: Uuid,
+    ) -> Result<UploadStatusResponse, ErrorResponse> {
+        let meta = TransactionRepository::get(&state.redis, transaction_id).await?;
+
+        let response = match meta.transaction_type {
+            TransactionType::ChunkedUpload { .. } => {
+                let missing_chunks =
+                    TransactionRepository::get_all_missing_chunks(&state.redis, transaction_id)
+                        .await?;
+
+                if missing_chunks.is_empty() {
+                    UploadStatusResponse::Complete
+                } else {
+                    UploadStatusResponse::UploadChunked(UploadChunkedStatusResponse {
+                        missing_chunks: Some(missing_chunks),
+                        max_concurrent_uploads: crate::redis::transaction::MAX_CONCURRENT_UPLOADS,
+                        chunk_size: crate::redis::transaction::CHUNK_SIZE,
+                    })
+                }
+            }
+            TransactionType::WholeFileUpload { .. } => UploadStatusResponse::UploadWholeFile,
+            TransactionType::VerifyRanges { ranges } => {
+                UploadStatusResponse::VerifyRanges(VerifyRangesStatusResponse { ranges })
+            }
+        };
+
+        Ok(response)
+    }
+
+    pub async fn upload_cancel(
+        state: &AppState,
+        transaction_id: Uuid,
+    ) -> Result<(), ErrorResponse> {
+        let meta = TransactionRepository::get(&state.redis, transaction_id).await?;
+
+        // Delete temp file if it exists
+        if let TransactionType::ChunkedUpload { path_to_file }
+        | TransactionType::WholeFileUpload { path_to_file } = meta.transaction_type
+        {
+            if let Err(e) = tokio::fs::remove_file(&path_to_file).await {
+                // Ignore NotFound errors - file may not have been created yet
+                if e.kind() != std::io::ErrorKind::NotFound {
+                    return Err(ErrorResponse::internal_server_error(Some(e.to_string())));
+                }
+            }
+        }
+
+        TransactionRepository::delete(&state.redis, transaction_id).await?;
+
+        Ok(())
     }
 
     pub async fn upload_complete(
