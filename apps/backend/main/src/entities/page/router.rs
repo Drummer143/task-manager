@@ -51,6 +51,6 @@ pub fn init(state: AppState) -> Router<AppState> {
         .merge(scoped)
         .layer(axum::middleware::from_fn_with_state(
             state,
-            crate::middleware::auth_guard::auth_guard,
+            utils::auth_middleware::auth_guard,
         ))
 }

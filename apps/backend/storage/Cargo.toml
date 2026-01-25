@@ -49,5 +49,6 @@ utoipa = { version = "5.4", features = ["uuid", "chrono"] }
 utoipa-axum = "0.2"
 utoipa-swagger-ui = { version = "9.0", features = ["axum"] }
 uuid = { version = "1", features = ["v4", "serde"] }
+utils = { path = "../../../libs/backend/utils" }
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html

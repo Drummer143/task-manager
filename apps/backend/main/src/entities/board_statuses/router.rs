@@ -17,6 +17,6 @@ pub fn init(app_state: AppState) -> Router<AppState> {
         ))
         .layer(axum::middleware::from_fn_with_state(
             app_state,
-            crate::middleware::auth_guard::auth_guard,
+            utils::auth_middleware::auth_guard,
         ))
 }

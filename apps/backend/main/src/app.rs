@@ -1,8 +1,9 @@
 use axum::http;
+use utils::{auth_middleware::InternalAuthState, types::jwks::JwkSet};
 use std::sync::Arc;
 use utoipa::OpenApi;
 
-use crate::types::app_state::{AppState, JwkSet};
+use crate::types::app_state::AppState;
 
 mod db_connections;
 mod entities;
@@ -28,10 +29,10 @@ pub async fn build() -> axum::Router {
 
     let jwt_secret = std::env::var("JWT_SECRET").expect("JWT_SECRET must be set");
 
-    let jwks: JwkSet = reqwest::get(&jwks_url)
+    let jwks = reqwest::get(&jwks_url)
         .await
         .expect("Failed to fetch JWKS")
-        .json()
+        .json::<JwkSet>()
         .await
         .expect("Failed to parse JWKS");
 
@@ -64,11 +65,15 @@ pub async fn build() -> axum::Router {
         ])
         .allow_credentials(true);
 
-    let app_state = AppState {
-        postgres,
+    let auth = InternalAuthState {
         jwks: Arc::new(tokio::sync::RwLock::new(jwks)),
         authentik_jwks_url: Arc::new(jwks_url),
         authentik_audience: Arc::new(authentik_audience),
+    };
+
+    let app_state = AppState {
+        postgres,
+        auth,
         jwt_secret: Arc::new(jwt_secret),
     };
 

@@ -2,7 +2,7 @@ use axum::{Router, extract::DefaultBodyLimit, routing::{delete, get, post}};
 
 use crate::types::app_state::AppState;
 
-pub fn init() -> Router<AppState> {
+pub fn init(state: AppState) -> Router<AppState> {
     Router::new()
         .route(
             "/actions/upload/{transaction_id}/status",
@@ -35,4 +35,8 @@ pub fn init() -> Router<AppState> {
             "/actions/upload/{transaction_id}/complete",
             post(super::controller::upload_complete::upload_complete),
         )
+        .layer(axum::middleware::from_fn_with_state(
+            state,
+            utils::auth_middleware::auth_guard,
+        ))
 }

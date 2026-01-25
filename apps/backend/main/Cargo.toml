@@ -56,3 +56,4 @@ sqlx = { version = "0.8", features = [
     "chrono",
 ] }
 uuid = { version = "1", features = ["v4", "serde"] }
+utils = { path = "../../../libs/backend/utils" }

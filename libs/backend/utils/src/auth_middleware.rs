@@ -1,18 +1,24 @@
-use crate::types::app_state::{AppState, JwkSet};
+use std::sync::Arc;
+
 use axum::{
     body::Body,
     extract::State,
     http::{Request, StatusCode, header},
     middleware::Next,
     response::Response,
+    routing::Route,
 };
 use error_handlers::{codes, handlers::ErrorResponse};
 use jsonwebtoken::{Algorithm, DecodingKey, Validation, decode, decode_header};
+use tokio::sync::RwLock;
+use tower::Layer;
 use uuid::Uuid;
 
+use crate::types::jwks::JwkSet;
+
 #[derive(serde::Deserialize)]
-struct Claims {
-    sub: Uuid,
+pub struct Claims {
+    pub sub: Uuid,
 }
 
 pub async fn fetch_jwks(url: &str) -> Result<JwkSet, String> {
@@ -24,9 +30,16 @@ pub async fn fetch_jwks(url: &str) -> Result<JwkSet, String> {
         .map_err(|e| e.to_string())
 }
 
+#[derive(Clone)]
+pub struct InternalAuthState {
+    pub jwks: Arc<RwLock<JwkSet>>,
+    pub authentik_jwks_url: Arc<String>,
+    pub authentik_audience: Arc<String>,
+}
+
 #[cfg(feature = "test_auth_guard")]
 pub async fn auth_guard(
-    State(_state): State<AppState>,
+    State(_state): State<InternalAuthState>,
     mut _req: Request<Body>,
     next: Next,
 ) -> Response<Body> {
@@ -35,7 +48,7 @@ pub async fn auth_guard(
 
 #[cfg(not(feature = "test_auth_guard"))]
 pub async fn auth_guard(
-    State(state): State<AppState>,
+    State(state): State<InternalAuthState>,
     mut req: Request<Body>,
     next: Next,
 ) -> Response<Body> {

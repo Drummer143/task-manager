@@ -2,7 +2,9 @@ use std::sync::Arc;
 
 use axum::http;
 use mimalloc::MiMalloc;
+use types::app_state::InternalAuthState;
 use utoipa::OpenApi;
+use utils::types::jwks::JwkSet;
 
 mod db_connections;
 mod entities;
@@ -75,6 +77,23 @@ async fn main() {
 
     let main_service_url = std::env::var("MAIN_SERVICE_URL").expect("MAIN_SERVICE_URL not found");
 
+    let jwks_url = std::env::var("AUTHENTIK_JWKS_URL").expect("AUTHENTIK_JWKS_URL must be set");
+    let authentik_audience =
+        std::env::var("AUTHENTIK_AUDIENCE").expect("AUTHENTIK_AUDIENCE must be set");
+
+    let jwks = reqwest::get(&jwks_url)
+        .await
+        .expect("Failed to fetch JWKS")
+        .json::<JwkSet>()
+        .await
+        .expect("Failed to parse JWKS");
+
+    let auth = InternalAuthState {
+        jwks: Arc::new(tokio::sync::RwLock::new(jwks)),
+        authentik_jwks_url: Arc::new(jwks_url),
+        authentik_audience: Arc::new(authentik_audience),
+    };
+
     let assets_folder_path = static_folder_path.join("assets");
     let temp_folder_path = static_folder_path.join("temp");
 
@@ -93,10 +112,11 @@ async fn main() {
         temp_folder_path: Arc::new(temp_folder_path.to_str().unwrap().to_string()),
         jwt_secret: Arc::new(jwt_secret),
         main_service_url: Arc::new(main_service_url),
+        auth,
     };
 
     let app = axum::Router::new()
-        .merge(entities::actions::router::init())
+        .merge(entities::actions::router::init(app_state.clone()))
         // .merge(entities::files::router::init())
         .merge(
             utoipa_swagger_ui::SwaggerUi::new("/api")

@@ -4,9 +4,9 @@ use crate::{
     entities::assets::controller::{
         create_asset::create_asset, create_upload_token::create_upload_token,
     },
-    middleware::auth_guard::auth_guard,
     types::app_state::AppState,
 };
+use utils::auth_middleware::auth_guard;
 
 pub fn init(state: AppState) -> Router<AppState> {
     let external_router = Router::new()
