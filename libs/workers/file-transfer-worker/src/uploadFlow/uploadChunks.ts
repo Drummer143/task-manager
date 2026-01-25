@@ -1,17 +1,23 @@
 import { uploadChunk } from "@task-manager/api";
 
-import { DebugEvent } from "./types";
-import { sendProgressEvent } from "./utils";
+import { MessageToHost } from "../types";
+import { checkAborted, sendProgressEvent } from "../utils";
 
 export const uploadFileByChunks = async (
 	file: File,
 	chunkSize: number,
 	maxConcurrency: number,
-	transactionId: string
+	transactionId: string,
+	fileId: string,
+	onProgress: (event: MessageToHost) => void = sendProgressEvent,
+	signal?: AbortSignal,
+	missingChunks?: number[]
 ) => {
 	const totalChunks = Math.ceil(file.size / chunkSize);
 
-	const queue = Array.from({ length: totalChunks }, (_, i) => i);
+	const queue = missingChunks
+		? [...missingChunks]
+		: Array.from({ length: totalChunks }, (_, i) => i);
 
 	let totalUploaded = 0;
 
@@ -20,24 +26,17 @@ export const uploadFileByChunks = async (
 
 		const percent = (totalUploaded / file.size) * 100;
 
-		sendProgressEvent({
+		onProgress({
 			type: "progress",
+			fileId,
 			data: { step: "uploadingFile", progress: percent }
 		});
 	};
 
-	postMessage({
-		type: "debug",
-		data: {
-			chunkSize,
-			maxConcurrency,
-			totalChunks,
-			transactionId
-		}
-	} as DebugEvent);
-
 	const worker = async (): Promise<void> => {
 		while (queue.length > 0) {
+			checkAborted(signal, transactionId);
+
 			try {
 				const chunkIndex = queue.shift();
 
@@ -47,22 +46,26 @@ export const uploadFileByChunks = async (
 				const end = Math.min(start + chunkSize, file.size);
 				const chunkBlob = file.slice(start, end);
 
-				await uploadChunk({
-					pathParams: {
-						transactionId
+				await uploadChunk(
+					{
+						pathParams: {
+							transactionId
+						},
+						body: {
+							chunk: chunkBlob,
+							start,
+							end,
+							total: file.size
+						}
 					},
-					body: {
-						chunk: chunkBlob,
-						start,
-						end,
-						total: file.size
-					}
-				});
+					signal
+				);
 
 				updateGlobalProgress(chunkBlob.size);
 			} catch (error) {
-				sendProgressEvent({
+				onProgress({
 					type: "error",
+					fileId,
 					error
 				});
 

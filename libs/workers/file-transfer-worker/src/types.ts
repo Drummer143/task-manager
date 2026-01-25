@@ -2,30 +2,39 @@ import { UploadCompleteResponse } from "@task-manager/api";
 
 export interface StartUploadEvent {
 	type: "upload";
+	fileId: string;
 	file: File;
+	uploadToken: string;
 }
 
-export type MessageToWorker = StartUploadEvent;
+export interface AbortUploadEvent {
+	type: "abort";
+	fileId: string;
+}
+
+export interface AbortAllEvent {
+	type: "abortAll";
+}
+
+export type MessageToWorker = StartUploadEvent | AbortUploadEvent | AbortAllEvent;
 
 export interface ErrorEvent {
 	type: "error";
+	fileId: string;
 	error: unknown;
-}
-
-export interface DebugEvent {
-	type: "debug";
-	data: unknown;
 }
 
 export interface UploadFileProgressEvent {
 	type: "progress";
+	fileId: string;
 	data:
 		| {
 				step:
 					| "computingHash"
 					| "initializingTransfer"
 					| "verifyingFile"
-					| "checkingIntegrity";
+					| "checkingIntegrity"
+					| "queued";
 		  }
 		| {
 				step: "uploadingFile";
@@ -35,10 +44,20 @@ export interface UploadFileProgressEvent {
 
 export interface UploadCompleteEvent {
 	type: "uploadComplete";
+	fileId: string;
 	data: UploadCompleteResponse;
 }
 
-export type MessageToHost = ErrorEvent | DebugEvent | UploadFileProgressEvent | UploadCompleteEvent;
+export interface UploadCancelledEvent {
+	type: "uploadCancelled";
+	fileId: string;
+}
+
+export type MessageToHost =
+	| ErrorEvent
+	| UploadFileProgressEvent
+	| UploadCompleteEvent
+	| UploadCancelledEvent;
 
 export interface ReadyEvent {
 	type: "ready";

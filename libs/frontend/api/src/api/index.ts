@@ -1,6 +1,8 @@
 export * from "./profile";
 
-export { insertAccessToken, type BaseRequest } from "./base";
+export { insertAccessToken, axiosInstance, type BaseRequest } from "./base";
+
+export * from "./assets";
 
 export * from "./auth";
 
