@@ -7,7 +7,6 @@ CREATE TABLE
         size BIGINT NOT NULL,
         path TEXT NOT NULL,
         mime_type TEXT,
-
         created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
 
@@ -20,6 +19,12 @@ CREATE TABLE
         name TEXT NOT NULL,
         created_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
         updated_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP,
-
         FOREIGN KEY (blob_id) REFERENCES blobs (id)
-    )
+    );
+
+ALTER TABLE tasks
+ADD COLUMN is_draft BOOLEAN NOT NULL DEFAULT true;
+
+UPDATE tasks
+SET
+    is_draft = false;

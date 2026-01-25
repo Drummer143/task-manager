@@ -1,6 +1,5 @@
 use error_handlers::handlers::ErrorResponse;
 use sql::{
-    task::{TaskRepository, model::Task},
     shared::{
         traits::{
             PostgresqlRepositoryCreate, PostgresqlRepositoryDelete, PostgresqlRepositoryGetOneById,
@@ -8,12 +7,17 @@ use sql::{
         },
         types::ShiftAction,
     },
+    task::{TaskRepository, model::Task},
 };
 use uuid::Uuid;
 
-use crate::shared::traits::{
-    ServiceBase, ServiceCreateMethod, ServiceDeleteMethod, ServiceGetOneByIdMethod,
-    ServiceUpdateMethod,
+use crate::{
+    entities::task::controller::create_draft::CreateDraftRequest,
+    shared::traits::{
+        ServiceBase, ServiceCreateMethod, ServiceDeleteMethod, ServiceGetOneByIdMethod,
+        ServiceUpdateMethod,
+    },
+    types::app_state::AppState,
 };
 
 pub struct TaskService;
@@ -26,7 +30,7 @@ impl ServiceCreateMethod for TaskService {
     type CreateDto = sql::task::dto::CreateTaskDto;
 
     async fn create(
-        app_state: &crate::types::app_state::AppState,
+        app_state: &AppState,
         dto: Self::CreateDto,
     ) -> Result<Self::Response, ErrorResponse> {
         TaskRepository::create(&app_state.postgres, dto)
@@ -39,7 +43,7 @@ impl ServiceUpdateMethod for TaskService {
     type UpdateDto = sql::task::dto::UpdateTaskDto;
 
     async fn update(
-        app_state: &crate::types::app_state::AppState,
+        app_state: &AppState,
         id: Uuid,
         dto: Self::UpdateDto,
     ) -> Result<Self::Response, ErrorResponse> {
@@ -133,7 +137,7 @@ impl ServiceUpdateMethod for TaskService {
 
 impl ServiceGetOneByIdMethod for TaskService {
     async fn get_one_by_id(
-        app_state: &crate::types::app_state::AppState,
+        app_state: &AppState,
         id: Uuid,
     ) -> Result<Self::Response, ErrorResponse> {
         TaskRepository::get_one_by_id(&app_state.postgres, id)
@@ -143,10 +147,7 @@ impl ServiceGetOneByIdMethod for TaskService {
 }
 
 impl ServiceDeleteMethod for TaskService {
-    async fn delete(
-        app_state: &crate::types::app_state::AppState,
-        id: Uuid,
-    ) -> Result<Self::Response, ErrorResponse> {
+    async fn delete(app_state: &AppState, id: Uuid) -> Result<Self::Response, ErrorResponse> {
         TaskRepository::delete(&app_state.postgres, id)
             .await
             .map_err(ErrorResponse::from)
@@ -155,7 +156,7 @@ impl ServiceDeleteMethod for TaskService {
 
 impl TaskService {
     pub async fn change_status<'a>(
-        app_state: &crate::types::app_state::AppState,
+        app_state: &AppState,
         task_id: Uuid,
         dto: sql::task::dto::ChangeStatusDto,
     ) -> Result<Task, ErrorResponse> {
@@ -187,10 +188,9 @@ impl TaskService {
             return Err(e);
         }
 
-        let last_position =
-            sql::task::TaskRepository::get_last_position(&mut *tx, dto.status_id)
-                .await
-                .map_err(ErrorResponse::from);
+        let last_position = sql::task::TaskRepository::get_last_position(&mut *tx, dto.status_id)
+            .await
+            .map_err(ErrorResponse::from);
 
         if let Err(e) = last_position {
             tx.rollback().await?;
@@ -227,11 +227,53 @@ impl TaskService {
     }
 
     pub async fn get_all_tasks_by_page_id<'a>(
-        app_state: &crate::types::app_state::AppState,
+        app_state: &AppState,
         page_id: Uuid,
     ) -> Result<Vec<Task>, ErrorResponse> {
         TaskRepository::get_all_tasks_by_page_id(&app_state.postgres, page_id)
             .await
             .map_err(ErrorResponse::from)
+    }
+
+    pub async fn create_draft(
+        state: &AppState,
+        page_id: Uuid,
+        user_id: Uuid,
+        body: CreateDraftRequest,
+    ) -> Result<Task, ErrorResponse> {
+        let board_status_id = if let Some(status) = body.board_status_id {
+            status
+        } else {
+            sql::board_statuses::BoardStatusRepository::get_initial_board_status_by_page_id(
+                &state.postgres,
+                page_id,
+            )
+            .await?
+            .id
+        };
+
+        let position =
+            sql::task::TaskRepository::get_last_position(&state.postgres, board_status_id)
+                .await?
+                .unwrap_or_default();
+
+        println!("position: {} for status: {}", position, board_status_id);
+
+        TaskRepository::create(
+            &state.postgres,
+            sql::task::dto::CreateTaskDto {
+                assignee_id: None,
+                description: None,
+                due_date: None,
+                page_id,
+                position: position + 1,
+                is_draft: true,
+                status_id: board_status_id,
+                reporter_id: user_id,
+                title: "".to_string(),
+            },
+        )
+        .await
+        .map_err(ErrorResponse::from)
     }
 }

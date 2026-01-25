@@ -26,8 +26,8 @@ impl PostgresqlRepositoryCreate for TaskRepository {
         sqlx::query_as::<_, Task>(
             r#"
             INSERT INTO tasks 
-            (title, status_id, position, due_date, assignee_id, page_id, reporter_id, description) 
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8) 
+            (title, status_id, position, due_date, assignee_id, page_id, reporter_id, description, is_draft) 
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
             RETURNING *
             "#,
         )
@@ -39,6 +39,7 @@ impl PostgresqlRepositoryCreate for TaskRepository {
         .bind(dto.page_id)
         .bind(dto.reporter_id)
         .bind(sqlx::types::Json(&dto.description))
+        .bind(dto.is_draft)
         .fetch_one(executor)
         .await
     }

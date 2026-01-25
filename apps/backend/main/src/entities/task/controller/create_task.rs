@@ -44,6 +44,7 @@ pub async fn create_task(
             reporter_id,
             page_id,
             position: last_position + 1,
+            is_draft: false,
         },
     )
     .await

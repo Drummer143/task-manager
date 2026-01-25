@@ -1,9 +1,9 @@
 import React, { useCallback, useEffect } from "react";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createTask } from "@task-manager/api";
+import { createDraft as createDraftApi, createTask as createTaskApi } from "@task-manager/api";
 import { useDisclosure } from "@task-manager/react-utils";
-import { Form } from "antd";
+import { App, Form } from "antd";
 import { useParams } from "react-router";
 
 import TaskForm from "../TaskForm";
@@ -16,16 +16,42 @@ const NewTaskForm: React.FC = () => {
 
 	const { onClose, onOpen, open } = useDisclosure();
 
+	const message = App.useApp().message;
+
 	const [form] = Form.useForm<FormValues>();
 
-	const { mutateAsync, isPending, error } = useMutation({
-		mutationFn: createTask,
-		onSuccess: () => queryClient.invalidateQueries({ queryKey: [pageId] })
+	const {
+		mutateAsync: createDraft,
+		isPending: isDraftPending,
+		reset
+	} = useMutation({
+		mutationFn: createDraftApi,
+		onSuccess: () => queryClient.invalidateQueries({ queryKey: [pageId] }),
+		onError: error => {
+			onClose();
+
+			form.resetFields();
+
+			message.error(error.message);
+		}
+	});
+
+	const {
+		mutateAsync: createTask,
+		isPending,
+		error: taskError
+	} = useMutation({
+		mutationFn: createTaskApi,
+		onSuccess: () => {
+			queryClient.invalidateQueries({ queryKey: [pageId] });
+
+			reset();
+		}
 	});
 
 	const handleSubmit = useCallback(
 		async (values: FormValues) => {
-			await mutateAsync({
+			await createTask({
 				pathParams: {
 					pageId
 				},
@@ -34,7 +60,7 @@ const NewTaskForm: React.FC = () => {
 
 			onClose();
 		},
-		[pageId, mutateAsync, onClose]
+		[pageId, createTask, onClose]
 	);
 
 	const handleCancel = () => {
@@ -46,18 +72,28 @@ const NewTaskForm: React.FC = () => {
 		const handleOpenModal: DocumentEventHandler<"createTask"> = e => {
 			form.setFieldValue("statusId", e.detail.status);
 
+			createDraft({
+				pathParams: {
+					pageId
+				},
+				body: {
+					boardStatusId: e.detail.status
+				}
+			});
+
 			onOpen();
 		};
 
 		document.addEventListener("createTask", handleOpenModal);
 
 		return () => document.removeEventListener("createTask", handleOpenModal);
-	}, [form, onOpen]);
+	}, [createDraft, form, onOpen, pageId]);
 
 	return (
 		<TaskForm
 			isSubmitting={isPending}
-			submitError={error?.message}
+			submitError={taskError?.message}
+			formLoading={isDraftPending}
 			onCancel={handleCancel}
 			onSubmit={handleSubmit}
 			onClose={onClose}

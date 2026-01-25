@@ -1,16 +1,20 @@
+use axum::extract::FromRequestParts;
 use error_handlers::{codes, handlers::ErrorResponse};
 
 pub struct ValidatedPath<T>(pub T);
 
-impl<B, T> axum::extract::FromRequest<B> for ValidatedPath<T>
+impl<S, T> FromRequestParts<S> for ValidatedPath<T>
 where
-    B: Send + Sync,
+    S: Send + Sync,
     T: serde::de::DeserializeOwned + Send,
 {
     type Rejection = ErrorResponse;
 
-    async fn from_request(req: axum::extract::Request, state: &B) -> Result<Self, Self::Rejection> {
-        let path = axum::extract::Path::<T>::from_request(req, state).await;
+    async fn from_request_parts(
+        parts: &mut axum::http::request::Parts,
+        state: &S,
+    ) -> Result<Self, Self::Rejection> {
+        let path = axum::extract::Path::<T>::from_request_parts(parts, state).await;
 
         match path {
             Ok(path) => Ok(ValidatedPath(path.0)),

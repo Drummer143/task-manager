@@ -13,3 +13,6 @@ CREATE TABLE
         deleted_at TIMESTAMPTZ,
         last_accessed_at TIMESTAMPTZ NOT NULL DEFAULT CURRENT_TIMESTAMP
     );
+
+ALTER TABLE tasks
+DROP COLUMN is_draft;

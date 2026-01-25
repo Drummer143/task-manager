@@ -16,6 +16,7 @@ pub struct CreateTaskDto {
 }
 
 #[derive(Debug, Serialize, utoipa::ToSchema, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct TaskResponse {
     pub id: Uuid,
     pub title: String,
@@ -24,6 +25,7 @@ pub struct TaskResponse {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub due_date: Option<DateTime<Utc>>,
     pub position: i32,
+    pub is_draft: bool,
 
     pub status: Option<BoardStatusResponseDto>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -42,9 +44,10 @@ impl From<Task> for TaskResponse {
         Self {
             id: value.id,
             title: value.title,
-            description: value.description.map(|json| json.0),
+            description: value.description.0,
             due_date: value.due_date,
             position: value.position,
+            is_draft: value.is_draft,
             status: None,
             reporter: None,
             assignee: None,

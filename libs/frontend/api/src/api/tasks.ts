@@ -45,7 +45,7 @@ export const getTask = async <T extends GetTaskIncludes | undefined = undefined>
 		})
 	).data;
 
-export type createTaskRequest = BaseRequest<
+export type CreateTaskRequest = BaseRequest<
 	{ pageId: string },
 	{
 		title: string;
@@ -56,15 +56,21 @@ export type createTaskRequest = BaseRequest<
 	}
 >;
 
-export const createTask = async (params: createTaskRequest) =>
+export const createTask = async (params: CreateTaskRequest) =>
 	(await axiosInstance.post<Task>(`/pages/${params.pathParams.pageId}/tasks`, params.body)).data;
 
 export type UpdateTaskRequest = BaseRequest<
 	{ taskId: string },
-	Partial<createTaskRequest["body"]> & {
+	Partial<CreateTaskRequest["body"]> & {
 		position?: number;
 	}
 >;
+
+export type CreateDraftRequest = BaseRequest<{ pageId: string }, { boardStatusId?: string }>;
+
+export const createDraft = async (params: CreateDraftRequest) =>
+	(await axiosInstance.post<Task>(`/pages/${params.pathParams.pageId}/tasks/draft`, params.body))
+		.data;
 
 export const updateTask = async (params: UpdateTaskRequest) =>
 	(await axiosInstance.put<Task>(`/tasks/${params.pathParams.taskId}`, params.body)).data;

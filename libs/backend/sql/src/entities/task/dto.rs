@@ -14,6 +14,7 @@ pub struct CreateTaskDto {
     pub due_date: Option<DateTime<Utc>>,
     pub assignee_id: Option<Uuid>,
     pub reporter_id: Uuid,
+    pub is_draft: bool,
     pub page_id: Uuid,
 }
 
