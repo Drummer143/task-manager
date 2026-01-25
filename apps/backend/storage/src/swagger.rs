@@ -3,7 +3,8 @@ use utils::swagger::SecurityAddon;
 #[derive(utoipa::OpenApi)]
 #[openapi(
     paths(
-        // crate::entities::files::controller::get_file::get_file,
+        crate::entities::files::controller::get_file::get_file,
+
         crate::entities::actions::controller::upload_init::upload_init,
         crate::entities::actions::controller::upload_chunk::upload_chunk,
         crate::entities::actions::controller::upload_status::upload_status,

@@ -19,12 +19,12 @@ static GLOBAL: MiMalloc = MiMalloc;
 async fn main() {
     let _ = dotenvy::dotenv();
 
-    // use tracing_subscriber::{EnvFilter, layer::SubscriberExt, util::SubscriberInitExt};
+    use tracing_subscriber::{EnvFilter, layer::SubscriberExt, util::SubscriberInitExt};
 
-    // tracing_subscriber::registry()
-    //     .with(EnvFilter::new("debug,lapin=warn,sqlx=warn"))
-    //     .with(tracing_subscriber::fmt::layer())
-    //     .init();
+    tracing_subscriber::registry()
+        .with(EnvFilter::new("debug,lapin=warn,sqlx=warn"))
+        .with(tracing_subscriber::fmt::layer())
+        .init();
 
     let cors = tower_http::cors::CorsLayer::new()
         .allow_origin(tower_http::cors::AllowOrigin::list([
@@ -117,13 +117,13 @@ async fn main() {
 
     let app = axum::Router::new()
         .merge(entities::actions::router::init(app_state.clone()))
-        // .merge(entities::files::router::init())
+        .merge(entities::files::router::init(app_state.clone()))
         .merge(
             utoipa_swagger_ui::SwaggerUi::new("/api")
                 .url("/api/openapi.json", swagger::ApiDoc::openapi()),
         )
         .with_state(app_state)
-        // .layer(tower_http::trace::TraceLayer::new_for_http())
+        .layer(tower_http::trace::TraceLayer::new_for_http())
         .layer(cors);
 
     tracing::info!("Listening on {}", addr);

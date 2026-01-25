@@ -1,48 +1,55 @@
 use axum::{
+    Extension,
     body::Body,
-    extract::{Path as PathExtract, Request, State},
-    http::{header, HeaderMap, HeaderValue, StatusCode},
+    extract::{Path as PathExtract, Query, Request, State},
+    http::{HeaderMap, HeaderValue, StatusCode, header},
 };
 use error_handlers::{codes, handlers::ErrorResponse};
+use serde::Deserialize;
 use sql::shared::traits::PostgresqlRepositoryGetOneById;
-use std::path::PathBuf;
+use std::{path::PathBuf, str};
 use tokio::fs::File;
 use tokio::io::{AsyncReadExt, AsyncSeekExt};
 use uuid::Uuid;
 
 use crate::types::app_state::AppState;
 
+#[derive(Deserialize)]
+pub struct QueryParams {
+    pub filename: Option<String>,
+}
+
 #[utoipa::path(
     get,
-    path = "/files/{file_id}/{filename}",
+    path = "/files/{asset_id}",
     responses(
         (status = 200, description = "File found", body = String),
         (status = 206, description = "Partial content", body = String),
         (status = 404, description = "File not found", body = String),
     ),
     params(
-        ("file_id" = Uuid, Path, description = "File ID"),
-        ("filename" = String, Path, description = "File name"),
+        ("asset_id" = Uuid, Path, description = "Asset ID"),
+        ("filename" = Option<String>, Query, description = "File name"),
     ),
     tag = "Files",
     operation_id = "get_file",
-    security(
-        ("auth" = [])
-    )
 )]
 pub async fn get_file(
-    State(app_state): State<AppState>,
-    PathExtract((file_id, _)): PathExtract<(Uuid, String)>,
+    State(state): State<AppState>,
+    Extension(user_id): Extension<Uuid>,
+    PathExtract(asset_id): PathExtract<Uuid>,
+    Query(query): Query<QueryParams>,
     request: Request,
 ) -> Result<(StatusCode, HeaderMap, Body), ErrorResponse> {
-    let asset =
-        sql::assets::AssetRepository::get_one_by_id(&app_state.postgres, file_id)
-            .await
-            .map_err(ErrorResponse::from)?;
+    let response = validate_access(&state.main_service_url, user_id, asset_id).await?;
 
-    let file_path = PathBuf::from(asset.path);
+    let blob = sql::blobs::BlobsRepository::get_one_by_id(&state.postgres, response.blob_id)
+        .await
+        .map_err(ErrorResponse::from)?;
 
-    if !file_path.exists() {
+    let blob_path = PathBuf::from(blob.path);
+
+    if !blob_path.exists() {
         return Err(ErrorResponse::not_found(
             codes::NotFoundErrorCode::NotFound,
             None,
@@ -50,41 +57,82 @@ pub async fn get_file(
         ));
     }
 
-    let metadata = tokio::fs::metadata(&file_path)
+    let metadata = tokio::fs::metadata(&blob_path)
         .await
         .map_err(|_| ErrorResponse::internal_server_error(None))?;
 
     let file_size = metadata.len();
 
-    let mime = infer::get_from_path(&file_path)
-        .map_err(|_| ErrorResponse::internal_server_error(None))?
-        .and_then(|mime| Some(mime.mime_type()))
-        .unwrap_or("application/octet-stream");
-
     let mut headers = HeaderMap::new();
-    headers.insert(header::CONTENT_TYPE, HeaderValue::from_str(mime).unwrap());
+    headers.insert(
+        header::CONTENT_TYPE,
+        HeaderValue::from_str("application/octet-stream").unwrap(),
+    );
 
     if let Some(range_header) = request.headers().get(header::RANGE) {
         if let Ok(range_str) = range_header.to_str() {
             if let Some(range) = parse_range_header(range_str, file_size) {
-                return serve_partial_content(file_path, range, file_size, headers).await;
+                return serve_partial_content(blob_path, range, file_size, headers).await;
             }
         }
     }
+
+    let file_name = query.filename.unwrap_or(response.name);
 
     headers.insert(
         header::CONTENT_LENGTH,
         HeaderValue::from_str(&file_size.to_string()).unwrap(),
     );
     headers.insert(header::ACCEPT_RANGES, HeaderValue::from_static("bytes"));
+    headers.insert(
+        header::CONTENT_DISPOSITION,
+        HeaderValue::from_str(&format!("attachment; filename={}", file_name)).unwrap(),
+    );
 
-    let file = File::open(&file_path)
+    let file = File::open(&blob_path)
         .await
         .map_err(|_| ErrorResponse::internal_server_error(None))?;
 
     let body = Body::from_stream(tokio_util::io::ReaderStream::new(file));
 
     Ok((StatusCode::OK, headers, body))
+}
+
+#[derive(Deserialize)]
+struct ValidateAccessResponse {
+    blob_id: Uuid,
+    name: String,
+}
+
+async fn validate_access(
+    main_service_url: &str,
+    user_id: Uuid,
+    asset_id: Uuid,
+) -> Result<ValidateAccessResponse, ErrorResponse> {
+    println!(
+        "Validating access for asset {}. user_id: {}",
+        asset_id, user_id
+    );
+
+    let resp = reqwest::Client::new()
+        .get(format!("{}/assets/{}/blob-id", main_service_url, asset_id))
+        .header("x-user-id", user_id.to_string())
+        .send()
+        .await
+        .map_err(|_| ErrorResponse::internal_server_error(None))?;
+
+    if resp.status() == reqwest::StatusCode::OK {
+        resp.json::<ValidateAccessResponse>()
+            .await
+            .map_err(|error| ErrorResponse::internal_server_error(Some(error.to_string())))
+    } else {
+        match resp.json::<ErrorResponse>().await {
+            Ok(error) => Err(error),
+            Err(error) => Err(ErrorResponse::internal_server_error(Some(
+                error.to_string(),
+            ))),
+        }
+    }
 }
 
 #[derive(Debug)]

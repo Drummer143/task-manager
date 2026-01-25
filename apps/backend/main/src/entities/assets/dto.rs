@@ -33,3 +33,9 @@ pub struct AssetResponse {
     pub name: String,
     pub created_at: DateTime<Utc>,
 }
+
+#[derive(Serialize, utoipa::ToSchema)]
+pub struct ValidateAccessResponse {
+    pub blob_id: Uuid,
+    pub name: String,
+}

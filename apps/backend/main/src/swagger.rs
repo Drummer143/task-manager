@@ -71,6 +71,7 @@ pub struct ApiDoc;
 #[openapi(
     paths(
         crate::entities::assets::controller::create_asset::create_asset,
+        crate::entities::assets::controller::validate_access::validate_access,
     )
 )]
 pub struct InternalApiDoc;
@@ -78,7 +79,7 @@ pub struct InternalApiDoc;
 #[derive(utoipa::OpenApi)]
 #[openapi(
     paths(
-        crate::webhooks::authentik::user_sync::controller::user_sync,  
+        crate::webhooks::authentik::user_sync::controller::user_sync,
     ),
     components(schemas(
         
