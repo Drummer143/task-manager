@@ -24,6 +24,7 @@ use crate::{
 #[axum_macros::debug_handler]
 pub async fn upload_init(
     State(state): State<AppState>,
+    // Extension(user_id): Extension<Uuid>,
     Json(body): Json<UploadInitDto>,
 ) -> Result<Json<UploadInitResponse>, ErrorResponse> {
     ActionsService::upload_init(&state, body)

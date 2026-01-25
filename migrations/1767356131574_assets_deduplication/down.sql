@@ -1,3 +1,5 @@
+DROP TABLE assets;
+
 DROP TABLE blobs;
 
 CREATE TABLE

@@ -12,8 +12,19 @@ axum-extra = { version = "0.12", features = ["typed-header"] }
 blake3 = { version = "1.8", features = ["rayon"] }
 memmap2 = "0.9"
 dotenvy = "0.15"
+mime_guess = "2.0"
 error_handlers = { path = "../../../libs/backend/error-handlers", features = [
     "redis",
+] }
+jsonwebtoken = { version = "10", default-features = false, features = [
+    "rust_crypto",
+] }
+reqwest = { version = "0.12", default-features = false, features = [
+    "json",
+    "rustls-tls",
+    "charset",
+    "http2",
+    "macos-system-configuration",
 ] }
 infer = "0.19"
 migrator = { path = "../../../libs/backend/migrator" }

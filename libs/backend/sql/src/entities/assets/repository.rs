@@ -2,17 +2,17 @@ use sqlx::Postgres;
 use uuid::Uuid;
 
 use crate::{
-    entities::asset::model::Asset,
+    entities::assets::model::Asset,
     shared::traits::{PostgresqlRepositoryCreate, PostgresqlRepositoryGetOneById, RepositoryBase},
 };
 
-pub struct AssetRepository;
+pub struct AssetsRepository;
 
-impl RepositoryBase for AssetRepository {
+impl RepositoryBase for AssetsRepository {
     type Response = Asset;
 }
 
-impl PostgresqlRepositoryGetOneById for AssetRepository {
+impl PostgresqlRepositoryGetOneById for AssetsRepository {
     async fn get_one_by_id<'a>(
         executor: impl sqlx::Executor<'a, Database = Postgres>,
         id: Uuid,
@@ -24,7 +24,7 @@ impl PostgresqlRepositoryGetOneById for AssetRepository {
     }
 }
 
-impl PostgresqlRepositoryCreate for AssetRepository {
+impl PostgresqlRepositoryCreate for AssetsRepository {
     type CreateDto = super::dto::CreateAssetDto;
 
     async fn create<'a>(
@@ -32,11 +32,12 @@ impl PostgresqlRepositoryCreate for AssetRepository {
         entity: Self::CreateDto,
     ) -> Result<Self::Response, sqlx::Error> {
         sqlx::query_as::<_, Asset>(
-            "INSERT INTO assets (name, path, size, id) VALUES ($1, $2, $3, $4) RETURNING *",
+            "INSERT INTO assets (name, blob_id, entity_id, entity_type, id) VALUES ($1, $2, $3, $4, $5) RETURNING *",
         )
         .bind(entity.name)
-        .bind(entity.path)
-        .bind(entity.size)
+        .bind(entity.blob_id)
+        .bind(entity.entity_id)
+        .bind(entity.entity_type)
         .bind(entity.id)
         .fetch_one(executor)
         .await

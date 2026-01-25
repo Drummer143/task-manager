@@ -1,4 +1,4 @@
-pub mod upload;
+// pub mod upload;
 pub mod upload_cancel;
 pub mod upload_chunk;
 pub mod upload_complete;

@@ -31,16 +31,16 @@ impl PostgresqlRepositoryCreate for TaskRepository {
             RETURNING *
             "#,
         )
-            .bind(dto.title)
-            .bind(dto.status_id)
-            .bind(dto.position)
-            .bind(dto.due_date)
-            .bind(dto.assignee_id)
-            .bind(dto.page_id)
-            .bind(dto.reporter_id)
-            .bind(sqlx::types::Json(&dto.description))
-            .fetch_one(executor)
-            .await
+        .bind(dto.title)
+        .bind(dto.status_id)
+        .bind(dto.position)
+        .bind(dto.due_date)
+        .bind(dto.assignee_id)
+        .bind(dto.page_id)
+        .bind(dto.reporter_id)
+        .bind(sqlx::types::Json(&dto.description))
+        .fetch_one(executor)
+        .await
     }
 }
 
@@ -179,5 +179,25 @@ impl TaskRepository {
         }
 
         query.build().execute(executor).await.map(|_| ())
+    }
+
+    pub async fn has_access<'a>(
+        executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
+        task_id: Uuid,
+        user_id: Uuid,
+    ) -> Result<bool, sqlx::Error> {
+        sqlx::query_scalar(
+            r#"
+            SELECT EXISTS (
+                SELECT 1 FROM page_access pa
+                JOIN task t ON t.page_id = pa.page_id
+                WHERE pa.user_id = $1 AND t.id = $2
+            )
+            "#,
+        )
+        .bind(user_id)
+        .bind(task_id)
+        .fetch_one(executor)
+        .await
     }
 }

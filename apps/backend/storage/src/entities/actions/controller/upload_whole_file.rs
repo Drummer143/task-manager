@@ -6,10 +6,7 @@ use axum::{
 use error_handlers::handlers::ErrorResponse;
 use uuid::Uuid;
 
-use crate::{
-    entities::actions::{dto::UploadCompleteResponse, service::ActionsService},
-    types::app_state::AppState,
-};
+use crate::{entities::actions::{dto::AssetResponse, service::ActionsService}, types::app_state::AppState};
 
 #[utoipa::path(
     post,
@@ -19,7 +16,7 @@ use crate::{
         content_type = "application/octet-stream"
     ),
     responses(
-        (status = 201, description = "File uploaded successfully"),
+        (status = 201, description = "File uploaded successfully", body = AssetResponse),
         (status = 400, description = "Invalid request body", body = ErrorResponse),
     ),
     tags = ["Upload file"],
@@ -28,7 +25,7 @@ pub async fn upload_whole_file(
     State(state): State<AppState>,
     Path(transaction_id): Path<Uuid>,
     body: Bytes,
-) -> Result<Json<UploadCompleteResponse>, ErrorResponse> {
+) -> Result<Json<AssetResponse>, ErrorResponse> {
     ActionsService::upload_whole_file(&state, transaction_id, body)
         .await
         .map(Json)

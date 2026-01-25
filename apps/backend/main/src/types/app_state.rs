@@ -23,4 +23,5 @@ pub struct AppState {
     pub jwks: Arc<tokio::sync::RwLock<JwkSet>>,
     pub authentik_jwks_url: Arc<String>,
     pub authentik_audience: Arc<String>,
+    pub jwt_secret: Arc<String>,
 }

@@ -52,6 +52,8 @@ impl Modify for SecurityAddon {
         crate::entities::workspace::controller::get_workspace_access_list::get_workspace_access_list,
         crate::entities::workspace::controller::create_workspace_access::create_workspace_access,
         crate::entities::workspace::controller::update_workspace_access::update_workspace_access,
+
+        crate::entities::assets::controller::create_upload_token::create_upload_token,
     ),
     components(schemas(
         sql::user::model::User,
@@ -78,6 +80,14 @@ impl Modify for SecurityAddon {
     modifiers(&SecurityAddon)
 )]
 pub struct ApiDoc;
+
+#[derive(utoipa::OpenApi)]
+#[openapi(
+    paths(
+        crate::entities::assets::controller::create_asset::create_asset,
+    )
+)]
+pub struct InternalApiDoc;
 
 #[derive(utoipa::OpenApi)]
 #[openapi(

@@ -4,7 +4,6 @@ use crate::types::app_state::AppState;
 
 pub fn init() -> Router<AppState> {
     Router::new()
-        .route("/actions/upload", post(super::controller::upload::upload))
         .route(
             "/actions/upload/{transaction_id}/status",
             get(super::controller::upload_status::upload_status),

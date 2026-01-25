@@ -1,4 +1,4 @@
-pub mod asset;
+pub mod assets;
 pub mod blobs;
 pub mod board_statuses;
 pub mod page;

@@ -13,8 +13,8 @@ use uuid::Uuid;
 use crate::{
     entities::actions::{
         dto::{
-            UploadChunkedResponse, UploadChunkedStatusResponse, UploadCompleteResponse,
-            UploadInitDto, UploadInitResponse, UploadStatusResponse, UploadVerifyDto,
+            AssetResponse, UploadChunkedResponse, UploadChunkedStatusResponse, UploadInitDto,
+            UploadInitResponse, UploadStatusResponse, UploadToken, UploadVerifyDto,
             UploadVerifyResponse, UploadWholeFileResponse, VerifyRangesResponse,
             VerifyRangesStatusResponse,
         },
@@ -83,8 +83,36 @@ impl ActionsService {
 
     pub async fn upload_init(
         state: &AppState,
+        // user_id: Uuid,
         body: UploadInitDto,
     ) -> Result<UploadInitResponse, ErrorResponse> {
+        let token = jsonwebtoken::decode::<UploadToken>(
+            &body.upload_token,
+            &jsonwebtoken::DecodingKey::from_secret(state.jwt_secret.as_bytes()),
+            &jsonwebtoken::Validation::new(jsonwebtoken::Algorithm::HS256),
+        )
+        .map_err(|e| {
+            ErrorResponse::forbidden(
+                error_handlers::codes::ForbiddenErrorCode::AccessDenied,
+                Some(HashMap::from([(
+                    "error".to_string(),
+                    "Invalid token".to_string(),
+                )])),
+                Some(e.to_string()),
+            )
+        })?;
+
+        // if token.claims.sub != user_id {
+        //     return Err(ErrorResponse::forbidden(
+        //         error_handlers::codes::ForbiddenErrorCode::AccessDenied,
+        //         Some(HashMap::from([(
+        //             "error".to_string(),
+        //             "Invalid token".to_string(),
+        //         )])),
+        //         Some("User id does not match".to_string()),
+        //     ));
+        // }
+
         let blob = sql::blobs::BlobsRepository::get_one_by_hash(&state.postgres, &body.hash).await;
 
         match blob {
@@ -101,6 +129,8 @@ impl ActionsService {
                     TransactionType::VerifyRanges {
                         ranges: repo_ranges,
                     },
+                    body.upload_token,
+                    token.claims.name,
                 )
                 .await?;
 
@@ -165,6 +195,8 @@ impl ActionsService {
                     body.hash,
                     body.size,
                     transaction_type,
+                    body.upload_token,
+                    token.claims.name,
                 )
                 .await?;
 
@@ -231,9 +263,7 @@ impl ActionsService {
                 if client_hash == server_hash {
                     TransactionRepository::delete(&state.redis, transaction_id).await?;
 
-                    Ok(UploadVerifyResponse {
-                        blob_id: blob.id,
-                    })
+                    Ok(UploadVerifyResponse { blob_id: blob.id })
                 } else {
                     TransactionRepository::delete(&state.redis, transaction_id).await?;
 
@@ -247,19 +277,34 @@ impl ActionsService {
         }
     }
 
+    pub async fn fetch_create_asset(
+        main_service_url: &str,
+        blob_id: Uuid,
+        token: String,
+    ) -> Result<AssetResponse, ErrorResponse> {
+        reqwest::Client::new()
+            .post(format!("{}/assets", main_service_url))
+            .json(&serde_json::json!({
+                "blob_id": blob_id,
+                "token": token,
+            }))
+            .send()
+            .await
+            .map_err(|e| ErrorResponse::internal_server_error(Some(e.to_string())))?
+            .json::<AssetResponse>()
+            .await
+            .map_err(|e| ErrorResponse::internal_server_error(Some(e.to_string())))
+    }
+
     pub async fn upload_whole_file(
         state: &AppState,
         transaction_id: Uuid,
         body: Bytes,
-    ) -> Result<UploadCompleteResponse, ErrorResponse> {
+    ) -> Result<AssetResponse, ErrorResponse> {
         let meta = TransactionRepository::get(&state.redis, transaction_id).await?;
 
-        let path_to_file = match meta.transaction_type {
-            TransactionType::WholeFileUpload { path_to_file } => Ok(build_path_to_assets_file(
-                &path_to_file,
-                &meta.hash,
-                meta.size,
-            )),
+        let path_to_temp_file = match meta.transaction_type {
+            TransactionType::WholeFileUpload { path_to_file } => Ok(path_to_file),
             _ => Err(ErrorResponse::conflict(
                 error_handlers::codes::ConflictErrorCode::WrongStep,
                 None,
@@ -305,33 +350,58 @@ impl ActionsService {
         }?;
 
         if let Some(blob) = blob {
-            return Ok(UploadCompleteResponse { blob_id: blob.id });
+            let asset =
+                Self::fetch_create_asset(&state.main_service_url, blob.id, meta.token).await?;
+
+            return Ok(asset);
         }
 
-        let mut file = OpenOptions::new()
-            .write(true)
-            .open(&path_to_file)
-            .await
-            .map_err(|e| ErrorResponse::internal_server_error(Some(e.to_string())))?;
+        let path_to_assets_file =
+            build_path_to_assets_file(&state.assets_folder_path, &meta.hash, meta.size);
 
-        file.write_all(&body)
+        let mut file = OpenOptions::new()
+            .create(true)
+            .write(true)
+            .open(&path_to_assets_file)
             .await
-            .map_err(|e| ErrorResponse::internal_server_error(Some(e.to_string())))?;
+            .map_err(|e| {
+                ErrorResponse::internal_server_error(Some(format!(
+                    "error open file: {}. Path: {}",
+                    e, path_to_assets_file
+                )))
+            })?;
+
+        file.write_all(&body).await.map_err(|e| {
+            ErrorResponse::internal_server_error(Some(format!("error write file: {}", e)))
+        })?;
+
+        let result = tokio::fs::remove_file(&path_to_temp_file).await;
+
+        if let Err(error) = result
+            && error.kind() != std::io::ErrorKind::NotFound
+        {
+            return Err(ErrorResponse::internal_server_error(Some(format!(
+                "error remove file: {}",
+                error
+            ))));
+        }
+
+        let mime_type = Self::detect_mime_type(&body, &meta.filename);
 
         let blob = sql::blobs::BlobsRepository::create(
             &state.postgres,
             sql::blobs::dto::CreateBlobDto {
                 hash: hash,
                 size: meta.size as i64,
-                path: path_to_file,
-                mime_type: "application/octet-stream".into(),
+                path: path_to_assets_file,
+                mime_type: mime_type,
             },
         )
         .await?;
 
         TransactionRepository::delete(&state.redis, transaction_id).await?;
 
-        Ok(UploadCompleteResponse { blob_id: blob.id })
+        Self::fetch_create_asset(&state.main_service_url, blob.id, meta.token).await
     }
 
     async fn upload_chunk_inner(
@@ -368,6 +438,51 @@ impl ActionsService {
             .await?;
 
         Ok(())
+    }
+
+    fn detect_mime_type(buffer: &[u8], filename: &str) -> String {
+        // 1. The most reliable way: Magic Numbers
+        // Captures most videos, images, archives.
+        if let Some(kind) = infer::get(buffer) {
+            println!("kind {}", kind);
+
+            return kind.mime_type().to_string();
+        }
+
+        println!("filename {}", filename);
+
+        // 2. Check if it's binary or text
+        let is_binary = buffer.contains(&0) || std::str::from_utf8(buffer).is_err();
+
+        println!("is_binary {}", is_binary);
+
+        // 3. Get variant by extension (as fallback)
+        let mime_from_ext = mime_guess::from_path(filename).first_or_octet_stream();
+
+        println!("mime_from_ext {}", mime_from_ext);
+
+        if !is_binary {
+            // --- TEXT BLOCK ---
+
+            if filename.ends_with(".ts") {
+                return "application/typescript".to_string();
+            }
+
+            if mime_from_ext.type_() == "video"
+                || mime_from_ext.type_() == "audio"
+                || mime_from_ext.type_() == "image"
+            {
+                return "text/plain".to_string();
+            }
+
+            return mime_from_ext.to_string();
+        }
+
+        // --- BINARY BLOCK (where infer failed) ---
+
+        // Instead of 'octet-stream', we trust the extension.
+        // If there is no extension or it is unknown, mime_guess will return octet-stream.
+        mime_from_ext.to_string()
     }
 
     pub async fn upload_chunk(
@@ -413,6 +528,22 @@ impl ActionsService {
                 details: None,
                 dev_details: None,
             });
+        }
+
+        if start == 0 {
+            let mime_type = Self::detect_mime_type(&body, &meta.filename);
+
+            println!(
+                "Mime type: {}. File name: {}. Buffer len: {}",
+                mime_type,
+                meta.filename,
+                body.len()
+            );
+
+            if meta.mime_type != mime_type {
+                TransactionRepository::set_mime_type(&state.redis, transaction_id, mime_type)
+                    .await?;
+            }
         }
 
         // Ensure slot is released on any exit path
@@ -480,7 +611,7 @@ impl ActionsService {
     pub async fn upload_complete(
         state: &AppState,
         transaction_id: Uuid,
-    ) -> Result<UploadCompleteResponse, ErrorResponse> {
+    ) -> Result<AssetResponse, ErrorResponse> {
         let meta = TransactionRepository::get(&state.redis, transaction_id).await?;
 
         match meta.transaction_type {
@@ -556,14 +687,17 @@ impl ActionsService {
                     sql::blobs::dto::CreateBlobDto {
                         hash,
                         size: meta.size.try_into().unwrap(),
-                        mime_type: "asd".into(),
+                        mime_type: meta.mime_type,
                         path: path_to_asset_file,
                     },
                 )
                 .await
                 .map_err(|e| ErrorResponse::internal_server_error(Some(e.to_string())))?;
 
-                Ok(UploadCompleteResponse { blob_id: blob.id })
+                let asset =
+                    Self::fetch_create_asset(&state.main_service_url, blob.id, meta.token).await?;
+
+                Ok(asset)
             }
         }
     }

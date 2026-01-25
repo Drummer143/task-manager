@@ -12,7 +12,7 @@ const DEFAULT_TTL_SECONDS: u64 = 3 * 24 * 60 * 60;
 pub const ACTIVE_UPLOADS_TTL_SECONDS: u64 = 60;
 
 /// Max concurrent chunk uploads per transaction
-pub const MAX_CONCURRENT_UPLOADS: u64 = 5;
+pub const MAX_CONCURRENT_UPLOADS: u64 = 3;
 
 /// Chunk size: 5MB
 pub const CHUNK_SIZE: u64 = 5 * 1024 * 1024;
@@ -23,6 +23,10 @@ pub struct TransactionMeta {
     pub size: u64,
     pub total_chunks: u64,
     pub transaction_type: TransactionType,
+    pub token: String,
+    pub filename: String,
+    #[serde(default)]
+    pub mime_type: String,
 }
 
 #[derive(Debug, Clone, serde::Serialize, serde::Deserialize)]
@@ -64,6 +68,8 @@ impl TransactionRepository {
         hash: String,
         size: u64,
         transaction_type: TransactionType,
+        token: String,
+        filename: String,
     ) -> Result<TransactionMeta, RedisError> {
         let mut conn = pool.get().await?;
 
@@ -74,6 +80,9 @@ impl TransactionRepository {
             size,
             total_chunks,
             transaction_type,
+            token,
+            mime_type: "application/octet-stream".into(),
+            filename,
         };
 
         let meta_json = serde_json::to_string(&meta)?;
@@ -258,6 +267,25 @@ impl TransactionRepository {
     /// Calculates chunk index from byte offset
     pub fn chunk_index_from_offset(offset: u64) -> u64 {
         offset / CHUNK_SIZE
+    }
+
+    /// Updates the mime_type in transaction metadata
+    pub async fn set_mime_type(
+        pool: &Arc<deadpool_redis::Pool>,
+        transaction_id: Uuid,
+        mime_type: String,
+    ) -> Result<(), RedisError> {
+        let mut meta = Self::get(pool, transaction_id).await?;
+        meta.mime_type = mime_type;
+
+        let mut conn = pool.get().await?;
+        let key = Self::meta_key(transaction_id);
+        let meta_json = serde_json::to_string(&meta)?;
+
+        conn.set_ex::<_, _, ()>(&key, &meta_json, DEFAULT_TTL_SECONDS)
+            .await?;
+
+        Ok(())
     }
 
     // /// Calculates expected byte range for a chunk
