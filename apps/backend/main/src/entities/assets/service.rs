@@ -69,7 +69,7 @@ impl AssetsService {
         jsonwebtoken::encode(
             &jsonwebtoken::Header::default(),
             &UploadToken {
-                sub: user_id,
+                sub: body.asset_id,
                 name: body.name,
                 entity_id,
                 entity_type: entity_type.to_string(),

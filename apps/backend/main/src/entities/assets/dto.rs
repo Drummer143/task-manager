@@ -14,6 +14,7 @@ pub enum AssetTarget {
 pub struct CreateUploadTokenRequest {
     pub target: AssetTarget,
     pub name: String,
+    pub asset_id: Uuid,
 }
 
 #[derive(Serialize, utoipa::ToSchema)]
