@@ -6,7 +6,7 @@ import dts from "vite-plugin-dts";
 
 export default defineConfig(() => ({
 	root: __dirname,
-	cacheDir: "../../../node_modules/.vite/libs/frontend/tiptap-file-upload-plugin",
+	cacheDir: "../../../node_modules/.vite/libs/frontend/tiptap-file-plugin",
 	plugins: [
 		nxViteTsPaths(),
 		nxCopyAssetsPlugin(["*.md"]),
@@ -19,7 +19,7 @@ export default defineConfig(() => ({
 	// Configuration for building your library.
 	// See: https://vitejs.dev/guide/build.html#library-mode
 	build: {
-		outDir: "../../../dist/libs/frontend/tiptap-file-upload-plugin",
+		outDir: "../../../dist/libs/frontend/tiptap-file-plugin",
 		emptyOutDir: true,
 		reportCompressedSize: true,
 		commonjsOptions: {
@@ -28,7 +28,7 @@ export default defineConfig(() => ({
 		lib: {
 			// Could also be a dictionary or array of multiple entry points.
 			entry: "src/index.ts",
-			name: "tiptap-file-upload-plugin",
+			name: "tiptap-file-plugin",
 			fileName: "index",
 			// Change this to the formats you want to support.
 			// Don't forget to update your package.json as well.

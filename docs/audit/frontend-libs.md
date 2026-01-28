@@ -16,8 +16,7 @@ This document covers the audit of shared frontend libraries in `libs/frontend/`.
 | `utils`                       | General utilities                    | Active |
 | `context-menu`                | Custom context menu system           | Active |
 | `ant-config`                  | Ant Design theme configs             | Active |
-| `tiptap-file-upload-plugin`   | TipTap file upload extension         | Active |
-| `tiptap-plugin-file-renderer` | TipTap file renderer                 | Active |
+| `tiptap-file-plugin`          | TipTap file extension                | Active |
 | `video-player`                | Custom video player                  | Active |
 | `ant-validation`              | Form validation helpers              | Active |
 

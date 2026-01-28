@@ -1,6 +1,5 @@
 import { uploadFile } from "@task-manager/api";
-import { FileUploadPlugin } from "@task-manager/tiptap-file-upload-plugin";
-import { FileRendererPlugin } from "@task-manager/tiptap-plugin-file-renderer";
+import { FileRendererPlugin, FileUploadPlugin } from "@task-manager/tiptap-file-plugin";
 import Placeholder from "@tiptap/extension-placeholder";
 import StarterKit from "@tiptap/starter-kit";
 

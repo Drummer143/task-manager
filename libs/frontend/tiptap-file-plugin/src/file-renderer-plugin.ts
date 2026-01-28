@@ -1,7 +1,7 @@
 import { mergeAttributes, Node, nodeInputRule, NodeViewRenderer } from "@tiptap/core";
 import { minimatch } from "minimatch";
 
-import { defaultFileRenderer } from "./renderers";
+import { defaultFileRenderer } from "./default-renderers";
 
 export interface FileRendererOptions {
 	rendererMap: Record<
@@ -137,4 +137,3 @@ export const FileRendererPlugin = Node.create<FileRendererOptions>({
 		};
 	}
 });
-

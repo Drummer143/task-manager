@@ -1,5 +1,5 @@
 {
-	"name": "@task-manager/tiptap-plugin-file-renderer",
+	"name": "@task-manager/tiptap-file-plugin",
 	"version": "0.0.1",
 	"private": true,
 	"type": "module",
@@ -7,7 +7,7 @@
 	"types": "./index.d.ts",
 	"dependencies": {
 		"@tiptap/core": "^2.11.9",
+		"@tiptap/pm": "^2.11.9",
 		"minimatch": "^10.0.1"
 	}
 }
-

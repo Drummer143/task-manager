@@ -51,4 +51,3 @@ export const defaultFileRenderer: NodeViewRenderer = props => {
 
 	return createRendererFromHTMLElement(link);
 };
-
