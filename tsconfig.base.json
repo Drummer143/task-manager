@@ -20,11 +20,8 @@
 			"@task-manager/api": ["libs/frontend/api/src/index.ts"],
 			"@task-manager/chat": ["libs/frontend/chat/src/index.ts"],
 			"@task-manager/react-utils": ["libs/frontend/react-utils/src/index.ts"],
-			"@task-manager/tiptap-file-upload-plugin": [
-				"libs/frontend/tiptap-file-upload-plugin/src/index.ts"
-			],
-			"@task-manager/tiptap-plugin-file-renderer": [
-				"libs/frontend/tiptap-plugin-file-renderer/src/index.ts"
+			"@task-manager/tiptap-file-plugin": [
+				"libs/frontend/tiptap-file-plugin/src/index.ts"
 			],
 			"@task-manager/utils": ["libs/frontend/utils/src/index.ts"],
 			"@task-manager/video-player": ["libs/frontend/video-player/src/index.ts"],
