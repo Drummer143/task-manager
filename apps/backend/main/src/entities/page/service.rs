@@ -105,6 +105,7 @@ impl ServiceUpdateMethod for PageService {
         };
 
         if let Some(content) = dto.content {
+            println!("content: {:?}", content);
             PageRepository::update_content(&mut *tx, id, content)
                 .await
                 .map_err(ErrorResponse::from)?;
@@ -202,6 +203,7 @@ impl PageService {
                 error => ErrorResponse::internal_server_error(Some(error.to_string())),
             })
     }
+
     pub async fn get_page_access<'a>(
         app_state: &crate::types::app_state::AppState,
         user_id: Uuid,

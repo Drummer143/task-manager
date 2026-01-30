@@ -5,6 +5,8 @@ use serde::{Deserialize, Serialize};
 use sqlx::{Decode, FromRow, Postgres, Type, encode, postgres};
 use uuid::Uuid;
 
+use crate::shared::tiptap_content::TipTapContent;
+
 // PAGE
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, utoipa::ToSchema)]
@@ -66,16 +68,6 @@ impl Type<Postgres> for PageType {
     }
 }
 
-#[derive(Debug, Deserialize, Serialize, Clone, utoipa::ToSchema)]
-pub struct Doc {
-    pub text: Option<String>,
-    pub r#type: String,
-    pub page_id: Option<String>,
-    pub attrs: Option<serde_json::Value>,
-    pub content: Option<serde_json::Value>,
-    pub marks: Option<serde_json::Value>,
-}
-
 #[derive(Debug, FromRow, Clone)]
 pub struct Page {
     pub id: Uuid,
@@ -93,7 +85,7 @@ pub struct Page {
 pub struct PageWithContent {
     #[sqlx(flatten)]
     pub page: Page,
-    pub content: Option<sqlx::types::Json<Doc>>,
+    pub content: Option<sqlx::types::Json<TipTapContent>>,
 }
 
 // PAGE ACCESS

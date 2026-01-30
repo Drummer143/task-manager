@@ -2,10 +2,13 @@ use sqlx::{Executor, Postgres};
 use uuid::Uuid;
 
 use crate::{
-    entities::page::model::{Doc, PageType, PageWithContent, Role},
-    shared::traits::{
-        PostgresqlRepositoryCreate, PostgresqlRepositoryDelete, PostgresqlRepositoryGetOneById,
-        PostgresqlRepositoryUpdate, RepositoryBase, UpdateDto,
+    entities::page::model::{PageType, PageWithContent, Role},
+    shared::{
+        tiptap_content::TipTapContent,
+        traits::{
+            PostgresqlRepositoryCreate, PostgresqlRepositoryDelete, PostgresqlRepositoryGetOneById,
+            PostgresqlRepositoryUpdate, RepositoryBase, UpdateDto,
+        },
     },
 };
 
@@ -147,7 +150,7 @@ impl PageRepository {
     pub async fn update_content<'a>(
         executor: impl Executor<'a, Database = Postgres>,
         page_id: Uuid,
-        content: Option<Doc>,
+        content: Option<TipTapContent>,
     ) -> Result<(), sqlx::Error> {
         sqlx::query("UPDATE text_page_contents SET content = $1 WHERE page_id = $2")
             .bind(sqlx::types::Json(content))
