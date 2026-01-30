@@ -80,7 +80,7 @@ export const FileRendererPlugin = Node.create<FileRendererOptions>({
 
 	renderHTML({ HTMLAttributes, node }) {
 		const mime = node.attrs["type"];
-		const ext = "." + node.attrs["src"].split(".").pop();
+		const ext = node.attrs["src"]?.split(".").pop();
 
 		const HTMLAttrsForMime =
 			Object.entries(this.options.rendererMap).find(
@@ -117,7 +117,7 @@ export const FileRendererPlugin = Node.create<FileRendererOptions>({
 	addNodeView() {
 		return props => {
 			const mime = props.node.attrs["type"];
-			const ext = "." + props.node.attrs["src"].split(".").pop();
+			const ext = props.node.attrs["src"]?.split(".").pop();
 
 			const rendererConfig =
 				mime || ext
