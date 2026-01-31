@@ -7,7 +7,7 @@ use uuid::Uuid;
 
 use crate::{
     entities::actions::{
-        dto::{UploadVerifyDto, UploadVerifyResponse},
+        dto::{UploadSuccessResponse, UploadVerifyDto},
         service::ActionsService,
     },
     types::app_state::AppState,
@@ -21,7 +21,7 @@ use crate::{
         content_type = "application/json",
     ),
     responses(
-        (status = 200, description = "Verification result", body = UploadVerifyResponse),
+        (status = 200, description = "Verification result", body = UploadSuccessResponse),
     ),
     tags = ["Upload file"],
 )]
@@ -29,7 +29,7 @@ pub async fn upload_verify(
     State(state): State<AppState>,
     Path(transaction_id): Path<Uuid>,
     Json(body): Json<UploadVerifyDto>,
-) -> Result<Json<UploadVerifyResponse>, ErrorResponse> {
+) -> Result<Json<UploadSuccessResponse>, ErrorResponse> {
     ActionsService::upload_verify(&state, transaction_id, body)
         .await
         .map(Json)

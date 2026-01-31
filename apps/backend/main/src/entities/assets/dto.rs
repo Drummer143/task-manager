@@ -1,5 +1,6 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
+use sql::blobs::model::Blob;
 use uuid::Uuid;
 
 #[derive(Deserialize, utoipa::ToSchema)]
@@ -25,7 +26,7 @@ pub struct CreateUploadTokenResponse {
 #[derive(Deserialize, utoipa::ToSchema)]
 pub struct CreateAssetRequest {
     pub token: String,
-    pub blob_id: Uuid,
+    pub blob: Blob,
 }
 
 #[derive(Serialize, utoipa::ToSchema)]

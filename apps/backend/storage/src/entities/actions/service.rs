@@ -3,7 +3,7 @@ use std::{collections::HashMap, io::SeekFrom};
 use axum::body::Bytes;
 use error_handlers::handlers::ErrorResponse;
 use rand::Rng;
-use sql::shared::traits::PostgresqlRepositoryCreate;
+use sql::{blobs::model::Blob, shared::traits::PostgresqlRepositoryCreate};
 use tokio::{
     fs::OpenOptions,
     io::{AsyncReadExt, AsyncSeekExt, AsyncWriteExt},
@@ -14,8 +14,8 @@ use crate::{
     entities::actions::{
         dto::{
             AssetResponse, UploadChunkedResponse, UploadChunkedStatusResponse, UploadInitDto,
-            UploadInitResponse, UploadStatusResponse, UploadToken, UploadVerifyDto,
-            UploadVerifyResponse, UploadWholeFileResponse, VerifyRangesResponse,
+            UploadInitResponse, UploadStatusResponse, UploadSuccessResponse, UploadToken,
+            UploadVerifyDto, UploadWholeFileResponse, VerifyRangesResponse,
             VerifyRangesStatusResponse,
         },
         shared::{build_path_to_assets_file, build_path_to_temp_file},
@@ -210,7 +210,7 @@ impl ActionsService {
         state: &AppState,
         transaction_id: Uuid,
         body: UploadVerifyDto,
-    ) -> Result<UploadVerifyResponse, ErrorResponse> {
+    ) -> Result<UploadSuccessResponse, ErrorResponse> {
         let meta = TransactionRepository::get(&state.redis, transaction_id).await?;
 
         match meta.transaction_type {
@@ -263,7 +263,13 @@ impl ActionsService {
                 if client_hash == server_hash {
                     TransactionRepository::delete(&state.redis, transaction_id).await?;
 
-                    Ok(UploadVerifyResponse { blob_id: blob.id })
+                    let asset =
+                        Self::fetch_create_asset(&state.main_service_url, blob, meta.token).await?;
+
+                    Ok(UploadSuccessResponse {
+                        asset,
+                        mime_type: meta.mime_type,
+                    })
                 } else {
                     TransactionRepository::delete(&state.redis, transaction_id).await?;
 
@@ -279,28 +285,36 @@ impl ActionsService {
 
     pub async fn fetch_create_asset(
         main_service_url: &str,
-        blob_id: Uuid,
+        blob: Blob,
         token: String,
     ) -> Result<AssetResponse, ErrorResponse> {
-        reqwest::Client::new()
+        let resp = reqwest::Client::new()
             .post(format!("{}/assets", main_service_url))
             .json(&serde_json::json!({
-                "blob_id": blob_id,
+                "blob": blob,
                 "token": token,
             }))
             .send()
             .await
-            .map_err(|e| ErrorResponse::internal_server_error(Some(e.to_string())))?
-            .json::<AssetResponse>()
-            .await
-            .map_err(|e| ErrorResponse::internal_server_error(Some(e.to_string())))
+            .map_err(|e| ErrorResponse::internal_server_error(Some(e.to_string())))?;
+
+        if resp.status() != 200 {
+            Err(resp
+                .json::<ErrorResponse>()
+                .await
+                .unwrap_or_else(|e| ErrorResponse::internal_server_error(Some(e.to_string()))))
+        } else {
+            resp.json::<AssetResponse>()
+                .await
+                .map_err(|e| ErrorResponse::internal_server_error(Some(e.to_string())))
+        }
     }
 
     pub async fn upload_whole_file(
         state: &AppState,
         transaction_id: Uuid,
         body: Bytes,
-    ) -> Result<AssetResponse, ErrorResponse> {
+    ) -> Result<UploadSuccessResponse, ErrorResponse> {
         let meta = TransactionRepository::get(&state.redis, transaction_id).await?;
 
         let path_to_temp_file = match meta.transaction_type {
@@ -350,10 +364,12 @@ impl ActionsService {
         }?;
 
         if let Some(blob) = blob {
-            let asset =
-                Self::fetch_create_asset(&state.main_service_url, blob.id, meta.token).await?;
+            let asset = Self::fetch_create_asset(&state.main_service_url, blob, meta.token).await?;
 
-            return Ok(asset);
+            return Ok(UploadSuccessResponse {
+                asset,
+                mime_type: meta.mime_type,
+            });
         }
 
         let path_to_assets_file =
@@ -394,14 +410,16 @@ impl ActionsService {
                 hash: hash,
                 size: meta.size as i64,
                 path: path_to_assets_file,
-                mime_type: mime_type,
+                mime_type: mime_type.clone(),
             },
         )
         .await?;
 
         TransactionRepository::delete(&state.redis, transaction_id).await?;
 
-        Self::fetch_create_asset(&state.main_service_url, blob.id, meta.token).await
+        let asset = Self::fetch_create_asset(&state.main_service_url, blob, meta.token).await?;
+
+        Ok(UploadSuccessResponse { asset, mime_type })
     }
 
     async fn upload_chunk_inner(
@@ -611,7 +629,7 @@ impl ActionsService {
     pub async fn upload_complete(
         state: &AppState,
         transaction_id: Uuid,
-    ) -> Result<AssetResponse, ErrorResponse> {
+    ) -> Result<UploadSuccessResponse, ErrorResponse> {
         let meta = TransactionRepository::get(&state.redis, transaction_id).await?;
 
         match meta.transaction_type {
@@ -687,7 +705,7 @@ impl ActionsService {
                     sql::blobs::dto::CreateBlobDto {
                         hash,
                         size: meta.size.try_into().unwrap(),
-                        mime_type: meta.mime_type,
+                        mime_type: meta.mime_type.clone(),
                         path: path_to_asset_file,
                     },
                 )
@@ -695,9 +713,12 @@ impl ActionsService {
                 .map_err(|e| ErrorResponse::internal_server_error(Some(e.to_string())))?;
 
                 let asset =
-                    Self::fetch_create_asset(&state.main_service_url, blob.id, meta.token).await?;
+                    Self::fetch_create_asset(&state.main_service_url, blob, meta.token).await?;
 
-                Ok(asset)
+                Ok(UploadSuccessResponse {
+                    asset,
+                    mime_type: meta.mime_type,
+                })
             }
         }
     }

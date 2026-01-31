@@ -48,12 +48,6 @@ pub struct UploadVerifyDto {
 
 #[derive(serde::Serialize, utoipa::ToSchema)]
 #[serde(rename_all = "camelCase")]
-pub struct UploadVerifyResponse {
-    pub blob_id: Uuid,
-}
-
-#[derive(serde::Serialize, utoipa::ToSchema)]
-#[serde(rename_all = "camelCase")]
 pub struct UploadChunkedStatusResponse {
     pub max_concurrent_uploads: u64,
     pub chunk_size: u64,
@@ -88,4 +82,10 @@ pub struct AssetResponse {
     pub id: Uuid,
     pub name: String,
     pub created_at: DateTime<Utc>,
+}
+
+#[derive(Serialize, utoipa::ToSchema)]
+pub struct UploadSuccessResponse {
+    pub asset: AssetResponse,
+    pub mime_type: String,
 }

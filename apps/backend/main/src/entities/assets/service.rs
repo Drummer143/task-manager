@@ -97,7 +97,7 @@ impl AssetsService {
         AssetsRepository::create(
             &state.postgres,
             sql::assets::dto::CreateAssetDto {
-                blob_id: body.blob_id,
+                blob_id: body.blob.id,
                 entity_id: token.claims.entity_id,
                 entity_type: token.claims.entity_type,
                 id: Some(token.claims.sub),

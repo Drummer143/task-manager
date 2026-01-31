@@ -6,7 +6,7 @@ use error_handlers::handlers::ErrorResponse;
 use uuid::Uuid;
 
 use crate::{
-    entities::actions::{dto::AssetResponse, service::ActionsService},
+    entities::actions::{dto::UploadSuccessResponse, service::ActionsService},
     types::app_state::AppState,
 };
 
@@ -17,14 +17,14 @@ use crate::{
         ("transaction_id", Path, description = "Transaction ID"),
     ),
     responses(
-        (status = 200, description = "Upload completion result", body = AssetResponse),
+        (status = 200, description = "Upload completion result", body = UploadSuccessResponse),
     ),
     tags = ["Upload file"],
 )]
 pub async fn upload_complete(
     State(state): State<AppState>,
     Path(transaction_id): Path<Uuid>,
-) -> Result<Json<AssetResponse>, ErrorResponse> {
+) -> Result<Json<UploadSuccessResponse>, ErrorResponse> {
     ActionsService::upload_complete(&state, transaction_id)
         .await
         .map(Json)
