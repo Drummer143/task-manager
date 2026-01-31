@@ -1,10 +1,11 @@
 use serde::{Deserialize, Serialize};
 use utoipa::ToSchema;
+use uuid::Uuid;
 
 #[derive(Debug, Deserialize, Serialize, Clone, ToSchema)]
 #[serde(rename_all = "camelCase")]
 pub struct FileAttributes {
-    pub id: Option<String>,
+    pub id: Option<Uuid>,
 
     pub src: Option<String>,
     pub href: Option<String>,
