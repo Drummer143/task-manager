@@ -1,4 +1,4 @@
-import { axiosInstance, BaseRequest } from "./base";
+import { BaseRequest, mainInstance } from "./base";
 
 import { PaginationQuery, ResponseWithPagination, Workspace } from "../types";
 
@@ -24,7 +24,7 @@ export const getWorkspaceList = async <T extends GetWorkspaceIncludes | undefine
 	params: GetWorkspaceListRequest<T>
 ) =>
 	(
-		await axiosInstance.get<ResponseWithPagination<ResponseWithIncludeFilter<T>>>(
+		await mainInstance.get<ResponseWithPagination<ResponseWithIncludeFilter<T>>>(
 			"/workspaces",
 			{
 				params: params.pathParams
@@ -43,7 +43,7 @@ export const getWorkspace = async <T extends GetWorkspaceIncludes | undefined = 
 	params: GetWorkspaceRequest<T>
 ) =>
 	(
-		await axiosInstance.get<ResponseWithIncludeFilter<T>>(
+		await mainInstance.get<ResponseWithIncludeFilter<T>>(
 			`/workspaces/${params.pathParams.workspaceId}`,
 			{
 				params: { include: params.pathParams.include?.join(",") }
@@ -54,19 +54,19 @@ export const getWorkspace = async <T extends GetWorkspaceIncludes | undefined = 
 export type CreateWorkspaceRequest = BaseRequest<never, { name: string }>;
 
 export const createWorkspace = async (params: CreateWorkspaceRequest) =>
-	(await axiosInstance.post<Omit<Workspace, "owner" | "pages">>("/workspaces", params.body)).data;
+	(await mainInstance.post<Omit<Workspace, "owner" | "pages">>("/workspaces", params.body)).data;
 
 export type SoftDeleteWorkspace = BaseRequest<Ids>;
 
 export const softDeleteWorkspace = async (params: SoftDeleteWorkspace) =>
-	(await axiosInstance.delete<void>(`/workspaces/${params.pathParams.workspaceId}/soft-delete`))
+	(await mainInstance.delete<void>(`/workspaces/${params.pathParams.workspaceId}/soft-delete`))
 		.data;
 
 export type CancelSoftDeleteWorkspace = BaseRequest<Ids>;
 
 export const cancelSoftDeleteWorkspace = async (params: CancelSoftDeleteWorkspace) =>
 	(
-		await axiosInstance.post<void>(
+		await mainInstance.post<void>(
 			`/workspaces/${params.pathParams.workspaceId}/cancel-soft-delete`
 		)
 	).data;
@@ -75,7 +75,7 @@ export type UpdateWorkspaceRequest = BaseRequest<Ids, { name?: string }>;
 
 export const updateWorkspace = async (params: UpdateWorkspaceRequest) =>
 	(
-		await axiosInstance.put<Workspace>(
+		await mainInstance.put<Workspace>(
 			`/workspaces/${params.pathParams.workspaceId}`,
 			params.body
 		)

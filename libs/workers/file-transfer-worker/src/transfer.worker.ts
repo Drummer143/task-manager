@@ -1,4 +1,4 @@
-import { uploadCancel } from "@task-manager/api";
+import { insertAccessToken, uploadCancel } from "@task-manager/api";
 
 import init from "./hasher";
 import { InnerMessageToHost, MessageToWorker, StartUploadEvent } from "./types";
@@ -16,6 +16,8 @@ interface QueueItem {
 const queue: QueueItem[] = [];
 let currentUpload: QueueItem | null = null;
 let isProcessing = false;
+
+let ejectAccessTokenInterceptors: (() => void) | undefined;
 
 const processQueue = async () => {
 	if (isProcessing || queue.length === 0) {
@@ -147,6 +149,10 @@ init().then(() => {
 	self.onmessage = (event: MessageEvent<MessageToWorker>) => {
 		switch (event.data.type) {
 			case "upload":
+				if (ejectAccessTokenInterceptors === null) {
+					throw new Error("Access token is not injected");
+				}
+
 				addToQueue(event.data);
 				break;
 			case "abort":
@@ -155,6 +161,16 @@ init().then(() => {
 			case "abortAll":
 				abortAll();
 				break;
+			case "injectAccessToken": {
+				ejectAccessTokenInterceptors?.();
+
+				const token = event.data.accessToken;
+
+				insertAccessToken(() => token);
+
+				processQueue();
+				break;
+			}
 		}
 	};
 

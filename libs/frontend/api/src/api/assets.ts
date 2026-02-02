@@ -1,4 +1,4 @@
-import { axiosInstance, BaseRequest } from "./base";
+import { BaseRequest, mainInstance } from "./base";
 
 export interface CreateUploadTokenResponse {
 	token: string;
@@ -14,12 +14,13 @@ export type CreateUploadTokenRequest = BaseRequest<
 	{
 		name: string;
 		target: AssetTarget;
+		assetId: string;
 	}
 >;
 
 export const createUploadToken = async (params: CreateUploadTokenRequest, signal?: AbortSignal) =>
 	(
-		await axiosInstance.post<CreateUploadTokenResponse>(
+		await mainInstance.post<CreateUploadTokenResponse>(
 			"/assets/token",
 			params.body,
 			{

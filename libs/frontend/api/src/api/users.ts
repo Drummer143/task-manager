@@ -1,4 +1,4 @@
-import { axiosInstance, BaseRequest } from "./base";
+import { BaseRequest, mainInstance } from "./base";
 
 import { PaginationQuery, ResponseWithPagination, User } from "../types";
 
@@ -16,7 +16,7 @@ export type GetUsersRequest = BaseRequest<PaginationQuery & GetUsersFilters>;
 
 export const getUserList = async (params: GetUsersRequest) =>
 	(
-		await axiosInstance.get<ResponseWithPagination<User>>("/users", {
+		await mainInstance.get<ResponseWithPagination<User>>("/users", {
 			params: params.pathParams
 		})
 	).data;

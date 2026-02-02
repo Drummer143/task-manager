@@ -1,4 +1,4 @@
-import { axiosInstance, BaseRequest } from "./base";
+import { BaseRequest, mainInstance } from "./base";
 
 import { WorkspaceAccess } from "../types";
 
@@ -10,7 +10,7 @@ export type GetWorkspaceAccessRequest = BaseRequest<GetWorkspaceAccessArgs>;
 
 export const getWorkspaceAccess = async (params: GetWorkspaceAccessRequest) =>
 	(
-		await axiosInstance.get<WorkspaceAccess[]>(
+		await mainInstance.get<WorkspaceAccess[]>(
 			`/workspaces/${params.pathParams.workspaceId}/access`
 		)
 	).data;
@@ -22,7 +22,7 @@ export type CreateWorkspaceAccessRequest = BaseRequest<
 
 export const createWorkspaceAccess = async (params: CreateWorkspaceAccessRequest) =>
 	(
-		await axiosInstance.post<"Success">(
+		await mainInstance.post<"Success">(
 			`/workspaces/${params.pathParams.workspaceId}/access`,
 			params.body
 		)
@@ -35,7 +35,7 @@ export type UpdateWorkspaceAccessRequest = BaseRequest<
 
 export const updateWorkspaceAccess = async (params: UpdateWorkspaceAccessRequest) =>
 	(
-		await axiosInstance.put<"Success">(
+		await mainInstance.put<"Success">(
 			`/workspaces/${params.pathParams.workspaceId}/access`,
 			params.body
 		)

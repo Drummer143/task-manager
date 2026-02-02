@@ -1,8 +1,10 @@
 export type UploadedFileInfo = {
-	url: string;
 	name: string;
 	size: number;
 	type: string;
+
+	url?: string;
+	id?: string;
 
 	width?: number;
 	height?: number;

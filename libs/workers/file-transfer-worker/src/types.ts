@@ -1,4 +1,4 @@
-import { UploadCompleteResponse } from "@task-manager/api";
+import { UploadSuccessResponse } from "@task-manager/api";
 
 export interface StartUploadEvent {
 	type: "upload";
@@ -16,7 +16,16 @@ export interface AbortAllEvent {
 	type: "abortAll";
 }
 
-export type MessageToWorker = StartUploadEvent | AbortUploadEvent | AbortAllEvent;
+export interface InjectAccessTokenEvent {
+	type: "injectAccessToken";
+	accessToken: string;
+}
+
+export type MessageToWorker =
+	| StartUploadEvent
+	| AbortUploadEvent
+	| AbortAllEvent
+	| InjectAccessTokenEvent;
 
 export interface ErrorEvent {
 	type: "error";
@@ -45,7 +54,7 @@ export interface UploadFileProgressEvent {
 export interface UploadCompleteEvent {
 	type: "uploadComplete";
 	fileId: string;
-	data: UploadCompleteResponse;
+	data: UploadSuccessResponse;
 }
 
 export interface UploadCancelledEvent {

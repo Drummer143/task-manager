@@ -73,6 +73,13 @@ export class FileTransferWorker {
 		return this._ready;
 	}
 
+	injectAccessToken(accessToken: string) {
+		this.worker.postMessage({
+			type: "injectAccessToken",
+			accessToken
+		} as MessageToWorker);
+	}
+
 	on<T extends keyof FileTransferWorkerEventMap>(
 		event: T,
 		listener: (message: FileTransferWorkerEventMap[T]) => void,
