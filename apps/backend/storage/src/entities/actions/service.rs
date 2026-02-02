@@ -1,14 +1,19 @@
-use std::{collections::HashMap, io::SeekFrom};
+use std::{collections::HashMap, io::SeekFrom, path::Path};
 
 use axum::body::Bytes;
 use error_handlers::handlers::ErrorResponse;
+use mime_guess::mime;
+use once_cell::sync::Lazy;
 use rand::Rng;
 use sql::{blobs::model::Blob, shared::traits::PostgresqlRepositoryCreate};
+use syntect::parsing::SyntaxSet;
 use tokio::{
     fs::OpenOptions,
     io::{AsyncReadExt, AsyncSeekExt, AsyncWriteExt},
 };
 use uuid::Uuid;
+
+static SYNTAX_SET: Lazy<SyntaxSet> = Lazy::new(|| SyntaxSet::load_defaults_newlines());
 
 use crate::{
     entities::actions::{
@@ -458,48 +463,76 @@ impl ActionsService {
         Ok(())
     }
 
-    fn detect_mime_type(buffer: &[u8], filename: &str) -> String {
-        // 1. The most reliable way: Magic Numbers
-        // Captures most videos, images, archives.
+    pub fn detect_mime_type(buffer: &[u8], filename: &str) -> String {
+        // 1. BINARY FILES (Images, videos, archives)
+        // infer works by "magic bytes" at the start of the file. This is the most reliable way for media.
         if let Some(kind) = infer::get(buffer) {
-            println!("kind {}", kind);
-
             return kind.mime_type().to_string();
         }
 
-        println!("filename {}", filename);
+        // 2. CHECK IF IT IS A BINARY
+        // If infer didn't find anything, check if it is a binary (presence of null-byte).
+        let is_binary = buffer.contains(&0);
 
-        // 2. Check if it's binary or text
-        let is_binary = buffer.contains(&0) || std::str::from_utf8(buffer).is_err();
+        // 3. IF IT IS A TEXT -> DEFINE LANGUAGE THROUGH SYNTECT
+        if !is_binary {
+            // Try to find syntax
+            let syntax = if let Some(ext) = Path::new(filename).extension().and_then(|e| e.to_str())
+            {
+                // A. First try to find by extension (fast)
+                SYNTAX_SET.find_syntax_by_extension(ext)
+            } else {
+                None
+            };
 
-        println!("is_binary {}", is_binary);
+            // B. If by extension didn't work (or there is no extension), try by first line (shebang)
+            // Example: #!/usr/bin/env elixir
+            let syntax = syntax.or_else(|| {
+                // Take the first line from the buffer
+                use std::io::BufRead;
+                let mut first_line = String::new();
+                if let Ok(reader) = std::io::Cursor::new(buffer).read_line(&mut first_line) {
+                    if reader > 0 {
+                        return SYNTAX_SET.find_syntax_by_first_line(&first_line);
+                    }
+                }
+                None
+            });
 
-        // 3. Get variant by extension (as fallback)
+            if let Some(s) = syntax {
+                // Syntect returns a type name "Elixir", "Rust", "JSON".
+                // Convert this to MIME format: text/x-elixir
+                let lang_name = s.name.to_lowercase();
+
+                println!("lang_name: {}", lang_name);
+
+                // Manual corrections for standards, if needed
+                return match lang_name.as_str() {
+                    "json" => "application/json".to_string(),
+                    "typescript" => "application/typescript".to_string(),
+                    // For everything else, we make text/x-{language}
+                    _ => format!("text/x-{}", lang_name.replace(" ", "-")),
+                };
+            }
+        }
+
+        // 4. FALLBACK (If nothing helped)
+        // Use file extension through mime_guess
         let mime_from_ext = mime_guess::from_path(filename).first_or_octet_stream();
 
-        println!("mime_from_ext {}", mime_from_ext);
-
+        // If the file is text, but mime_guess returned octet-stream or media type -> force text/plain
         if !is_binary {
-            // --- TEXT BLOCK ---
-
-            if filename.ends_with(".ts") {
-                return "application/typescript".to_string();
-            }
-
-            if mime_from_ext.type_() == "video"
-                || mime_from_ext.type_() == "audio"
-                || mime_from_ext.type_() == "image"
+            if mime_from_ext.type_() == mime::APPLICATION
+                && mime_from_ext.subtype() == mime::OCTET_STREAM
             {
                 return "text/plain".to_string();
             }
-
-            return mime_from_ext.to_string();
+            // Protection against .ts -> video/mp2t
+            if mime_from_ext.type_() == mime::VIDEO || mime_from_ext.type_() == mime::AUDIO {
+                return "text/plain".to_string();
+            }
         }
 
-        // --- BINARY BLOCK (where infer failed) ---
-
-        // Instead of 'octet-stream', we trust the extension.
-        // If there is no extension or it is unknown, mime_guess will return octet-stream.
         mime_from_ext.to_string()
     }
 
