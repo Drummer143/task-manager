@@ -88,7 +88,7 @@ impl ActionsService {
 
     pub async fn upload_init(
         state: &AppState,
-        // user_id: Uuid,
+        user_id: Uuid,
         body: UploadInitDto,
     ) -> Result<UploadInitResponse, ErrorResponse> {
         let token = jsonwebtoken::decode::<UploadToken>(
@@ -107,16 +107,16 @@ impl ActionsService {
             )
         })?;
 
-        // if token.claims.sub != user_id {
-        //     return Err(ErrorResponse::forbidden(
-        //         error_handlers::codes::ForbiddenErrorCode::AccessDenied,
-        //         Some(HashMap::from([(
-        //             "error".to_string(),
-        //             "Invalid token".to_string(),
-        //         )])),
-        //         Some("User id does not match".to_string()),
-        //     ));
-        // }
+        if token.claims.user_id != user_id {
+            return Err(ErrorResponse::forbidden(
+                error_handlers::codes::ForbiddenErrorCode::AccessDenied,
+                Some(HashMap::from([(
+                    "error".to_string(),
+                    "Invalid token".to_string(),
+                )])),
+                Some("User id does not match".to_string()),
+            ));
+        }
 
         let blob = sql::blobs::BlobsRepository::get_one_by_hash(&state.postgres, &body.hash).await;
 

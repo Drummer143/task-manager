@@ -21,6 +21,7 @@ pub struct UploadToken {
     pub sub: Uuid,
     pub exp: usize,
     pub name: String,
+    pub user_id: Uuid,
     pub entity_id: Uuid,
     pub entity_type: String,
 }
@@ -71,6 +72,7 @@ impl AssetsService {
             &UploadToken {
                 sub: body.asset_id,
                 name: body.name,
+                user_id,
                 entity_id,
                 entity_type: entity_type.to_string(),
                 exp: Utc::now()

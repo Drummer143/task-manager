@@ -73,6 +73,7 @@ pub struct UploadToken {
     pub sub: Uuid,
     pub exp: usize,
     pub name: String,
+    pub user_id: Uuid,
     pub entity_id: Uuid,
     pub entity_type: String,
 }
