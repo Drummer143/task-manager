@@ -4,9 +4,11 @@ import React, {
 	useCallback,
 	useEffect,
 	useImperativeHandle,
+	useMemo,
 	useState
 } from "react";
 
+import { MessageToHost, UploadCompleteEvent } from "@task-manager/file-transfer-worker";
 import {
 	Editor,
 	EditorContent,
@@ -17,10 +19,13 @@ import {
 } from "@tiptap/react";
 import { Dropdown } from "antd";
 
-import { EMPTY_NODE_CLASS, extensions } from "./extensions";
+import { EMPTY_NODE_CLASS, getExtensions } from "./extensions";
 import { useStyles } from "./styles";
 import { useContextMenuItems } from "./useContextMenuItems";
 import BubbleMenu from "./widgets/BubbleMenu";
+
+import { useAuthStore } from "../../app/store/auth";
+import { initWorker } from "../../app/worker";
 
 interface MDEditorProps
 	extends Omit<
@@ -37,11 +42,13 @@ interface MDEditorProps
 	value?: JSONContent;
 	editable?: boolean;
 
+	getFileUploadToken: (file: File, assetId: string) => Promise<string>;
+
 	onChange?: (value: JSONContent) => void;
 }
 
 const MDEditor: React.ForwardRefRenderFunction<Editor | null, MDEditorProps> = (
-	{ editable = true, value, onChange, className, ...props },
+	{ editable = true, value, onChange, getFileUploadToken, className, ...props },
 	ref
 ) => {
 	const { styles, cx } = useStyles({
@@ -70,6 +77,8 @@ const MDEditor: React.ForwardRefRenderFunction<Editor | null, MDEditorProps> = (
 		},
 		[]
 	);
+
+	const extensions = useMemo(() => getExtensions(getFileUploadToken), [getFileUploadToken]);
 
 	const editor = useEditor({
 		extensions,
@@ -112,6 +121,49 @@ const MDEditor: React.ForwardRefRenderFunction<Editor | null, MDEditorProps> = (
 	useEffect(() => {
 		editor?.setEditable(editable);
 	}, [editable, editor]);
+
+	const token = useAuthStore(state => state.identity?.access_token);
+
+	useEffect(() => {
+		const worker = initWorker(token);
+
+		const handleMessage = (event: MessageEvent<MessageToHost>) => {
+			if (event.data.type === "uploadComplete") {
+				if (!editor) {
+					return;
+				}
+
+				const { fileId } = event.data;
+
+				editor.state.doc.forEach((node, pos) => {
+					if ((node.attrs.id || node.attrs.assetId) === fileId) {
+						editor
+							.chain()
+							.setNodeSelection(pos)
+							.updateAttributes(node.type.name, {
+								src: `http://localhost:8082/files/${fileId}`,
+								href: `http://localhost:8082/files/${fileId}`,
+								id: (event.data as UploadCompleteEvent).data.asset.id,
+								type: (event.data as UploadCompleteEvent).data.mime_type,
+								title: (event.data as UploadCompleteEvent).data.asset.name,
+								alt: (event.data as UploadCompleteEvent).data.asset.name,
+								width: "100%",
+								height: "auto"
+							})
+							.run();
+					}
+				});
+			}
+		};
+
+		worker.onReady(() => {
+			worker.on("message", handleMessage);
+		});
+
+		return () => {
+			worker.off("message", handleMessage);
+		};
+	}, [editor]);
 
 	return (
 		<>

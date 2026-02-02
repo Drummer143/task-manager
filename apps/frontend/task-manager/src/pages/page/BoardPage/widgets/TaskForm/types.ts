@@ -21,6 +21,7 @@ export interface TaskFormProps {
 	onSubmit: (values: FormValues) => void;
 
 	form?: FormInstance<FormValues>;
+	taskId?: string;
 	pageError?: string;
 	extraHeader?: React.ReactNode;
 	formLoading?: boolean;

@@ -48,3 +48,27 @@ pub struct TipTapContent {
     pub r#type: DocType,
     pub content: Option<Vec<NodeWrapper>>,
 }
+
+impl TipTapContent {
+    /// Finds a file node by its id and applies the hydration function to it.
+    /// Returns true if the node was found and updated.
+    pub fn hydrate_file_node<F>(&mut self, asset_id: Uuid, hydrate_fn: F) -> bool
+    where
+        F: FnOnce(&mut FileAttributes),
+    {
+        let Some(content) = &mut self.content else {
+            return false;
+        };
+
+        for node_wrapper in content.iter_mut() {
+            if let NodeWrapper::Typed(Node::File { attrs }) = node_wrapper {
+                if attrs.id == Some(asset_id) {
+                    hydrate_fn(attrs);
+                    return true;
+                }
+            }
+        }
+
+        false
+    }
+}

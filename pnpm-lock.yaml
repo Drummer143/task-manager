@@ -83,6 +83,9 @@ importers:
       use-debounce:
         specifier: ^10.0.4
         version: 10.0.6(react@19.2.1)
+      uuid:
+        specifier: ^13.0.0
+        version: 13.0.0
       valtio:
         specifier: ^2.1.8
         version: 2.1.8(@types/react@19.2.7)(react@19.2.1)
@@ -7018,6 +7021,10 @@ packages:
 
   uuid@10.0.0:
     resolution: {integrity: sha512-8XkAphELsDnEGrDxUOHB3RGvXz6TeuYSGEZBOjtTtPm2lwhGBjLgOzLHB63IUWfBpNucQjND6d3AOudO+H3RWQ==}
+    hasBin: true
+
+  uuid@13.0.0:
+    resolution: {integrity: sha512-XQegIaBTVUjSHliKqcnFqYypAd4S+WCYt5NIeRs6w/UAry7z8Y9j5ZwRRL4kzq9U3sD6v+85er9FvkEaBpji2w==}
     hasBin: true
 
   v8-compile-cache-lib@3.0.1:
@@ -15096,6 +15103,8 @@ snapshots:
   utils-merge@1.0.1: {}
 
   uuid@10.0.0: {}
+
+  uuid@13.0.0: {}
 
   v8-compile-cache-lib@3.0.1: {}
 

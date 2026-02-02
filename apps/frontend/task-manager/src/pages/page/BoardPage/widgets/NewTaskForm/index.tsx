@@ -23,6 +23,7 @@ const NewTaskForm: React.FC = () => {
 	const {
 		mutateAsync: createDraft,
 		isPending: isDraftPending,
+		data,
 		reset
 	} = useMutation({
 		mutationFn: createDraftApi,
@@ -101,6 +102,7 @@ const NewTaskForm: React.FC = () => {
 			form={form}
 			open={open}
 			pageId={pageId}
+			taskId={data?.id}
 		/>
 	);
 };

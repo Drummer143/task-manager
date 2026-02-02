@@ -2,10 +2,17 @@ import { memo, useMemo } from "react";
 
 import { DeleteOutlined, DownloadOutlined } from "@ant-design/icons";
 import VideoPlayer from "@task-manager/video-player";
-import { NodeViewProps, ReactNodeViewRenderer } from "@tiptap/react";
+import { NodeViewProps, NodeViewWrapper, ReactNodeViewRenderer } from "@tiptap/react";
 import { GetProp } from "antd";
 
+import { useUploadStatus } from "../../../../app/store/uploads";
+import FileUploadProgress from "../../../FileUploadProgress";
+
 const VideoRenderer: React.FC<NodeViewProps> = ({ HTMLAttributes, editor, getPos, node }) => {
+	const fileId = node.attrs.id || node.attrs.assetId;
+	const uploadStatus = useUploadStatus(fileId);
+	const hasSrc = !!HTMLAttributes.src;
+
 	const menuItems = useMemo<GetProp<typeof VideoPlayer, "options">>(() => {
 		const options: GetProp<typeof VideoPlayer, "options"> = [
 			{
@@ -50,8 +57,15 @@ const VideoRenderer: React.FC<NodeViewProps> = ({ HTMLAttributes, editor, getPos
 		return options;
 	}, [HTMLAttributes.src, editor.isEditable, getPos, node.nodeSize]);
 
+	if (uploadStatus?.status.type === "progress" && !hasSrc) {
+		return (
+			<NodeViewWrapper>
+				<FileUploadProgress status={uploadStatus.status.data} />
+			</NodeViewWrapper>
+		);
+	}
+
 	return <VideoPlayer controls src={HTMLAttributes.src} options={menuItems} />;
 };
 
 export default ReactNodeViewRenderer(memo(VideoRenderer));
-

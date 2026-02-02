@@ -1,7 +1,7 @@
 import React, { useCallback, useRef, useState } from "react";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { Page, updatePage } from "@task-manager/api";
+import { createUploadToken, Page, updatePage } from "@task-manager/api";
 import { Editor } from "@tiptap/react";
 import { App, Button } from "antd";
 
@@ -57,9 +57,29 @@ const TextPage: React.FC<TextPageProps> = ({ page }) => {
 		});
 	};
 
+	const getFileUploadToken = useCallback(
+		async (file: File, assetId: string) =>
+			createUploadToken({
+				body: {
+					assetId,
+					name: file.name,
+					target: {
+						type: "pageText",
+						id: page.id
+					}
+				}
+			}).then(res => res.token),
+		[page.id]
+	);
+
 	return (
 		<>
-			<MDEditor ref={editorRef} editable={editing} value={page.content} />
+			<MDEditor
+				ref={editorRef}
+				editable={editing}
+				value={page.content}
+				getFileUploadToken={getFileUploadToken}
+			/>
 
 			<div className={controlsWrapper}>
 				{editing ? (

@@ -6,8 +6,15 @@ import { Button, Flex } from "antd";
 
 import { useStyles } from "./styles";
 
+import { useUploadStatus } from "../../../../app/store/uploads";
+import FileUploadProgress from "../../../FileUploadProgress";
+
 const ImageRenderer: React.FC<NodeViewProps> = props => {
 	const { styles } = useStyles();
+	const fileId = props.node.attrs.id || props.node.attrs.assetId;
+	const uploadStatus = useUploadStatus(fileId);
+
+	const hasSrc = !!props.node.attrs.src;
 
 	const handleDeleteSelf = () => {
 		if (!props.editor.isEditable) {
@@ -22,6 +29,14 @@ const ImageRenderer: React.FC<NodeViewProps> = props => {
 			.deleteRange({ from: pos, to: pos + props.node.nodeSize })
 			.run();
 	};
+
+	if (uploadStatus?.status.type === "progress" && !hasSrc) {
+		return (
+			<NodeViewWrapper>
+				<FileUploadProgress status={uploadStatus.status.data} />
+			</NodeViewWrapper>
+		);
+	}
 
 	return (
 		<NodeViewWrapper>

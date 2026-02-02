@@ -96,6 +96,58 @@ impl AssetsService {
         )
         .map_err(|error| ErrorResponse::internal_server_error(Some(error.to_string())))?;
 
+        let asset_id = token.claims.sub;
+
+        match token.claims.entity_type.as_str() {
+            "page_text" => {
+                let page_with_content =
+                    PageRepository::get_page_with_content(&state.postgres, token.claims.entity_id)
+                        .await?;
+
+                let Some(content_json) = page_with_content.content else {
+                    return Err(ErrorResponse::not_found(
+                        error_handlers::codes::NotFoundErrorCode::NotFound,
+                        None,
+                        None,
+                    ));
+                };
+
+                let mut content = content_json.0;
+
+                let found = content.hydrate_file_node(asset_id, |attrs| {
+                    attrs.r#type = Some(body.blob.mime_type);
+                    attrs.size = Some(body.blob.size as u64);
+                    attrs.alt = Some(token.claims.name.clone());
+                    attrs.width = Some("100%".to_string());
+                    attrs.height = Some("auto".to_string());
+                    attrs.title = Some(token.claims.name.clone());
+                    attrs.href = Some(format!("http://localhost:8082/files/{}", asset_id));
+                    attrs.src = Some(format!("http://localhost:8082/files/{}", asset_id));
+                    attrs.id = Some(asset_id);
+                });
+
+                if found {
+                    PageRepository::update_content(
+                        &state.postgres,
+                        token.claims.entity_id,
+                        Some(content),
+                    )
+                    .await
+                    .map_err(ErrorResponse::from)?;
+                }
+            }
+            "task_description" => {
+                // TODO: implement task description hydration
+            }
+            _ => {
+                return Err(ErrorResponse::forbidden(
+                    error_handlers::codes::ForbiddenErrorCode::AccessDenied,
+                    None,
+                    None,
+                ));
+            }
+        }
+
         AssetsRepository::create(
             &state.postgres,
             sql::assets::dto::CreateAssetDto {
