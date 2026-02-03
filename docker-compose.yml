@@ -239,6 +239,7 @@ services:
                 APP_NAME: storage
                 PROFILE: ${PROFILE:-build-optimized}
         environment:
+            JWT_SECRET: ${JWT_SECRET}
             SELF_PORT: ${STORAGE_SERVICE_PORT}
             SELF_HOST: ${STORAGE_SERVICE_HOST}
             STATIC_FOLDER_PATH: ${STORAGE_SERVICE_STATIC_FOLDER_PATH}
