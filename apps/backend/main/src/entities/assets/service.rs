@@ -4,7 +4,7 @@ use serde::{Deserialize, Serialize};
 use sql::{
     assets::{AssetsRepository, model::Asset},
     page::PageRepository,
-    shared::traits::PostgresqlRepositoryCreate,
+    shared::traits::{PostgresqlRepositoryCreate, PostgresqlRepositoryGetOneById, PostgresqlRepositoryUpdate},
     task::TaskRepository,
 };
 use uuid::Uuid;
@@ -137,7 +137,46 @@ impl AssetsService {
                 }
             }
             "task_description" => {
-                // TODO: implement task description hydration
+                let task =
+                    TaskRepository::get_one_by_id(&state.postgres, token.claims.entity_id)
+                        .await?;
+
+                let Some(mut content) = task.description.0 else {
+                    return Err(ErrorResponse::not_found(
+                        error_handlers::codes::NotFoundErrorCode::NotFound,
+                        None,
+                        None,
+                    ));
+                };
+
+                let found = content.hydrate_file_node(asset_id, |attrs| {
+                    attrs.r#type = Some(body.blob.mime_type);
+                    attrs.size = Some(body.blob.size as u64);
+                    attrs.alt = Some(token.claims.name.clone());
+                    attrs.width = Some("100%".to_string());
+                    attrs.height = Some("auto".to_string());
+                    attrs.title = Some(token.claims.name.clone());
+                    attrs.href = Some(format!("http://localhost:8082/files/{}", asset_id));
+                    attrs.src = Some(format!("http://localhost:8082/files/{}", asset_id));
+                    attrs.id = Some(asset_id);
+                });
+
+                if found {
+                    TaskRepository::update(
+                        &state.postgres,
+                        token.claims.entity_id,
+                        sql::task::dto::UpdateTaskDto {
+                            description: Some(Some(content)),
+                            assignee_id: None,
+                            due_date: None,
+                            position: None,
+                            status_id: None,
+                            title: None,
+                        },
+                    )
+                    .await
+                    .map_err(ErrorResponse::from)?;
+                }
             }
             _ => {
                 return Err(ErrorResponse::forbidden(
