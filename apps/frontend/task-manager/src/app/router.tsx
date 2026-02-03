@@ -6,7 +6,10 @@ import Layout from "../widgets/Layout";
 
 const Profile = lazySuspense(() => import("../pages/profile"), <FullSizeLoader />);
 const Page = lazySuspense(() => import("../pages/page"), <FullSizeLoader />);
-const CurrentWorkspace = lazySuspense(() => import("../pages/currentWorkspace"), <FullSizeLoader />);
+const CurrentWorkspace = lazySuspense(
+	() => import("../pages/currentWorkspace"),
+	<FullSizeLoader />
+);
 
 export default createBrowserRouter([
 	{

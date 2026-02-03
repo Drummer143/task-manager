@@ -1,7 +1,7 @@
-import React, { useMemo } from "react";
+import React, { useCallback, useMemo } from "react";
 
 import { useQuery } from "@tanstack/react-query";
-import { getBoardStatuses, getUserList, User } from "@task-manager/api";
+import { createUploadToken, getBoardStatuses, getUserList, User } from "@task-manager/api";
 import { lazySuspense } from "@task-manager/react-utils";
 import { Alert, Button, DatePicker, Form, FormProps, Input, Select, Space } from "antd";
 import { DefaultOptionType } from "antd/es/select";
@@ -30,7 +30,8 @@ const TaskForm: React.FC<TaskFormProps> = ({
 	initialValues: propsInitialValues,
 	submitError,
 	extraHeader,
-	pageId
+	pageId,
+	taskId
 }) => {
 	const workspaceId = useAuthStore(state => state.user.workspace.id);
 
@@ -73,6 +74,21 @@ const TaskForm: React.FC<TaskFormProps> = ({
 			colon: false
 		}),
 		[propsInitialValues, onSubmit, form]
+	);
+
+	const getFileUploadToken = useCallback(
+		async (file: File, assetId: string, taskId: string) =>
+			createUploadToken({
+				body: {
+					assetId,
+					name: file.name,
+					target: {
+						type: "taskDescription",
+						id: taskId
+					}
+				}
+			}).then(res => res.token),
+		[]
 	);
 
 	return (
@@ -144,9 +160,16 @@ const TaskForm: React.FC<TaskFormProps> = ({
 						<DatePicker minDate={today} showTime className="w-full" />
 					</Form.Item>
 
-					<Form.Item layout="vertical" label="Description" name="description">
-						<MDEditor editable />
-					</Form.Item>
+					{taskId && (
+						<Form.Item layout="vertical" label="Description" name="description">
+							<MDEditor
+								editable
+								getFileUploadToken={(file, assetId) =>
+									getFileUploadToken(file, assetId, taskId)
+								}
+							/>
+						</Form.Item>
+					)}
 				</>
 			)}
 		</Drawer>

@@ -1,9 +1,14 @@
+use std::sync::Arc;
+
 use axum::http;
-use utoipa::OpenApi;
 use mimalloc::MiMalloc;
+use types::app_state::InternalAuthState;
+use utoipa::OpenApi;
+use utils::types::jwks::JwkSet;
 
 mod db_connections;
 mod entities;
+mod redis;
 mod swagger;
 mod types;
 
@@ -14,14 +19,19 @@ static GLOBAL: MiMalloc = MiMalloc;
 async fn main() {
     let _ = dotenvy::dotenv();
 
-    // tracing_subscriber::registry()
-    //     .with(tracing_subscriber::fmt::layer())
-    //     .init();
+    use tracing_subscriber::{EnvFilter, layer::SubscriberExt, util::SubscriberInitExt};
+
+    tracing_subscriber::registry()
+        .with(EnvFilter::new("debug,lapin=warn,sqlx=warn"))
+        .with(tracing_subscriber::fmt::layer())
+        .init();
 
     let cors = tower_http::cors::CorsLayer::new()
         .allow_origin(tower_http::cors::AllowOrigin::list([
             "http://0.0.0.0:1346".parse().unwrap(),
             "http://0.0.0.0:80".parse().unwrap(),
+            "http://localhost:1346".parse().unwrap(),
+            "http://localhost:80".parse().unwrap(),
         ]))
         .allow_methods([
             http::Method::GET,
@@ -49,8 +59,9 @@ async fn main() {
     let port = std::env::var("SELF_PORT").unwrap_or("3000".to_string());
     let addr = format!("0.0.0.0:{}", port);
 
-    let db = db_connections::init_databases(
+    let (db, redis) = db_connections::init_databases(
         &std::env::var("DATABASE_URL").expect("DATABASE_URL not found"),
+        &std::env::var("REDIS_URL").expect("REDIS_URL not found"),
     )
     .await;
 
@@ -62,22 +73,58 @@ async fn main() {
         std::env::var("STATIC_FOLDER_PATH").expect("STATIC_FOLDER_PATH not found"),
     );
 
-    if !static_folder_path.exists() {
-        std::fs::create_dir_all(&static_folder_path).expect("Failed to create static folder");
+    let jwt_secret = std::env::var("JWT_SECRET").expect("JWT_SECRET not found");
+
+    let main_service_url = std::env::var("MAIN_SERVICE_URL").expect("MAIN_SERVICE_URL not found");
+
+    let jwks_url = std::env::var("AUTHENTIK_JWKS_URL").expect("AUTHENTIK_JWKS_URL must be set");
+    let authentik_audience =
+        std::env::var("AUTHENTIK_AUDIENCE").expect("AUTHENTIK_AUDIENCE must be set");
+
+    let jwks = reqwest::get(&jwks_url)
+        .await
+        .expect("Failed to fetch JWKS")
+        .json::<JwkSet>()
+        .await
+        .expect("Failed to parse JWKS");
+
+    let auth = InternalAuthState {
+        jwks: Arc::new(tokio::sync::RwLock::new(jwks)),
+        authentik_jwks_url: Arc::new(jwks_url),
+        authentik_audience: Arc::new(authentik_audience),
+    };
+
+    let assets_folder_path = static_folder_path.join("assets");
+    let temp_folder_path = static_folder_path.join("temp");
+
+    if !assets_folder_path.exists() {
+        std::fs::create_dir_all(&assets_folder_path).expect("Failed to create assets folder");
     }
 
-    let app_state = types::app_state::AppState { postgres: db };
+    if !temp_folder_path.exists() {
+        std::fs::create_dir_all(&temp_folder_path).expect("Failed to create temp folder");
+    }
+
+    let app_state = types::app_state::AppState {
+        postgres: db,
+        redis: Arc::new(redis),
+        assets_folder_path: Arc::new(assets_folder_path.to_str().unwrap().to_string()),
+        temp_folder_path: Arc::new(temp_folder_path.to_str().unwrap().to_string()),
+        jwt_secret: Arc::new(jwt_secret),
+        main_service_url: Arc::new(main_service_url),
+        auth,
+    };
 
     let app = axum::Router::new()
-        .merge(entities::actions::router::init())
-        .merge(entities::files::router::init())
+        .merge(entities::actions::router::init(app_state.clone()))
+        .merge(entities::files::router::init(app_state.clone()))
         .merge(
             utoipa_swagger_ui::SwaggerUi::new("/api")
                 .url("/api/openapi.json", swagger::ApiDoc::openapi()),
         )
         .with_state(app_state)
+        .layer(tower_http::trace::TraceLayer::new_for_http())
         .layer(cors);
-        // .layer(tower_http::trace::TraceLayer::new_for_http());
 
     tracing::info!("Listening on {}", addr);
     println!("Listening on {}", addr);

@@ -4,16 +4,12 @@ import { minimatch } from "minimatch";
 
 import { FileUploadPluginOptions, UploadedFileInfo } from "./types";
 
-export const defaultFileUploadFn = (file: File): UploadedFileInfo => {
-	const url = URL.createObjectURL(file);
-
-	return {
-		url,
-		name: file.name,
-		size: file.size,
-		type: file.type
-	};
-};
+export const defaultFileUploadFn = (file: File): UploadedFileInfo => ({
+	url: URL.createObjectURL(file),
+	name: file.name,
+	size: file.size,
+	type: file.type
+});
 
 export const defaultImageUploadFn = async (file: File) =>
 	new Promise<UploadedFileInfo>((resolve, reject) => {
@@ -93,6 +89,7 @@ export const uploadFiles = async (
 	).forEach(uploadedFile => {
 		if (uploadedFile.status === "fulfilled") {
 			const imageNode = view.state.schema.node("file", {
+				id: uploadedFile.value.id,
 				src: uploadedFile.value.url,
 				href: uploadedFile.value.url,
 				alt: uploadedFile.value.name,

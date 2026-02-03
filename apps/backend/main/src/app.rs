@@ -1,8 +1,9 @@
 use axum::http;
+use utils::{auth_middleware::InternalAuthState, types::jwks::JwkSet};
 use std::sync::Arc;
 use utoipa::OpenApi;
 
-use crate::types::app_state::{AppState, JwkSet};
+use crate::types::app_state::AppState;
 
 mod db_connections;
 mod entities;
@@ -15,21 +16,23 @@ mod webhooks;
 pub async fn build() -> axum::Router {
     let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL not found");
 
-    // use tracing_subscriber::{EnvFilter, layer::SubscriberExt, util::SubscriberInitExt};
+    use tracing_subscriber::{EnvFilter, layer::SubscriberExt, util::SubscriberInitExt};
 
-    // tracing_subscriber::registry()
-    //     .with(EnvFilter::new("debug,lapin=warn,sqlx=warn"))
-    //     .with(tracing_subscriber::fmt::layer())
-    //     .init();
+    tracing_subscriber::registry()
+        .with(EnvFilter::new("debug,lapin=warn,sqlx=warn"))
+        .with(tracing_subscriber::fmt::layer())
+        .init();
 
     let jwks_url = std::env::var("AUTHENTIK_JWKS_URL").expect("AUTHENTIK_JWKS_URL must be set");
     let authentik_audience =
         std::env::var("AUTHENTIK_AUDIENCE").expect("AUTHENTIK_AUDIENCE must be set");
 
-    let jwks: JwkSet = reqwest::get(&jwks_url)
+    let jwt_secret = std::env::var("JWT_SECRET").expect("JWT_SECRET must be set");
+
+    let jwks = reqwest::get(&jwks_url)
         .await
         .expect("Failed to fetch JWKS")
-        .json()
+        .json::<JwkSet>()
         .await
         .expect("Failed to parse JWKS");
 
@@ -62,11 +65,16 @@ pub async fn build() -> axum::Router {
         ])
         .allow_credentials(true);
 
-    let app_state = AppState {
-        postgres,
+    let auth = InternalAuthState {
         jwks: Arc::new(tokio::sync::RwLock::new(jwks)),
         authentik_jwks_url: Arc::new(jwks_url),
         authentik_audience: Arc::new(authentik_audience),
+    };
+
+    let app_state = AppState {
+        postgres,
+        auth,
+        jwt_secret: Arc::new(jwt_secret),
     };
 
     let app = axum::Router::new()
@@ -76,10 +84,12 @@ pub async fn build() -> axum::Router {
         .merge(entities::page::router::init(app_state.clone()))
         .merge(entities::task::router::init(app_state.clone()))
         .merge(entities::board_statuses::router::init(app_state.clone()))
+        .merge(entities::assets::router::init(app_state.clone()))
         .merge(
             utoipa_swagger_ui::SwaggerUi::new("/api")
                 .url("/api/api.json", swagger::ApiDoc::openapi())
                 .url("/api/webhooks.json", swagger::WebhooksDoc::openapi())
+                .url("/api/internal.json", swagger::InternalApiDoc::openapi())
                 .config(
                     utoipa_swagger_ui::Config::default()
                         .doc_expansion("none")
@@ -88,7 +98,7 @@ pub async fn build() -> axum::Router {
         )
         .merge(webhooks::authentik::router::init())
         .with_state(app_state)
-        // .layer(tower_http::trace::TraceLayer::new_for_http())
+        .layer(tower_http::trace::TraceLayer::new_for_http())
         .layer(cors);
 
     app

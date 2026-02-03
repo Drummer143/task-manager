@@ -1,18 +1,4 @@
-use utoipa::openapi::security::{SecurityScheme, Http, HttpAuthScheme};
-use utoipa::Modify;
-
-struct SecurityAddon;
-
-impl Modify for SecurityAddon {
-    fn modify(&self, openapi: &mut utoipa::openapi::OpenApi) {
-        if let Some(components) = &mut openapi.components {
-            components.add_security_scheme(
-                "bearer_auth",
-                SecurityScheme::Http(Http::new(HttpAuthScheme::Bearer)),
-            )
-        }
-    }
-}
+use utils::swagger::SecurityAddon;
 
 #[derive(utoipa::OpenApi)]
 #[openapi(
@@ -52,6 +38,8 @@ impl Modify for SecurityAddon {
         crate::entities::workspace::controller::get_workspace_access_list::get_workspace_access_list,
         crate::entities::workspace::controller::create_workspace_access::create_workspace_access,
         crate::entities::workspace::controller::update_workspace_access::update_workspace_access,
+
+        crate::entities::assets::controller::create_upload_token::create_upload_token,
     ),
     components(schemas(
         sql::user::model::User,
@@ -82,7 +70,16 @@ pub struct ApiDoc;
 #[derive(utoipa::OpenApi)]
 #[openapi(
     paths(
-        crate::webhooks::authentik::user_sync::controller::user_sync,  
+        crate::entities::assets::controller::create_asset::create_asset,
+        crate::entities::assets::controller::validate_access::validate_access,
+    )
+)]
+pub struct InternalApiDoc;
+
+#[derive(utoipa::OpenApi)]
+#[openapi(
+    paths(
+        crate::webhooks::authentik::user_sync::controller::user_sync,
     ),
     components(schemas(
         

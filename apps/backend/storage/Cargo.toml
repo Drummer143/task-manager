@@ -8,13 +8,33 @@ edition = "2024"
 mimalloc = { version = "0.1", default-features = false }
 axum = { version = "0.8", features = ["multipart"] }
 axum-macros = "0.5"
+axum-extra = { version = "0.12", features = ["typed-header"] }
+blake3 = { version = "1.8", features = ["rayon"] }
+memmap2 = "0.9"
 dotenvy = "0.15"
-error_handlers = { path = "../../../libs/backend/error-handlers" }
+mime_guess = "2.0"
+error_handlers = { path = "../../../libs/backend/error-handlers", features = [
+    "redis",
+] }
+jsonwebtoken = { version = "10", default-features = false, features = [
+    "rust_crypto",
+] }
+reqwest = { version = "0.12", default-features = false, features = [
+    "json",
+    "rustls-tls",
+    "charset",
+    "http2",
+    "macos-system-configuration",
+] }
 infer = "0.19"
+once_cell = "1.21"
+syntect = "5.3"
 migrator = { path = "../../../libs/backend/migrator" }
 tokio = { version = "1", features = ["full"] }
 tokio-util = "0.7"
 sql = { path = "../../../libs/backend/sql" }
+deadpool-redis = "0.22"
+rand = "0.9"
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
 sqlx = { version = "0.8", features = [
@@ -26,10 +46,11 @@ sqlx = { version = "0.8", features = [
 ] }
 tower-http = { version = "0.6", features = ["trace", "cors", "fs"] }
 tracing = "0.1"
-tracing-subscriber = { version = "0.3", features = ["fmt"] }
+tracing-subscriber = { version = "0.3", features = ["fmt", "env-filter"] }
 utoipa = { version = "5.4", features = ["uuid", "chrono"] }
 utoipa-axum = "0.2"
 utoipa-swagger-ui = { version = "9.0", features = ["axum"] }
 uuid = { version = "1", features = ["v4", "serde"] }
+utils = { path = "../../../libs/backend/utils" }
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html

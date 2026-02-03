@@ -2,11 +2,12 @@ use std::collections::HashMap;
 
 use chrono::{DateTime, Utc};
 use error_handlers::{codes, handlers::ErrorResponse};
+use serde::{Deserialize, Serialize};
 use sql::{
-    page::model::{Doc, Page, PageType, PageWithContent, Role},
+    page::model::{Page, PageType, PageWithContent, Role},
+    shared::tiptap_content::TipTapContent,
     user::model::User,
 };
-use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
 use crate::entities::{
@@ -21,14 +22,14 @@ pub struct CreatePageDto {
     pub title: String,
     pub r#type: PageType,
     pub parent_page_id: Option<Uuid>,
-    pub content: Option<Doc>,
+    pub content: Option<TipTapContent>,
 }
 
 #[derive(Debug, utoipa::ToSchema, Deserialize)]
 pub struct UpdatePageDto {
     pub title: Option<String>,
 
-    pub content: Option<Option<Doc>>,
+    pub content: Option<Option<TipTapContent>>,
 }
 
 #[derive(Debug, Serialize, Clone, utoipa::ToSchema)]
@@ -134,7 +135,7 @@ pub struct PageResponse {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub board_statuses: Option<Vec<BoardStatusResponseDto>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub content: Option<Doc>,
+    pub content: Option<TipTapContent>,
 
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,

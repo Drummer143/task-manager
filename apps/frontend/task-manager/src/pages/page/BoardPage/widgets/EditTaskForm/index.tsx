@@ -78,6 +78,7 @@ const EditTaskForm: React.FC = () => {
 			onCancel={handleClose}
 			onClose={handleClose}
 			open={!!taskId}
+			taskId={taskId!}
 			type="edit"
 			pageId={pageId}
 			extraHeader={

@@ -2,8 +2,8 @@ use serde::Deserialize;
 use uuid::Uuid;
 
 use crate::{
-    entities::page::model::{Doc, Page, PageType, Role},
-    shared::traits::UpdateDto,
+    entities::page::model::{Page, PageType, Role},
+    shared::{tiptap_content::TipTapContent, traits::UpdateDto},
 };
 
 // PAGE
@@ -13,7 +13,7 @@ pub struct CreatePageDto {
     pub title: String,
     pub parent_page_id: Option<Uuid>,
     pub r#type: PageType,
-    pub content: Option<Doc>,
+    pub content: Option<TipTapContent>,
     pub workspace_id: Uuid,
     pub owner_id: Uuid,
 }

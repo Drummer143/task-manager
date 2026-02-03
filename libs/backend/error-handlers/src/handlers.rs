@@ -3,12 +3,12 @@ use axum::{
     response::{IntoResponse, Response},
     Json,
 };
-use serde::Serialize;
+use serde::{Deserialize, Serialize};
 use std::{borrow::Cow, collections::HashMap};
 
 use super::codes;
 
-#[derive(Debug, Serialize, utoipa::ToSchema)]
+#[derive(Debug, Serialize, Deserialize, utoipa::ToSchema)]
 pub struct ErrorResponse {
     pub error: Cow<'static, str>,
     pub error_code: String,
@@ -145,5 +145,18 @@ impl From<sqlx::Error> for ErrorResponse {
             ),
             _ => Self::internal_server_error(Some(error.to_string())),
         }
+    }
+}
+
+#[cfg(feature = "redis")]
+impl From<deadpool_redis::redis::RedisError> for ErrorResponse {
+    fn from(error: deadpool_redis::redis::RedisError) -> Self {
+        Self::internal_server_error(Some(error.to_string()))
+    }
+}
+
+impl From<serde_json::Error> for ErrorResponse {
+    fn from(value: serde_json::Error) -> Self {
+        Self::internal_server_error(Some(value.to_string()))
     }
 }

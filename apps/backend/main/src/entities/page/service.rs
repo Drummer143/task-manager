@@ -105,6 +105,7 @@ impl ServiceUpdateMethod for PageService {
         };
 
         if let Some(content) = dto.content {
+            println!("content: {:?}", content);
             PageRepository::update_content(&mut *tx, id, content)
                 .await
                 .map_err(ErrorResponse::from)?;
@@ -202,25 +203,23 @@ impl PageService {
                 error => ErrorResponse::internal_server_error(Some(error.to_string())),
             })
     }
+
     pub async fn get_page_access<'a>(
         app_state: &crate::types::app_state::AppState,
         user_id: Uuid,
         page_id: Uuid,
     ) -> Result<PageAccessResponse, ErrorResponse> {
-        let page_access = sql::page::PageRepository::get_one_page_access(
-            &app_state.postgres,
-            user_id,
-            page_id,
-        )
-        .await
-        .map_err(|e| match e {
-            sqlx::Error::RowNotFound => ErrorResponse::not_found(
-                error_handlers::codes::NotFoundErrorCode::NotFound,
-                None,
-                Some(e.to_string()),
-            ),
-            error => ErrorResponse::internal_server_error(Some(error.to_string())),
-        })?;
+        let page_access =
+            sql::page::PageRepository::get_one_page_access(&app_state.postgres, user_id, page_id)
+                .await
+                .map_err(|e| match e {
+                    sqlx::Error::RowNotFound => ErrorResponse::not_found(
+                        error_handlers::codes::NotFoundErrorCode::NotFound,
+                        None,
+                        Some(e.to_string()),
+                    ),
+                    error => ErrorResponse::internal_server_error(Some(error.to_string())),
+                })?;
 
         let user =
             crate::entities::user::UserService::get_one_by_id(&app_state, page_access.user_id)
@@ -240,19 +239,17 @@ impl PageService {
         app_state: &crate::types::app_state::AppState,
         page_id: Uuid,
     ) -> Result<Vec<PageAccessResponse>, ErrorResponse> {
-        let page_access_list = sql::page::PageRepository::get_page_access_list(
-            &app_state.postgres,
-            page_id,
-        )
-        .await
-        .map_err(|e| match e {
-            sqlx::Error::RowNotFound => ErrorResponse::not_found(
-                error_handlers::codes::NotFoundErrorCode::NotFound,
-                None,
-                Some(e.to_string()),
-            ),
-            error => ErrorResponse::internal_server_error(Some(error.to_string())),
-        })?;
+        let page_access_list =
+            sql::page::PageRepository::get_page_access_list(&app_state.postgres, page_id)
+                .await
+                .map_err(|e| match e {
+                    sqlx::Error::RowNotFound => ErrorResponse::not_found(
+                        error_handlers::codes::NotFoundErrorCode::NotFound,
+                        None,
+                        Some(e.to_string()),
+                    ),
+                    error => ErrorResponse::internal_server_error(Some(error.to_string())),
+                })?;
 
         let mut page_access_list_response = Vec::new();
 

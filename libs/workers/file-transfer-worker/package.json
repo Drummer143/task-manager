@@ -1,0 +1,13 @@
+{
+	"name": "@task-manager/file-transfer-worker",
+	"version": "0.0.1",
+	"private": true,
+	"type": "module",
+	"main": "./index.js",
+	"types": "./index.d.ts",
+	"devDependencies": {},
+	"dependencies": {
+		"@task-manager/api": "0.0.1"
+	}
+}
+

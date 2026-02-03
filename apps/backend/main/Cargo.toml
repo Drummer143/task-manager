@@ -13,7 +13,7 @@ path = "src/app.rs"
 [dependencies]
 mimalloc = { version = "0.1", default-features = false }
 axum = "0.8"
-axum-extra = { version = "0.10", features = ["cookie"] }
+axum-extra = { version = "0.10", features = ["cookie", "typed-header"] }
 axum-macros = "0.5"
 bcrypt = "0.17"
 error_handlers = { path = "../../../libs/backend/error-handlers" }
@@ -56,3 +56,4 @@ sqlx = { version = "0.8", features = [
     "chrono",
 ] }
 uuid = { version = "1", features = ["v4", "serde"] }
+utils = { path = "../../../libs/backend/utils" }

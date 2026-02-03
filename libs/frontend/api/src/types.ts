@@ -85,6 +85,7 @@ export interface Task extends Timestamps {
 	id: string;
 	title: string;
 	status: BoardStatus;
+	isDraft: boolean;
 	position: number;
 
 	dueDate?: string;

@@ -1,6 +1,6 @@
 use chrono::{DateTime, Utc};
-use sql::{page::model::Doc, task::model::Task, user::model::User};
 use serde::{Deserialize, Serialize};
+use sql::{shared::tiptap_content::TipTapContent, task::model::Task, user::model::User};
 use uuid::Uuid;
 
 use crate::entities::board_statuses::dto::BoardStatusResponseDto;
@@ -10,20 +10,22 @@ use crate::entities::board_statuses::dto::BoardStatusResponseDto;
 pub struct CreateTaskDto {
     pub title: String,
     pub status_id: Uuid,
-    pub description: Option<Doc>,
+    pub description: Option<TipTapContent>,
     pub due_date: Option<DateTime<Utc>>,
     pub assignee_id: Option<Uuid>,
 }
 
 #[derive(Debug, Serialize, utoipa::ToSchema, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct TaskResponse {
     pub id: Uuid,
     pub title: String,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub description: Option<Doc>,
+    pub description: Option<TipTapContent>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub due_date: Option<DateTime<Utc>>,
     pub position: i32,
+    pub is_draft: bool,
 
     pub status: Option<BoardStatusResponseDto>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -42,9 +44,10 @@ impl From<Task> for TaskResponse {
         Self {
             id: value.id,
             title: value.title,
-            description: value.description.map(|json| json.0),
+            description: value.description.0,
             due_date: value.due_date,
             position: value.position,
+            is_draft: value.is_draft,
             status: None,
             reporter: None,
             assignee: None,

@@ -5,8 +5,9 @@ use axum::{
 
 use crate::{
     entities::task::controller::{
-        change_status::change_status, create_task::create_task, delete_task::delete_task,
-        get_task::get_task, get_tasks_in_page::get_tasks_in_page, update_task::update_task,
+        change_status::change_status, create_draft::create_draft, create_task::create_task,
+        delete_task::delete_task, get_task::get_task, get_tasks_in_page::get_tasks_in_page,
+        update_task::update_task,
     },
     types::app_state::AppState,
 };
@@ -14,6 +15,7 @@ use crate::{
 pub fn init(state: AppState) -> Router<AppState> {
     let general = Router::new()
         .route("/pages/{page_id}/tasks", post(create_task))
+        .route("/pages/{page_id}/tasks/draft", post(create_draft))
         .route("/pages/{page_id}/tasks", get(get_tasks_in_page))
         .layer(axum::middleware::from_fn_with_state(
             state.clone(),
@@ -31,6 +33,6 @@ pub fn init(state: AppState) -> Router<AppState> {
         ));
 
     return axum::Router::new().merge(general).merge(scoped).layer(
-        axum::middleware::from_fn_with_state(state, crate::middleware::auth_guard::auth_guard),
+        axum::middleware::from_fn_with_state(state, utils::auth_middleware::auth_guard),
     );
 }

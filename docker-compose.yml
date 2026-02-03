@@ -195,8 +195,6 @@ services:
         depends_on:
             postgres:
                 condition: service_healthy
-            rmq:
-                condition: service_healthy
             authentik_server:
                 condition: service_healthy
         deploy:
@@ -245,10 +243,11 @@ services:
             SELF_HOST: ${STORAGE_SERVICE_HOST}
             STATIC_FOLDER_PATH: ${STORAGE_SERVICE_STATIC_FOLDER_PATH}
             DATABASE_URL: ${DATABASE_URL}
+            REDIS_URL: ${REDIS_URL}
         networks:
             - net
         volumes:
-            - storage:/static
+            - ./apps/backend/storage/static:/static
 
     notifications-service:
         # restart: always

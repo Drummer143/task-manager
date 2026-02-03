@@ -1,6 +1,6 @@
 import { removeEmptyFields } from "@task-manager/utils";
 
-import { axiosInstance, BaseRequest } from "./base";
+import { BaseRequest, mainInstance } from "./base";
 
 import { User, Workspace } from "../types";
 
@@ -19,7 +19,7 @@ export const getProfile = async <T extends GetProfileIncludes | undefined = unde
 	params: GetProfileRequest<T>
 ) =>
 	(
-		await axiosInstance.get<ResponseWithIncludeFilter<T>>("/profile", {
+		await mainInstance.get<ResponseWithIncludeFilter<T>>("/profile", {
 			params: { include: params.pathParams.include?.toString() }
 		})
 	).data;
@@ -27,12 +27,12 @@ export const getProfile = async <T extends GetProfileIncludes | undefined = unde
 export type updateProfileRequest = BaseRequest<never, { username: string }>;
 
 export const updateProfile = async (params: updateProfileRequest) =>
-	(await axiosInstance.patch<User>("/profile", removeEmptyFields(params.body))).data;
+	(await mainInstance.patch<User>("/profile", removeEmptyFields(params.body))).data;
 
 export type changeEmailRequest = BaseRequest<never, { email: string }>;
 
 export const changeEmail = async (params: changeEmailRequest) =>
-	(await axiosInstance.patch<User>("/profile/email", params.body)).data;
+	(await mainInstance.patch<User>("/profile/email", params.body)).data;
 
 export type uploadAvatarRequest = BaseRequest<
 	never,
@@ -55,7 +55,7 @@ export const uploadAvatar = async (params: uploadAvatarRequest) => {
 	formData.append("height", String(params.body.height));
 
 	return (
-		await axiosInstance.patch<User>("/profile/avatar", formData, {
+		await mainInstance.patch<User>("/profile/avatar", formData, {
 			headers: {
 				"Content-Type": "multipart/form-data"
 			}

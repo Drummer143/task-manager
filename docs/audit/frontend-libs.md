@@ -48,7 +48,7 @@ src/
 #### 1. Hardcoded base URL
 
 ```typescript
-export const axiosInstance = axios.create({
+export const mainInstance = axios.create({
 	baseURL: "http://localhost:8080"
 });
 ```
@@ -56,7 +56,7 @@ export const axiosInstance = axios.create({
 **Fix:** Use environment variable:
 
 ```typescript
-export const axiosInstance = axios.create({
+export const mainInstance = axios.create({
 	baseURL: import.meta.env.VITE_API_URL || "http://localhost:8080"
 });
 ```
@@ -65,10 +65,10 @@ export const axiosInstance = axios.create({
 
 ```typescript
 export const login = async (body: { username: string; password: string }) =>
-	(await axiosInstance.post<User>("/auth/login", body)).data;
+	(await mainInstance.post<User>("/auth/login", body)).data;
 
 export const signUp = async (body: { username: string; email: string; password: string }) =>
-	(await axiosInstance.post<User>("/auth/register", body)).data;
+	(await mainInstance.post<User>("/auth/register", body)).data;
 ```
 
 These endpoints don't exist in the backend (using Authentik now).
@@ -79,7 +79,7 @@ These endpoints don't exist in the backend (using Authentik now).
 
 ```typescript
 export const getWorkspaceList = async <T>(params: GetWorkspaceListRequest<T>) =>
-    (await axiosInstance.get<...>("/workspaces", {
+    (await mainInstance.get<...>("/workspaces", {
         params: params.pathParams  // Actually query params, not path params
     })).data;
 ```

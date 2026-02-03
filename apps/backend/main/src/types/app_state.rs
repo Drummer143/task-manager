@@ -1,26 +1,18 @@
 use std::sync::Arc;
 
-use serde::Deserialize;
-
-#[derive(Debug, Deserialize, Clone)]
-pub struct JwkSet {
-    pub keys: Vec<Jwk>,
-}
-
-#[derive(Debug, Deserialize, Clone)]
-pub struct Jwk {
-    pub kid: String,
-    pub kty: String,
-    pub alg: String,
-    pub n: String,
-    pub e: String,
-}
+use axum::extract::FromRef;
+pub use utils::auth_middleware::InternalAuthState;
 
 #[derive(Clone)]
 pub struct AppState {
     pub postgres: sqlx::postgres::PgPool,
     // pub rabbitmq: std::sync::Arc<lapin::Channel>,
-    pub jwks: Arc<tokio::sync::RwLock<JwkSet>>,
-    pub authentik_jwks_url: Arc<String>,
-    pub authentik_audience: Arc<String>,
+    pub auth: InternalAuthState,
+    pub jwt_secret: Arc<String>,
+}
+
+impl FromRef<AppState> for InternalAuthState {
+    fn from_ref(state: &AppState) -> Self {
+        state.auth.clone()
+    }
 }

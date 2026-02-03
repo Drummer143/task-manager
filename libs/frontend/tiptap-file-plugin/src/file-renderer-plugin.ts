@@ -33,6 +33,9 @@ export const FileRendererPlugin = Node.create<FileRendererOptions>({
 
 	addAttributes() {
 		return {
+			id: {
+				default: null
+			},
 			src: {
 				default: null
 			},
@@ -80,17 +83,20 @@ export const FileRendererPlugin = Node.create<FileRendererOptions>({
 
 	renderHTML({ HTMLAttributes, node }) {
 		const mime = node.attrs["type"];
-		const ext = "." + node.attrs["src"].split(".").pop();
+		const ext = node.attrs["src"]?.split(".").pop();
+		const id = node.attrs["id"];
 
 		const HTMLAttrsForMime =
 			Object.entries(this.options.rendererMap).find(
 				([key]) => (key && mime && minimatch(mime, key)) || (ext && key.includes(ext))
 			)?.[1] || {};
 
+		const dataIdObj = id ? { id } : {};
+
 		return mime?.startsWith("image/")
-			? ["img", mergeAttributes(HTMLAttrsForMime, HTMLAttributes)]
+			? ["img", mergeAttributes(HTMLAttrsForMime, HTMLAttributes, dataIdObj)]
 			: mime?.startsWith("video/")
-				? ["video", mergeAttributes(HTMLAttrsForMime, HTMLAttributes)]
+				? ["video", mergeAttributes(HTMLAttrsForMime, HTMLAttributes, dataIdObj)]
 				: [
 						"a",
 						mergeAttributes(HTMLAttrsForMime, HTMLAttributes, {
@@ -117,7 +123,8 @@ export const FileRendererPlugin = Node.create<FileRendererOptions>({
 	addNodeView() {
 		return props => {
 			const mime = props.node.attrs["type"];
-			const ext = "." + props.node.attrs["src"].split(".").pop();
+			const ext = props.node.attrs["src"]?.split(".").pop();
+			const id = props.node.attrs["id"];
 
 			const rendererConfig =
 				mime || ext
@@ -127,13 +134,17 @@ export const FileRendererPlugin = Node.create<FileRendererOptions>({
 						)?.[1] || {}
 					: {};
 
+			console.log(rendererConfig, mime);
+
 			return (rendererConfig.renderer || defaultFileRenderer)({
 				...props,
 				HTMLAttributes: {
 					...props.HTMLAttributes,
-					...rendererConfig.HTMLAttributes
+					...rendererConfig.HTMLAttributes,
+					"id": id
 				}
 			});
 		};
 	}
 });
+

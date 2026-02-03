@@ -1,0 +1,17 @@
+{
+	"name": "file-transfer-worker",
+	"$schema": "../../node_modules/nx/schemas/project-schema.json",
+	"sourceRoot": "libs/workers/file-transfer-worker/src",
+	"projectType": "library",
+	"tags": [],
+	"// targets": "to see all targets run: nx show project file-transfer-worker --web",
+	"targets": {
+		"prepare": {
+			"executor": "nx:run-commands",
+			"options": {
+				"command": "cd wasm-hasher && wasm-pack build --target web --out-dir ../src/hasher",
+				"cwd": "{projectRoot}"
+			}
+		}
+	}
+}

@@ -1,4 +1,4 @@
-import { axiosInstance, BaseRequest } from "./base";
+import { mainInstance, BaseRequest } from "./base";
 
 import { PageAccess } from "../types";
 
@@ -9,7 +9,7 @@ interface Ids {
 export type GetPageAccessRequest = BaseRequest<Ids>;
 
 export const getPageAccess = async (params: GetPageAccessRequest) =>
-	(await axiosInstance.get<PageAccess[]>(`pages/${params.pathParams.pageId}/access`)).data;
+	(await mainInstance.get<PageAccess[]>(`pages/${params.pathParams.pageId}/access`)).data;
 
 export type UpdatePageAccessRequest = BaseRequest<
 	Ids,
@@ -21,7 +21,7 @@ export type UpdatePageAccessRequest = BaseRequest<
 >;
 
 export const updatePageAccess = async (params: UpdatePageAccessRequest) =>
-	(await axiosInstance.put<"Success">(`pages/${params.pathParams.pageId}/access`, params.body))
+	(await mainInstance.put<"Success">(`pages/${params.pathParams.pageId}/access`, params.body))
 		.data;
 
 export type CreatePageAccessRequest = BaseRequest<
@@ -35,7 +35,7 @@ export type CreatePageAccessRequest = BaseRequest<
 
 export const createPageAccess = async (params: CreatePageAccessRequest) =>
 	(
-		await axiosInstance.post<"Success">(
+		await mainInstance.post<"Success">(
 			`pages/${params.pathParams.pageId}/access`,
 			params.body
 		)

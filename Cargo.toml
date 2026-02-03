@@ -7,6 +7,8 @@ members = [
 	'libs/backend/error-handlers',
 	'libs/backend/sql',
 	'libs/backend/migrator',
+	'libs/backend/utils',
+	"libs/workers/file-transfer-worker/wasm-hasher",
 ]
 
 [profile.release]

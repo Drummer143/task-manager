@@ -12,7 +12,7 @@ import {
 } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
 import { Task } from "@task-manager/api";
 import { registerContextMenu } from "@task-manager/context-menu";
-import { Avatar, Flex, Typography } from "antd";
+import { Avatar, Flex, Tag, Typography } from "antd";
 
 import { useStyles } from "./styles";
 
@@ -145,9 +145,17 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, draggable: taskDraggable, onC
 	return (
 		<div style={{ position: "relative" }}>
 			<div className={styles.taskWrapper} onClick={() => onClick?.(task)} ref={taskRef}>
-				<Typography.Text ellipsis className={styles.taskTitle}>
-					{task.title}
-				</Typography.Text>
+				<Flex gap="var(--ant-padding-xxs)">
+					{task.isDraft && <Tag variant="filled">Draft</Tag>}
+
+					<Typography.Text
+						type={task.title && !task.isDraft ? undefined : "secondary"}
+						ellipsis
+						className={styles.taskTitle}
+					>
+						{task.title || "Untitled"}
+					</Typography.Text>
+				</Flex>
 
 				{task.assignee && (
 					<Flex align="center" gap="var(--ant-padding-xs)">

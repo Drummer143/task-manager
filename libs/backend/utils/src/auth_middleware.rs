@@ -1,4 +1,5 @@
-use crate::types::app_state::{AppState, JwkSet};
+use std::sync::Arc;
+
 use axum::{
     body::Body,
     extract::State,
@@ -8,11 +9,14 @@ use axum::{
 };
 use error_handlers::{codes, handlers::ErrorResponse};
 use jsonwebtoken::{Algorithm, DecodingKey, Validation, decode, decode_header};
+use tokio::sync::RwLock;
 use uuid::Uuid;
 
+use crate::types::jwks::JwkSet;
+
 #[derive(serde::Deserialize)]
-struct Claims {
-    sub: Uuid,
+pub struct Claims {
+    pub sub: Uuid,
 }
 
 pub async fn fetch_jwks(url: &str) -> Result<JwkSet, String> {
@@ -24,9 +28,16 @@ pub async fn fetch_jwks(url: &str) -> Result<JwkSet, String> {
         .map_err(|e| e.to_string())
 }
 
+#[derive(Clone)]
+pub struct InternalAuthState {
+    pub jwks: Arc<RwLock<JwkSet>>,
+    pub authentik_jwks_url: Arc<String>,
+    pub authentik_audience: Arc<String>,
+}
+
 #[cfg(feature = "test_auth_guard")]
 pub async fn auth_guard(
-    State(_state): State<AppState>,
+    State(_state): State<InternalAuthState>,
     mut _req: Request<Body>,
     next: Next,
 ) -> Response<Body> {
@@ -35,21 +46,38 @@ pub async fn auth_guard(
 
 #[cfg(not(feature = "test_auth_guard"))]
 pub async fn auth_guard(
-    State(state): State<AppState>,
+    State(state): State<InternalAuthState>,
     mut req: Request<Body>,
     next: Next,
 ) -> Response<Body> {
-    let auth_header = req
+    let token_from_header = req
         .headers()
         .get(header::AUTHORIZATION)
-        .and_then(|h| h.to_str().ok());
+        .and_then(|h| h.to_str().ok())
+        .and_then(|h| h.strip_prefix("Bearer "))
+        .map(|t| t.to_string());
 
-    let token = match auth_header {
-        Some(header) if header.starts_with("Bearer ") => &header[7..],
-        _ => return make_error_response("Missing or invalid Authorization header"),
+    let token = match token_from_header {
+        Some(t) => t,
+        None => {
+            let query = req.uri().query().unwrap_or("");
+            let token_from_query = query.split('&').find_map(|pair| {
+                let mut parts = pair.split('=');
+                if parts.next() == Some("token") {
+                    parts.next().map(|t| t.to_string())
+                } else {
+                    None
+                }
+            });
+
+            match token_from_query {
+                Some(t) => t,
+                None => return make_error_response("Missing or invalid Authorization header/query"),
+            }
+        }
     };
 
-    let header = match decode_header(token) {
+    let header = match decode_header(&token) {
         Ok(h) => h,
         Err(_) => return make_error_response("Invalid token structure"),
     };
@@ -84,7 +112,7 @@ pub async fn auth_guard(
     validation.leeway = 60;
     validation.set_audience(&[&state.authentik_audience]);
 
-    let token_data = match decode::<Claims>(token, &decoding_key, &validation) {
+    let token_data = match decode::<Claims>(&token, &decoding_key, &validation) {
         Ok(data) => data,
         Err(e) => {
             println!("JWT Validation Error: {:?}", e.kind());

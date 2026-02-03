@@ -1,4 +1,4 @@
-import { memo, useState } from "react";
+import { memo, useMemo, useState } from "react";
 
 import {
 	DeleteOutlined,
@@ -7,14 +7,17 @@ import {
 	EyeOutlined
 } from "@ant-design/icons";
 import { useMutation } from "@tanstack/react-query";
+import { storageInstance } from "@task-manager/api";
 import { lazySuspense } from "@task-manager/react-utils";
 import { mergeDeep, NodeViewProps, NodeViewWrapper, ReactNodeViewRenderer } from "@tiptap/react";
-import { Button, Flex, Spin } from "antd";
-import axios from "axios";
+import { Button, Flex, Select, Spin } from "antd";
 import oneDarkDefault from "react-syntax-highlighter/dist/esm/styles/prism/one-dark";
 import oneLightDefault from "react-syntax-highlighter/dist/esm/styles/prism/one-light";
 
 import { useStyles } from "./styles";
+
+import { useUploadStatus } from "../../../../app/store/uploads";
+import FileUploadProgress from "../../../FileUploadProgress";
 
 const SyntaxHighlighter = lazySuspense(
 	() => import("react-syntax-highlighter/dist/esm/prism-async-light"),
@@ -30,16 +33,64 @@ const SyntaxHighlighter = lazySuspense(
 	</Flex>
 );
 
-const extToLang: Record<string, string> = {
-	js: "javascript",
-	ts: "typescript",
-	jsx: "javascript",
-	tsx: "typescript",
-	json: "json",
-	css: "css",
-	html: "html",
-	xml: "xml"
-};
+export function getLanguageFromMime(mimeType: string): string {
+	if (!mimeType) return "text";
+
+	// Разбираем строку, например "text/x-elixir" -> ["text", "x-elixir"]
+	const parts = mimeType.split("/");
+	const subtype = parts[1] || "";
+
+	// 1. Прямые совпадения для application/*
+	if (subtype === "json") return "json";
+	if (subtype === "typescript") return "typescript";
+	if (subtype === "javascript") return "javascript";
+	if (subtype === "sql") return "sql";
+
+	// 2. Обработка префикса "x-" (стандарт для нестандартных типов)
+	// text/x-elixir -> elixir
+	// text/x-rust -> rust
+	// text/x-python -> python
+	if (subtype.startsWith("x-")) {
+		return subtype.replace(/^x-/, "");
+	}
+
+	// 3. Fallback для простых типов (text/css -> css, text/html -> html)
+	if (subtype === "plain") return "text";
+
+	return subtype;
+}
+
+export const SUPPORTED_LANGUAGES = [
+	{ label: "Plain Text", value: "text" },
+	{ label: "Bash / Shell", value: "bash" },
+	{ label: "C", value: "c" },
+	{ label: "C++", value: "cpp" },
+	{ label: "C#", value: "csharp" },
+	{ label: "CSS", value: "css" },
+	{ label: "Docker", value: "dockerfile" },
+	{ label: "Elixir", value: "elixir" }, // <-- Наш герой
+	{ label: "Go", value: "go" },
+	{ label: "GraphQL", value: "graphql" },
+	{ label: "HTML", value: "html" },
+	{ label: "Java", value: "java" },
+	{ label: "JavaScript", value: "javascript" },
+	{ label: "JSON", value: "json" },
+	{ label: "Kotlin", value: "kotlin" },
+	{ label: "Less", value: "less" },
+	{ label: "Markdown", value: "markdown" },
+	{ label: "Makefile", value: "makefile" },
+	{ label: "PHP", value: "php" },
+	{ label: "Python", value: "python" },
+	{ label: "Ruby", value: "ruby" },
+	{ label: "Rust", value: "rust" },
+	{ label: "SASS / SCSS", value: "scss" },
+	{ label: "SQL", value: "sql" },
+	{ label: "Svelte", value: "svelte" },
+	{ label: "TypeScript", value: "typescript" },
+	{ label: "Vue", value: "vue" },
+	{ label: "XML", value: "xml" },
+	{ label: "YAML", value: "yaml" }
+];
 
 const antdStyle: typeof oneDarkDefault = {
 	'pre[class*="language-"]': {
@@ -54,19 +105,45 @@ const oneDark = mergeDeep(oneDarkDefault, antdStyle);
 const oneLight = mergeDeep(oneLightDefault, antdStyle);
 
 const FileRender: React.FC<NodeViewProps> = info => {
+	const [lang, setLang] = useState("text");
 	const [previewVisible, setPreviewVisible] = useState(false);
 
-	// console.debug("info.HTMLAttributes", info.HTMLAttributes);
+	const fileId = info.node.attrs.id || info.node.attrs.assetId;
+	const uploadStatus = useUploadStatus(fileId);
+	const hasSrc = !!info.node.attrs.src || !!info.node.attrs.href;
 
 	const {
 		data,
 		isPending,
 		mutateAsync: getFile
 	} = useMutation({
-		mutationFn: () =>
-			axios.get(info.node.attrs["src"], {
+		mutationFn: async () => {
+			let url: string | undefined;
+
+			if (info.node.attrs["src"]) {
+				url = info.node.attrs["src"];
+			} else if (info.node.attrs["href"]) {
+				url = info.node.attrs["href"];
+			} else if (info.node.attrs["id"]) {
+				url = `/files/${info.node.attrs["id"]}`;
+			}
+
+			if (!url) {
+				throw new Error("Unprocessable file");
+			}
+
+			const response = await storageInstance.get(url, {
 				responseType: "text"
-			})
+			});
+
+			setLang(
+				data?.headers["Content-Type"]
+					? getLanguageFromMime(data.headers["Content-Type"].toString())
+					: "text"
+			);
+
+			return response;
+		}
 	});
 
 	const { styles, theme } = useStyles({ opened: previewVisible });
@@ -85,11 +162,29 @@ const FileRender: React.FC<NodeViewProps> = info => {
 			.run();
 	};
 
+	const link = useMemo(() => {
+		if (info.node.attrs["href"]) {
+			return info.node.attrs["href"];
+		} else if (info.node.attrs["src"]) {
+			return info.node.attrs["src"];
+		} else if (info.node.attrs["id"]) {
+			return `${storageInstance.defaults.baseURL}/files/${info.node.attrs["id"]}`;
+		}
+	}, [info.node.attrs]);
+
+	if (uploadStatus?.status.type === "progress" && !hasSrc) {
+		return (
+			<NodeViewWrapper as="div">
+				<FileUploadProgress status={uploadStatus.status.data} />
+			</NodeViewWrapper>
+		);
+	}
+
 	return (
 		<NodeViewWrapper as="div">
 			<Flex className={styles.wrapper} justify="space-between" align="center">
 				<a
-					href={info.node.attrs["src"]}
+					href={link}
 					target="_blank"
 					download={info.node.attrs["title"]}
 					rel="noopener noreferrer"
@@ -97,7 +192,16 @@ const FileRender: React.FC<NodeViewProps> = info => {
 					{info.node.attrs["title"]}
 				</a>
 
-				<Flex className={styles.buttonsContainer} gap="var(--ant-margin-xs)">
+				<Flex gap="var(--ant-margin-xs)">
+					<Select
+						showSearch
+						options={SUPPORTED_LANGUAGES}
+						onChange={setLang}
+						value={lang}
+						size="small"
+						variant="borderless"
+					/>
+
 					<Button
 						size="small"
 						icon={<DownloadOutlined />}
@@ -150,7 +254,7 @@ const FileRender: React.FC<NodeViewProps> = info => {
 							borderTopLeftRadius: 0,
 							borderTopRightRadius: 0
 						}}
-						language={extToLang[info.node.attrs["src"].split(".").pop()] ?? "plaintext"}
+						language={lang}
 						style={theme.appearance === "dark" ? oneDark : oneLight}
 					>
 						{data?.data}

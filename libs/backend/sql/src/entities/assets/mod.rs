@@ -2,4 +2,4 @@ pub mod dto;
 pub mod model;
 mod repository;
 
-pub use repository::AssetRepository;
+pub use repository::AssetsRepository;

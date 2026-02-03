@@ -2,17 +2,18 @@ use chrono::{DateTime, Utc};
 use sqlx::FromRow;
 use uuid::Uuid;
 
-use crate::entities::page::model::Doc;
+use crate::shared::tiptap_content::TipTapContent;
 
 #[derive(Debug, FromRow, Clone)]
 pub struct Task {
     pub id: Uuid,
     pub title: String,
     pub status_id: Uuid,
-    pub description: Option<sqlx::types::Json<Doc>>,
+    pub description: sqlx::types::Json<Option<TipTapContent>>,
     pub due_date: Option<DateTime<Utc>>,
     pub position: i32,
     pub page_id: Uuid,
+    pub is_draft: bool,
     pub assignee_id: Option<Uuid>,
     pub reporter_id: Uuid,
     pub created_at: DateTime<Utc>,

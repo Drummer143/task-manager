@@ -19,7 +19,11 @@ const mount = () =>
 		// </StrictMode>
 	);
 
+let removeAccessToken: (() => void) | undefined;
+
 const init = async () => {
+	removeAccessToken?.();
+
 	const user = await userManager.getUser();
 
 	if (!user) {
@@ -34,7 +38,7 @@ const init = async () => {
 		}
 	}
 
-	insertAccessToken(async () => {
+	removeAccessToken = insertAccessToken(async () => {
 		const user = await userManager.getUser();
 
 		if (!user) {
