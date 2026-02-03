@@ -109,11 +109,6 @@ async fn validate_access(
     user_id: Uuid,
     asset_id: Uuid,
 ) -> Result<ValidateAccessResponse, ErrorResponse> {
-    println!(
-        "Validating access for asset {}. user_id: {}",
-        asset_id, user_id
-    );
-
     let resp = reqwest::Client::new()
         .get(format!("{}/assets/{}/blob-id", main_service_url, asset_id))
         .header("x-user-id", user_id.to_string())
