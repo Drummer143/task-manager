@@ -21,11 +21,24 @@ export interface InjectAccessTokenEvent {
 	accessToken: string;
 }
 
+export interface ReorderQueueEvent {
+	type: "reorder";
+	fileId: string;
+	newIndex: number;
+}
+
+export interface SetPausedEvent {
+	type: "setPaused";
+	paused: boolean;
+}
+
 export type MessageToWorker =
 	| StartUploadEvent
 	| AbortUploadEvent
 	| AbortAllEvent
-	| InjectAccessTokenEvent;
+	| InjectAccessTokenEvent
+	| ReorderQueueEvent
+	| SetPausedEvent;
 
 export interface ErrorEvent {
 	type: "error";

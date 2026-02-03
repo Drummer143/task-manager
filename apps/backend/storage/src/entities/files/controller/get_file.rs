@@ -66,7 +66,7 @@ pub async fn get_file(
     let mut headers = HeaderMap::new();
     headers.insert(
         header::CONTENT_TYPE,
-        HeaderValue::from_str("application/octet-stream").unwrap(),
+        HeaderValue::from_str(&blob.mime_type).unwrap(),
     );
 
     if let Some(range_header) = request.headers().get(header::RANGE) {

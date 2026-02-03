@@ -11,7 +11,6 @@ import { storageInstance } from "@task-manager/api";
 import { lazySuspense } from "@task-manager/react-utils";
 import { mergeDeep, NodeViewProps, NodeViewWrapper, ReactNodeViewRenderer } from "@tiptap/react";
 import { Button, Flex, Select, Spin } from "antd";
-import { AxiosResponse } from "axios";
 import oneDarkDefault from "react-syntax-highlighter/dist/esm/styles/prism/one-dark";
 import oneLightDefault from "react-syntax-highlighter/dist/esm/styles/prism/one-light";
 
@@ -119,25 +118,23 @@ const FileRender: React.FC<NodeViewProps> = info => {
 		mutateAsync: getFile
 	} = useMutation({
 		mutationFn: async () => {
-			let response: AxiosResponse | undefined;
+			let url: string | undefined;
 
 			if (info.node.attrs["src"]) {
-				response = await storageInstance.get(`/files/${info.node.attrs["id"]}`, {
-					responseType: "text"
-				});
+				url = info.node.attrs["src"];
 			} else if (info.node.attrs["href"]) {
-				response = await storageInstance.get(`/files/${info.node.attrs["id"]}`, {
-					responseType: "text"
-				});
-			} else if (info.node.attrs["data-id"]) {
-				response = await storageInstance.get(`/files/${info.node.attrs["id"]}`, {
-					responseType: "text"
-				});
+				url = info.node.attrs["href"];
+			} else if (info.node.attrs["id"]) {
+				url = `/files/${info.node.attrs["id"]}`;
 			}
 
-			if (!response) {
+			if (!url) {
 				throw new Error("Unprocessable file");
 			}
+
+			const response = await storageInstance.get(url, {
+				responseType: "text"
+			});
 
 			setLang(
 				data?.headers["Content-Type"]

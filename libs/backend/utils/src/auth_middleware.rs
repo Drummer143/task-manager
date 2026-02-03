@@ -6,12 +6,10 @@ use axum::{
     http::{Request, StatusCode, header},
     middleware::Next,
     response::Response,
-    routing::Route,
 };
 use error_handlers::{codes, handlers::ErrorResponse};
 use jsonwebtoken::{Algorithm, DecodingKey, Validation, decode, decode_header};
 use tokio::sync::RwLock;
-use tower::Layer;
 use uuid::Uuid;
 
 use crate::types::jwks::JwkSet;
@@ -52,17 +50,34 @@ pub async fn auth_guard(
     mut req: Request<Body>,
     next: Next,
 ) -> Response<Body> {
-    let auth_header = req
+    let token_from_header = req
         .headers()
         .get(header::AUTHORIZATION)
-        .and_then(|h| h.to_str().ok());
+        .and_then(|h| h.to_str().ok())
+        .and_then(|h| h.strip_prefix("Bearer "))
+        .map(|t| t.to_string());
 
-    let token = match auth_header {
-        Some(header) if header.starts_with("Bearer ") => &header[7..],
-        _ => return make_error_response("Missing or invalid Authorization header"),
+    let token = match token_from_header {
+        Some(t) => t,
+        None => {
+            let query = req.uri().query().unwrap_or("");
+            let token_from_query = query.split('&').find_map(|pair| {
+                let mut parts = pair.split('=');
+                if parts.next() == Some("token") {
+                    parts.next().map(|t| t.to_string())
+                } else {
+                    None
+                }
+            });
+
+            match token_from_query {
+                Some(t) => t,
+                None => return make_error_response("Missing or invalid Authorization header/query"),
+            }
+        }
     };
 
-    let header = match decode_header(token) {
+    let header = match decode_header(&token) {
         Ok(h) => h,
         Err(_) => return make_error_response("Invalid token structure"),
     };
@@ -97,7 +112,7 @@ pub async fn auth_guard(
     validation.leeway = 60;
     validation.set_audience(&[&state.authentik_audience]);
 
-    let token_data = match decode::<Claims>(token, &decoding_key, &validation) {
+    let token_data = match decode::<Claims>(&token, &decoding_key, &validation) {
         Ok(data) => data,
         Err(e) => {
             println!("JWT Validation Error: {:?}", e.kind());

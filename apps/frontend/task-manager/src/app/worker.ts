@@ -14,7 +14,7 @@ const handleWorkerMessage = (event: MessageEvent<MessageToHost>) => {
 			store.updateProgress(event.data.fileId, event.data.data);
 			break;
 		case "uploadComplete":
-			store.setComplete(event.data.fileId, event.data.data);
+			store.setComplete(event.data.fileId);
 			break;
 		case "error":
 			store.setError(event.data.fileId, event.data.error);
@@ -70,5 +70,19 @@ export const cancelUpload = (fileId: string) => {
 
 export const cancelAllUploads = () => {
 	worker?.cancelAllUploads();
+};
+
+export const reorderQueue = (fileId: string, newIndex: number) => {
+	const store = useUploadsStore.getState();
+
+	store.reorderQueue(fileId, newIndex);
+	worker?.reorderQueue(fileId, newIndex);
+};
+
+export const setPaused = (paused: boolean) => {
+	const store = useUploadsStore.getState();
+
+	store.setPaused(paused);
+	worker?.setPaused(paused);
 };
 

@@ -1,4 +1,4 @@
-import { memo } from "react";
+import { memo, useMemo } from "react";
 
 import { DeleteOutlined, DownloadOutlined } from "@ant-design/icons";
 import { NodeViewProps, NodeViewWrapper, ReactNodeViewRenderer } from "@tiptap/react";
@@ -6,29 +6,44 @@ import { Button, Flex } from "antd";
 
 import { useStyles } from "./styles";
 
+import { useAuthStore } from "../../../../app/store/auth";
 import { useUploadStatus } from "../../../../app/store/uploads";
 import FileUploadProgress from "../../../FileUploadProgress";
 
-const ImageRenderer: React.FC<NodeViewProps> = props => {
+const ImageRenderer: React.FC<NodeViewProps> = ({ HTMLAttributes, node, getPos, editor }) => {
 	const { styles } = useStyles();
-	const fileId = props.node.attrs.id || props.node.attrs.assetId;
+	const fileId = node.attrs.id || node.attrs.assetId;
 	const uploadStatus = useUploadStatus(fileId);
 
-	const hasSrc = !!props.node.attrs.src;
+	const hasSrc = !!node.attrs.src;
 
 	const handleDeleteSelf = () => {
-		if (!props.editor.isEditable) {
+		if (!editor.isEditable) {
 			return;
 		}
 
-		const pos = props.getPos();
+		const pos = getPos();
 
-		props.editor
+		editor
 			.chain()
 			.focus()
-			.deleteRange({ from: pos, to: pos + props.node.nodeSize })
+			.deleteRange({ from: pos, to: pos + node.nodeSize })
 			.run();
 	};
+
+	const token = useAuthStore(state => state.identity.access_token);
+
+	const src = useMemo(() => {
+		if (!HTMLAttributes.src) {
+			return HTMLAttributes.src;
+		}
+
+		const url = new URL(HTMLAttributes.src);
+
+		url.searchParams.set("token", token);
+
+		return url.toString();
+	}, [HTMLAttributes.src, token]);
 
 	if (uploadStatus?.status.type === "progress" && !hasSrc) {
 		return (
@@ -42,8 +57,9 @@ const ImageRenderer: React.FC<NodeViewProps> = props => {
 		<NodeViewWrapper>
 			<div className={styles.wrapper}>
 				<img
-					alt={props.node.attrs.title}
-					{...props.HTMLAttributes}
+					alt={node.attrs.title}
+					{...HTMLAttributes}
+					src={src}
 					className={styles.image}
 				/>
 
@@ -52,11 +68,11 @@ const ImageRenderer: React.FC<NodeViewProps> = props => {
 						icon={<DownloadOutlined />}
 						type="text"
 						target="_blank"
-						href={props.node.attrs["src"]}
-						download={props.node.attrs["title"]}
+						href={src}
+						download={node.attrs["title"]}
 					/>
 
-					{props.editor.isEditable && (
+					{editor.isEditable && (
 						<Button
 							type="text"
 							danger

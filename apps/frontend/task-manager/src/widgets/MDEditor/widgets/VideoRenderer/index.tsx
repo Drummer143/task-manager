@@ -5,6 +5,7 @@ import VideoPlayer from "@task-manager/video-player";
 import { NodeViewProps, NodeViewWrapper, ReactNodeViewRenderer } from "@tiptap/react";
 import { GetProp } from "antd";
 
+import { useAuthStore } from "../../../../app/store/auth";
 import { useUploadStatus } from "../../../../app/store/uploads";
 import FileUploadProgress from "../../../FileUploadProgress";
 
@@ -57,6 +58,20 @@ const VideoRenderer: React.FC<NodeViewProps> = ({ HTMLAttributes, editor, getPos
 		return options;
 	}, [HTMLAttributes.src, editor.isEditable, getPos, node.nodeSize]);
 
+	const token = useAuthStore(state => state.identity.access_token);
+
+	const src = useMemo(() => {
+		if (!HTMLAttributes.src) {
+			return HTMLAttributes.src;
+		}
+
+		const url = new URL(HTMLAttributes.src);
+
+		url.searchParams.set("token", token);
+
+		return url.toString();
+	}, [HTMLAttributes.src, token]);
+
 	if (uploadStatus?.status.type === "progress" && !hasSrc) {
 		return (
 			<NodeViewWrapper>
@@ -65,7 +80,8 @@ const VideoRenderer: React.FC<NodeViewProps> = ({ HTMLAttributes, editor, getPos
 		);
 	}
 
-	return <VideoPlayer controls src={HTMLAttributes.src} options={menuItems} />;
+	return <VideoPlayer controls src={src} options={menuItems} />;
 };
 
 export default ReactNodeViewRenderer(memo(VideoRenderer));
+

@@ -1,12 +1,11 @@
-import { UploadSuccessResponse } from "@task-manager/api";
+import { useMemo } from "react";
+
 import { UploadFileProgressEvent } from "@task-manager/file-transfer-worker";
 import { create } from "zustand";
 
 export type UploadStatus =
 	| { type: "progress"; data: UploadFileProgressEvent["data"] }
-	| { type: "complete"; data: UploadSuccessResponse }
-	| { type: "error"; error: unknown }
-	| { type: "cancelled" };
+	| { type: "error"; error: unknown };
 
 export interface UploadItem {
 	fileId: string;
@@ -14,25 +13,27 @@ export interface UploadItem {
 	fileSize: number;
 	status: UploadStatus;
 	queuePosition: number;
-	addedAt: number;
 }
 
 interface UploadsState {
 	uploads: Map<string, UploadItem>;
 	queue: string[];
+	isPaused: boolean;
 
 	addUpload: (fileId: string, fileName: string, fileSize: number) => void;
 	updateProgress: (fileId: string, data: UploadFileProgressEvent["data"]) => void;
-	setComplete: (fileId: string, data: UploadSuccessResponse) => void;
+	setComplete: (fileId: string) => void;
 	setError: (fileId: string, error: unknown) => void;
 	setCancelled: (fileId: string) => void;
 	removeUpload: (fileId: string) => void;
-	clearCompleted: () => void;
+	reorderQueue: (fileId: string, newIndex: number) => void;
+	setPaused: (paused: boolean) => void;
 }
 
 export const useUploadsStore = create<UploadsState>((set, get) => ({
 	uploads: new Map(),
 	queue: [],
+	isPaused: false,
 
 	addUpload: (fileId, fileName, fileSize) => {
 		set(state => {
@@ -44,8 +45,7 @@ export const useUploadsStore = create<UploadsState>((set, get) => ({
 				fileName,
 				fileSize,
 				status: { type: "progress", data: { step: "queued" } },
-				queuePosition: queue.length - 1,
-				addedAt: Date.now()
+				queuePosition: queue.length - 1
 			});
 
 			return { uploads, queue };
@@ -68,17 +68,11 @@ export const useUploadsStore = create<UploadsState>((set, get) => ({
 		});
 	},
 
-	setComplete: (fileId, data) => {
+	setComplete: fileId => {
 		set(state => {
 			const uploads = new Map(state.uploads);
-			const item = uploads.get(fileId);
 
-			if (item) {
-				uploads.set(fileId, {
-					...item,
-					status: { type: "complete", data }
-				});
-			}
+			uploads.delete(fileId);
 
 			const queue = state.queue.filter(id => id !== fileId);
 
@@ -108,27 +102,7 @@ export const useUploadsStore = create<UploadsState>((set, get) => ({
 		});
 	},
 
-	setCancelled: (fileId) => {
-		set(state => {
-			const uploads = new Map(state.uploads);
-			const item = uploads.get(fileId);
-
-			if (item) {
-				uploads.set(fileId, {
-					...item,
-					status: { type: "cancelled" }
-				});
-			}
-
-			const queue = state.queue.filter(id => id !== fileId);
-
-			recalculateQueuePositions(uploads, queue);
-
-			return { uploads, queue };
-		});
-	},
-
-	removeUpload: (fileId) => {
+	setCancelled: fileId => {
 		set(state => {
 			const uploads = new Map(state.uploads);
 
@@ -142,18 +116,42 @@ export const useUploadsStore = create<UploadsState>((set, get) => ({
 		});
 	},
 
-	clearCompleted: () => {
+	removeUpload: fileId => {
 		set(state => {
 			const uploads = new Map(state.uploads);
 
-			for (const [id, item] of uploads) {
-				if (item.status.type === "complete" || item.status.type === "cancelled") {
-					uploads.delete(id);
-				}
+			uploads.delete(fileId);
+
+			const queue = state.queue.filter(id => id !== fileId);
+
+			recalculateQueuePositions(uploads, queue);
+
+			return { uploads, queue };
+		});
+	},
+
+	reorderQueue: (fileId, newIndex) => {
+		set(state => {
+			const queue = [...state.queue];
+			const currentIndex = queue.indexOf(fileId);
+
+			if (currentIndex === -1 || currentIndex === newIndex) {
+				return state;
 			}
 
-			return { uploads };
+			queue.splice(currentIndex, 1);
+			queue.splice(newIndex, 0, fileId);
+
+			const uploads = new Map(state.uploads);
+
+			recalculateQueuePositions(uploads, queue);
+
+			return { uploads, queue };
 		});
+	},
+
+	setPaused: paused => {
+		set({ isPaused: paused });
 	}
 }));
 
@@ -171,22 +169,12 @@ export const useUploadStatus = (fileId: string): UploadItem | undefined => {
 	return useUploadsStore(state => state.uploads.get(fileId));
 };
 
-export const useActiveUploads = (): UploadItem[] => {
-	return useUploadsStore(state => {
-		const items: UploadItem[] = [];
-
-		for (const item of state.uploads.values()) {
-			if (item.status.type === "progress") {
-				items.push(item);
-			}
-		}
-
-		return items.sort((a, b) => a.queuePosition - b.queuePosition);
-	});
-};
-
 export const useAllUploads = (): UploadItem[] => {
-	return useUploadsStore(state => {
-		return Array.from(state.uploads.values()).sort((a, b) => a.addedAt - b.addedAt);
-	});
+	const uploads = useUploadsStore(state => state.uploads);
+
+	return useMemo(
+		() => Array.from(uploads.values()).sort((a, b) => a.queuePosition - b.queuePosition),
+		[uploads]
+	);
 };
+

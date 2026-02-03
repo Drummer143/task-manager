@@ -69,6 +69,21 @@ export class FileTransferWorker {
 		} as MessageToWorker);
 	}
 
+	reorderQueue(fileId: string, newIndex: number) {
+		this.worker.postMessage({
+			type: "reorder",
+			fileId,
+			newIndex
+		} as MessageToWorker);
+	}
+
+	setPaused(paused: boolean) {
+		this.worker.postMessage({
+			type: "setPaused",
+			paused
+		} as MessageToWorker);
+	}
+
 	get ready() {
 		return this._ready;
 	}

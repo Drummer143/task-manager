@@ -16,17 +16,18 @@ interface QueueItem {
 const queue: QueueItem[] = [];
 let currentUpload: QueueItem | null = null;
 let isProcessing = false;
+let isPaused = false;
 
 let ejectAccessTokenInterceptors: (() => void) | undefined;
 
 const processQueue = async () => {
-	if (isProcessing || queue.length === 0) {
+	if (isProcessing || queue.length === 0 || isPaused) {
 		return;
 	}
 
 	isProcessing = true;
 
-	while (queue.length > 0) {
+	while (queue.length > 0 && !isPaused) {
 		const item = queue.shift();
 
 		if (!item) break;
@@ -121,6 +122,11 @@ const abortUpload = (fileId: string) => {
 				pathParams: { transactionId: currentUpload.transactionId }
 			}).catch(() => undefined);
 		}
+
+		sendProgressEvent({
+			type: "uploadCancelled",
+			fileId
+		});
 	}
 };
 
@@ -142,6 +148,68 @@ const abortAll = () => {
 				pathParams: { transactionId: currentUpload.transactionId }
 			}).catch(() => undefined);
 		}
+	}
+};
+
+const reorderQueue = (fileId: string, newIndex: number) => {
+	// If reordering to position 0 and there's a current upload, interrupt it
+	if (newIndex === 0 && currentUpload && currentUpload.fileId !== fileId) {
+		// Put current upload back to queue at position 1 (after the new first item)
+		const currentItem = currentUpload;
+
+		currentItem.abortController.abort();
+
+		if (currentItem.transactionId) {
+			uploadCancel({
+				pathParams: { transactionId: currentItem.transactionId }
+			}).catch(() => undefined);
+		}
+
+		// Create new item for re-queue (need fresh abort controller)
+		const reQueueItem: QueueItem = {
+			fileId: currentItem.fileId,
+			file: currentItem.file,
+			uploadToken: currentItem.uploadToken,
+			abortController: new AbortController()
+		};
+
+		// Find the item being moved to front
+		const movingIndex = queue.findIndex(item => item.fileId === fileId);
+
+		if (movingIndex !== -1) {
+			const [movingItem] = queue.splice(movingIndex, 1);
+
+			// Insert: [movingItem, reQueueItem, ...rest]
+			queue.unshift(reQueueItem);
+			queue.unshift(movingItem);
+		}
+
+		sendProgressEvent({
+			type: "progress",
+			fileId: currentItem.fileId,
+			data: { step: "queued" }
+		});
+
+		return;
+	}
+
+	// Normal reorder within queue
+	const currentIndex = queue.findIndex(item => item.fileId === fileId);
+
+	if (currentIndex === -1 || currentIndex === newIndex) {
+		return;
+	}
+
+	const [item] = queue.splice(currentIndex, 1);
+
+	queue.splice(newIndex, 0, item);
+};
+
+const setPaused = (paused: boolean) => {
+	isPaused = paused;
+
+	if (!paused) {
+		processQueue();
 	}
 };
 
@@ -171,6 +239,12 @@ init().then(() => {
 				processQueue();
 				break;
 			}
+			case "reorder":
+				reorderQueue(event.data.fileId, event.data.newIndex);
+				break;
+			case "setPaused":
+				setPaused(event.data.paused);
+				break;
 		}
 	};
 

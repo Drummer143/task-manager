@@ -128,12 +128,12 @@ const MDEditor: React.ForwardRefRenderFunction<Editor | null, MDEditorProps> = (
 		const worker = initWorker(token);
 
 		const handleMessage = (event: MessageEvent<MessageToHost>) => {
-			if (event.data.type === "uploadComplete") {
-				if (!editor) {
-					return;
-				}
+			if (!editor) {
+				return;
+			}
 
-				const { fileId } = event.data;
+			if (event.data.type === "uploadComplete") {
+				const fileId = event.data.fileId;
 
 				editor.state.doc.forEach((node, pos) => {
 					if ((node.attrs.id || node.attrs.assetId) === fileId) {
@@ -150,6 +150,18 @@ const MDEditor: React.ForwardRefRenderFunction<Editor | null, MDEditorProps> = (
 								width: "100%",
 								height: "auto"
 							})
+							.run();
+					}
+				});
+			} else if (event.data.type === "uploadCancelled") {
+				const fileId = event.data.fileId;
+
+				editor.state.doc.forEach((node, pos) => {
+					if ((node.attrs.id || node.attrs.assetId) === fileId) {
+						editor
+							.chain()
+							.setNodeSelection(pos)
+							.deleteRange({ from: pos, to: pos + node.nodeSize })
 							.run();
 					}
 				});
