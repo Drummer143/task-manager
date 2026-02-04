@@ -2,12 +2,17 @@ import React from "react";
 
 import { Flex, Spin } from "antd";
 
-const FullSizeLoader: React.FC = () => {
-	return (
-		<Flex align="center" justify="center" style={{ height: "100%", backgroundColor: "var(--ant-color-bg-layout)" }}>
-			<Spin size="large" />
-		</Flex>
-	);
-};
+interface FullSizeLoaderProps {
+	bgColor?: string;
+}
+
+const FullSizeLoader: React.FC<FullSizeLoaderProps> = ({
+	bgColor = "var(--ant-color-bg-layer2)"
+}) => (
+	<Flex align="center" justify="center" style={{ height: "100%", backgroundColor: bgColor }}>
+		<Spin size="large" />
+	</Flex>
+);
 
 export default FullSizeLoader;
+

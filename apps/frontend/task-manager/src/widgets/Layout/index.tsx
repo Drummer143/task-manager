@@ -1,21 +1,24 @@
-import React, { useEffect } from "react";
+import React, { useEffect, useState } from "react";
 
 import { useMutation } from "@tanstack/react-query";
-import { lazySuspense } from "@task-manager/react-utils";
+import { Layout as AntLayout } from "antd";
 import { AxiosError } from "axios";
+import { Outlet } from "react-router";
+
+import NavContent from "./NavContent";
+import { useStyles } from "./styles";
+import UserMenu from "./UserMenu";
+import WorkspaceDeletionBanner from "./WorkspaceDeletionBanner";
 
 import { useAuthStore } from "../../app/store/auth";
 import { useChatSocketStore } from "../../app/store/socket";
 import { userManager } from "../../app/userManager";
 import FullSizeLoader from "../../shared/ui/FullSizeLoader";
 
-const DesktopLayout = lazySuspense(() => import("./Desktop"), <FullSizeLoader />);
-// const MobileLayout = lazySuspense(() => import("./Mobile"), <FullSizeLoader />);
-
 const Layout: React.FC = () => {
-	// const [mobileLayout, setMobileLayout] = useState(false);
+	const [collapsed, setCollapsed] = useState(false);
 
-	// useWindowResize("md", setMobileLayout);
+	const styles = useStyles().styles;
 
 	const user = useAuthStore(state => state.user);
 
@@ -55,7 +58,33 @@ const Layout: React.FC = () => {
 		return <FullSizeLoader />;
 	}
 
-	return /* mobileLayout ? <MobileLayout /> :  */ <DesktopLayout />;
+	return (
+		<AntLayout className={styles.outerLayout}>
+			<AntLayout.Header className={styles.header}>
+				header
+				<UserMenu />
+			</AntLayout.Header>
+
+			<WorkspaceDeletionBanner />
+
+			<AntLayout className={styles.innerLayout}>
+				{user.workspace && (
+					<AntLayout.Sider
+						style={collapsed ? { position: "absolute" } : undefined}
+						onCollapse={setCollapsed}
+						width={256}
+						className={styles.sider}
+					>
+						<NavContent />
+					</AntLayout.Sider>
+				)}
+
+				<AntLayout.Content className={styles.content}>
+					<Outlet />
+				</AntLayout.Content>
+			</AntLayout>
+		</AntLayout>
+	);
 };
 
 export default Layout;

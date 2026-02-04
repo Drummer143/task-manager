@@ -87,7 +87,9 @@ const TaskColumn: React.FC<TaskColumnProps> = ({
 	return (
 		<div className={styles.taskGroup} ref={taskGroupRef}>
 			<div className={styles.taskGroupHeader}>
-				<Typography.Text className={styles.taskGroupTitle}>{status.title}</Typography.Text>
+				<Typography.Title level={5} className={styles.taskGroupTitle}>
+					{status.title}
+				</Typography.Title>
 
 				{onTaskCreateButtonClick && (
 					<Button

@@ -8,7 +8,7 @@ export const useStyles = createStyles(({ css }, { isDragTarget }: { isDragTarget
 
 		padding: var(--ant-padding-xxs) var(--ant-padding-xxs) var(--ant-padding-xs);
 
-		background-color: var(--ant-task-board-column-bg);
+		background-color: var(--ant-color-bg-layer-3);
 		${isDragTarget && "outline: 2px solid var(--ant-color-text-tertiary);"}
 		border-radius: var(--ant-border-radius);
 	`,
