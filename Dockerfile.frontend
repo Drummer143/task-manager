@@ -1,3 +1,16 @@
+FROM rust:alpine AS wasm-builder
+
+RUN apk add --no-cache musl-dev curl
+
+RUN rustup target add wasm32-unknown-unknown
+RUN cargo install wasm-pack
+
+WORKDIR /wasm
+
+COPY libs/workers/file-transfer-worker/wasm-hasher ./wasm-hasher
+
+RUN cd wasm-hasher && wasm-pack build --target web --out-dir ../hasher-out
+
 FROM node:22-alpine AS builder
 
 RUN corepack enable && corepack prepare pnpm@latest --activate
@@ -13,12 +26,15 @@ RUN pnpm fetch
 
 COPY . .
 
+COPY --from=wasm-builder /wasm/hasher-out ./libs/workers/file-transfer-worker/src/hasher
+
 # offline forces pnpm to use packages from the store instead of downloading from the internet
 RUN pnpm install --frozen-lockfile --offline
 
 ARG APP_NAME
 
-RUN pnpm exec nx run ${APP_NAME}:build
+# Skip prepare target since WASM is already built
+RUN pnpm exec nx run ${APP_NAME}:build --skip-nx-cache
 
 RUN apk add --no-cache gzip findutils
 
