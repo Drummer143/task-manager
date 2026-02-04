@@ -7,6 +7,13 @@
 	"tags": [],
 	"// targets": "to see all targets run: nx show project task-manager --web",
 	"targets": {
+		"e2e": {
+			"executor": "@nx/playwright:playwright",
+			"outputs": ["{workspaceRoot}/dist/.playwright/apps/frontend/task-manager"],
+			"options": {
+				"config": "{projectRoot}/playwright.config.ts"
+			}
+		},
 		"lint:fix": {
 			"executor": "nx:run-commands",
 			"options": {

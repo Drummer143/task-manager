@@ -1,0 +1,100 @@
+# yaml-language-server: $schema=https://goauthentik.io/blueprints/schema.json
+
+version: 1
+
+metadata:
+    name: E2E Test Setup
+
+entries:
+    # TEST USER
+    - model: authentik_core.user
+      id: e2e-test-user
+      identifiers:
+          username: e2e-test-user
+      attrs:
+          username: e2e-test-user
+          name: E2E Test User
+          email: e2e@test.local
+          is_active: true
+          path: users
+          type: internal
+
+    # SET PASSWORD FOR TEST USER
+    - model: authentik_core.user
+      id: e2e-test-user-password
+      identifiers:
+          username: e2e-test-user
+      attrs:
+          password: e2e-test-password
+
+    # ADD USER TO GROUP
+    - model: authentik_core.group
+      id: e2e-test-group
+      identifiers:
+          name: Task Manager
+      attrs:
+          users:
+              - !KeyOf e2e-test-user
+
+    # OAUTH2 PROVIDER FOR E2E
+    - model: authentik_providers_oauth2.oauth2provider
+      id: e2e-provider
+      identifiers:
+          name: E2E Test Provider
+      attrs:
+          name: E2E Test Provider
+          client_id: e2e-test-client
+          client_type: public
+          authentication_flow:
+              !Find [authentik_flows.flow, [slug, auth-flow-combined]]
+          access_token_validity: hours=1
+          refresh_token_validity: days=1
+          sub_mode: user_uuid
+          signing_key:
+              !Find [
+                  authentik_crypto.certificatekeypair,
+                  [name, "authentik Self-signed Certificate"]
+              ]
+          redirect_uris:
+              - matching_mode: regex
+                url: http://.*
+          authorization_flow:
+              !Find [authentik_flows.flow, [slug, default-provider-authorization-implicit-consent]]
+          invalidation_flow:
+              !Find [authentik_flows.flow, [slug, default-provider-invalidation-flow]]
+          property_mappings:
+              - !Find [
+                    authentik_providers_oauth2.scopemapping,
+                    [name, "authentik default OAuth Mapping: OpenID 'email'"]
+                ]
+              - !Find [
+                    authentik_providers_oauth2.scopemapping,
+                    [name, "authentik default OAuth Mapping: OpenID 'openid'"]
+                ]
+              - !Find [
+                    authentik_providers_oauth2.scopemapping,
+                    [name, "authentik default OAuth Mapping: OpenID 'profile'"]
+                ]
+
+    # APPLICATION FOR E2E
+    - model: authentik_core.application
+      id: e2e-app
+      identifiers:
+          slug: task-manager
+      attrs:
+          name: "Task Manager E2E"
+          slug: task-manager
+          provider: !KeyOf e2e-provider
+          policy_engine_mode: any
+
+    # API TOKEN FOR E2E (for direct token generation)
+    - model: authentik_core.token
+      id: e2e-api-token
+      identifiers:
+          identifier: e2e-api-token
+      attrs:
+          identifier: e2e-api-token
+          user: !KeyOf e2e-test-user
+          intent: api
+          expiring: false
+          description: "API token for E2E tests"
