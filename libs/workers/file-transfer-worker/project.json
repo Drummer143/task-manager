@@ -8,10 +8,14 @@
 	"targets": {
 		"prepare": {
 			"executor": "nx:run-commands",
+			"outputs": ["{sourceRoot}/hasher"],
 			"options": {
 				"command": "cd wasm-hasher && wasm-pack build --target web --out-dir ../src/hasher",
 				"cwd": "{projectRoot}"
 			}
+		},
+		"build": {
+			"dependsOn": ["prepare"]
 		}
 	}
 }
