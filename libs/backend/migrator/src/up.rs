@@ -59,7 +59,9 @@ pub async fn up(pool: &sqlx::postgres::PgPool, env: &EnvConfig) -> Result<(), Mi
 
     compare_migrations(&applied_migrations, &all_migrations, true)?;
 
-    let unapplied_migrations = get_unapplied_migrations(&all_migrations, &applied_migrations);
+    let mut unapplied_migrations = get_unapplied_migrations(&all_migrations, &applied_migrations);
+
+    unapplied_migrations.sort_by_key(|m| m.version);
 
     for unapplied_migration in unapplied_migrations.iter() {
         let sql = std::fs::read_to_string(&unapplied_migration.path)

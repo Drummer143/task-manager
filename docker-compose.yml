@@ -197,6 +197,8 @@ services:
                 condition: service_healthy
             authentik_server:
                 condition: service_healthy
+            authentik_worker:
+                condition: service_started
         deploy:
             resources:
                 limits:
@@ -227,6 +229,12 @@ services:
         depends_on:
             postgres:
                 condition: service_healthy
+            redis:
+                condition: service_healthy
+            authentik_server:
+                condition: service_healthy
+            authentik_worker:
+                condition: service_started
         deploy:
             resources:
                 limits:

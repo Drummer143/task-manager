@@ -25,6 +25,35 @@ services:
         tmpfs:
             - /var/lib/postgresql/data
 
+    postgres-init:
+        image: postgres:16-alpine
+        container_name: postgres-init-e2e
+        depends_on:
+            postgres:
+                condition: service_healthy
+        networks:
+            - e2e-net
+        environment:
+            PGPASSWORD: postgres
+        command: >
+            bash -c "
+            echo 'Creating uuid-ossp extension...';
+            psql -h postgres -U postgres -d postgres -c 'CREATE EXTENSION IF NOT EXISTS \"uuid-ossp\";';
+
+            echo 'Check if authentik user exists...';
+            psql -h postgres -U postgres -d postgres -tAc \"SELECT 1 FROM pg_roles WHERE rolname='authentik'\" | grep -q 1 || \
+            psql -h postgres -U postgres -d postgres -c \"CREATE USER authentik WITH PASSWORD 'authentik';\";
+
+            echo 'Check if authentik database exists...';
+            psql -h postgres -U postgres -d postgres -tAc \"SELECT 1 FROM pg_database WHERE datname='authentik'\" | grep -q 1 || \
+            psql -h postgres -U postgres -d postgres -c \"CREATE DATABASE authentik OWNER authentik;\";
+
+            echo 'Granting privileges...';
+            psql -h postgres -U postgres -d postgres -c \"GRANT ALL PRIVILEGES ON DATABASE authentik TO authentik;\";
+
+            echo 'DB init complete';
+            "
+
     redis:
         image: redis:alpine
         container_name: redis-e2e
@@ -52,6 +81,7 @@ services:
             interval: 10s
             timeout: 5s
             retries: 10
+            start_period: 15s
             start_interval: 10s
         deploy:
             resources:
@@ -91,9 +121,9 @@ services:
             AUTHENTIK_REDIS__HOST: redis
             AUTHENTIK_SECRET_KEY: e2e-test-secret-key-not-for-production
             AUTHENTIK_POSTGRESQL__HOST: postgres
-            AUTHENTIK_POSTGRESQL__USER: postgres
-            AUTHENTIK_POSTGRESQL__NAME: postgres
-            AUTHENTIK_POSTGRESQL__PASSWORD: postgres
+            AUTHENTIK_POSTGRESQL__USER: authentik
+            AUTHENTIK_POSTGRESQL__NAME: authentik
+            AUTHENTIK_POSTGRESQL__PASSWORD: authentik
             AUTHENTIK_BOOTSTRAP_PASSWORD: admin
             AUTHENTIK_BOOTSTRAP_EMAIL: admin@test.local
             AUTHENTIK_BOOTSTRAP_TOKEN: e2e-bootstrap-token
@@ -102,12 +132,14 @@ services:
             - "9000:9000"
             - "9443:9443"
         depends_on:
-            postgres:
-                condition: service_healthy
+            postgres-init:
+                condition: service_completed_successfully
             redis:
                 condition: service_healthy
         volumes:
-            - ./authentik/blueprints:/blueprints/custom
+            - ./authentik/media:/media
+            - ./authentik/custom-templates:/templates
+            - ./authentik/blueprints:/blueprints
         networks:
             - e2e-net
 
@@ -125,13 +157,13 @@ services:
             AUTHENTIK_REDIS__HOST: redis
             AUTHENTIK_SECRET_KEY: e2e-test-secret-key-not-for-production
             AUTHENTIK_POSTGRESQL__HOST: postgres
-            AUTHENTIK_POSTGRESQL__USER: postgres
-            AUTHENTIK_POSTGRESQL__NAME: postgres
-            AUTHENTIK_POSTGRESQL__PASSWORD: postgres
+            AUTHENTIK_POSTGRESQL__USER: authentik
+            AUTHENTIK_POSTGRESQL__NAME: authentik
+            AUTHENTIK_POSTGRESQL__PASSWORD: authentik
             AUTHENTIK_LOG_LEVEL: warning
         depends_on:
-            postgres:
-                condition: service_healthy
+            postgres-init:
+                condition: service_completed_successfully
             redis:
                 condition: service_healthy
         volumes:
@@ -142,15 +174,16 @@ services:
     main-service:
         container_name: main-service-e2e
         image: main-service:e2e
+        restart: on-failure:5
         ports:
             - 8080:8080
         depends_on:
             postgres:
                 condition: service_healthy
-            rmq:
-                condition: service_healthy
             authentik_server:
                 condition: service_healthy
+            authentik_worker:
+                condition: service_started
         deploy:
             resources:
                 limits:
@@ -168,7 +201,7 @@ services:
             PORT: 8080
             JWT_SECRET: e2e-jwt-secret
             RABBITMQ_URL: amqp://guest:guest@rmq:5672/%2f
-            AUTHENTIK_JWKS_URL: http://authentik_server:9000/application/o/task-manager/jwks/
+            AUTHENTIK_JWKS_URL: http://host.docker.internal:9000/application/o/task-manager/jwks/
             AUTHENTIK_AUDIENCE: e2e-test-client
         networks:
             - e2e-net
@@ -203,7 +236,7 @@ services:
             DATABASE_URL: postgres://postgres:postgres@postgres:5432/postgres
             REDIS_URL: redis://redis:6379
             MAIN_SERVICE_URL: http://main-service:8080
-            AUTHENTIK_JWKS_URL: http://authentik_server:9000/application/o/task-manager/jwks/
+            AUTHENTIK_JWKS_URL: http://host.docker.internal:9000/application/o/task-manager/jwks/
             AUTHENTIK_AUDIENCE: e2e-test-client
         networks:
             - e2e-net
@@ -235,8 +268,8 @@ services:
             RABBITMQ_URL: amqp://guest:guest@rmq:5672/%2f
             DATABASE_URL: postgres://postgres:postgres@postgres:5432/postgres
             SECRET_KEY_BASE: e2e-secret-key-base-at-least-64-chars-long-for-phoenix-framework
-            AUTHENTIK_ISSUER: http://authentik_server:9000/application/o/task-manager/
-            AUTHENTIK_JWKS_URL: http://authentik_server:9000/application/o/task-manager/jwks/
+            AUTHENTIK_ISSUER: http://host.docker.internal:9000/application/o/task-manager/
+            AUTHENTIK_JWKS_URL: http://host.docker.internal:9000/application/o/task-manager/jwks/
             AUTHENTIK_AUDIENCE: e2e-test-client
         networks:
             - e2e-net
@@ -265,8 +298,8 @@ services:
             PORT: 8078
             DATABASE_URL: postgres://postgres:postgres@postgres:5432/postgres
             SECRET_KEY_BASE: e2e-secret-key-base-at-least-64-chars-long-for-phoenix-framework
-            AUTHENTIK_ISSUER: http://authentik_server:9000/application/o/task-manager/
-            AUTHENTIK_JWKS_URL: http://authentik_server:9000/application/o/task-manager/jwks/
+            AUTHENTIK_ISSUER: http://host.docker.internal:9000/application/o/task-manager/
+            AUTHENTIK_JWKS_URL: http://host.docker.internal:9000/application/o/task-manager/jwks/
             AUTHENTIK_AUDIENCE: e2e-test-client
         networks:
             - e2e-net
@@ -297,20 +330,24 @@ services:
     playwright:
         image: mcr.microsoft.com/playwright:v1.49.0-noble
         container_name: playwright-e2e
-        working_dir: /app
+        working_dir: /app/apps/frontend/task-manager
         volumes:
             - .:/app
-            - /app/node_modules
         environment:
             BASE_URL: http://task-manager:80
-            AUTHENTIK_URL: http://authentik_server:9000
+            AUTHENTIK_URL: http://host.docker.internal:9000
             CI: "true"
         depends_on:
             - task-manager
             - authentik_server
         networks:
             - e2e-net
-        command: ["npx", "playwright", "test", "--project=chromium"]
+        command: >
+            sh -c "
+            cd /app &&
+            npm install &&
+            npx playwright test --config=apps/frontend/task-manager/playwright.config.ts --project=chromium
+            "
 
 networks:
     e2e-net:
