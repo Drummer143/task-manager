@@ -21,21 +21,42 @@ const mount = () =>
 
 let removeAccessToken: (() => void) | undefined;
 
+const isCallbackPage = () =>
+	window.location.pathname === "/callback" ||
+	`${window.location.origin}${window.location.pathname}` ===
+		import.meta.env.VITE_REDIRECT_URI;
+
 const init = async () => {
 	removeAccessToken?.();
 
-	const user = await userManager.getUser();
-
-	if (!user) {
-		if (
-			`${window.location.origin}${window.location.pathname}` ===
-			import.meta.env.VITE_REDIRECT_URI
-		) {
+	if (isCallbackPage()) {
+		try {
 			await userManager.signinCallback();
-		} else {
-			await userManager.signinRedirect();
-			return;
+		} catch (e) {
+			console.error("signinCallback failed", e);
 		}
+
+		const returnTo = sessionStorage.getItem("auth_return_to") || "/";
+
+		sessionStorage.removeItem("auth_return_to");
+		window.location.replace(returnTo);
+		return;
+	}
+
+	let user = await userManager.getUser();
+
+	if (user && user.expired) {
+		try {
+			user = await userManager.signinSilent();
+		} catch {
+			// silent renew failed — fall back to redirect
+		}
+	}
+
+	if (!user || user.expired) {
+		sessionStorage.setItem("auth_return_to", window.location.pathname + window.location.search);
+		await userManager.signinRedirect();
+		return;
 	}
 
 	removeAccessToken = insertAccessToken(async () => {
@@ -46,6 +67,10 @@ const init = async () => {
 		}
 
 		return user.access_token;
+	});
+
+	userManager.events.addSilentRenewError(() => {
+		userManager.signinRedirect();
 	});
 
 	mount();

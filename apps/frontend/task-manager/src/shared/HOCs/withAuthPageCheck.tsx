@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useRef } from "react";
 
 import { useAuthStore } from "../../app/store/auth";
 import { userManager } from "../../app/userManager";
@@ -10,14 +10,17 @@ export const withAuthPageCheck = <P extends object>(
 ) => {
 	const ProtectedComponent: React.FC<P> = props => {
 		const { loading, user, identity } = useAuthStore(state => state);
+		const redirectingRef = useRef(false);
 
 		if (loading) {
 			return <FullSizeLoader />;
 		}
 
 		if (!user && !identity) {
-			debugger;
-			userManager.signinRedirect();
+			if (!redirectingRef.current) {
+				redirectingRef.current = true;
+				userManager.signinRedirect();
+			}
 
 			return <FullSizeLoader />;
 		}
