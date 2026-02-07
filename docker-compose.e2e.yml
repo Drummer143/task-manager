@@ -139,7 +139,8 @@ services:
         volumes:
             - ./authentik/media:/media
             - ./authentik/custom-templates:/templates
-            - ./authentik/blueprints:/blueprints
+            - ./authentik/blueprints:/blueprints/default
+            - ./authentik/blueprints-e2e:/blueprints/e2e
         networks:
             - e2e-net
 
@@ -167,7 +168,8 @@ services:
             redis:
                 condition: service_healthy
         volumes:
-            - ./authentik/blueprints:/blueprints/custom
+            - ./authentik/blueprints:/blueprints/default
+            - ./authentik/blueprints-e2e:/blueprints/e2e
         networks:
             - e2e-net
 
