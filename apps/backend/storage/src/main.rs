@@ -4,7 +4,7 @@ use axum::http;
 use mimalloc::MiMalloc;
 use types::app_state::InternalAuthState;
 use utoipa::OpenApi;
-use utils::types::jwks::JwkSet;
+use utils::{shutdown_signal::shutdown_signal, types::jwks::JwkSet};
 
 mod db_connections;
 mod entities;
@@ -132,6 +132,7 @@ async fn main() {
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
 
     axum::serve(listener, app)
+        .with_graceful_shutdown(shutdown_signal())
         .await
         .expect("Failed to start server");
 }
