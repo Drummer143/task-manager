@@ -328,11 +328,18 @@ services:
             - e2e-net
 
     playwright:
-        image: mcr.microsoft.com/playwright:v1.49.0-noble
+        image: mcr.microsoft.com/playwright:v1.57.0-noble
         container_name: playwright-e2e
-        working_dir: /app/apps/frontend/task-manager
+        user: root
+        working_dir: /app
         volumes:
             - .:/app
+            - playwright-node-modules:/app/node_modules
+        deploy:
+            resources:
+                limits:
+                    memory: 1G
+                    cpus: "1"
         environment:
             BASE_URL: http://task-manager:80
             AUTHENTIK_URL: http://host.docker.internal:9000
@@ -344,9 +351,9 @@ services:
             - e2e-net
         command: >
             sh -c "
-            cd /app &&
-            npm install &&
-            npx playwright test --config=apps/frontend/task-manager/playwright.config.ts --project=chromium
+            npm install -g pnpm &&
+            pnpm install &&
+            pnpm exec playwright test --config=apps/frontend/task-manager/playwright.config.ts --project=chromium
             "
 
 networks:
@@ -354,3 +361,4 @@ networks:
 
 volumes:
     storage-e2e:
+    playwright-node-modules:
