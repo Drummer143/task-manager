@@ -5,8 +5,7 @@ import { lazySuspense } from "@task-manager/react-utils";
 
 import TaskTable from "./widgets/TaskTable";
 
-const EditTaskForm = lazySuspense(() => import("./widgets/EditTaskForm"));
-const NewTaskForm = lazySuspense(() => import("./widgets/NewTaskForm"));
+const TaskForm = lazySuspense(() => import("./widgets/TaskForm"));
 
 interface BoardPageProps {
 	page: Omit<Page, "owner" | "childPages" | "parentPage" | "workspace" | "tasks">;
@@ -14,9 +13,7 @@ interface BoardPageProps {
 
 const BoardPage: React.FC<BoardPageProps> = ({ page }) => (
 	<>
-		<NewTaskForm />
-
-		<EditTaskForm />
+		<TaskForm />
 
 		<TaskTable pageId={page.id} statuses={page.boardStatuses} />
 	</>
