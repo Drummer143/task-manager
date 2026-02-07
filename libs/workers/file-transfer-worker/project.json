@@ -8,10 +8,14 @@
 	"targets": {
 		"prepare": {
 			"executor": "nx:run-commands",
+			"outputs": ["{projectRoot}/src/hasher"],
 			"options": {
-				"command": "cd wasm-hasher && wasm-pack build --target web --out-dir ../src/hasher",
+				"command": "node -e \"if(!require('fs').existsSync('src/hasher/wasm_source.js')){process.exit(1)}\" || (cd wasm-hasher && wasm-pack build --target web --out-dir ../src/hasher)",
 				"cwd": "{projectRoot}"
 			}
+		},
+		"build": {
+			"dependsOn": ["prepare"]
 		}
 	}
 }

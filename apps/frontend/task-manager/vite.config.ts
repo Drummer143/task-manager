@@ -15,10 +15,9 @@ export default defineConfig({
 		host: "localhost"
 	},
 	plugins: [react(), nxViteTsPaths(), nxCopyAssetsPlugin(["*.md"])],
-	// Uncomment this if you are using workers.
-	// worker: {
-	//  plugins: [ nxViteTsPaths() ],
-	// },
+	worker: {
+		plugins: () => [nxViteTsPaths()]
+	},
 	build: {
 		outDir: "../../../dist/apps/frontend/task-manager",
 		emptyOutDir: true,

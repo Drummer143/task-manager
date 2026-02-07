@@ -28,7 +28,20 @@ const Providers: React.FC<ProvidersProps> = props => {
 	const themeConfig: ThemeConfig = useMemo(
 		() => ({
 			...(theme === "light" ? lightThemeConfig : darkThemeConfig),
-			algorithm: theme === "light" ? undefined : antTheme.darkAlgorithm
+			algorithm: theme === "light" ? undefined : antTheme.darkAlgorithm,
+			components:
+				theme === "dark"
+					? {
+							Layout: {
+								bodyBg: "#000000",
+								headerBg: "#0A0A0A",
+								siderBg: "#0A0A0A"
+							},
+							Card: {
+								colorBgContainer: "#1F1F1F"
+							}
+						}
+					: undefined
 		}),
 		[theme]
 	);

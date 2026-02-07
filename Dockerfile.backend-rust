@@ -45,6 +45,7 @@ FROM debian:bookworm-slim AS runtime
 
 ARG APP_NAME
 ARG PROFILE=build-optimized
+ARG TARGET_DIR=${PROFILE}
 
 WORKDIR /app
 
@@ -53,7 +54,7 @@ RUN apt-get update && apt-get install -y \
     libssl3 \
     && rm -rf /var/lib/apt/lists/*
 
-COPY --from=builder /app/dist/target/${PROFILE}/${APP_NAME} ./server
+COPY --from=builder /app/dist/target/${TARGET_DIR}/${APP_NAME} ./server
 
 COPY migrations/ ./migrations
 ENV MIGRATIONS_DIR=/app/migrations

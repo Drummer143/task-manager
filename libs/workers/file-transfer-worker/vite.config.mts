@@ -4,11 +4,15 @@ import { nxViteTsPaths } from "@nx/vite/plugins/nx-tsconfig-paths.plugin";
 import * as path from "path";
 import { defineConfig } from "vite";
 import dts from "vite-plugin-dts";
+import topLevelAwait from "vite-plugin-top-level-await";
+import wasm from "vite-plugin-wasm";
 
 export default defineConfig(() => ({
 	root: __dirname,
 	cacheDir: "../../../node_modules/.vite/libs/wasm",
 	plugins: [
+		wasm(),
+		topLevelAwait(),
 		nxViteTsPaths(),
 		nxCopyAssetsPlugin(["*.md"]),
 		dts({
@@ -17,10 +21,10 @@ export default defineConfig(() => ({
 			pathsToAliases: false
 		})
 	],
-	// Uncomment this if you are using workers.
-	// worker: {
-	//  plugins: [ nxViteTsPaths() ],
-	// },
+	worker: {
+		format: "es" as const,
+		plugins: () => [wasm(), topLevelAwait(), nxViteTsPaths()]
+	},
 	// Configuration for building your library.
 	// See: https://vite.dev/guide/build.html#library-mode
 	build: {

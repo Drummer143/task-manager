@@ -197,6 +197,8 @@ services:
                 condition: service_healthy
             authentik_server:
                 condition: service_healthy
+            authentik_worker:
+                condition: service_started
         deploy:
             resources:
                 limits:
@@ -227,6 +229,12 @@ services:
         depends_on:
             postgres:
                 condition: service_healthy
+            redis:
+                condition: service_healthy
+            authentik_server:
+                condition: service_healthy
+            authentik_worker:
+                condition: service_started
         deploy:
             resources:
                 limits:
@@ -245,6 +253,9 @@ services:
             STATIC_FOLDER_PATH: ${STORAGE_SERVICE_STATIC_FOLDER_PATH}
             DATABASE_URL: ${DATABASE_URL}
             REDIS_URL: ${REDIS_URL}
+            MAIN_SERVICE_URL: http://main-service:8080
+            AUTHENTIK_JWKS_URL: ${AUTHENTIK_JWKS_URL}
+            AUTHENTIK_AUDIENCE: ${AUTHENTIK_AUDIENCE}
         networks:
             - net
         volumes:
