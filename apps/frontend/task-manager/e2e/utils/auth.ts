@@ -34,9 +34,20 @@ export async function loginViaAuthentik(
 	await page.goto(baseUrl);
 
 	// Wait for redirect to Authentik login page
-	await page.waitForURL(url => url.origin === authentikUrl, {
-		timeout: 30000
-	});
+	// The app may redirect to authentik with a path like /application/o/authorize/
+	await page.waitForURL(
+		url => {
+			const isAuthentik = url.origin === authentikUrl;
+			const isAuthentikPath = url.href.includes(authentikUrl);
+
+			if (!isAuthentik && !isAuthentikPath) {
+				console.info(`Current URL: ${url.href}, waiting for: ${authentikUrl}`);
+			}
+
+			return isAuthentik || isAuthentikPath;
+		},
+		{ timeout: 30000 }
+	);
 
 	// Fill in the login form
 	// Authentik uses ak-flow-executor for the login flow
