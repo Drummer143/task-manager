@@ -44,6 +44,8 @@ services:
             AUTHENTIK_DB_USER: ${AUTHENTIK_DB_USER}
             AUTHENTIK_DB_NAME: ${AUTHENTIK_DB_NAME}
             AUTHENTIK_DB_PASSWORD: ${AUTHENTIK_DB_PASSWORD}
+        ports:
+            - "127.0.0.1:5432:5432"
         volumes:
             - pgdata:/var/lib/postgresql/data
         networks:
@@ -117,6 +119,8 @@ services:
                 limits:
                     memory: 128M
                     cpus: "0.1"
+        ports:
+            - "127.0.0.1:6379:6379"
         volumes:
             - redisdata:/data
         networks:
@@ -156,6 +160,8 @@ services:
             AUTHENTIK_POSTGRESQL__PASSWORD: ${AUTHENTIK_DB_PASSWORD}
             AUTHENTIK_REDIRECT_URI_SILENT: ${AUTHENTIK_REDIRECT_URI_SILENT}
             AUTHENTIK_NOTIFICATION_WEBHOOK_USER_SYNC: ${AUTHENTIK_NOTIFICATION_WEBHOOK_USER_SYNC}
+        ports:
+            - "127.0.0.1:9000:9000"
         volumes:
             - authentik_media:/media
             - authentik_templates:/templates

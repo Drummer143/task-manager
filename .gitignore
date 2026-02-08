@@ -47,6 +47,7 @@ vitest.config.*.timestamp*
 
 .env
 .env.site
+.env.tunnel
 
 *.pem
 
