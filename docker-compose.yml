@@ -1,6 +1,6 @@
 services:
     postgres:
-        image: postgres:latest
+        image: postgres:16-alpine
         # restart: always
         container_name: postgres
         healthcheck:

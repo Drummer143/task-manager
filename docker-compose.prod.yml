@@ -24,7 +24,7 @@ services:
             - authentik_server
 
     postgres:
-        image: postgres:latest
+        image: postgres:16-alpine
         restart: unless-stopped
         container_name: postgres
         healthcheck:
