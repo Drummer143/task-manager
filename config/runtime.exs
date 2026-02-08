@@ -12,12 +12,12 @@ import Config
 # If you use `mix release`, you need to explicitly enable the server
 # by passing the PHX_SERVER=true when you start it:
 #
-#     PHX_SERVER=true bin/chat start
+#     PHX_SERVER=true bin/socket_service start
 #
 # Alternatively, you can use `mix phx.gen.release` to generate a `bin/server`
 # script that automatically sets the env var above.
 if System.get_env("PHX_SERVER") do
-  config :chat, ChatWeb.Endpoint, server: true
+  config :socket_service, SocketServiceWeb.Endpoint, server: true
 end
 
 config :auth_verifier,
@@ -35,7 +35,7 @@ if config_env() == :prod do
 
   maybe_ipv6 = if System.get_env("ECTO_IPV6") in ~w(true 1), do: [:inet6], else: []
 
-  config :chat, Chat.Repo,
+  config :socket_service, SocketService.Repo,
     url: database_url,
     pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10"),
     socket_options: maybe_ipv6
@@ -55,9 +55,9 @@ if config_env() == :prod do
   host = System.get_env("PHX_HOST") || "0.0.0.0"
   port = String.to_integer(System.get_env("PORT") || "4000")
 
-  config :chat, :dns_cluster_query, System.get_env("DNS_CLUSTER_QUERY")
+  config :socket_service, :dns_cluster_query, System.get_env("DNS_CLUSTER_QUERY")
 
-  config :chat, ChatWeb.Endpoint,
+  config :socket_service, SocketServiceWeb.Endpoint,
     url: [host: host, port: 443, scheme: "https"],
     http: [
       # Enable IPv6 and bind on all interfaces.

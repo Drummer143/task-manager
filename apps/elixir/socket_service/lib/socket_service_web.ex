@@ -1,12 +1,12 @@
-defmodule ChatWeb do
+defmodule SocketServiceWeb do
   @moduledoc """
   The entrypoint for defining your web interface, such
   as controllers, components, channels, and so on.
 
   This can be used in your application as:
 
-      use ChatWeb, :controller
-      use ChatWeb, :html
+      use SocketServiceWeb, :controller
+      use SocketServiceWeb, :html
 
   The definitions below will be executed for every controller,
   component, etc, so keep them short and clean, focused
@@ -39,7 +39,7 @@ defmodule ChatWeb do
     quote do
       use Phoenix.Controller,
         formats: [:html, :json],
-        layouts: [html: ChatWeb.Layouts]
+        layouts: [html: SocketServiceWeb.Layouts]
 
       import Plug.Conn
 
@@ -50,9 +50,9 @@ defmodule ChatWeb do
   def verified_routes do
     quote do
       use Phoenix.VerifiedRoutes,
-        endpoint: ChatWeb.Endpoint,
-        router: ChatWeb.Router,
-        statics: ChatWeb.static_paths()
+        endpoint: SocketServiceWeb.Endpoint,
+        router: SocketServiceWeb.Router,
+        statics: SocketServiceWeb.static_paths()
     end
   end
 

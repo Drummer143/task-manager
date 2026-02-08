@@ -5,17 +5,17 @@ import Config
 # The MIX_TEST_PARTITION environment variable can be used
 # to provide built-in test partitioning in CI environment.
 # Run `mix help test` for more information.
-config :chat, Chat.Repo,
+config :socket_service, SocketService.Repo,
   username: "postgres",
   password: "postgres",
   hostname: "localhost",
-  database: "chat_test#{System.get_env("MIX_TEST_PARTITION")}",
+  database: "socket_service_test#{System.get_env("MIX_TEST_PARTITION")}",
   pool: Ecto.Adapters.SQL.Sandbox,
   pool_size: System.schedulers_online() * 2
 
 # We don't run a server during test. If one is required,
 # you can enable the server option below.
-config :chat, ChatWeb.Endpoint,
+config :socket_service, SocketServiceWeb.Endpoint,
   http: [ip: {127, 0, 0, 1}, port: 4002],
   secret_key_base: "iTwjopeiHK1Ufo7N3jijvaYsNZwrY1hfJLEFbg5a04qCEVImL+niAEVzo4h23HDW",
   server: false

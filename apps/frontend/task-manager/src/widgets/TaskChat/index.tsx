@@ -5,7 +5,7 @@ import { type ChatProps } from "@task-manager/chat";
 import { Channel, Presence } from "phoenix";
 
 import { useAuthStore } from "../../app/store/auth";
-import { useChatSocketStore } from "../../app/store/socket";
+import { useSocketStore } from "../../app/store/socket";
 import { userManager } from "../../app/userManager";
 
 interface RawPresenceInfo {
@@ -120,7 +120,7 @@ const TaskChat: React.FC<{ taskId?: string }> = ({ taskId }) => {
 				return;
 			}
 
-			const socket = useChatSocketStore.getState().getSocket(user.access_token);
+			const socket = useSocketStore.getState().getSocket(user.access_token);
 
 			channel = socket.channel(`chat:${taskId}`, { user_id: user.profile.sub });
 			let presences: RawPresenceInfo = {};

@@ -7,19 +7,19 @@
 # General application configuration
 import Config
 
-config :chat,
-  ecto_repos: [Chat.Repo],
+config :socket_service,
+  ecto_repos: [SocketService.Repo],
   generators: [timestamp_type: :utc_datetime]
 
 # Configures the endpoint
-config :chat, ChatWeb.Endpoint,
+config :socket_service, SocketServiceWeb.Endpoint,
   url: [host: "localhost"],
   adapter: Bandit.PhoenixAdapter,
   render_errors: [
-    formats: [json: ChatWeb.ErrorJSON],
+    formats: [json: SocketServiceWeb.ErrorJSON],
     layout: false
   ],
-  pubsub_server: Chat.PubSub,
+  pubsub_server: SocketService.PubSub,
   live_view: [signing_salt: "4aDsZyKR"]
 
 # Configures Elixir's Logger

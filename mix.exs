@@ -13,8 +13,8 @@ defmodule TaskManager.MixProject do
 
   defp releases do
     [
-      chat: [
-        applications: [chat: :permanent],
+      socket_service: [
+        applications: [socket_service: :permanent],
         include_executables_for: [:unix]
       ]
     ]

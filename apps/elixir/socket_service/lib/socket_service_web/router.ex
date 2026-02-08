@@ -1,16 +1,16 @@
-defmodule ChatWeb.Router do
-  use ChatWeb, :router
+defmodule SocketServiceWeb.Router do
+  use SocketServiceWeb, :router
 
   pipeline :api do
     plug :accepts, ["json"]
   end
 
-  scope "/api", ChatWeb do
+  scope "/api", SocketServiceWeb do
     pipe_through :api
   end
 
   # Enable LiveDashboard in development
-  if Application.compile_env(:chat, :dev_routes) do
+  if Application.compile_env(:socket_service, :dev_routes) do
     # If you want to use the LiveDashboard in production, you should put
     # it behind authentication and allow only admins to access it.
     # If your application does not have an admins-only section yet,
@@ -21,7 +21,7 @@ defmodule ChatWeb.Router do
     scope "/dev" do
       pipe_through [:fetch_session, :protect_from_forgery]
 
-      live_dashboard "/dashboard", metrics: ChatWeb.Telemetry
+      live_dashboard "/dashboard", metrics: SocketServiceWeb.Telemetry
     end
   end
 end

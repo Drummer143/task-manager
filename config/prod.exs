@@ -6,13 +6,13 @@ config :logger, level: :info
 # Runtime production configuration, including reading
 # of environment variables, is done on config/runtime.exs.
 
-config :chat, Chat.Repo,
-  url: System.get_env("DATABASE_URL") || "ecto://postgres:postgres@localhost:1234/chat_dev",
+config :socket_service, SocketService.Repo,
+  url: System.get_env("DATABASE_URL") || "ecto://postgres:postgres@localhost:1234/socket_service_dev",
   stacktrace: false,
   show_sensitive_data_on_connection_error: false,
   pool_size: 10
 
-config :chat, ChatWeb.Endpoint,
+config :socket_service, SocketServiceWeb.Endpoint,
   # Binding to loopback ipv4 address prevents access from other machines.
   # Change to `ip: {0, 0, 0, 0}` to allow access from other machines.
   http: [ip: {0, 0, 0, 0}, port: 8078],

@@ -10,8 +10,8 @@ storage.{$DOMAIN} {
     reverse_proxy storage-service:8082
 }
 
-chat.{$DOMAIN} {
-    reverse_proxy chat-service:8078
+socket.{$DOMAIN} {
+    reverse_proxy socket-service:8078
 }
 
 auth.{$DOMAIN} {

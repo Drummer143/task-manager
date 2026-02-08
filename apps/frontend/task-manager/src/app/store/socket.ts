@@ -15,59 +15,58 @@ export interface SocketStoreState {
 	closeSocket: () => void;
 }
 
-const createSocketStore = (url: string) => {
-	return create<SocketStoreState>((set, get) => ({
-		channels: {},
+export const useSocketStore = create<SocketStoreState>((set, get) => ({
+	channels: {},
 
-		getSocket: token => {
-			let socket = get().socket;
-			const state = socket?.connectionState();
+	getSocket: token => {
+		let socket = get().socket;
+		const state = socket?.connectionState();
 
-			if (socket && (state === "open" || state === "connecting")) {
-				return socket;
-			}
-
-			socket?.disconnect();
-
-			socket = new Socket(url, { params: { token }, reconnectAfterMs: () => 1500 });
-
-			socket.connect();
-
-			set({ socket });
-
+		if (socket && (state === "open" || state === "connecting")) {
 			return socket;
-		},
+		}
 
-		getChannel: name => {
-			const store = get();
+		socket?.disconnect();
 
-			if (!store.socket) {
-				throw new Error("Socket is not initialized");
-			}
+		socket = new Socket(import.meta.env.VITE_SOCKET_URL, {
+			params: { token },
+			reconnectAfterMs: () => 1500
+		});
 
-			let channel = store.channels[name];
+		socket.connect();
 
-			if (channel) {
-				return channel;
-			}
+		set({ socket });
 
-			channel = store.socket.channel(name);
+		return socket;
+	},
 
-			channel.join();
+	getChannel: name => {
+		const store = get();
 
-			set({
-				channels: {
-					...store.channels,
-					[name]: channel
-				}
-			});
+		if (!store.socket) {
+			throw new Error("Socket is not initialized");
+		}
 
+		let channel = store.channels[name];
+
+		if (channel) {
 			return channel;
-		},
+		}
 
-		closeSocket: () => get().socket?.disconnect()
-	}));
-};
+		channel = store.socket.channel(name);
 
-export const useChatSocketStore = createSocketStore(import.meta.env.VITE_CHAT_SOCKET_URL);
+		channel.join();
+
+		set({
+			channels: {
+				...store.channels,
+				[name]: channel
+			}
+		});
+
+		return channel;
+	},
+
+	closeSocket: () => get().socket?.disconnect()
+}));
 

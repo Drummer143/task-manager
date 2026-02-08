@@ -269,10 +269,10 @@ services:
         volumes:
             - ./apps/backend/storage/static:/static
 
-    chat-service:
+    socket-service:
         # restart: always
-        container_name: chat-service
-        image: chat-service:latest
+        container_name: socket-service
+        image: socket-service:latest
         ports:
             - 8078:8078
         depends_on:
@@ -289,7 +289,7 @@ services:
             context: .
             dockerfile: Dockerfile.backend-elixir
             args:
-                APP_NAME: chat
+                APP_NAME: socket_service
         environment:
             PORT: 8078
             DATABASE_URL: ${DATABASE_URL}
@@ -309,7 +309,7 @@ services:
                 APP_NAME: task-manager
                 VITE_API_URL: ${VITE_API_URL:-http://localhost:8080}
                 VITE_STORAGE_URL: ${VITE_STORAGE_URL:-http://localhost:8082}
-                VITE_CHAT_SOCKET_URL: ${VITE_CHAT_SOCKET_URL:-ws://localhost:8078/socket}
+                VITE_SOCKET_URL: ${VITE_SOCKET_URL:-ws://localhost:8078/socket}
                 VITE_AUTHORITY: ${VITE_AUTHORITY:-http://localhost:9000/application/o/task-manager/}
                 VITE_CLIENT_ID: ${VITE_CLIENT_ID}
                 VITE_REDIRECT_URI: ${VITE_REDIRECT_URI:-http://localhost:1346/callback}

@@ -1,8 +1,8 @@
-defmodule Chat.UserSocket do
+defmodule SocketService.UserSocket do
   require Logger
   use Phoenix.Socket
 
-  channel "chat:*", Chat.ChatChannel
+  channel "chat:*", SocketService.ChatChannel
 
   def connect(%{"token" => token}, socket, _connect_info) do
     case AuthVerifier.Token.verify_and_validate(token) do

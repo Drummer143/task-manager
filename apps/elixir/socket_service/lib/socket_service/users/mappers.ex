@@ -1,4 +1,4 @@
-defmodule Chat.Users.Mappers do
+defmodule SocketService.Users.Mappers do
   def to_response(user) do
     %{
       id: user.id,

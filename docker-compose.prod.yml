@@ -19,7 +19,7 @@ services:
             - task-manager
             - main-service
             - storage-service
-            - chat-service
+            - socket-service
             - authentik_server
 
     postgres:
@@ -266,10 +266,10 @@ services:
         volumes:
             - storage_data:/static
 
-    chat-service:
+    socket-service:
         restart: unless-stopped
-        container_name: chat-service
-        image: ghcr.io/drummer143/task-manager/chat-service:${IMAGE_TAG:-latest}
+        container_name: socket-service
+        image: ghcr.io/drummer143/task-manager/socket-service:${IMAGE_TAG:-latest}
         depends_on:
             postgres:
                 condition: service_healthy

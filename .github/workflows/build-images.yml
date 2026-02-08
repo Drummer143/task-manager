@@ -27,7 +27,7 @@ jobs:
     outputs:
       main-service: ${{ steps.filter.outputs.main-service }}
       storage-service: ${{ steps.filter.outputs.storage-service }}
-      chat-service: ${{ steps.filter.outputs.chat-service }}
+      socket-service: ${{ steps.filter.outputs.socket-service }}
       task-manager: ${{ steps.filter.outputs.task-manager }}
     steps:
       - uses: actions/checkout@v4
@@ -49,8 +49,8 @@ jobs:
               - 'Cargo.lock'
               - 'migrations/**'
               - 'Dockerfile.backend-rust'
-            chat-service:
-              - 'apps/elixir/chat/**'
+            socket-service:
+              - 'apps/elixir/socket_service/**'
               - 'config/**'
               - 'mix.exs'
               - 'mix.lock'
@@ -137,13 +137,13 @@ jobs:
           cache-from: type=gha,scope=storage-service
           cache-to: type=gha,mode=max,scope=storage-service
 
-  build-chat-service:
-    name: Build chat-service
+  build-socket-service:
+    name: Build socket-service
     needs: [changes]
     if: |
       always() &&
-      (needs.changes.result == 'skipped' || needs.changes.outputs.chat-service == 'true') &&
-      (github.event_name == 'push' || github.event.inputs.services == 'all' || contains(github.event.inputs.services, 'chat-service'))
+      (needs.changes.result == 'skipped' || needs.changes.outputs.socket-service == 'true') &&
+      (github.event_name == 'push' || github.event.inputs.services == 'all' || contains(github.event.inputs.services, 'socket-service'))
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -156,7 +156,7 @@ jobs:
       - uses: docker/metadata-action@v5
         id: meta
         with:
-          images: ${{ env.IMAGE_PREFIX }}/chat-service
+          images: ${{ env.IMAGE_PREFIX }}/socket-service
           tags: |
             type=sha,prefix=
             type=ref,event=branch
@@ -168,9 +168,9 @@ jobs:
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
-          build-args: APP_NAME=chat
-          cache-from: type=gha,scope=chat-service
-          cache-to: type=gha,mode=max,scope=chat-service
+          build-args: APP_NAME=socket_service
+          cache-from: type=gha,scope=socket-service
+          cache-to: type=gha,mode=max,scope=socket-service
 
   build-task-manager:
     name: Build task-manager
@@ -207,7 +207,7 @@ jobs:
             APP_NAME=task-manager
             VITE_API_URL=${{ secrets.VITE_API_URL }}
             VITE_STORAGE_URL=${{ secrets.VITE_STORAGE_URL }}
-            VITE_CHAT_SOCKET_URL=${{ secrets.VITE_CHAT_SOCKET_URL }}
+            VITE_SOCKET_URL=${{ secrets.VITE_SOCKET_URL }}
             VITE_AUTHORITY=${{ secrets.VITE_AUTHORITY }}
             VITE_CLIENT_ID=${{ secrets.VITE_CLIENT_ID }}
             VITE_REDIRECT_URI=${{ secrets.VITE_REDIRECT_URI }}

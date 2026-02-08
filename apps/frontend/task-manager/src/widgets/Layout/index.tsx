@@ -11,7 +11,7 @@ import UserMenu from "./UserMenu";
 import WorkspaceDeletionBanner from "./WorkspaceDeletionBanner";
 
 import { useAuthStore } from "../../app/store/auth";
-import { useChatSocketStore } from "../../app/store/socket";
+import { useSocketStore } from "../../app/store/socket";
 import { userManager } from "../../app/userManager";
 import FullSizeLoader from "../../shared/ui/FullSizeLoader";
 
@@ -41,11 +41,11 @@ const Layout: React.FC = () => {
 				return;
 			}
 
-			useChatSocketStore.getState().getSocket(user.access_token);
+			useSocketStore.getState().getSocket(user.access_token);
 		});
 
 		return () => {
-			useChatSocketStore.getState().closeSocket();
+			useSocketStore.getState().closeSocket();
 		};
 	}, []);
 

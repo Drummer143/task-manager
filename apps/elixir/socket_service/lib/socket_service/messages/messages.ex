@@ -1,9 +1,9 @@
-defmodule Chat.Messages do
+defmodule SocketService.Messages do
   import Ecto.Query, warn: false
   require Logger
-  alias Chat.Repo
+  alias SocketService.Repo
 
-  alias Chat.Messages.Model, as: ChatMessageModel
+  alias SocketService.Messages.Model, as: ChatMessageModel
 
   def has_more_messages_before(task_id, before_date, first_message_id) do
     ChatMessageModel

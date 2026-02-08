@@ -1,8 +1,8 @@
 {
 	"$schema": "../../../node_modules/nx/schemas/project-schema.json",
-	"name": "chat-service",
+	"name": "socket-service",
 	"projectType": "application",
-	"sourceRoot": "apps/elixir/chat/src",
+	"sourceRoot": "apps/elixir/socket_service/src",
 	"targets": {
 		"dev": {
 			"executor": "nx:run-commands",

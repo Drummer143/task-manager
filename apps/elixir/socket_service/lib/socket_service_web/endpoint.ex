@@ -1,12 +1,12 @@
-defmodule ChatWeb.Endpoint do
-  use Phoenix.Endpoint, otp_app: :chat
+defmodule SocketServiceWeb.Endpoint do
+  use Phoenix.Endpoint, otp_app: :socket_service
 
   # The session will be stored in the cookie and signed,
   # this means its contents can be read but not tampered with.
   # Set :encryption_salt if you would also like to encrypt it.
   @session_options [
     store: :cookie,
-    key: "_chat_key",
+    key: "_socket_service_key",
     signing_salt: "EU+He3Fl",
     same_site: "Lax"
   ]
@@ -15,7 +15,7 @@ defmodule ChatWeb.Endpoint do
     websocket: [connect_info: [session: @session_options]],
     longpoll: [connect_info: [session: @session_options]]
 
-  socket "/socket", Chat.UserSocket,
+  socket "/socket", SocketService.UserSocket,
     websocket: [connect_info: [session: @session_options]],
     longpoll: false
 
@@ -25,15 +25,15 @@ defmodule ChatWeb.Endpoint do
   # when deploying your static files in production.
   plug Plug.Static,
     at: "/",
-    from: :chat,
+    from: :socket_service,
     gzip: true,
-    only: ChatWeb.static_paths()
+    only: SocketServiceWeb.static_paths()
 
   # Code reloading can be explicitly enabled under the
   # :code_reloader configuration of your endpoint.
   if code_reloading? do
     plug Phoenix.CodeReloader
-    plug Phoenix.Ecto.CheckRepoStatus, otp_app: :chat
+    plug Phoenix.Ecto.CheckRepoStatus, otp_app: :socket_service
   end
 
   plug Phoenix.LiveDashboard.RequestLogger,
@@ -51,5 +51,5 @@ defmodule ChatWeb.Endpoint do
   plug Plug.MethodOverride
   plug Plug.Head
   plug Plug.Session, @session_options
-  plug ChatWeb.Router
+  plug SocketServiceWeb.Router
 end

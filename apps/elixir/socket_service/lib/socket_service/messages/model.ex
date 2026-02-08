@@ -1,4 +1,4 @@
-defmodule Chat.Messages.Model do
+defmodule SocketService.Messages.Model do
   use Ecto.Schema
 
   import Ecto.Changeset
@@ -14,9 +14,9 @@ defmodule Chat.Messages.Model do
     field :updated_at, :utc_datetime_usec
     field :deleted_at, :utc_datetime_usec
 
-    belongs_to :sender, Chat.Users.Model, foreign_key: :user_id, type: :binary_id
-    belongs_to :pinner, Chat.Users.Model, foreign_key: :pinned_by, type: :binary_id
-    belongs_to :reply_target, Chat.Messages.Model, foreign_key: :reply_to, type: :binary_id
+    belongs_to :sender, SocketService.Users.Model, foreign_key: :user_id, type: :binary_id
+    belongs_to :pinner, SocketService.Users.Model, foreign_key: :pinned_by, type: :binary_id
+    belongs_to :reply_target, SocketService.Messages.Model, foreign_key: :reply_to, type: :binary_id
   end
 
   def changeset(chat_message, attrs) do

@@ -1,4 +1,4 @@
-defmodule ChatWeb.Telemetry do
+defmodule SocketServiceWeb.Telemetry do
   use Supervisor
   import Telemetry.Metrics
 
@@ -53,23 +53,23 @@ defmodule ChatWeb.Telemetry do
       ),
 
       # Database Metrics
-      summary("chat.repo.query.total_time",
+      summary("socket_service.repo.query.total_time",
         unit: {:native, :millisecond},
         description: "The sum of the other measurements"
       ),
-      summary("chat.repo.query.decode_time",
+      summary("socket_service.repo.query.decode_time",
         unit: {:native, :millisecond},
         description: "The time spent decoding the data received from the database"
       ),
-      summary("chat.repo.query.query_time",
+      summary("socket_service.repo.query.query_time",
         unit: {:native, :millisecond},
         description: "The time spent executing the query"
       ),
-      summary("chat.repo.query.queue_time",
+      summary("socket_service.repo.query.queue_time",
         unit: {:native, :millisecond},
         description: "The time spent waiting for a database connection"
       ),
-      summary("chat.repo.query.idle_time",
+      summary("socket_service.repo.query.idle_time",
         unit: {:native, :millisecond},
         description:
           "The time the connection spent waiting before being checked out for the query"
@@ -87,7 +87,7 @@ defmodule ChatWeb.Telemetry do
     [
       # A module, function and arguments to be invoked periodically.
       # This function must call :telemetry.execute/3 and a metric must be added above.
-      # {ChatWeb, :count_users, []}
+      # {SocketServiceWeb, :count_users, []}
     ]
   end
 end
