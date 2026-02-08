@@ -74,6 +74,7 @@ jobs:
       - run: pnpm exec nx run task-manager:e2e
         env:
           VITE_AUTHENTIK_API_TOKEN: ${{ secrets.AUTHENTIK_API_TOKEN }}
+          VITE_AUTHENTIK_BASE_URL: ${{ secrets.AUTHENTIK_URL }}
 
   test-rust:
     name: Rust tests

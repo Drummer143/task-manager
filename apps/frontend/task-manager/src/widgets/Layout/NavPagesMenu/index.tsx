@@ -37,6 +37,14 @@ const useStyles = createStyles(({ css }) => ({
 	`
 }));
 
+const okButtonProps = {
+	"data-test-id": "create-page-drawer-submit-button"
+};
+
+const cancelButtonProps = {
+	"data-test-id": "create-page-drawer-cancel-button"
+};
+
 const NavPagesMenu: React.FC = () => {
 	const { styles } = useStyles();
 
@@ -82,7 +90,8 @@ const NavPagesMenu: React.FC = () => {
 					pathParams: { workspaceId },
 					body: {
 						...values,
-						parentId: typeof creatingPageType === "string" ? creatingPageType : undefined
+						parentId:
+							typeof creatingPageType === "string" ? creatingPageType : undefined
 					}
 				});
 			}
@@ -107,7 +116,12 @@ const NavPagesMenu: React.FC = () => {
 					Pages
 				</Typography.Title>
 
-				<Button type="text" onClick={() => setCreatingPageType(true)} icon={<PlusOutlined />} />
+				<Button
+					type="text"
+					data-test-id="nav-pages-menu-create-page-button"
+					onClick={() => setCreatingPageType(true)}
+					icon={<PlusOutlined />}
+				/>
 			</div>
 
 			<Menu pages={data} onSubPageCreate={setCreatingPageType} />
@@ -116,17 +130,27 @@ const NavPagesMenu: React.FC = () => {
 				form={formProps}
 				afterClose={handleAfterClose}
 				okLoading={isPending}
+				okProps={okButtonProps}
+				cancelProps={cancelButtonProps}
 				open={!!creatingPageType}
 				onClose={closeCreatingPageType}
 			>
 				<Form.Item label="Page title" name="title">
-					<Input placeholder="Page title" />
+					<Input
+						placeholder="Page title"
+						data-test-id="create-page-drawer-title-input"
+					/>
 				</Form.Item>
 
 				<Form.Item label="Page type" name="type">
 					<Select
 						placeholder="Page type"
-						options={typeof creatingPageType === "string" ? pageTypeOptions.slice(0, 2) : pageTypeOptions}
+						data-test-id="create-page-drawer-type-select"
+						options={
+							typeof creatingPageType === "string"
+								? pageTypeOptions.slice(0, 2)
+								: pageTypeOptions
+						}
 					/>
 				</Form.Item>
 
@@ -137,3 +161,4 @@ const NavPagesMenu: React.FC = () => {
 };
 
 export default memo(NavPagesMenu);
+

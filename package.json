@@ -22,7 +22,9 @@
 		"typecheck": "nx run-many --target=typecheck --all",
 		"test": "nx run-many --target=test --all",
 		"coverage": "nx run-many --target=coverage --all",
-		"coverage:report": "nx run-many --target=coverage:report --all"
+		"coverage:report": "nx run-many --target=coverage:report --all",
+		"e2e": "nx run-many --target=e2e --all",
+		"e2e:headed": "nx run-many --target=e2e:headed --all"
 	},
 	"private": true,
 	"dependencies": {
@@ -88,6 +90,7 @@
 		"@vitest/coverage-v8": "4.0.0",
 		"@vitest/ui": "4.0.0",
 		"@welldone-software/why-did-you-render": "^10.0.1",
+		"dotenv": "^17.2.4",
 		"eslint": "^9.39.1",
 		"eslint-config-prettier": "10.0.0",
 		"eslint-plugin-import": "2.31.0",

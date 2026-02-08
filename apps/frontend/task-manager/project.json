@@ -17,6 +17,25 @@
 			"options": {
 				"command": "echo test"
 			}
+		},
+		"e2e": {
+			"executor": "nx:run-commands",
+			"options": {
+				"commands": [
+					"pnpm exec playwright test --config=apps/frontend/task-manager/playwright.config.ts"
+				],
+				"cwd": "{workspaceRoot}"
+			}
+		},
+		"e2e:headed": {
+			"executor": "nx:run-commands",
+			"options": {
+				"commands": [
+					"pnpm exec playwright test --config=apps/frontend/task-manager/playwright.config.ts --headed"
+				],
+				"cwd": "{workspaceRoot}"
+			}
 		}
 	}
 }
+
