@@ -3,8 +3,8 @@
 use axum::extract::State;
 use chrono::{DateTime, Utc};
 use error_handlers::handlers::ErrorResponse;
-use sql::shared::traits::PostgresqlRepositoryCreate;
 use serde::{Deserialize, Serialize};
+use sql::shared::traits::PostgresqlRepositoryCreate;
 use uuid::Uuid;
 
 use crate::shared::{extractors::json::ValidatedJson, traits::ServiceCreateMethod};
@@ -67,44 +67,73 @@ pub async fn user_sync(
             {
                 Ok(_) => {}
                 Err(sqlx::Error::RowNotFound) => {
-                    tracing::warn!("UserUpdated received for unknown authentik_id={}, ignoring", payload.pk);
+                    tracing::warn!(
+                        "UserUpdated received for unknown authentik_id={}, ignoring",
+                        payload.pk
+                    );
                 }
                 Err(e) => return Err(ErrorResponse::from(e)),
             }
         }
         Events::UserCreated(payload) => {
-            let user = user::UserRepository::create(
-                &state.postgres,
-                user::dto::CreateUserDto {
-                    email: payload.email,
-                    username: payload.username,
-                    authentik_id: payload.pk,
-
-                    id: Some(payload.uuid),
-                    is_active: Some(payload.is_active),
-                    created_at: Some(payload.created_at),
-                    picture: None,
-                },
+            let existing = sqlx::query_scalar::<_, bool>(
+                "SELECT EXISTS(SELECT 1 FROM users WHERE id = $1 OR authentik_id = $2)",
             )
+            .bind(payload.uuid)
+            .bind(payload.pk)
+            .fetch_one(&state.postgres)
             .await
-            .map_err(ErrorResponse::from)?;
+            .unwrap_or(false);
 
-            crate::entities::workspace::WorkspaceService::create(
-                &state,
-                sql::workspace::dto::CreateWorkspaceDto {
-                    name: format!("{}'s workspace", user.username),
-                    owner_id: user.id,
-                },
-            )
-            .await?;
+            if existing {
+                tracing::info!(
+                    "UserCreated received for existing user authentik_id={}, skipping",
+                    payload.pk
+                );
+
+                user::UserRepository::update_by_authentik_id(
+                    &state.postgres,
+                    payload.pk,
+                    user::dto::UpdateUserDto {
+                        email: Some(payload.email),
+                        username: Some(payload.username),
+                        is_active: Some(payload.is_active),
+                        picture: None,
+                    },
+                )
+                .await
+                .map_err(ErrorResponse::from)?;
+            } else {
+                let user = user::UserRepository::create(
+                    &state.postgres,
+                    user::dto::CreateUserDto {
+                        email: payload.email,
+                        username: payload.username,
+                        authentik_id: payload.pk,
+
+                        id: Some(payload.uuid),
+                        is_active: Some(payload.is_active),
+                        created_at: Some(payload.created_at),
+                        picture: None,
+                    },
+                )
+                .await
+                .map_err(ErrorResponse::from)?;
+
+                crate::entities::workspace::WorkspaceService::create(
+                    &state,
+                    sql::workspace::dto::CreateWorkspaceDto {
+                        name: format!("{}'s workspace", user.username),
+                        owner_id: user.id,
+                    },
+                )
+                .await?;
+            }
         }
         Events::UserDeleted(payload) => {
-            sql::user::UserRepository::delete_by_authentik_id(
-                &state.postgres,
-                payload.pk,
-            )
-            .await
-            .map_err(ErrorResponse::from)?;
+            sql::user::UserRepository::delete_by_authentik_id(&state.postgres, payload.pk)
+                .await
+                .map_err(ErrorResponse::from)?;
         }
     }
 

@@ -131,7 +131,70 @@ entries:
           order: 100
           re_evaluate_policies: true
 
-    # POLICY -> STAGE BINGING
+    # SYNC USER TO BACKEND (Expression Policy on login stage binding)
+
+    - model: authentik_policies_expression.expressionpolicy
+      id: sync-user-to-backend-on-signup
+      identifiers:
+          name: sync-user-to-backend-on-signup
+      attrs:
+          name: sync-user-to-backend-on-signup
+          expression: |
+              import json
+              import os
+              from urllib.request import Request, urlopen
+
+              user = request.user
+
+              if not user or not user.pk:
+                  return True
+
+              webhook_url = os.environ.get("AUTHENTIK_NOTIFICATION_WEBHOOK_USER_SYNC")
+
+              if not webhook_url:
+                  ak_logger.warning("AUTHENTIK_NOTIFICATION_WEBHOOK_USER_SYNC not set")
+                  return True
+
+              payload = {
+                  "event": "user_created",
+                  "payload": {
+                      "pk": user.pk,
+                      "uuid": str(user.uuid),
+                      "username": user.username,
+                      "email": user.email if user.email else None,
+                      "is_active": user.is_active,
+                      "created_at": user.date_joined.isoformat(),
+                  }
+              }
+
+              try:
+                  req = Request(
+                      webhook_url,
+                      data=json.dumps(payload).encode("utf-8"),
+                      headers={"Content-Type": "application/json"},
+                      method="POST"
+                  )
+                  urlopen(req, timeout=10)
+                  ak_logger.info(f"Synced user {user.username} to backend")
+              except Exception as e:
+                  ak_logger.warning(f"Failed to sync user {user.username}: {e}")
+
+              return True
+
+    - model: authentik_policies.policybinding
+      id: sync-user-to-backend-on-signup-binding
+      identifiers:
+          target: !KeyOf task-manager-sign-up-flow-user-login-stage-binding
+          policy: !KeyOf sync-user-to-backend-on-signup
+      attrs:
+          target: !KeyOf task-manager-sign-up-flow-user-login-stage-binding
+          policy: !KeyOf sync-user-to-backend-on-signup
+          enabled: true
+          order: 0
+          timeout: 15
+          failure_result: true
+
+    # POLICY -> STAGE BINGING (commented out)
 
     # - model: authentik_policies.policybinding
     #   identifiers:
