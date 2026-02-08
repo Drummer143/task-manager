@@ -20,14 +20,20 @@ export default defineConfig(({ mode }) => {
 			proxy: {
 				"/api": {
 					target: apiUrl,
+					changeOrigin: true,
+					secure: false,
 					rewrite: path => path.replace(/^\/api/, "")
 				},
 				"/storage": {
 					target: storageUrl,
+					changeOrigin: true,
+					secure: false,
 					rewrite: path => path.replace(/^\/storage/, "")
 				},
 				"/socket": {
 					target: socketUrl,
+					changeOrigin: true,
+					secure: false,
 					ws: true
 				}
 			}
