@@ -7,43 +7,19 @@ import {
 	// VersionHistoryLog
 } from "../types";
 
-type GetTaskIncludes = "assignee" | "page" | "reporter";
-
-type ResponseWithIncludeFilter<T extends GetTaskIncludes | undefined = undefined> = Omit<
-	Task,
-	Exclude<GetTaskIncludes, T>
->;
-
-export type GetTaskListRequest<T extends GetTaskIncludes | undefined = undefined> = BaseRequest<{
+export type GetTaskListRequest = BaseRequest<{
 	pageId: string;
-	include?: T[];
 }>;
 
-export const getTaskList = async <T extends GetTaskIncludes | undefined = undefined>(
-	params: GetTaskListRequest<T>
-) =>
-	(
-		await mainInstance.get<ResponseWithIncludeFilter<T>[]>(
-			`pages/${params.pathParams.pageId}/tasks`,
-			{
-				params: { include: params.pathParams.include?.join(",") }
-			}
-		)
-	).data;
+export const getTaskList = async (params: GetTaskListRequest) =>
+	(await mainInstance.get<Task[]>(`pages/${params.pathParams.pageId}/tasks`)).data;
 
-export type GetTaskRequest<T extends GetTaskIncludes | undefined = undefined> = BaseRequest<{
+export type GetTaskRequest = BaseRequest<{
 	taskId: string;
-	include?: T[];
 }>;
 
-export const getTask = async <T extends GetTaskIncludes | undefined = undefined>(
-	params: GetTaskRequest<T>
-) =>
-	(
-		await mainInstance.get<ResponseWithIncludeFilter<T>>(`tasks/${params.pathParams.taskId}`, {
-			params: { include: params.pathParams.include?.join(",") }
-		})
-	).data;
+export const getTask = async (params: GetTaskRequest) =>
+	(await mainInstance.get<Task>(`tasks/${params.pathParams.taskId}`)).data;
 
 export type CreateTaskRequest = BaseRequest<
 	{ pageId: string },
@@ -83,8 +59,7 @@ export const deleteTask = async (params: DeleteTaskRequest) =>
 export type ChangeStatusRequest = BaseRequest<{ taskId: string }, { statusId: string }>;
 
 export const changeStatus = async (params: ChangeStatusRequest) =>
-	(await mainInstance.patch<Task>(`/tasks/${params.pathParams.taskId}/status`, params.body))
-		.data;
+	(await mainInstance.patch<Task>(`/tasks/${params.pathParams.taskId}/status`, params.body)).data;
 
 // export const getTaskHistory = async ({
 // 	pageId,

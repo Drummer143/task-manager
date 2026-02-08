@@ -26,6 +26,7 @@ pub struct TaskResponse {
     pub due_date: Option<DateTime<Utc>>,
     pub position: i32,
     pub is_draft: bool,
+    pub page_id: Uuid,
 
     pub status: Option<BoardStatusResponseDto>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -48,6 +49,7 @@ impl From<Task> for TaskResponse {
             due_date: value.due_date,
             position: value.position,
             is_draft: value.is_draft,
+            page_id: value.page_id,
             status: None,
             reporter: None,
             assignee: None,

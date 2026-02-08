@@ -53,7 +53,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ taskLoading, taskId, pageId, worksp
 	);
 
 	const getFileUploadToken = useCallback(
-		async (file: File, assetId: string, taskId: string) =>
+		async (file: File, assetId: string) =>
 			createUploadToken({
 				body: {
 					assetId,
@@ -64,7 +64,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ taskLoading, taskId, pageId, worksp
 					}
 				}
 			}).then(res => res.token),
-		[]
+		[taskId]
 	);
 
 	return (
@@ -97,12 +97,10 @@ const TaskForm: React.FC<TaskFormProps> = ({ taskLoading, taskId, pageId, worksp
 			</Form.Item>
 
 			{taskId && (
-				<Form.Item label="Description" name="description">
+				<Form.Item layout="vertical" label="Description" name="description" noStyle>
 					<MDEditor
 						editable
-						getFileUploadToken={(file, assetId) =>
-							getFileUploadToken(file, assetId, taskId)
-						}
+						getFileUploadToken={(file, assetId) => getFileUploadToken(file, assetId)}
 					/>
 				</Form.Item>
 			)}

@@ -1,37 +1,12 @@
-import React, { useCallback, useEffect, useMemo, useState } from "react";
+import React, { useCallback, useEffect, useState } from "react";
 
-import { MessageOutlined } from "@ant-design/icons";
 import Chat, { PresenceInfo, UserInfo } from "@task-manager/chat";
 import { type ChatProps } from "@task-manager/chat";
-import { useDisclosure } from "@task-manager/react-utils";
-import { Button } from "antd";
-import { DrawerClassNamesType } from "antd/es/drawer/DrawerPanel";
-import { createStyles } from "antd-style";
 import { Channel, Presence } from "phoenix";
-import { useSearchParams } from "react-router";
 
 import { useAuthStore } from "../../app/store/auth";
 import { useChatSocketStore } from "../../app/store/socket";
 import { userManager } from "../../app/userManager";
-import Drawer from "../Drawer";
-
-const useStyles = createStyles(({ css }) => ({
-	drawer: css`
-		height: 100%;
-
-		& > * {
-			max-height: 100%;
-		}
-	`,
-	drawerBody: css`
-		height: 100%;
-
-		display: flex;
-		flex-direction: column;
-
-		padding: 0 !important;
-	`
-}));
 
 interface RawPresenceInfo {
 	[key: string]: {
@@ -46,40 +21,16 @@ interface RawPresenceInfo {
 	};
 }
 
-const TaskChat: React.FC = () => {
+const TaskChat: React.FC<{ taskId?: string }> = ({ taskId }) => {
 	const [presence, setPresence] = useState<PresenceInfo | undefined>(undefined);
 	const [channel, setConnection] = useState<Channel | undefined>(undefined);
+	const [isJoined, setIsJoined] = useState(false);
 
 	const userId = useAuthStore.getState().user.id;
 
-	const taskId = useSearchParams()[0].get("taskId");
-
-	const { open, onOpen, onClose } = useDisclosure();
-
-	const styles = useStyles().styles;
-
-	const drawerClassnames = useMemo<DrawerClassNamesType>(
-		() => ({
-			body: styles.drawerBody,
-			wrapper: styles.drawer
-		}),
-		[styles]
-	);
-
 	const loadMessages = useCallback<ChatProps["loadMessages"]>(
 		(cb, query) => {
-			const requestMessages = () => {
-				channel?.push("get_all", query).receive("ok", cb);
-			};
-
-			if (channel?.state === "joined") {
-				return requestMessages();
-			}
-
-			const joinRef = channel?.on("join", () => {
-				channel?.off("join", joinRef);
-				requestMessages();
-			});
+			channel?.push("get_all", query).receive("ok", cb);
 		},
 		[channel]
 	);
@@ -207,46 +158,40 @@ const TaskChat: React.FC = () => {
 				handleRawPresenceInfo(presences);
 			});
 
-			channel.join();
+			channel.join().receive("ok", () => {
+				setIsJoined(true);
+			});
 
 			setConnection(channel);
 		});
 
 		return () => {
 			setConnection(undefined);
+			setIsJoined(false);
 			channel?.leave();
 		};
 	}, [taskId]);
 
-	return (
-		<>
-			<Button type="text" icon={<MessageOutlined />} onClick={onOpen} />
+	if (!channel || !isJoined) {
+		return null;
+	}
 
-			<Drawer
-				keyboard={false}
-				open={open}
-				onClose={onClose}
-				title="Discussion"
-				destroyOnClose
-				classNames={drawerClassnames}
-			>
-				<Chat
-					presence={presence}
-					onTypingChange={handleTypingChange}
-					currentUserId={userId}
-					subscribeToNewMessages={subscribeToNewMessages}
-					subscribeToDeletedMessages={subscribeToDeletedMessages}
-					subscribeToUpdatedMessages={subscribeToUpdatedMessages}
-					sendMessage={sendMessage}
-					loadMessages={loadMessages}
-					loadMessagesAround={loadMessagesAround}
-					deleteMessage={handleDeleteMessage}
-					updateMessage={handleUpdateMessage}
-					pinMessage={handlePinMessage}
-					loadPins={handleGetPinnedMessages}
-				/>
-			</Drawer>
-		</>
+	return (
+		<Chat
+			presence={presence}
+			onTypingChange={handleTypingChange}
+			currentUserId={userId}
+			subscribeToNewMessages={subscribeToNewMessages}
+			subscribeToDeletedMessages={subscribeToDeletedMessages}
+			subscribeToUpdatedMessages={subscribeToUpdatedMessages}
+			sendMessage={sendMessage}
+			loadMessages={loadMessages}
+			loadMessagesAround={loadMessagesAround}
+			deleteMessage={handleDeleteMessage}
+			updateMessage={handleUpdateMessage}
+			pinMessage={handlePinMessage}
+			loadPins={handleGetPinnedMessages}
+		/>
 	);
 };
 

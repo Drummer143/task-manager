@@ -9,9 +9,9 @@ import { useNavigate, useParams, useSearchParams } from "react-router";
 
 import { useAuthStore } from "../../../../../app/store/auth";
 import Drawer from "../../../../../widgets/Drawer";
-import TaskChat from "../../../../../widgets/TaskChat";
 import TaskForm from "../../../../../widgets/TaskForm";
 import { FormValues } from "../../../../../widgets/TaskForm/types";
+import TaskChatDrawer from "../TaskChatDrawer";
 
 const TaskDrawer: React.FC = () => {
 	// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
@@ -33,8 +33,7 @@ const TaskDrawer: React.FC = () => {
 		queryFn: async (): Promise<FormValues> => {
 			const result = await getTask({
 				pathParams: {
-					taskId: taskId!,
-					include: ["assignee"]
+					taskId: taskId!
 				}
 			});
 
@@ -93,7 +92,7 @@ const TaskDrawer: React.FC = () => {
 			extra={
 				<Space>
 					<Flex gap="var(--ant-margin-xxs)">
-						<TaskChat />
+						<TaskChatDrawer />
 
 						{taskId && (
 							<Button
