@@ -160,8 +160,7 @@ services:
         volumes:
             - authentik_media:/media
             - authentik_templates:/templates
-            - authentik_blueprints:/blueprints
-            - ./authentik:/blueprints
+            - ./authentik/blueprints:/blueprints/custom
         depends_on:
             postgres:
                 condition: service_healthy
@@ -198,8 +197,7 @@ services:
             - /var/run/docker.sock:/var/run/docker.sock
             - authentik_media:/media
             - authentik_templates:/templates
-            - authentik_blueprints:/blueprints
-            - ./authentik:/blueprints
+            - ./authentik/blueprints:/blueprints/custom
         depends_on:
             postgres:
                 condition: service_healthy
@@ -342,4 +340,3 @@ volumes:
     caddy_config:
     authentik_media:
     authentik_templates:
-    authentik_blueprints:
