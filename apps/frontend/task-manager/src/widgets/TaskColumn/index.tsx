@@ -2,9 +2,10 @@ import React, { useEffect, useRef, useState } from "react";
 
 import { PlusOutlined } from "@ant-design/icons";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
-import { BoardStatus, Task } from "@task-manager/api";
+import { useMutation, useQueryClient } from "@tanstack/react-query";
+import { BoardStatus, createDraft, Task } from "@task-manager/api";
 import { registerContextMenu } from "@task-manager/context-menu";
-import { Button, Typography } from "antd";
+import { App, Button, Typography } from "antd";
 
 import { useStyles } from "./styles";
 import TaskList from "./ui/TaskList";
@@ -12,23 +13,44 @@ import TaskList from "./ui/TaskList";
 import { ColumnTargetData, isTaskSource } from "../../shared/dnd/board";
 
 interface TaskColumnProps {
+	pageId: string;
 	status: BoardStatus;
 
 	tasks?: Task[];
 	draggable?: boolean;
 
 	onTaskClick?: (task: Task) => void;
-	onTaskCreateButtonClick?: (statusId: string) => void;
 }
 
 const TaskColumn: React.FC<TaskColumnProps> = ({
 	status,
 	tasks,
-	onTaskCreateButtonClick,
 	draggable,
+	pageId,
 	onTaskClick
 }) => {
 	const [isDragTarget, setIsDragTarget] = useState(false);
+
+	const queryClient = useQueryClient();
+
+	const message = App.useApp().message;
+
+	const { mutateAsync, isPending } = useMutation({
+		mutationFn: () =>
+			createDraft({
+				pathParams: {
+					pageId
+				},
+				body: {
+					boardStatusId: status.id
+				}
+			}),
+		onSuccess: draft => {
+			queryClient.invalidateQueries({ queryKey: [pageId] });
+			onTaskClick?.(draft);
+		},
+		onError: error => message.error(error.message ?? "Failed to create task")
+	});
 
 	const styles = useStyles({ isDragTarget }).styles;
 
@@ -78,11 +100,11 @@ const TaskColumn: React.FC<TaskColumnProps> = ({
 			menu: [
 				{
 					title: "Create task",
-					onClick: () => onTaskCreateButtonClick?.(status.id)
+					onClick: mutateAsync
 				}
 			]
 		});
-	}, [onTaskCreateButtonClick, status.id, status.title]);
+	}, [mutateAsync, onTaskClick, status.id, status.title]);
 
 	return (
 		<div className={styles.taskGroup} ref={taskGroupRef}>
@@ -91,14 +113,13 @@ const TaskColumn: React.FC<TaskColumnProps> = ({
 					{status.title}
 				</Typography.Title>
 
-				{onTaskCreateButtonClick && (
-					<Button
-						className={styles.addTaskButton}
-						onClick={() => onTaskCreateButtonClick(status.id)}
-						type="text"
-						icon={<PlusOutlined />}
-					/>
-				)}
+				<Button
+					loading={isPending}
+					className={styles.addTaskButton}
+					onClick={() => mutateAsync()}
+					type="text"
+					icon={<PlusOutlined />}
+				/>
 			</div>
 
 			<TaskList draggable={draggable} onTaskClick={onTaskClick} tasks={tasks} />

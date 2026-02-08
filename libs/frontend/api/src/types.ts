@@ -87,13 +87,13 @@ export interface Task extends Timestamps {
 	status: BoardStatus;
 	isDraft: boolean;
 	position: number;
+	pageId: string;
+	reporter: User;
 
 	dueDate?: string;
+	assignee?: User;
 	description?: TipTapContent;
 
-	page: Page;
-	assignee?: User;
-	reporter: User;
 }
 
 export interface ApiError {

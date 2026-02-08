@@ -5,7 +5,7 @@ import { extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/clo
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { BoardStatus, getTaskList, Task, updateTask } from "@task-manager/api";
 import { App } from "antd";
-import { useNavigate } from "react-router";
+import { useNavigate, useSearchParams } from "react-router";
 
 import { useStyles } from "./styles";
 
@@ -27,7 +27,7 @@ const TaskTable: React.FC<TaskTableProps> = ({ pageId, statuses }) => {
 
 	const message = App.useApp().message;
 
-	const navigate = useNavigate();
+	const setSearchParams = useSearchParams()[1];
 
 	const queryClient = useQueryClient();
 
@@ -74,15 +74,12 @@ const TaskTable: React.FC<TaskTableProps> = ({ pageId, statuses }) => {
 		onError: error => message.error(error.message ?? "Failed to change task status")
 	});
 
-	const handleCreateTaskButtonClick = useCallback(
-		(status: string) =>
-			document.dispatchEvent(new CustomEvent("createTask", { detail: { status } })),
-		[]
-	);
-
 	const handleOpenTask = useCallback(
-		(task: Task) => navigate(`/pages/${pageId}?taskId=${task.id}`),
-		[pageId, navigate]
+		(task: Task) => {
+			console.log(task);
+			setSearchParams({ taskId: task.id });
+		},
+		[setSearchParams]
 	);
 
 	useEffect(() => {
@@ -137,9 +134,9 @@ const TaskTable: React.FC<TaskTableProps> = ({ pageId, statuses }) => {
 			{statuses.map(status => (
 				<TaskColumn
 					key={status.id}
-					onTaskCreateButtonClick={handleCreateTaskButtonClick}
 					onTaskClick={handleOpenTask}
 					draggable={!!changeTaskStatus}
+					pageId={pageId}
 					status={status}
 					tasks={tasks?.[status.id]}
 				/>

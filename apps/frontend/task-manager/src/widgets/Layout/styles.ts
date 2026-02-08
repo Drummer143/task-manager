@@ -34,7 +34,9 @@ export const useStyles = createStyles(({ css }) => ({
 
 		background-color: var(--ant-layout-header-bg);
 		border-radius: var(--ant-border-radius);
-		overflow: hidden;
+		overflow-y: auto;
+		overflow-x: hidden;
 		border: var(--ant-line-width) solid var(--ant-color-bg-elevated);
+		container-type: size;
 	`
 }));
