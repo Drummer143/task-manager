@@ -1,0 +1,58 @@
+name: Deploy to VPS
+
+on:
+  workflow_dispatch:
+    inputs:
+      image_tag:
+        description: "Image tag to deploy (default: latest)"
+        required: false
+        default: "latest"
+        type: string
+  workflow_run:
+    workflows: ["Build and Push Docker Images"]
+    types: [completed]
+    branches: [main]
+
+permissions:
+  contents: read
+  packages: read
+
+jobs:
+  deploy:
+    name: Deploy
+    runs-on: ubuntu-latest
+    if: github.event_name == 'workflow_dispatch' || github.event.workflow_run.conclusion == 'success'
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Copy compose and Caddyfile to VPS
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          source: "docker-compose.prod.yml,Caddyfile"
+          target: "~/task-manager"
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1.2.0
+        env:
+          IMAGE_TAG: ${{ github.event.inputs.image_tag || 'latest' }}
+        with:
+          host: ${{ secrets.VPS_HOST }}
+          username: ${{ secrets.VPS_USER }}
+          key: ${{ secrets.VPS_SSH_KEY }}
+          envs: IMAGE_TAG
+          script: |
+            cd ~/task-manager
+
+            export IMAGE_TAG=${IMAGE_TAG}
+
+            # Pull latest images (repo is public, no auth needed)
+            docker compose -f docker-compose.prod.yml pull
+
+            # Restart services with zero-downtime for stateless containers
+            docker compose -f docker-compose.prod.yml up -d --remove-orphans
+
+            # Cleanup old images
+            docker image prune -f

@@ -1,11 +1,11 @@
 import axios, { InternalAxiosRequestConfig } from "axios";
 
 export const mainInstance = axios.create({
-	baseURL: "http://localhost:8080"
+	baseURL: import.meta.env.VITE_API_URL || "http://localhost:8080"
 });
 
 export const storageInstance = axios.create({
-	baseURL: "http://localhost:8082"
+	baseURL: import.meta.env.VITE_STORAGE_URL || "http://localhost:8082"
 });
 
 export const insertAccessToken = (getToken: () => Promise<string> | string) => {

@@ -78,5 +78,5 @@ const createSocketStore = (url: string) => {
 
 export const useNotificationSocketStore = createSocketStore(import.meta.env.VITE_SOCKET_SERVER_URL);
 
-export const useChatSocketStore = createSocketStore("http://localhost:8078/socket");
+export const useChatSocketStore = createSocketStore(import.meta.env.VITE_CHAT_SOCKET_URL);
 

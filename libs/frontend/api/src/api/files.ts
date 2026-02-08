@@ -1,11 +1,4 @@
-import axios from "axios";
-
-import { BaseRequest } from "./base";
-
-const mainInstance = axios.create({
-	baseURL: "http://localhost:8082",
-	withCredentials: true
-});
+import { BaseRequest, storageInstance } from "./base";
 
 export interface UploadFileResponse {
 	link: string;
@@ -28,6 +21,6 @@ export const uploadFile = async (params: UploadFileRequest) => {
 		formData.append("folder", params.body.folder);
 	}
 
-	return (await mainInstance.post<UploadFileResponse>("/actions/upload", formData)).data;
+	return (await storageInstance.post<UploadFileResponse>("/actions/upload", formData)).data;
 };
 

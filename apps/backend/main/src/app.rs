@@ -42,13 +42,14 @@ pub async fn build() -> axum::Router {
         .await
         .expect("Failed to run migrations");
 
+    let cors_origins: Vec<http::HeaderValue> = std::env::var("CORS_ORIGINS")
+        .unwrap_or_else(|_| "http://localhost:1346,http://localhost:80".to_string())
+        .split(',')
+        .filter_map(|s| s.trim().parse().ok())
+        .collect();
+
     let cors = tower_http::cors::CorsLayer::new()
-        .allow_origin(tower_http::cors::AllowOrigin::list([
-            "http://0.0.0.0:1346".parse().unwrap(),
-            "http://0.0.0.0:80".parse().unwrap(),
-            "http://localhost:1346".parse().unwrap(),
-            "http://localhost:80".parse().unwrap(),
-        ]))
+        .allow_origin(tower_http::cors::AllowOrigin::list(cors_origins))
         .allow_methods([
             http::Method::GET,
             http::Method::POST,

@@ -1,7 +1,31 @@
 services:
+    caddy:
+        image: caddy:2-alpine
+        restart: unless-stopped
+        container_name: caddy
+        ports:
+            - "80:80"
+            - "443:443"
+            - "443:443/udp"
+        environment:
+            DOMAIN: ${DOMAIN}
+        volumes:
+            - ./Caddyfile:/etc/caddy/Caddyfile:ro
+            - caddy_data:/data
+            - caddy_config:/config
+        networks:
+            - net
+        depends_on:
+            - task-manager
+            - main-service
+            - storage-service
+            - notifications-service
+            - chat-service
+            - authentik_server
+
     postgres:
         image: postgres:latest
-        # restart: always
+        restart: unless-stopped
         container_name: postgres
         healthcheck:
             test: ["CMD", "pg_isready", "-U", "${POSTGRES_USER}"]
@@ -11,7 +35,7 @@ services:
         deploy:
             resources:
                 limits:
-                    memory: 256M
+                    memory: 512M
                     cpus: "0.5"
         environment:
             POSTGRES_USER: ${POSTGRES_USER}
@@ -21,8 +45,6 @@ services:
             AUTHENTIK_DB_USER: ${AUTHENTIK_DB_USER}
             AUTHENTIK_DB_NAME: ${AUTHENTIK_DB_NAME}
             AUTHENTIK_DB_PASSWORD: ${AUTHENTIK_DB_PASSWORD}
-        ports:
-            - 5432:5432
         volumes:
             - pgdata:/var/lib/postgresql/data
         networks:
@@ -59,6 +81,7 @@ services:
 
     rmq:
         image: rabbitmq:management-alpine
+        restart: unless-stopped
         container_name: rmq
         healthcheck:
             test: ["CMD", "rabbitmq-diagnostics", "-q", "ping"]
@@ -71,11 +94,6 @@ services:
                 limits:
                     memory: 256M
                     cpus: "0.5"
-        ports:
-            - 5672:5672
-            - 15672:15672
-        depends_on:
-            - postgres
         environment:
             RABBITMQ_DEFAULT_USER: ${RABBITMQ_DEFAULT_USER}
             RABBITMQ_DEFAULT_PASS: ${RABBITMQ_DEFAULT_PASS}
@@ -86,6 +104,7 @@ services:
 
     redis:
         image: redis:alpine
+        restart: unless-stopped
         container_name: redis
         command: ["redis-server", "--appendonly", "yes"]
         healthcheck:
@@ -94,8 +113,6 @@ services:
             timeout: 10s
             retries: 10
             start_period: 10s
-        ports:
-            - 6379:6379
         deploy:
             resources:
                 limits:
@@ -108,7 +125,7 @@ services:
 
     authentik_server:
         image: ghcr.io/goauthentik/server:2025.2.4
-        # restart: unless-stopped
+        restart: unless-stopped
         container_name: authentik_server
         command: server
         deploy:
@@ -116,7 +133,6 @@ services:
                 limits:
                     memory: 1GB
                     cpus: "1.0"
-        # env_file: ./.env
         healthcheck:
             test:
                 [
@@ -131,7 +147,7 @@ services:
             AUTHENTIK_REDIS__DB: 9
             AUTHENTIK_REDIS__HOST: redis
             AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY}
-            AUTHENTIK_ALLOWED_HOSTS: "localhost,authentik_server"
+            AUTHENTIK_ALLOWED_HOSTS: "localhost,authentik_server,auth.${DOMAIN}"
             AUTHENTIK_POSTGRESQL__HOST: postgres
             AUTHENTIK_SLUG: ${AUTHENTIK_SLUG}
             AUTHENTIK_CLIENT_ID: ${AUTHENTIK_CLIENT_ID}
@@ -142,12 +158,9 @@ services:
             AUTHENTIK_REDIRECT_URI_SILENT: ${AUTHENTIK_REDIRECT_URI_SILENT}
             AUTHENTIK_NOTIFICATION_WEBHOOK_USER_SYNC: ${AUTHENTIK_NOTIFICATION_WEBHOOK_USER_SYNC}
         volumes:
-            - ./authentik/media:/media
-            - ./authentik/custom-templates:/templates
-            - ./authentik/blueprints:/blueprints
-        ports:
-            - "9000:9000"
-            - "9443:9443"
+            - authentik_media:/media
+            - authentik_templates:/templates
+            - authentik_blueprints:/blueprints
         depends_on:
             postgres:
                 condition: service_healthy
@@ -158,7 +171,7 @@ services:
 
     authentik_worker:
         image: ghcr.io/goauthentik/server:2025.2.4
-        # restart: unless-stopped
+        restart: unless-stopped
         container_name: authentik_worker
         command: worker
         deploy:
@@ -166,12 +179,11 @@ services:
                 limits:
                     memory: 1GB
                     cpus: "1.0"
-        # env_file: ./.env
         environment:
             AUTHENTIK_REDIS__DB: 9
             AUTHENTIK_REDIS__HOST: redis
             AUTHENTIK_SECRET_KEY: ${AUTHENTIK_SECRET_KEY}
-            AUTHENTIK_ALLOWED_HOSTS: "localhost,authentik_server"
+            AUTHENTIK_ALLOWED_HOSTS: "localhost,authentik_server,auth.${DOMAIN}"
             AUTHENTIK_POSTGRESQL__HOST: postgres
             AUTHENTIK_SLUG: ${AUTHENTIK_SLUG}
             AUTHENTIK_CLIENT_ID: ${AUTHENTIK_CLIENT_ID}
@@ -183,9 +195,9 @@ services:
             AUTHENTIK_NOTIFICATION_WEBHOOK_USER_SYNC: ${AUTHENTIK_NOTIFICATION_WEBHOOK_USER_SYNC}
         volumes:
             - /var/run/docker.sock:/var/run/docker.sock
-            - ./authentik/media:/media
-            - ./authentik/custom-templates:/templates
-            - ./authentik/blueprints:/blueprints
+            - authentik_media:/media
+            - authentik_templates:/templates
+            - authentik_blueprints:/blueprints
         depends_on:
             postgres:
                 condition: service_healthy
@@ -195,11 +207,9 @@ services:
             - net
 
     main-service:
-        # restart: always
+        restart: unless-stopped
         container_name: main-service
-        image: main-service:latest
-        ports:
-            - 8080:8080
+        image: ghcr.io/drummer143/task-manager/main-service:${IMAGE_TAG:-latest}
         depends_on:
             postgres:
                 condition: service_healthy
@@ -212,12 +222,6 @@ services:
                 limits:
                     memory: 128M
                     cpus: "0.25"
-        build:
-            context: .
-            dockerfile: Dockerfile.backend-rust
-            args:
-                APP_NAME: main
-                PROFILE: ${PROFILE:-build-optimized}
         environment:
             DATABASE_URL: ${DATABASE_URL}
             PORT: ${MAIN_SERVICE_PORT}
@@ -225,15 +229,14 @@ services:
             RABBITMQ_URL: ${RABBITMQ_URL}
             AUTHENTIK_JWKS_URL: ${AUTHENTIK_JWKS_URL}
             AUTHENTIK_AUDIENCE: ${AUTHENTIK_AUDIENCE}
+            CORS_ORIGINS: https://${DOMAIN}
         networks:
             - net
 
     storage-service:
-        # restart: always
+        restart: unless-stopped
         container_name: storage-service
-        image: storage-service:latest
-        ports:
-            - 8082:8082
+        image: ghcr.io/drummer143/task-manager/storage-service:${IMAGE_TAG:-latest}
         depends_on:
             postgres:
                 condition: service_healthy
@@ -248,12 +251,6 @@ services:
                 limits:
                     memory: 192M
                     cpus: "0.25"
-        build:
-            context: .
-            dockerfile: Dockerfile.backend-rust
-            args:
-                APP_NAME: storage
-                PROFILE: ${PROFILE:-build-optimized}
         environment:
             JWT_SECRET: ${JWT_SECRET}
             SELF_PORT: ${STORAGE_SERVICE_PORT}
@@ -264,17 +261,16 @@ services:
             MAIN_SERVICE_URL: http://main-service:8080
             AUTHENTIK_JWKS_URL: ${AUTHENTIK_JWKS_URL}
             AUTHENTIK_AUDIENCE: ${AUTHENTIK_AUDIENCE}
+            CORS_ORIGINS: https://${DOMAIN}
         networks:
             - net
         volumes:
-            - ./apps/backend/storage/static:/static
+            - storage_data:/static
 
     notifications-service:
-        # restart: always
+        restart: unless-stopped
         container_name: notifications-service
-        image: notifications-service:latest
-        ports:
-            - 8079:8079
+        image: ghcr.io/drummer143/task-manager/notifications-service:${IMAGE_TAG:-latest}
         depends_on:
             rmq:
                 condition: service_healthy
@@ -285,11 +281,6 @@ services:
                 limits:
                     memory: 256M
                     cpus: "0.25"
-        build:
-            context: .
-            dockerfile: Dockerfile.backend-elixir
-            args:
-                APP_NAME: notifications
         environment:
             PORT: 8079
             RABBITMQ_URL: ${RABBITMQ_URL}
@@ -302,11 +293,9 @@ services:
             - net
 
     chat-service:
-        # restart: always
+        restart: unless-stopped
         container_name: chat-service
-        image: chat-service:latest
-        ports:
-            - 8078:8078
+        image: ghcr.io/drummer143/task-manager/chat-service:${IMAGE_TAG:-latest}
         depends_on:
             postgres:
                 condition: service_healthy
@@ -317,11 +306,6 @@ services:
                 limits:
                     memory: 256M
                     cpus: "0.25"
-        build:
-            context: .
-            dockerfile: Dockerfile.backend-elixir
-            args:
-                APP_NAME: chat
         environment:
             PORT: 8078
             DATABASE_URL: ${DATABASE_URL}
@@ -333,24 +317,9 @@ services:
             - net
 
     task-manager:
-        # restart: always
-        build:
-            context: .
-            dockerfile: Dockerfile.frontend
-            args:
-                APP_NAME: task-manager
-                VITE_API_URL: ${VITE_API_URL:-http://localhost:8080}
-                VITE_STORAGE_URL: ${VITE_STORAGE_URL:-http://localhost:8082}
-                VITE_SOCKET_SERVER_URL: ${VITE_SOCKET_SERVER_URL:-ws://localhost:8079/socket}
-                VITE_CHAT_SOCKET_URL: ${VITE_CHAT_SOCKET_URL:-ws://localhost:8078/socket}
-                VITE_AUTHORITY: ${VITE_AUTHORITY:-http://localhost:9000/application/o/task-manager/}
-                VITE_CLIENT_ID: ${VITE_CLIENT_ID}
-                VITE_REDIRECT_URI: ${VITE_REDIRECT_URI:-http://localhost:1346/callback}
-                VITE_POST_LOGOUT_REDIRECT_URI: ${VITE_POST_LOGOUT_REDIRECT_URI:-http://localhost:1346/}
+        restart: unless-stopped
         container_name: task-manager
-        image: task-manager:latest
-        ports:
-            - 1346:80
+        image: ghcr.io/drummer143/task-manager/task-manager:${IMAGE_TAG:-latest}
         deploy:
             resources:
                 limits:
@@ -364,6 +333,11 @@ networks:
 
 volumes:
     pgdata:
-    storage:
+    storage_data:
     rmqdata:
     redisdata:
+    caddy_data:
+    caddy_config:
+    authentik_media:
+    authentik_templates:
+    authentik_blueprints:

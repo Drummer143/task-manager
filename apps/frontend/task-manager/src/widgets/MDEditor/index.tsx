@@ -141,8 +141,8 @@ const MDEditor: React.ForwardRefRenderFunction<Editor | null, MDEditorProps> = (
 							.chain()
 							.setNodeSelection(pos)
 							.updateAttributes(node.type.name, {
-								src: `http://localhost:8082/files/${fileId}`,
-								href: `http://localhost:8082/files/${fileId}`,
+								src: `${import.meta.env.VITE_STORAGE_URL}/files/${fileId}`,
+								href: `${import.meta.env.VITE_STORAGE_URL}/files/${fileId}`,
 								id: (event.data as UploadCompleteEvent).data.asset.id,
 								type: (event.data as UploadCompleteEvent).data.mime_type,
 								title: (event.data as UploadCompleteEvent).data.asset.name,
