@@ -51,7 +51,7 @@ pub async fn user_sync(
 
     match payload {
         Events::UserUpdated(payload) => {
-            user::UserRepository::update_by_authentik_id(
+            match user::UserRepository::update_by_authentik_id(
                 &state.postgres,
                 payload.pk,
                 user::dto::UpdateUserDto {
@@ -64,7 +64,13 @@ pub async fn user_sync(
                 },
             )
             .await
-            .map_err(ErrorResponse::from)?;
+            {
+                Ok(_) => {}
+                Err(sqlx::Error::RowNotFound) => {
+                    tracing::warn!("UserUpdated received for unknown authentik_id={}, ignoring", payload.pk);
+                }
+                Err(e) => return Err(ErrorResponse::from(e)),
+            }
         }
         Events::UserCreated(payload) => {
             let user = user::UserRepository::create(
