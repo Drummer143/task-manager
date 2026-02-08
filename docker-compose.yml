@@ -307,9 +307,6 @@ services:
             dockerfile: Dockerfile.frontend
             args:
                 APP_NAME: task-manager
-                VITE_API_URL: ${VITE_API_URL:-http://localhost:8080}
-                VITE_STORAGE_URL: ${VITE_STORAGE_URL:-http://localhost:8082}
-                VITE_SOCKET_URL: ${VITE_SOCKET_URL:-ws://localhost:8078/socket}
                 VITE_AUTHORITY: ${VITE_AUTHORITY:-http://localhost:9000/application/o/task-manager/}
                 VITE_CLIENT_ID: ${VITE_CLIENT_ID}
                 VITE_REDIRECT_URI: ${VITE_REDIRECT_URI:-http://localhost:1346/callback}

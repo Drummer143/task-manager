@@ -1,17 +1,21 @@
 {$DOMAIN} {
-    reverse_proxy task-manager:80
-}
+    handle /api/* {
+        uri strip_prefix /api
+        reverse_proxy main-service:8080
+    }
 
-api.{$DOMAIN} {
-    reverse_proxy main-service:8080
-}
+    handle /storage/* {
+        uri strip_prefix /storage
+        reverse_proxy storage-service:8082
+    }
 
-storage.{$DOMAIN} {
-    reverse_proxy storage-service:8082
-}
+    handle /socket/* {
+        reverse_proxy socket-service:8078
+    }
 
-socket.{$DOMAIN} {
-    reverse_proxy socket-service:8078
+    handle {
+        reverse_proxy task-manager:80
+    }
 }
 
 auth.{$DOMAIN} {

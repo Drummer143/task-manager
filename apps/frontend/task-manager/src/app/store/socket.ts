@@ -28,7 +28,10 @@ export const useSocketStore = create<SocketStoreState>((set, get) => ({
 
 		socket?.disconnect();
 
-		socket = new Socket(import.meta.env.VITE_SOCKET_URL, {
+		const wsProtocol = window.location.protocol === "https:" ? "wss:" : "ws:";
+		const socketUrl = `${wsProtocol}//${window.location.host}/socket`;
+
+		socket = new Socket(socketUrl, {
 			params: { token },
 			reconnectAfterMs: () => 1500
 		});

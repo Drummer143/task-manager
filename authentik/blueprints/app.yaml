@@ -282,6 +282,10 @@ entries:
                 url: !Env "AUTHENTIK_REDIRECT_URI"
               - matching_mode: strict
                 url: !Env "AUTHENTIK_REDIRECT_URI_SILENT"
+              - matching_mode: strict
+                url: !Env "AUTHENTIK_REDIRECT_URI_2"
+              - matching_mode: strict
+                url: !Env "AUTHENTIK_REDIRECT_URI_2_SILENT"
           authorization_flow:
               !Find [authentik_flows.flow, [slug, default-provider-authorization-implicit-consent]]
           invalidation_flow:

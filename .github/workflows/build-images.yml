@@ -205,9 +205,6 @@ jobs:
           labels: ${{ steps.meta.outputs.labels }}
           build-args: |
             APP_NAME=task-manager
-            VITE_API_URL=${{ secrets.VITE_API_URL }}
-            VITE_STORAGE_URL=${{ secrets.VITE_STORAGE_URL }}
-            VITE_SOCKET_URL=${{ secrets.VITE_SOCKET_URL }}
             VITE_AUTHORITY=${{ secrets.VITE_AUTHORITY }}
             VITE_CLIENT_ID=${{ secrets.VITE_CLIENT_ID }}
             VITE_REDIRECT_URI=${{ secrets.VITE_REDIRECT_URI }}
