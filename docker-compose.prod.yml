@@ -19,7 +19,6 @@ services:
             - task-manager
             - main-service
             - storage-service
-            - notifications-service
             - chat-service
             - authentik_server
 
@@ -266,31 +265,6 @@ services:
             - net
         volumes:
             - storage_data:/static
-
-    notifications-service:
-        restart: unless-stopped
-        container_name: notifications-service
-        image: ghcr.io/drummer143/task-manager/notifications-service:${IMAGE_TAG:-latest}
-        depends_on:
-            rmq:
-                condition: service_healthy
-            authentik_server:
-                condition: service_healthy
-        deploy:
-            resources:
-                limits:
-                    memory: 256M
-                    cpus: "0.25"
-        environment:
-            PORT: 8079
-            RABBITMQ_URL: ${RABBITMQ_URL}
-            DATABASE_URL: ${DATABASE_URL}
-            SECRET_KEY_BASE: ${SECRET_KEY_BASE}
-            AUTHENTIK_ISSUER: ${AUTHENTIK_ISSUER}
-            AUTHENTIK_JWKS_URL: ${AUTHENTIK_JWKS_URL}
-            AUTHENTIK_AUDIENCE: ${AUTHENTIK_AUDIENCE}
-        networks:
-            - net
 
     chat-service:
         restart: unless-stopped

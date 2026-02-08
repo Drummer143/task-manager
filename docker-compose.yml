@@ -269,38 +269,6 @@ services:
         volumes:
             - ./apps/backend/storage/static:/static
 
-    notifications-service:
-        # restart: always
-        container_name: notifications-service
-        image: notifications-service:latest
-        ports:
-            - 8079:8079
-        depends_on:
-            rmq:
-                condition: service_healthy
-            authentik_server:
-                condition: service_healthy
-        deploy:
-            resources:
-                limits:
-                    memory: 256M
-                    cpus: "0.25"
-        build:
-            context: .
-            dockerfile: Dockerfile.backend-elixir
-            args:
-                APP_NAME: notifications
-        environment:
-            PORT: 8079
-            RABBITMQ_URL: ${RABBITMQ_URL}
-            DATABASE_URL: ${DATABASE_URL}
-            SECRET_KEY_BASE: ${SECRET_KEY_BASE}
-            AUTHENTIK_ISSUER: ${AUTHENTIK_ISSUER}
-            AUTHENTIK_JWKS_URL: ${AUTHENTIK_JWKS_URL}
-            AUTHENTIK_AUDIENCE: ${AUTHENTIK_AUDIENCE}
-        networks:
-            - net
-
     chat-service:
         # restart: always
         container_name: chat-service
@@ -341,7 +309,6 @@ services:
                 APP_NAME: task-manager
                 VITE_API_URL: ${VITE_API_URL:-http://localhost:8080}
                 VITE_STORAGE_URL: ${VITE_STORAGE_URL:-http://localhost:8082}
-                VITE_SOCKET_SERVER_URL: ${VITE_SOCKET_SERVER_URL:-ws://localhost:8079/socket}
                 VITE_CHAT_SOCKET_URL: ${VITE_CHAT_SOCKET_URL:-ws://localhost:8078/socket}
                 VITE_AUTHORITY: ${VITE_AUTHORITY:-http://localhost:9000/application/o/task-manager/}
                 VITE_CLIENT_ID: ${VITE_CLIENT_ID}

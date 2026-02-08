@@ -36,10 +36,6 @@ const Layout: React.FC = () => {
 	}, [mutateAsync]);
 
 	useEffect(() => {
-		// const signalsChannel = useNotificationSocketStore.getState().getChannel("signals");
-
-		// signalsChannel.on("message", console.log);
-
 		userManager.getUser().then(user => {
 			if (!user) {
 				return;
@@ -50,7 +46,6 @@ const Layout: React.FC = () => {
 
 		return () => {
 			useChatSocketStore.getState().closeSocket();
-			// useNotificationSocketStore.getState().closeSocket();
 		};
 	}, []);
 

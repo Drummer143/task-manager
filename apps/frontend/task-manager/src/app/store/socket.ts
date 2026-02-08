@@ -1,14 +1,7 @@
 import { Channel, Socket } from "phoenix";
 import { create } from "zustand";
 
-type ChannelName = "signals" | `chat:${string}`;
-
-export type SignalEntity = "workspace";
-
-export interface SignalChannelBody {
-	message: `${SignalEntity}:${string}`;
-	sender: string;
-}
+type ChannelName = `chat:${string}`;
 
 export interface SocketStoreState {
 	channels: Partial<Record<ChannelName, Channel>>;
@@ -75,8 +68,6 @@ const createSocketStore = (url: string) => {
 		closeSocket: () => get().socket?.disconnect()
 	}));
 };
-
-export const useNotificationSocketStore = createSocketStore(import.meta.env.VITE_SOCKET_SERVER_URL);
 
 export const useChatSocketStore = createSocketStore(import.meta.env.VITE_CHAT_SOCKET_URL);
 

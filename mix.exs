@@ -13,10 +13,6 @@ defmodule TaskManager.MixProject do
 
   defp releases do
     [
-      notifications: [
-        applications: [notifications: :permanent],
-        include_executables_for: [:unix]
-      ],
       chat: [
         applications: [chat: :permanent],
         include_executables_for: [:unix]

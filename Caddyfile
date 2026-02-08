@@ -10,10 +10,6 @@ storage.{$DOMAIN} {
     reverse_proxy storage-service:8082
 }
 
-notifications.{$DOMAIN} {
-    reverse_proxy notifications-service:8079
-}
-
 chat.{$DOMAIN} {
     reverse_proxy chat-service:8078
 }

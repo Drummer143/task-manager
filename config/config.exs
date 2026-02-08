@@ -7,21 +7,6 @@
 # General application configuration
 import Config
 
-config :notifications,
-  ecto_repos: [Notifications.Repo],
-  generators: [timestamp_type: :utc_datetime]
-
-# Configures the endpoint
-config :notifications, NotificationsWeb.Endpoint,
-  url: [host: "localhost"],
-  adapter: Bandit.PhoenixAdapter,
-  render_errors: [
-    formats: [json: NotificationsWeb.ErrorJSON],
-    layout: false
-  ],
-  pubsub_server: Notifications.PubSub,
-  live_view: [signing_salt: "yUUSxSH1"]
-
 config :chat,
   ecto_repos: [Chat.Repo],
   generators: [timestamp_type: :utc_datetime]
@@ -36,15 +21,6 @@ config :chat, ChatWeb.Endpoint,
   ],
   pubsub_server: Chat.PubSub,
   live_view: [signing_salt: "4aDsZyKR"]
-
-# Configures the mailer
-#
-# By default it uses the "Local" adapter which stores the emails
-# locally. You can see the emails in your browser, at "/dev/mailbox".
-#
-# For production it's recommended to configure a different adapter
-# at the `config/runtime.exs`.
-config :notifications, Notifications.Mailer, adapter: Swoosh.Adapters.Local
 
 # Configures Elixir's Logger
 config :logger, :console,
