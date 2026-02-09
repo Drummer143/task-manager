@@ -6,7 +6,7 @@ use http_body_util::BodyExt;
 
 #[tokio::test]
 async fn create_workspace_empty_body() {
-    dotenvy::dotenv().expect("Failed to load .env file");
+    let _ = dotenvy::dotenv();
 
     let app = app::build().await;
 

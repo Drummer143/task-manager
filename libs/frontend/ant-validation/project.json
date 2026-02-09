@@ -3,7 +3,7 @@
 	"$schema": "../../../node_modules/nx/schemas/project-schema.json",
 	"sourceRoot": "libs/frontend/antd-vatidation/src",
 	"projectType": "library",
-	"tags": [],
+	"tags": ["frontend"],
 	"// targets": "to see all targets run: nx show project antd-vatidation --web",
 	"targets": {}
 }

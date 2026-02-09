@@ -3,6 +3,7 @@
 	"$schema": "../../../node_modules/nx/schemas/project-schema.json",
 	"projectType": "library",
 	"sourceRoot": "libs/backend/error-handlers/src",
+	"tags": ["backend", "rust"],
 	"targets": {
 		"build": {
 			"cache": true,
@@ -35,6 +36,5 @@
 				"command": "cargo clippy -p error_handlers -- -D warnings"
 			}
 		}
-	},
-	"tags": []
+	}
 }

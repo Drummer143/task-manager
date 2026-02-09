@@ -52,7 +52,7 @@ jobs:
 
       - uses: nrwl/nx-set-shas@v4
 
-      - run: pnpm exec nx affected -t test --parallel=3
+      - run: pnpm exec nx affected -t test --parallel=3 --projects=tag:frontend
 
   e2e-frontend:
     name: Frontend E2E tests
@@ -77,8 +77,15 @@ jobs:
 
       - run: pnpm exec nx run task-manager:e2e
         env:
+          API_URL: ${{ secrets.API_URL }}
+          STORAGE_URL: ${{ secrets.STORAGE_URL }}
+          SOCKET_URL: ${{ secrets.SOCKET_URL }}
+          VITE_AUTHORITY: ${{ secrets.VITE_AUTHORITY }}
+          VITE_CLIENT_ID: ${{ secrets.VITE_CLIENT_ID }}
+          VITE_REDIRECT_URI: ${{ secrets.VITE_REDIRECT_URI }}
+          VITE_POST_LOGOUT_REDIRECT_URI: ${{ secrets.VITE_POST_LOGOUT_REDIRECT_URI }}
           VITE_AUTHENTIK_API_TOKEN: ${{ secrets.AUTHENTIK_API_TOKEN }}
-          VITE_AUTHENTIK_BASE_URL: ${{ secrets.AUTHENTIK_URL }}
+          AUTHENTIK_URL: ${{ secrets.AUTHENTIK_URL }}
 
   test-rust:
     name: Rust tests

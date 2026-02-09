@@ -3,7 +3,7 @@
 	"$schema": "../../../node_modules/nx/schemas/project-schema.json",
 	"sourceRoot": "libs/frontend/tiptap-file-plugin/src",
 	"projectType": "library",
-	"tags": [],
+	"tags": ["frontend"],
 	"// targets": "to see all targets run: nx show project tiptap-file-plugin --web",
 	"targets": {}
 }

@@ -3,6 +3,7 @@
 	"name": "socket-service",
 	"projectType": "application",
 	"sourceRoot": "apps/elixir/socket_service/src",
+	"tags": ["backend", "elixir"],
 	"targets": {
 		"dev": {
 			"executor": "nx:run-commands",
