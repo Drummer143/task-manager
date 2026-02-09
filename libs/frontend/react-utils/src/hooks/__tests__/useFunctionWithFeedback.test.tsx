@@ -2,7 +2,7 @@ import { ModalFuncProps } from "antd";
 import { Mock } from "vitest";
 
 import { useFunctionWithFeedback } from "..";
-import { act, renderWithAntd, waitFor } from "../../../../../../scripts/setupTests";
+import { act, renderWithAntd, screen, waitFor } from "../../../../../../scripts/setupTests";
 
 describe("useFunctionWithFeedback", () => {
 	const trueCallback = vi.fn(() => true);
@@ -42,7 +42,7 @@ describe("useFunctionWithFeedback", () => {
 	});
 
 	test("should show success message", async () => {
-		const screen = renderWithAntd(<TestComponent callback={trueCallback} />, "dark");
+		renderWithAntd(<TestComponent callback={trueCallback} />, "dark");
 
 		const button = screen.getByText(triggerButton);
 
@@ -53,11 +53,11 @@ describe("useFunctionWithFeedback", () => {
 		expect(trueCallback).toHaveBeenCalledTimes(1);
 		await waitFor(() => expect(screen.getByText(successMessage)).toBeInTheDocument());
 		expect(screen.queryByText(errorMessage)).not.toBeInTheDocument();
-		expect(screen.queryByText(confirm.title)).not.toBeInTheDocument();
+		expect(screen.queryAllByText(confirm.title)).toHaveLength(0);
 	});
 
 	test("should show error message wrapped in [({new Error(errorMessage)})]", async () => {
-		const screen = renderWithAntd(<TestComponent callback={rejectCallback} message={errorMessageFunction} />);
+		renderWithAntd(<TestComponent callback={rejectCallback} message={errorMessageFunction} />);
 
 		const button = screen.getByText(triggerButton);
 
@@ -69,11 +69,11 @@ describe("useFunctionWithFeedback", () => {
 		await waitFor(() => expect(screen.getByText(`[({${new Error(errorMessage)}})]`)).toBeInTheDocument());
 		expect(errorMessageFunction).toHaveBeenCalledTimes(1);
 		expect(screen.queryByText(successMessage)).not.toBeInTheDocument();
-		expect(screen.queryByText(confirm.title)).not.toBeInTheDocument();
+		expect(screen.queryAllByText(confirm.title)).toHaveLength(0);
 	});
 
 	test("should show confirm message and error notification after confirmation", async () => {
-		const screen = renderWithAntd(<TestComponent callback={rejectCallback} confirm={confirm} />);
+		renderWithAntd(<TestComponent callback={rejectCallback} confirm={confirm} />);
 
 		const button = screen.getByText(triggerButton);
 
@@ -81,9 +81,12 @@ describe("useFunctionWithFeedback", () => {
 			button.click();
 		});
 
+		await waitFor(() => {
+			expect(screen.getAllByText(confirm.title).length).toBeGreaterThanOrEqual(1);
+		});
+
 		const confirmButton = screen.getByText(confirm.okText);
 
-		await waitFor(() => expect(screen.getByText(confirm.title)).toBeInTheDocument());
 		expect(screen.queryByText(errorMessage)).not.toBeInTheDocument();
 		expect(screen.queryByText(successMessage)).not.toBeInTheDocument();
 
@@ -97,7 +100,7 @@ describe("useFunctionWithFeedback", () => {
 	});
 
 	test("callback returned false", async () => {
-		const screen = renderWithAntd(<TestComponent callback={falseCallback} />);
+		renderWithAntd(<TestComponent callback={falseCallback} />);
 
 		const button = screen.getByText(triggerButton);
 
@@ -110,7 +113,7 @@ describe("useFunctionWithFeedback", () => {
 	});
 
 	test("declined confirmation", async () => {
-		const screen = renderWithAntd(<TestComponent callback={falseCallback} confirm={confirm} />);
+		renderWithAntd(<TestComponent callback={falseCallback} confirm={confirm} />);
 
 		const button = screen.getByText(triggerButton);
 
@@ -118,9 +121,11 @@ describe("useFunctionWithFeedback", () => {
 			button.click();
 		});
 
-		const cancelButton = screen.getByText(confirm.cancelText);
+		await waitFor(() => {
+			expect(screen.getAllByText(confirm.title).length).toBeGreaterThanOrEqual(1);
+		});
 
-		await waitFor(() => expect(screen.getByText(confirm.title)).toBeInTheDocument());
+		const cancelButton = screen.getByText(confirm.cancelText);
 
 		act(() => {
 			cancelButton.click();

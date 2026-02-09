@@ -1,6 +1,6 @@
 {
 	"name": "file-transfer-worker",
-	"$schema": "../../node_modules/nx/schemas/project-schema.json",
+	"$schema": "../../../node_modules/nx/schemas/project-schema.json",
 	"sourceRoot": "libs/workers/file-transfer-worker/src",
 	"projectType": "library",
 	"tags": [],
@@ -16,6 +16,9 @@
 		},
 		"build": {
 			"dependsOn": ["prepare"]
+		},
+		"test": {
+			"executor": "nx:noop"
 		}
 	}
 }

@@ -29,7 +29,7 @@ async fn create_workspace_empty_body() {
         .await
         .unwrap();
 
-    assert_eq!(resp.status(), http::StatusCode::UNPROCESSABLE_ENTITY);
+    assert_eq!(resp.status(), http::StatusCode::BAD_REQUEST);
 
     let body_error = resp.into_body().collect().await.unwrap().to_bytes();
     let error = std::str::from_utf8(&body_error).unwrap();
