@@ -61,11 +61,11 @@ impl TipTapContent {
         };
 
         for node_wrapper in content.iter_mut() {
-            if let NodeWrapper::Typed(Node::File { attrs }) = node_wrapper {
-                if attrs.id == Some(asset_id) {
-                    hydrate_fn(attrs);
-                    return true;
-                }
+            if let NodeWrapper::Typed(Node::File { attrs }) = node_wrapper
+                && attrs.id == Some(asset_id)
+            {
+                hydrate_fn(attrs);
+                return true;
             }
         }
 

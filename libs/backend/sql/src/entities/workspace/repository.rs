@@ -139,7 +139,7 @@ impl WorkspaceRepository {
             .push(format!(
                 " ORDER BY {} {}",
                 sort_by.unwrap_or(WorkspaceSortBy::CreatedAt),
-                sort_order.unwrap_or_default().to_string()
+                sort_order.unwrap_or_default()
             ))
             .push(format!(
                 " OFFSET {}",

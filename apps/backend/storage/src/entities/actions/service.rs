@@ -13,7 +13,7 @@ use tokio::{
 };
 use uuid::Uuid;
 
-static SYNTAX_SET: Lazy<SyntaxSet> = Lazy::new(|| SyntaxSet::load_defaults_newlines());
+static SYNTAX_SET: Lazy<SyntaxSet> = Lazy::new(SyntaxSet::load_defaults_newlines);
 
 use crate::{
     entities::actions::{
@@ -124,7 +124,7 @@ impl ActionsService {
             Ok(blob) => {
                 let transaction_id: Uuid = Uuid::new_v4();
                 let ranges = Self::generate_challenge_ranges(blob.size, 10, 1024 * 1024);
-                let repo_ranges: Vec<VerifyRange> = ranges.iter().cloned().collect();
+                let repo_ranges = ranges.to_vec();
 
                 TransactionRepository::create(
                     &state.redis,
@@ -382,6 +382,7 @@ impl ActionsService {
 
         let mut file = OpenOptions::new()
             .create(true)
+            .truncate(false)
             .write(true)
             .open(&path_to_assets_file)
             .await
@@ -412,7 +413,7 @@ impl ActionsService {
         let blob = sql::blobs::BlobsRepository::create(
             &state.postgres,
             sql::blobs::dto::CreateBlobDto {
-                hash: hash,
+                hash,
                 size: meta.size as i64,
                 path: path_to_assets_file,
                 mime_type: mime_type.clone(),
@@ -491,10 +492,10 @@ impl ActionsService {
                 // Take the first line from the buffer
                 use std::io::BufRead;
                 let mut first_line = String::new();
-                if let Ok(reader) = std::io::Cursor::new(buffer).read_line(&mut first_line) {
-                    if reader > 0 {
-                        return SYNTAX_SET.find_syntax_by_first_line(&first_line);
-                    }
+                if let Ok(reader) = std::io::Cursor::new(buffer).read_line(&mut first_line)
+                    && reader > 0
+                {
+                    return SYNTAX_SET.find_syntax_by_first_line(&first_line);
                 }
                 None
             });
@@ -598,7 +599,7 @@ impl ActionsService {
         }
 
         // Ensure slot is released on any exit path
-        let result = Self::upload_chunk_inner(&state, &meta, transaction_id, start, body).await;
+        let result = Self::upload_chunk_inner(state, &meta, transaction_id, start, body).await;
 
         TransactionRepository::release_upload_slot(&state.redis, transaction_id).await?;
 
@@ -645,12 +646,11 @@ impl ActionsService {
         // Delete temp file if it exists
         if let TransactionType::ChunkedUpload { path_to_file }
         | TransactionType::WholeFileUpload { path_to_file } = meta.transaction_type
+            && let Err(e) = tokio::fs::remove_file(&path_to_file).await
         {
-            if let Err(e) = tokio::fs::remove_file(&path_to_file).await {
-                // Ignore NotFound errors - file may not have been created yet
-                if e.kind() != std::io::ErrorKind::NotFound {
-                    return Err(ErrorResponse::internal_server_error(Some(e.to_string())));
-                }
+            // Ignore NotFound errors - file may not have been created yet
+            if e.kind() != std::io::ErrorKind::NotFound {
+                return Err(ErrorResponse::internal_server_error(Some(e.to_string())));
             }
         }
 
@@ -666,13 +666,11 @@ impl ActionsService {
         let meta = TransactionRepository::get(&state.redis, transaction_id).await?;
 
         match meta.transaction_type {
-            TransactionType::VerifyRanges { .. } => {
-                return Err(ErrorResponse::forbidden(
-                    error_handlers::codes::ForbiddenErrorCode::AccessDenied,
-                    None,
-                    None,
-                ));
-            }
+            TransactionType::VerifyRanges { .. } => Err(ErrorResponse::forbidden(
+                error_handlers::codes::ForbiddenErrorCode::AccessDenied,
+                None,
+                None,
+            )),
             TransactionType::ChunkedUpload {
                 path_to_file: path_to_temp_file,
             }

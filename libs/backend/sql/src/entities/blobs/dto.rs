@@ -1,5 +1,3 @@
-use uuid::Uuid;
-
 pub struct CreateBlobDto {
     pub hash: String,
     pub size: i64,

@@ -9,6 +9,7 @@ pub struct FileHasher {
 #[wasm_bindgen]
 impl FileHasher {
     #[wasm_bindgen(constructor)]
+    #[allow(clippy::new_without_default)]
     pub fn new() -> Self {
         Self {
             hasher: Hasher::new(),

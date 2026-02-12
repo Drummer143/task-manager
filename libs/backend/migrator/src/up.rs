@@ -55,7 +55,7 @@ pub async fn up(pool: &sqlx::postgres::PgPool, env: &EnvConfig) -> Result<(), Mi
 
     let all_migrations = get_migrations_from_folder(&MigrationDirection::Up, &env.migrations_dir)?;
 
-    let applied_migrations = get_migrations_from_db(&pool, &env.migrations_db_name).await?;
+    let applied_migrations = get_migrations_from_db(pool, &env.migrations_db_name).await?;
 
     compare_migrations(&applied_migrations, &all_migrations, true)?;
 
@@ -72,12 +72,12 @@ pub async fn up(pool: &sqlx::postgres::PgPool, env: &EnvConfig) -> Result<(), Mi
                 "Migration {}_{}\\{}.sql is empty",
                 unapplied_migration.version,
                 unapplied_migration.name,
-                MigrationDirection::Up.to_string()
+                MigrationDirection::Up
             )));
         }
 
         apply_up_migration(
-            &pool,
+            pool,
             &env.migrations_db_name,
             unapplied_migration,
             sql.as_str(),

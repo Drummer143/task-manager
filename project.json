@@ -1,0 +1,17 @@
+{
+	"name": "@task-manager/source",
+	"$schema": "node_modules/nx/schemas/project-schema.json",
+	"projectType": "application",
+	"tags": [],
+	"targets": {
+		"typecheck": {
+			"executor": "nx:noop"
+		},
+		"test": {
+			"executor": "nx:noop"
+		},
+		"lint": {
+			"executor": "nx:noop"
+		}
+	}
+}

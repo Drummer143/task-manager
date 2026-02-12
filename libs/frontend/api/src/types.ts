@@ -1,4 +1,4 @@
-import { JSONContent as TipTapContent } from "@tiptap/react";
+import { JSONContent as TipTapContent } from "@tiptap/core";
 
 export type UserRole = "guest" | "commentator" | "member" | "admin" | "owner";
 

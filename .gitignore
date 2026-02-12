@@ -78,3 +78,8 @@ erl_crash.dump
 
 # Temporary files, for example, from tests.
 /tmp/
+
+# Playwright
+**/e2e/.auth/
+**/playwright-report/
+**/test-results/

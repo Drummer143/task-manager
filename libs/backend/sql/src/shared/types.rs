@@ -1,18 +1,13 @@
-use std::fmt;
+use std::fmt::{self, Display};
 
 use serde::{Deserialize, Serialize};
 
-#[derive(Debug, Serialize, Deserialize, utoipa::ToSchema)]
+#[derive(Debug, Serialize, Deserialize, utoipa::ToSchema, Default)]
 #[serde(rename_all = "camelCase")]
 pub enum SortOrder {
+    #[default]
     Asc,
     Desc,
-}
-
-impl Default for SortOrder {
-    fn default() -> Self {
-        SortOrder::Asc
-    }
 }
 
 impl fmt::Display for SortOrder {
@@ -30,11 +25,11 @@ pub enum ShiftAction {
     Minus,
 }
 
-impl ToString for ShiftAction {
-    fn to_string(&self) -> String {
+impl Display for ShiftAction {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
         match self {
-            ShiftAction::Plus => "+".to_string(),
-            ShiftAction::Minus => "-".to_string(),
+            ShiftAction::Plus => write!(f, "+"),
+            ShiftAction::Minus => write!(f, "-"),
         }
     }
 }

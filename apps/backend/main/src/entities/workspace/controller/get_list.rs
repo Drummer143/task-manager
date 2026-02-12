@@ -50,7 +50,7 @@ pub async fn get_list(
     Ok(Pagination::new(
         result
             .iter()
-            .map(|workspace| WorkspaceResponse::from(workspace))
+            .map(WorkspaceResponse::from)
             .collect(),
         count,
         query

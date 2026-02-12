@@ -17,7 +17,7 @@ use crate::{entities::task::dto::TaskResponse, shared::traits::ServiceDeleteMeth
     ),
     tag = "Tasks",
 )]
-pub async fn delete_task<'a>(
+pub async fn delete_task(
     State(state): State<crate::types::app_state::AppState>,
     Path(task_id): Path<Uuid>,
 ) -> Result<TaskResponse, ErrorResponse> {

@@ -4,7 +4,7 @@
 	"sourceRoot": "apps/frontend/task-manager/src",
 	"root": "apps/frontend/task-manager",
 	"projectType": "application",
-	"tags": [],
+	"tags": ["frontend"],
 	"// targets": "to see all targets run: nx show project task-manager --web",
 	"targets": {
 		"lint:fix": {
@@ -17,6 +17,25 @@
 			"options": {
 				"command": "echo test"
 			}
+		},
+		"e2e": {
+			"executor": "nx:run-commands",
+			"options": {
+				"commands": [
+					"pnpm exec playwright test --config=apps/frontend/task-manager/playwright.config.ts"
+				],
+				"cwd": "{workspaceRoot}"
+			}
+		},
+		"e2e:headed": {
+			"executor": "nx:run-commands",
+			"options": {
+				"commands": [
+					"pnpm exec playwright test --config=apps/frontend/task-manager/playwright.config.ts --headed"
+				],
+				"cwd": "{workspaceRoot}"
+			}
 		}
 	}
 }
+

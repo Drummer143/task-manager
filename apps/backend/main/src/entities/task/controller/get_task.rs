@@ -20,7 +20,7 @@ use crate::{
     ),
     tag = "Tasks",
 )]
-pub async fn get_task<'a>(
+pub async fn get_task(
     State(state): State<crate::types::app_state::AppState>,
     Path(task_id): Path<Uuid>,
     headers: axum::http::header::HeaderMap,

@@ -3,6 +3,7 @@
 	"$schema": "../../../node_modules/nx/schemas/project-schema.json",
 	"projectType": "library",
 	"sourceRoot": "libs/backend/migrator/src",
+	"tags": ["backend", "rust"],
 	"targets": {
 		"build": {
 			"cache": true,
@@ -43,6 +44,5 @@
 				"command": "cargo clippy -p migrator -- -D warnings"
 			}
 		}
-	},
-	"tags": []
+	}
 }

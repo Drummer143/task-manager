@@ -1,0 +1,6 @@
+---
+source: apps/backend/main/tests/create_workspace.rs
+assertion_line: 37
+expression: error
+---
+"{\"error\":\"Bad request\",\"error_code\":\"invalid_body\",\"status_code\":400,\"details\":{\"event\":\"unknown variant `test_unreal_event`, expected one of `user_created`, `user_updated`, `user_deleted` at line 1 column 28\"}}"

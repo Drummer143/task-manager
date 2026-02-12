@@ -1,0 +1,182 @@
+name: Validate
+
+permissions:
+  contents: read
+
+on:
+  pull_request:
+    branches: [main]
+
+env:
+  BACKEND_EXCLUDE: main,storage,sql,migrator,error-handlers,backend-utils,socket-service
+
+jobs:
+  changes:
+    name: Detect changes
+    runs-on: ubuntu-latest
+    outputs:
+      frontend: ${{ steps.filter.outputs.frontend }}
+      rust: ${{ steps.filter.outputs.rust }}
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dorny/paths-filter@v3
+        id: filter
+        with:
+          filters: |
+            frontend:
+              - 'apps/frontend/**'
+              - 'libs/frontend/**'
+              - 'libs/workers/**'
+              - 'package.json'
+              - 'pnpm-lock.yaml'
+            rust:
+              - 'apps/backend/**'
+              - 'libs/backend/**'
+              - 'Cargo.toml'
+              - 'Cargo.lock'
+
+  # ─── Frontend ────────────────────────────────────────────
+
+  setup-frontend:
+    name: Install frontend dependencies
+    needs: [changes]
+    if: needs.changes.outputs.frontend == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+  lint-frontend:
+    name: Frontend lint
+    needs: [setup-frontend]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - uses: nrwl/nx-set-shas@v4
+
+      - run: pnpm exec nx affected -t lint --parallel=3 --exclude=${{ env.BACKEND_EXCLUDE }}
+
+  typecheck-frontend:
+    name: Frontend typecheck
+    needs: [setup-frontend]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - uses: nrwl/nx-set-shas@v4
+
+      - run: pnpm exec nx affected -t typecheck --parallel=3 --exclude=${{ env.BACKEND_EXCLUDE }}
+
+  test-frontend:
+    name: Frontend tests
+    needs: [setup-frontend]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - uses: nrwl/nx-set-shas@v4
+
+      - run: pnpm exec nx affected -t test --parallel=3 --exclude=${{ env.BACKEND_EXCLUDE }}
+
+  e2e-frontend:
+    name: Frontend E2E tests
+    needs: [setup-frontend]
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+
+      - run: pnpm exec playwright install --with-deps chromium
+
+      - run: pnpm exec nx run task-manager:e2e
+        env:
+          API_URL: ${{ secrets.API_URL }}
+          STORAGE_URL: ${{ secrets.STORAGE_URL }}
+          SOCKET_URL: ${{ secrets.SOCKET_URL }}
+          VITE_AUTHORITY: ${{ secrets.VITE_AUTHORITY }}
+          VITE_CLIENT_ID: ${{ secrets.VITE_CLIENT_ID }}
+          VITE_REDIRECT_URI: ${{ secrets.VITE_REDIRECT_URI }}
+          VITE_POST_LOGOUT_REDIRECT_URI: ${{ secrets.VITE_POST_LOGOUT_REDIRECT_URI }}
+          VITE_AUTHENTIK_API_TOKEN: ${{ secrets.AUTHENTIK_API_TOKEN }}
+          AUTHENTIK_URL: ${{ secrets.AUTHENTIK_URL }}
+          E2E_PASSWORD: ${{ secrets.E2E_PASSWORD }}
+
+  # ─── Rust ────────────────────────────────────────────────
+
+  rust:
+    name: Rust lint & tests
+    needs: [changes]
+    if: needs.changes.outputs.rust == 'true'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: clippy
+
+      - uses: Swatinem/rust-cache@v2
+
+      - run: cargo clippy --workspace -- -D warnings
+
+      - run: cargo test --workspace

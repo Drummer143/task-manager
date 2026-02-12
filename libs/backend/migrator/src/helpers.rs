@@ -23,22 +23,17 @@ pub fn get_migrations_from_folder(
             let entry = entry.unwrap();
 
             let mut migration_file_path = entry.path();
-            migration_file_path.push(format!("{}.sql", direction.to_string()));
+            migration_file_path.push(format!("{}.sql", direction));
 
             let exists = fs::exists(&migration_file_path);
 
-            if exists.is_err() || exists.unwrap() == false {
+            if matches!(exists, Err(_) | Ok(false)) {
                 return None;
             }
 
             let dir_filename = entry.file_name();
-            let dir_filename = dir_filename.to_str();
+            let dir_filename = dir_filename.to_str()?;
 
-            if dir_filename.is_none() {
-                return None;
-            }
-
-            let dir_filename = dir_filename.unwrap();
             let version = dir_filename.split('_').next().unwrap().parse::<i64>();
 
             if version.is_err() {
@@ -64,8 +59,8 @@ pub fn get_migrations_from_folder(
 }
 
 pub fn compare_migrations(
-    applied_migrations: &Vec<Migration>,
-    all_migrations: &Vec<MigrationFile>,
+    applied_migrations: &[Migration],
+    all_migrations: &[MigrationFile],
     compare_checksum: bool,
 ) -> Result<(), MigratorError> {
     for applied_migration in applied_migrations.iter() {
@@ -99,17 +94,12 @@ pub fn compare_migrations(
 }
 
 pub fn get_unapplied_migrations(
-    all_migrations: &Vec<MigrationFile>,
-    applied_migrations: &Vec<Migration>,
+    all_migrations: &[MigrationFile],
+    applied_migrations: &[Migration],
 ) -> Vec<MigrationFile> {
     all_migrations
         .iter()
-        .filter(|m| {
-            applied_migrations
-                .iter()
-                .find(|am| am.version == m.version)
-                .is_none()
-        })
+        .filter(|m| applied_migrations.iter().any(|am| am.version == m.version))
         .cloned()
         .collect::<Vec<MigrationFile>>()
 }
@@ -194,8 +184,8 @@ pub async fn wait_until_lock(
 ) -> Result<(), MigratorError> {
     let conn = pool.acquire().await;
 
-    if conn.is_err() {
-        return Err(MigratorError::SqlxError(conn.unwrap_err().to_string()));
+    if let Err(e) = conn {
+        return Err(MigratorError::SqlxError(e.to_string()));
     }
 
     let mut conn = conn.unwrap();

@@ -36,8 +36,7 @@ const TaskTable: React.FC<TaskTableProps> = ({ pageId, statuses }) => {
 		queryFn: () =>
 			getTaskList({
 				pathParams: {
-					pageId,
-					include: ["assignee"]
+					pageId
 				}
 			}).then(tasks =>
 				tasks.reduce(

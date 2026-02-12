@@ -1,6 +1,6 @@
 use axum::http;
-use utils::{auth_middleware::InternalAuthState, types::jwks::JwkSet};
 use std::sync::Arc;
+use utils::{auth_middleware::InternalAuthState, types::jwks::JwkSet};
 use utoipa::OpenApi;
 
 use crate::types::app_state::AppState;
@@ -78,7 +78,7 @@ pub async fn build() -> axum::Router {
         jwt_secret: Arc::new(jwt_secret),
     };
 
-    let app = axum::Router::new()
+    axum::Router::new()
         .merge(entities::user::router::init(app_state.clone()))
         .merge(entities::profile::router::init(app_state.clone()))
         .merge(entities::workspace::router::init(app_state.clone()))
@@ -100,7 +100,5 @@ pub async fn build() -> axum::Router {
         .merge(webhooks::authentik::router::init())
         .with_state(app_state)
         .layer(tower_http::trace::TraceLayer::new_for_http())
-        .layer(cors);
-
-    app
+        .layer(cors)
 }

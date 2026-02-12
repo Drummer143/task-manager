@@ -204,7 +204,8 @@ impl PageService {
             })
     }
 
-    pub async fn get_page_access<'a>(
+    #[allow(dead_code)]
+    pub async fn get_page_access(
         app_state: &crate::types::app_state::AppState,
         user_id: Uuid,
         page_id: Uuid,
@@ -222,7 +223,7 @@ impl PageService {
                 })?;
 
         let user =
-            crate::entities::user::UserService::get_one_by_id(&app_state, page_access.user_id)
+            crate::entities::user::UserService::get_one_by_id(app_state, page_access.user_id)
                 .await?;
 
         Ok(PageAccessResponse {
@@ -235,7 +236,7 @@ impl PageService {
         })
     }
 
-    pub async fn get_page_access_list<'a>(
+    pub async fn get_page_access_list(
         app_state: &crate::types::app_state::AppState,
         page_id: Uuid,
     ) -> Result<Vec<PageAccessResponse>, ErrorResponse> {
@@ -255,7 +256,7 @@ impl PageService {
 
         for page_access in page_access_list {
             let user =
-                crate::entities::user::UserService::get_one_by_id(&app_state, page_access.user_id)
+                crate::entities::user::UserService::get_one_by_id(app_state, page_access.user_id)
                     .await?;
             page_access_list_response.push(PageAccessResponse {
                 created_at: page_access.created_at,

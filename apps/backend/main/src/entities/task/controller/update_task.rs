@@ -22,7 +22,7 @@ use crate::{
     request_body(content = UpdateTaskDto),
     tag = "Tasks",
 )]
-pub async fn update_task<'a>(
+pub async fn update_task(
     State(state): State<crate::types::app_state::AppState>,
     Path(task_id): Path<Uuid>,
     ValidatedJson(dto): ValidatedJson<UpdateTaskDto>,

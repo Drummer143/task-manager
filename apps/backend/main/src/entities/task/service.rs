@@ -59,9 +59,9 @@ impl ServiceUpdateMethod for TaskService {
             .await
             .map_err(ErrorResponse::from)?;
 
-        if let Some(status_id) = dto.status_id.clone()
+        if let Some(status_id) = dto.status_id
             && status_id != current_task.status_id
-            && let Some(position) = dto.position.clone()
+            && let Some(position) = dto.position
             && position > current_task.position
         {
             let shift_tasks_position = TaskRepository::shift_tasks_position(
@@ -93,7 +93,7 @@ impl ServiceUpdateMethod for TaskService {
                 tx.rollback().await?;
                 return Err(e);
             }
-        } else if let Some(position) = dto.position.clone()
+        } else if let Some(position) = dto.position
             && position != current_task.position
         {
             let (start, end, action) = if position > current_task.position {
@@ -155,78 +155,7 @@ impl ServiceDeleteMethod for TaskService {
 }
 
 impl TaskService {
-    pub async fn change_status<'a>(
-        app_state: &AppState,
-        task_id: Uuid,
-        dto: sql::task::dto::ChangeStatusDto,
-    ) -> Result<Task, ErrorResponse> {
-        let mut tx = app_state.postgres.begin().await?;
-
-        let current_task = TaskRepository::get_one_by_id(&mut *tx, task_id)
-            .await
-            .map_err(ErrorResponse::from);
-
-        if let Err(e) = current_task {
-            tx.rollback().await?;
-            return Err(e);
-        }
-
-        let current_task = current_task.unwrap();
-
-        let shift_tasks_position = TaskRepository::shift_tasks_position(
-            &mut *tx,
-            current_task.status_id,
-            Some(current_task.position + 1),
-            None,
-            ShiftAction::Minus,
-        )
-        .await
-        .map_err(ErrorResponse::from);
-
-        if let Err(e) = shift_tasks_position {
-            tx.rollback().await?;
-            return Err(e);
-        }
-
-        let last_position = sql::task::TaskRepository::get_last_position(&mut *tx, dto.status_id)
-            .await
-            .map_err(ErrorResponse::from);
-
-        if let Err(e) = last_position {
-            tx.rollback().await?;
-            return Err(e);
-        }
-
-        let last_position = last_position.unwrap();
-
-        let updated_task = TaskRepository::update(
-            &mut *tx,
-            task_id,
-            sql::task::dto::UpdateTaskDto {
-                status_id: Some(dto.status_id),
-                assignee_id: None,
-                due_date: None,
-                title: None,
-                description: None,
-                position: Some(last_position.unwrap_or_default() + 1),
-            },
-        )
-        .await
-        .map_err(ErrorResponse::from);
-
-        match updated_task {
-            Ok(task) => {
-                tx.commit().await?;
-                Ok(task)
-            }
-            Err(e) => {
-                tx.rollback().await?;
-                Err(e)
-            }
-        }
-    }
-
-    pub async fn get_all_tasks_by_page_id<'a>(
+    pub async fn get_all_tasks_by_page_id(
         app_state: &AppState,
         page_id: Uuid,
     ) -> Result<Vec<Task>, ErrorResponse> {
