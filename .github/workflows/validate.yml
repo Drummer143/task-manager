@@ -7,6 +7,9 @@ permissions:
 permissions:
   contents: read
 
+permissions:
+  contents: read
+
   contents: read
 
 on:
