@@ -1,6 +1,5 @@
 import { insertAccessToken, uploadCancel } from "@task-manager/api";
 
-// eslint-disable-next-line @nx/enforce-module-boundaries
 import init from "./hasher";
 import { InnerMessageToHost, MessageToWorker, StartUploadEvent } from "./types";
 import { handleUploadFlow } from "./uploadFlow/handleUploadFlow";
