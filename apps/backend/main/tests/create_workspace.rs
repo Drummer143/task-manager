@@ -4,7 +4,9 @@ use serde_json::json;
 use tower::ServiceExt;
 use http_body_util::BodyExt;
 
+// TODO: Setup env for integration tests
 #[tokio::test]
+#[ignore = "requires running PostgreSQL and Authentik (integration test)"]
 async fn create_workspace_empty_body() {
     let _ = dotenvy::dotenv();
 

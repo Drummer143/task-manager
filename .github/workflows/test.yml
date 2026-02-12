@@ -52,7 +52,7 @@ jobs:
 
       - uses: nrwl/nx-set-shas@v4
 
-      - run: pnpm exec nx affected -t test --projects=tag:frontend
+      - run: pnpm exec nx affected -t test --parallel=3 --exclude=main,storage,sql,migrator,error-handlers,backend-utils,socket-service
 
   e2e-frontend:
     name: Frontend E2E tests
