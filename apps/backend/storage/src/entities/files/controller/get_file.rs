@@ -69,12 +69,11 @@ pub async fn get_file(
         HeaderValue::from_str(&blob.mime_type).unwrap(),
     );
 
-    if let Some(range_header) = request.headers().get(header::RANGE) {
-        if let Ok(range_str) = range_header.to_str() {
-            if let Some(range) = parse_range_header(range_str, file_size) {
-                return serve_partial_content(blob_path, range, file_size, headers).await;
-            }
-        }
+    if let Some(range_header) = request.headers().get(header::RANGE)
+        && let Ok(range_str) = range_header.to_str()
+        && let Some(range) = parse_range_header(range_str, file_size)
+    {
+        return serve_partial_content(blob_path, range, file_size, headers).await;
     }
 
     let file_name = query.filename.unwrap_or(response.name);

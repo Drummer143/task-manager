@@ -70,11 +70,15 @@ pub enum UploadStatusResponse {
 
 #[derive(Deserialize)]
 pub struct UploadToken {
+    #[allow(dead_code)]
     pub sub: Uuid,
+    #[allow(dead_code)]
     pub exp: usize,
     pub name: String,
     pub user_id: Uuid,
+    #[allow(dead_code)]
     pub entity_id: Uuid,
+    #[allow(dead_code)]
     pub entity_type: String,
 }
 

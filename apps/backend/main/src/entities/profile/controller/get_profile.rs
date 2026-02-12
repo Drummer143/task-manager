@@ -1,4 +1,4 @@
-use axum::{extract::State, Extension, Json};
+use axum::{Extension, Json, extract::State};
 use axum_extra::extract::cookie;
 use error_handlers::handlers::ErrorResponse;
 
@@ -45,7 +45,22 @@ pub async fn get_profile(
 
     let workspace_id = cookie_jar.get("workspace_id");
 
-    if workspace_id.is_none() {
+    if let Some(workspace_id) = workspace_id {
+        let workspace_id = workspace_id.value();
+        let workspace_id = uuid::Uuid::parse_str(workspace_id).map_err(|_| {
+            ErrorResponse::bad_request(
+                error_handlers::codes::BadRequestErrorCode::InvalidParams,
+                None,
+                None,
+            )
+        })?;
+
+        let workspace =
+            crate::entities::workspace::WorkspaceService::get_one_by_id(&state, workspace_id)
+                .await?;
+
+        profile_response.workspace = Some(workspace.workspace);
+    } else {
         let workspace =
             crate::entities::workspace::WorkspaceService::get_any_workspace_user_has_access_to(
                 &state, user_id,
@@ -60,15 +75,6 @@ pub async fn get_profile(
         ));
 
         profile_response.workspace = Some(workspace);
-    } else {
-        let workspace_id = workspace_id.unwrap().value();
-        let workspace_id = uuid::Uuid::parse_str(workspace_id).unwrap();
-
-        let workspace =
-            crate::entities::workspace::WorkspaceService::get_one_by_id(&state, workspace_id)
-                .await?;
-
-        profile_response.workspace = Some(workspace.workspace);
     }
 
     Ok((
