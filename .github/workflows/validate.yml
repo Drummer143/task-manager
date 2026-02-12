@@ -3,15 +3,6 @@ name: Validate
 permissions:
   contents: read
 
-permissions:
-permissions:
-  contents: read
-
-permissions:
-  contents: read
-
-  contents: read
-
 on:
   pull_request:
     branches: [main]
@@ -165,8 +156,6 @@ jobs:
           VITE_AUTHORITY: ${{ secrets.VITE_AUTHORITY }}
           VITE_CLIENT_ID: ${{ secrets.VITE_CLIENT_ID }}
           VITE_REDIRECT_URI: ${{ secrets.VITE_REDIRECT_URI }}
-    permissions:
-      contents: read
           VITE_POST_LOGOUT_REDIRECT_URI: ${{ secrets.VITE_POST_LOGOUT_REDIRECT_URI }}
           VITE_AUTHENTIK_API_TOKEN: ${{ secrets.AUTHENTIK_API_TOKEN }}
           AUTHENTIK_URL: ${{ secrets.AUTHENTIK_URL }}
