@@ -1,11 +1,11 @@
 use sqlx::{PgPool, postgres::PgPoolOptions};
 
 pub async fn init_databases(postgres_url: &str) -> PgPool {
-    let db = PgPoolOptions::new()
+    PgPoolOptions::new()
         .max_connections(5)
         .connect(postgres_url)
         .await
-        .expect("Failed to connect to Postgres");
+        .expect("Failed to connect to Postgres")
 
     // let rabbitmq = lapin::Connection::connect(rabbitmq_url, lapin::ConnectionProperties::default())
     //     .await
@@ -27,6 +27,4 @@ pub async fn init_databases(postgres_url: &str) -> PgPool {
     //     )
     //     .await
     //     .expect("Failed to declare queue");
-
-    db
 }

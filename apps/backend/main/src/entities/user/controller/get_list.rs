@@ -37,7 +37,7 @@ pub struct GetListQuery {
         ("query" = Option<String>, Query, description = "Search by username or email. Can't be used with email or username"),
         ("workspace_id" = Option<Uuid>, Query, description = "Filter by workspace id"),
         ("exclude" = Option<Vec<Uuid>>, Query, explode = false, description = "Array of ids to exclude separated by comma"),
-        ("sort_by" = Option<crate::entities::user::dto::UserSortBy>, Query, description = "Sort by field. Default: createdAt"),
+        ("sort_by" = Option<sql::user::dto::UserSortBy>, Query, description = "Sort by field. Default: createdAt"),
         ("sort_order" = Option<crate::types::pagination::SortOrder>, Query, description = "Sort order. Default: asc"),
     ),
     responses(

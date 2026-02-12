@@ -38,17 +38,12 @@ impl<T: Serialize> axum::response::IntoResponse for Pagination<T> {
     }
 }
 
-#[derive(Debug, Serialize, Deserialize, utoipa::ToSchema)]
+#[derive(Debug, Serialize, Deserialize, utoipa::ToSchema, Default)]
 #[serde(rename_all = "camelCase")]
 pub enum SortOrder {
+    #[default]
     Asc,
     Desc,
-}
-
-impl Default for SortOrder {
-    fn default() -> Self {
-        SortOrder::Asc
-    }
 }
 
 impl fmt::Display for SortOrder {

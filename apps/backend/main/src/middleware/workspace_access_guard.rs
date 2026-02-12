@@ -35,13 +35,13 @@ pub async fn workspace_access_guard(
             .unwrap();
     }
 
-    let user_id = user_id.unwrap().clone();
+    let user_id = user_id.unwrap();
     let workspace_id = workspace_id.unwrap();
 
     let workspace_access =
         sql::workspace::WorkspaceRepository::get_one_workspace_access(
             &state.postgres,
-            user_id,
+            *user_id,
             workspace_id,
         )
         .await;
@@ -62,5 +62,5 @@ pub async fn workspace_access_guard(
 
     req.extensions_mut().insert(workspace_access.unwrap());
 
-    return next.run(req).await;
+    next.run(req).await
 }

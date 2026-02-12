@@ -1,4 +1,4 @@
-use std::convert::Infallible;
+use std::{convert::Infallible, fmt::Display};
 
 use serde::{Deserialize, Serialize};
 
@@ -29,10 +29,10 @@ impl std::str::FromStr for GetProfileInclude {
     }
 }
 
-impl ToString for GetProfileInclude {
-    fn to_string(&self) -> String {
+impl Display for GetProfileInclude {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            GetProfileInclude::Workspace => "workspace".to_string(),
+            GetProfileInclude::Workspace => write!(f, "workspace"),
         }
     }
 }

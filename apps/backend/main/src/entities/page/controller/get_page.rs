@@ -75,7 +75,7 @@ pub async fn get_page(
 
     if include_owner {
         page_response.owner = Some(
-            crate::entities::user::UserService::get_one_by_id(&state, page.page.owner_id.clone())
+            crate::entities::user::UserService::get_one_by_id(&state, page.page.owner_id)
                 .await?,
         );
     }
@@ -84,18 +84,18 @@ pub async fn get_page(
         page_response.workspace = Some(
             crate::entities::workspace::WorkspaceService::get_one_by_id(
                 &state,
-                page.page.workspace_id.clone(),
+                page.page.workspace_id,
             )
             .await
             .map(|w| WorkspaceResponseWithoutInclude::from(w.workspace))?,
         );
     }
 
-    if include_parent_page && page.page.parent_page_id.is_some() {
+    if include_parent_page && let Some(parent_page_id) = page.page.parent_page_id {
         page_response.parent_page = Some(
             crate::entities::page::PageService::get_one_by_id(
                 &state,
-                page.page.parent_page_id.unwrap().clone(),
+                parent_page_id,
             )
             .await
             .map(ChildPageResponse::from)?,
@@ -104,7 +104,7 @@ pub async fn get_page(
 
     if include_child_pages {
         page_response.child_pages = Some(
-            crate::entities::page::PageService::get_child_pages(&state, page.page.id.clone())
+            crate::entities::page::PageService::get_child_pages(&state, page.page.id)
                 .await
                 .map(|pages| pages.into_iter().map(ChildPageResponse::from).collect())?,
         );
@@ -112,7 +112,7 @@ pub async fn get_page(
 
     if include_tasks {
         page_response.tasks = Some(
-            crate::entities::task::TaskService::get_all_tasks_by_page_id(&state, page.page.id.clone())
+            crate::entities::task::TaskService::get_all_tasks_by_page_id(&state, page.page.id)
                 .await
                 .map(|tasks| tasks.into_iter().map(TaskResponse::from).collect())?,
         );
@@ -127,7 +127,7 @@ pub async fn get_page(
         let statuses =
             crate::entities::board_statuses::BoardStatusService::get_board_statuses_by_page_id(
                 &state,
-                page.page.id.clone(),
+                page.page.id,
             )
             .await
             .map(|statuses| {

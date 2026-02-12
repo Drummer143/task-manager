@@ -78,13 +78,7 @@ pub async fn get_list_in_workspace(
     Path(workspace_id): Path<Uuid>,
 ) -> Result<Json<Vec<PageResponse>>, ErrorResponse> {
     let pages =
-        crate::entities::page::PageService::get_all_in_workspace(&state, workspace_id).await;
-
-    if let Err(error) = pages {
-        return Err(error);
-    }
-
-    let pages = pages.unwrap();
+        crate::entities::page::PageService::get_all_in_workspace(&state, workspace_id).await?;
 
     let mut include_owner = false;
     let mut include_workspace = false;

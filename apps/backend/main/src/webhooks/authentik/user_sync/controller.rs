@@ -27,16 +27,19 @@ pub struct UserDeletedData {
 #[derive(Debug, Deserialize, Serialize, utoipa::ToSchema)]
 #[serde(tag = "event", content = "payload")]
 #[serde(rename_all = "snake_case")]
-pub enum Events {
-    UserCreated(UserData),
-    UserUpdated(UserData),
-    UserDeleted(UserDeletedData),
+pub enum UserLifecycleEvents {
+    #[serde(rename = "user_created")]
+    Created(UserData),
+    #[serde(rename = "user_updated")]
+    Updated(UserData),
+    #[serde(rename = "user_deleted")]
+    Deleted(UserDeletedData),
 }
 
 #[utoipa::path(
     post,
     path = "/webhooks/authentik/user_sync",
-    request_body = Events,
+    request_body = UserLifecycleEvents,
     responses(
         (status = 200, description = "User created successfully"),
         (status = 400, description = "Invalid request body", body = error_handlers::handlers::ErrorResponse),
@@ -45,12 +48,12 @@ pub enum Events {
 )]
 pub async fn user_sync(
     State(state): State<crate::types::app_state::AppState>,
-    ValidatedJson(payload): ValidatedJson<Events>,
+    ValidatedJson(payload): ValidatedJson<UserLifecycleEvents>,
 ) -> Result<axum::http::StatusCode, ErrorResponse> {
     use sql::user;
 
     match payload {
-        Events::UserUpdated(payload) => {
+        UserLifecycleEvents::Updated(payload) => {
             match user::UserRepository::update_by_authentik_id(
                 &state.postgres,
                 payload.pk,
@@ -75,7 +78,7 @@ pub async fn user_sync(
                 Err(e) => return Err(ErrorResponse::from(e)),
             }
         }
-        Events::UserCreated(payload) => {
+        UserLifecycleEvents::Created(payload) => {
             let existing = sqlx::query_scalar::<_, bool>(
                 "SELECT EXISTS(SELECT 1 FROM users WHERE id = $1 OR authentik_id = $2)",
             )
@@ -130,7 +133,7 @@ pub async fn user_sync(
                 .await?;
             }
         }
-        Events::UserDeleted(payload) => {
+        UserLifecycleEvents::Deleted(payload) => {
             sql::user::UserRepository::delete_by_authentik_id(&state.postgres, payload.pk)
                 .await
                 .map_err(ErrorResponse::from)?;

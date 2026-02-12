@@ -62,7 +62,7 @@ pub async fn get_profile(
         profile_response.workspace = Some(workspace);
     } else {
         let workspace_id = workspace_id.unwrap().value();
-        let workspace_id = uuid::Uuid::parse_str(&workspace_id).unwrap();
+        let workspace_id = uuid::Uuid::parse_str(workspace_id).unwrap();
 
         let workspace =
             crate::entities::workspace::WorkspaceService::get_one_by_id(&state, workspace_id)

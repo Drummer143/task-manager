@@ -136,18 +136,6 @@ impl TaskRepository {
             .await
     }
 
-    pub async fn change_status<'a>(
-        executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
-        id: Uuid,
-        status_id: Uuid,
-    ) -> Result<Task, sqlx::Error> {
-        sqlx::query_as::<_, Task>("UPDATE tasks SET status_id = $1 WHERE id = $2 RETURNING *")
-            .bind(status_id)
-            .bind(id)
-            .fetch_one(executor)
-            .await
-    }
-
     pub async fn get_last_position<'a>(
         executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
         status_id: Uuid,

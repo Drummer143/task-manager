@@ -220,13 +220,11 @@ impl std::str::FromStr for PageInclude {
             "parentPage" => Ok(PageInclude::ParentPage),
             "childPages" => Ok(PageInclude::ChildPages),
             "boardStatuses" => Ok(PageInclude::BoardStatuses),
-            _ => {
-                return Err(ErrorResponse::bad_request(
-                    codes::BadRequestErrorCode::InvalidQueryParams,
-                    Some(HashMap::from([("include".to_string(), s.to_string())])),
-                    None,
-                ));
-            }
+            _ => Err(ErrorResponse::bad_request(
+                codes::BadRequestErrorCode::InvalidQueryParams,
+                Some(HashMap::from([("include".to_string(), s.to_string())])),
+                None,
+            )),
         }
     }
 }
@@ -254,13 +252,11 @@ impl std::str::FromStr for PageListInclude {
         match s {
             "owner" => Ok(PageListInclude::Owner),
             "workspace" => Ok(PageListInclude::Workspace),
-            _ => {
-                return Err(ErrorResponse::bad_request(
-                    codes::BadRequestErrorCode::InvalidQueryParams,
-                    Some(HashMap::from([("include".to_string(), s.to_string())])),
-                    None,
-                ));
-            }
+            _ => Err(ErrorResponse::bad_request(
+                codes::BadRequestErrorCode::InvalidQueryParams,
+                Some(HashMap::from([("include".to_string(), s.to_string())])),
+                None,
+            )),
         }
     }
 }

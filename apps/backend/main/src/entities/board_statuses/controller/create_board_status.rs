@@ -54,10 +54,10 @@ pub async fn create_board_status(
 
         let title = status.localizations.get(lang).unwrap().to_string();
 
-        return Json(BoardStatusResponseDto {
+        Json(BoardStatusResponseDto {
             id: status.id,
             initial: status.initial,
             title,
-        });
+        })
     })
 }

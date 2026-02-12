@@ -48,11 +48,11 @@ pub async fn page_access_guard_task_route(
 
     let page = page.unwrap();
 
-    let page_id = page.id.clone();
+    let page_id = page.id;
 
     req.extensions_mut().insert(page);
 
-    return validate_page_access(state, req, page_id, next).await;
+    validate_page_access(state, req, page_id, next).await
 }
 
 // works only with path `/page/{page_id}/...`
@@ -83,7 +83,7 @@ pub async fn page_access_guard_by_page_route(
 
     let page_id = page_id.unwrap();
 
-    return validate_page_access(state, req, page_id, next).await;
+    validate_page_access(state, req, page_id, next).await
 }
 
 pub async fn validate_page_access(
@@ -107,10 +107,10 @@ pub async fn validate_page_access(
             .unwrap();
     }
 
-    let user_id = user_id.unwrap().clone();
+    let user_id = user_id.unwrap();
 
     let page_access =
-        sql::page::PageRepository::get_one_page_access(&state.postgres, user_id, page_id).await;
+        sql::page::PageRepository::get_one_page_access(&state.postgres, *user_id, page_id).await;
 
     if page_access.is_err() {
         let body = serde_json::to_string(&ErrorResponse::forbidden(
@@ -128,5 +128,5 @@ pub async fn validate_page_access(
 
     req.extensions_mut().insert(page_access.unwrap());
 
-    return next.run(req).await;
+    next.run(req).await
 }

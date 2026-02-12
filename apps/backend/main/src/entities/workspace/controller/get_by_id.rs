@@ -1,6 +1,6 @@
 use axum::{
-    extract::{Path, State},
     Extension,
+    extract::{Path, State},
 };
 use error_handlers::handlers::ErrorResponse;
 use sql::shared::traits::PostgresqlRepositoryGetOneById;
@@ -41,12 +41,9 @@ pub async fn get_by_id(
 
     let owner = if include.contains(&Include::Owner) {
         Some(
-            sql::user::UserRepository::get_one_by_id(
-                &state.postgres,
-                workspace.workspace.owner_id,
-            )
-            .await
-            .map_err(ErrorResponse::from)?,
+            sql::user::UserRepository::get_one_by_id(&state.postgres, workspace.workspace.owner_id)
+                .await
+                .map_err(ErrorResponse::from)?,
         )
     } else {
         None
@@ -55,8 +52,7 @@ pub async fn get_by_id(
     let pages = if include.contains(&Include::Pages) {
         Some(
             crate::entities::page::PageService::get_all_in_workspace(&state, workspace_id)
-                .await
-                .map_err(ErrorResponse::from)?
+                .await?
                 .iter()
                 .map(PageResponseWithoutInclude::from)
                 .collect(),

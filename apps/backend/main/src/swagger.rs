@@ -23,7 +23,6 @@ use utils::swagger::SecurityAddon;
         crate::entities::task::controller::create_task::create_task,
         crate::entities::task::controller::update_task::update_task,
         crate::entities::task::controller::delete_task::delete_task,
-        crate::entities::task::controller::change_status::change_status,
 
         crate::entities::user::controller::get_list::get_list,
         crate::entities::user::controller::get_by_id::get_by_id,
@@ -53,8 +52,6 @@ use utils::swagger::SecurityAddon;
         crate::entities::page::dto::PageInclude,
         crate::entities::page::dto::PageListFormat,
         crate::entities::page::dto::PageListInclude,
-
-        crate::entities::user::dto::UserSortBy,
 
         crate::entities::workspace::dto::Include,
         crate::entities::workspace::dto::WorkspaceInfo,

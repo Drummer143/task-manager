@@ -58,9 +58,6 @@ export const deleteTask = async (params: DeleteTaskRequest) =>
 
 export type ChangeStatusRequest = BaseRequest<{ taskId: string }, { statusId: string }>;
 
-export const changeStatus = async (params: ChangeStatusRequest) =>
-	(await mainInstance.patch<Task>(`/tasks/${params.pathParams.taskId}/status`, params.body)).data;
-
 // export const getTaskHistory = async ({
 // 	pageId,
 // 	workspaceId,
