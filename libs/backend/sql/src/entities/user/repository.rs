@@ -53,21 +53,21 @@ fn apply_filter<'a>(
                 .push_bind(format!("%{}%", username));
         }
 
-        if let Some(ref exclude) = filter.exclude {
-            if !exclude.is_empty() {
-                if where_started {
-                    builder.push(" AND ");
-                }
-
-                builder.push("users.id NOT IN (");
-
-                let mut separated = builder.separated(", ");
-                for id in exclude {
-                    separated.push_bind(id);
-                }
-
-                builder.push(")");
+        if let Some(ref exclude) = filter.exclude
+            && !exclude.is_empty()
+        {
+            if where_started {
+                builder.push(" AND ");
             }
+
+            builder.push("users.id NOT IN (");
+
+            let mut separated = builder.separated(", ");
+            for id in exclude {
+                separated.push_bind(id);
+            }
+
+            builder.push(")");
         }
 
         builder.push(")");
@@ -106,12 +106,12 @@ impl PostgresqlRepositoryCreate for UserRepository {
         sqlx::query_as::<_, User>(
             "INSERT INTO users (id, authentik_id, email, username, picture, created_at) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
         )
-        .bind(&dto.id)
-        .bind(&dto.authentik_id)
+        .bind(dto.id)
+        .bind(dto.authentik_id)
         .bind(&dto.email)
         .bind(&dto.username)
         .bind(&dto.picture)
-        .bind(&dto.created_at)
+        .bind(dto.created_at)
         .fetch_one(executor)
         .await
     }
@@ -208,11 +208,12 @@ impl UserRepository {
         let mut total_builder =
             sqlx::QueryBuilder::<Postgres>::new("SELECT COUNT(DISTINCT users.id) FROM users");
 
-        if let Some(filter) = filter {
-            if !filter.is_empty() && filter.is_valid() {
-                query_builder = apply_filter(query_builder, filter);
-                total_builder = apply_filter(total_builder, filter);
-            }
+        if let Some(filter) = filter
+            && !filter.is_empty()
+            && filter.is_valid()
+        {
+            query_builder = apply_filter(query_builder, filter);
+            total_builder = apply_filter(total_builder, filter);
         }
 
         query_builder.push(format!(
