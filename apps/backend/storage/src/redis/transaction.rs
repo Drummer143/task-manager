@@ -73,7 +73,7 @@ impl TransactionRepository {
     ) -> Result<TransactionMeta, RedisError> {
         let mut conn = pool.get().await?;
 
-        let total_chunks = (size + CHUNK_SIZE - 1) / CHUNK_SIZE; // ceil division
+        let total_chunks = size.div_ceil(CHUNK_SIZE);
 
         let meta = TransactionMeta {
             hash,

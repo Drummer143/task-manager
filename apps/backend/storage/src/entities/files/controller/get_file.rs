@@ -149,11 +149,7 @@ fn parse_range_header(range_str: &str, file_size: u64) -> Option<ByteRange> {
 
     let start = if parts[0].is_empty() {
         if let Ok(suffix_length) = parts[1].parse::<u64>() {
-            if suffix_length >= file_size {
-                0
-            } else {
-                file_size - suffix_length
-            }
+            file_size.saturating_sub(suffix_length)
         } else {
             return None;
         }
