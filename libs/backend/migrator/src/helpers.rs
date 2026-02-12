@@ -23,7 +23,7 @@ pub fn get_migrations_from_folder(
             let entry = entry.unwrap();
 
             let mut migration_file_path = entry.path();
-            migration_file_path.push(format!("{}.sql", direction.to_string()));
+            migration_file_path.push(format!("{}.sql", direction));
 
             let exists = fs::exists(&migration_file_path);
 
@@ -184,8 +184,8 @@ pub async fn wait_until_lock(
 ) -> Result<(), MigratorError> {
     let conn = pool.acquire().await;
 
-    if conn.is_err() {
-        return Err(MigratorError::SqlxError(conn.unwrap_err().to_string()));
+    if let Err(e) = conn {
+        return Err(MigratorError::SqlxError(e.to_string()));
     }
 
     let mut conn = conn.unwrap();

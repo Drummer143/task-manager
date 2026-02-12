@@ -77,7 +77,7 @@ pub async fn down(pool: &sqlx::postgres::PgPool, env: &EnvConfig) -> Result<(), 
                 "Migration {}_{}\\{}.sql is empty",
                 applied_migration.version,
                 applied_migration.name,
-                MigrationDirection::Down.to_string()
+                MigrationDirection::Down
             )));
         }
 

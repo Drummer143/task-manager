@@ -1,4 +1,4 @@
-import { mainInstance, BaseRequest } from "./base";
+import { BaseRequest, mainInstance } from "./base";
 
 import { PageAccess } from "../types";
 

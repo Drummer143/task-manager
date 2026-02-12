@@ -72,7 +72,7 @@ pub async fn up(pool: &sqlx::postgres::PgPool, env: &EnvConfig) -> Result<(), Mi
                 "Migration {}_{}\\{}.sql is empty",
                 unapplied_migration.version,
                 unapplied_migration.name,
-                MigrationDirection::Up.to_string()
+                MigrationDirection::Up
             )));
         }
 
