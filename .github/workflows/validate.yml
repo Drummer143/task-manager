@@ -4,6 +4,9 @@ permissions:
   contents: read
 
 permissions:
+permissions:
+  contents: read
+
   contents: read
 
 on:
