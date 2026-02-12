@@ -12,7 +12,7 @@ const TEST_USER_PATH = path.join(AUTH_DIR, "test-user.json");
 
 const E2E_USERNAME = `e2e_user_${Date.now()}`;
 const E2E_EMAIL = `e2e_${Date.now()}@test.local`;
-const E2E_PASSWORD = "E2eTestPass123!";
+const E2E_PASSWORD = process.env.E2E_PASSWORD!;
 
 async function globalSetup(config: FullConfig) {
 	const { baseURL } = config.projects[0].use;
