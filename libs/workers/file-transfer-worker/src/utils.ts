@@ -1,5 +1,6 @@
 import { uploadCancel } from "@task-manager/api";
 
+// eslint-disable-next-line @nx/enforce-module-boundaries
 import { FileHasher } from "./hasher/wasm_source";
 import { MessageToHost } from "./types";
 
