@@ -59,7 +59,7 @@ pub async fn down(pool: &sqlx::postgres::PgPool, env: &EnvConfig) -> Result<(), 
     let all_migrations =
         get_migrations_from_folder(&MigrationDirection::Down, &env.migrations_dir)?;
 
-    let applied_migrations = get_migrations_from_db(&pool, &env.migrations_db_name).await?;
+    let applied_migrations = get_migrations_from_db(pool, &env.migrations_db_name).await?;
 
     compare_migrations(&applied_migrations, &all_migrations, false)?;
 
@@ -82,7 +82,7 @@ pub async fn down(pool: &sqlx::postgres::PgPool, env: &EnvConfig) -> Result<(), 
         }
 
         apply_down_migration(
-            &pool,
+            pool,
             &env.migrations_db_name,
             applied_migration,
             sql.as_str(),

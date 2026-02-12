@@ -1,3 +1,5 @@
+use std::fmt::Display;
+
 use sqlx::types::chrono;
 
 #[derive(Debug)]
@@ -24,6 +26,7 @@ pub struct Migration {
     pub version: i64,
     pub checksum: Vec<u8>,
     pub name: String,
+    #[allow(dead_code)]
     pub installed_at: chrono::DateTime<chrono::Utc>,
 }
 
@@ -39,11 +42,11 @@ pub enum MigrationDirection {
     Down,
 }
 
-impl ToString for MigrationDirection {
-    fn to_string(&self) -> String {
+impl Display for MigrationDirection {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
-            MigrationDirection::Up => "up".to_string(),
-            MigrationDirection::Down => "down".to_string(),
+            MigrationDirection::Up => write!(f, "up"),
+            MigrationDirection::Down => write!(f, "down"),
         }
     }
 }

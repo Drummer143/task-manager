@@ -27,18 +27,13 @@ pub fn get_migrations_from_folder(
 
             let exists = fs::exists(&migration_file_path);
 
-            if exists.is_err() || exists.unwrap() == false {
+            if matches!(exists, Err(_) | Ok(false)) {
                 return None;
             }
 
             let dir_filename = entry.file_name();
-            let dir_filename = dir_filename.to_str();
+            let dir_filename = dir_filename.to_str()?;
 
-            if dir_filename.is_none() {
-                return None;
-            }
-
-            let dir_filename = dir_filename.unwrap();
             let version = dir_filename.split('_').next().unwrap().parse::<i64>();
 
             if version.is_err() {
@@ -64,8 +59,8 @@ pub fn get_migrations_from_folder(
 }
 
 pub fn compare_migrations(
-    applied_migrations: &Vec<Migration>,
-    all_migrations: &Vec<MigrationFile>,
+    applied_migrations: &[Migration],
+    all_migrations: &[MigrationFile],
     compare_checksum: bool,
 ) -> Result<(), MigratorError> {
     for applied_migration in applied_migrations.iter() {
@@ -99,17 +94,12 @@ pub fn compare_migrations(
 }
 
 pub fn get_unapplied_migrations(
-    all_migrations: &Vec<MigrationFile>,
-    applied_migrations: &Vec<Migration>,
+    all_migrations: &[MigrationFile],
+    applied_migrations: &[Migration],
 ) -> Vec<MigrationFile> {
     all_migrations
         .iter()
-        .filter(|m| {
-            applied_migrations
-                .iter()
-                .find(|am| am.version == m.version)
-                .is_none()
-        })
+        .filter(|m| applied_migrations.iter().any(|am| am.version == m.version))
         .cloned()
         .collect::<Vec<MigrationFile>>()
 }
