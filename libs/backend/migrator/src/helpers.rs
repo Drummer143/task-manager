@@ -99,7 +99,7 @@ pub fn get_unapplied_migrations(
 ) -> Vec<MigrationFile> {
     all_migrations
         .iter()
-        .filter(|m| applied_migrations.iter().any(|am| am.version == m.version))
+        .filter(|m| !applied_migrations.iter().any(|am| am.version == m.version))
         .cloned()
         .collect::<Vec<MigrationFile>>()
 }
