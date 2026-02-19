@@ -2,11 +2,11 @@ use std::collections::HashMap;
 
 use axum::{Extension, extract::State};
 use error_handlers::handlers::ErrorResponse;
-use sql::{page::model::PageAccess, shared::traits::PostgresqlRepositoryGetOneById};
+use sql::page::model::PageAccess;
 
 use crate::{
     entities::page::dto::{PageAccessResponse, UpdatePageAccessDto},
-    shared::extractors::json::ValidatedJson,
+    shared::{extractors::json::ValidatedJson, traits::ServiceGetOneByIdMethod},
 };
 
 #[utoipa::path(
@@ -47,7 +47,7 @@ pub async fn update_page_access(
 
     let page_access = crate::entities::page::PageService::update_page_access(
         &state,
-        sql::page::dto::UpdatePageAccessDto {
+        crate::entities::page::db::UpdatePageAccessDto {
             user_id: dto.user_id,
             page_id: user_page_access.page_id,
             role: dto.role,
@@ -57,7 +57,7 @@ pub async fn update_page_access(
 
     Ok(PageAccessResponse {
         id: page_access.id,
-        user: sql::user::UserRepository::get_one_by_id(&state.postgres, page_access.user_id)
+        user: crate::entities::user::UserService::get_one_by_id(&state, page_access.user_id)
             .await?,
         role: page_access.role,
         created_at: page_access.created_at,

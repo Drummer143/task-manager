@@ -5,6 +5,7 @@ use error_handlers::handlers::ErrorResponse;
 use mime_guess::mime;
 use once_cell::sync::Lazy;
 use rand::Rng;
+use crate::db::blobs::{BlobsRepository, CreateBlobDto};
 use sql::{blobs::model::Blob, shared::traits::PostgresqlRepositoryCreate};
 use syntect::parsing::SyntaxSet;
 use tokio::{
@@ -118,7 +119,7 @@ impl ActionsService {
             ));
         }
 
-        let blob = sql::blobs::BlobsRepository::get_one_by_hash(&state.postgres, &body.hash).await;
+        let blob = BlobsRepository::get_one_by_hash(&state.postgres, &body.hash).await;
 
         match blob {
             Ok(blob) => {
@@ -229,7 +230,7 @@ impl ActionsService {
             TransactionType::VerifyRanges { ranges } => {
                 // Get existing blob path from DB
                 let blob =
-                    sql::blobs::BlobsRepository::get_one_by_hash(&state.postgres, &meta.hash)
+                    BlobsRepository::get_one_by_hash(&state.postgres, &meta.hash)
                         .await
                         .map_err(|e| ErrorResponse::internal_server_error(Some(e.to_string())))?;
 
@@ -359,7 +360,7 @@ impl ActionsService {
             ));
         }
 
-        let blob = match sql::blobs::BlobsRepository::get_one_by_hash(&state.postgres, &hash).await
+        let blob = match BlobsRepository::get_one_by_hash(&state.postgres, &hash).await
         {
             Ok(blob) => Ok(Some(blob)),
             Err(e) => match e {
@@ -410,9 +411,9 @@ impl ActionsService {
 
         let mime_type = Self::detect_mime_type(&body, &meta.filename);
 
-        let blob = sql::blobs::BlobsRepository::create(
+        let blob = BlobsRepository::create(
             &state.postgres,
-            sql::blobs::dto::CreateBlobDto {
+            CreateBlobDto {
                 hash,
                 size: meta.size as i64,
                 path: path_to_assets_file,
@@ -731,9 +732,9 @@ impl ActionsService {
 
                 TransactionRepository::delete(&state.redis, transaction_id).await?;
 
-                let blob = sql::blobs::BlobsRepository::create(
+                let blob = BlobsRepository::create(
                     &state.postgres,
-                    sql::blobs::dto::CreateBlobDto {
+                    CreateBlobDto {
                         hash,
                         size: meta.size.try_into().unwrap(),
                         mime_type: meta.mime_type.clone(),

@@ -6,7 +6,10 @@ use uuid::Uuid;
 use crate::{
     entities::{
         board_statuses::dto::BoardStatusResponseDto,
-        page::dto::{ChildPageResponse, PageInclude, PageQuery, PageResponse},
+        page::{
+            db::PageRepository,
+            dto::{ChildPageResponse, PageInclude, PageQuery, PageResponse},
+        },
         task::dto::TaskResponse,
         workspace::dto::WorkspaceResponseWithoutInclude,
     },
@@ -56,7 +59,7 @@ pub async fn get_page(
     let mut page_response = PageResponse::from(page.clone());
 
     page_response.role = Some(
-        sql::page::PageRepository::get_one_page_access(
+        PageRepository::get_one_page_access(
             &state.postgres,
             page.page.owner_id,
             page.page.id,

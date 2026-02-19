@@ -1,8 +1,8 @@
 use chrono::Duration;
 use uuid::Uuid;
 
-use crate::{
-    entities::workspace::model::{Role, Workspace},
+use sql::{
+    workspace::model::{Role, Workspace, WorkspaceAccess, WorkspaceWithRole},
     shared::{
         traits::{
             PostgresqlRepositoryCreate, PostgresqlRepositoryGetOneById, PostgresqlRepositoryUpdate,
@@ -12,7 +12,7 @@ use crate::{
     },
 };
 
-use super::{dto::WorkspaceSortBy, model::WorkspaceWithRole};
+use super::dto::WorkspaceSortBy;
 
 pub struct WorkspaceRepository;
 
@@ -37,7 +37,7 @@ impl PostgresqlRepositoryCreate for WorkspaceRepository {
 
             created_access AS (
                 INSERT INTO workspace_accesses (user_id, workspace_id, role)
-                SELECT $2, id, $3 
+                SELECT $2, id, $3
                 FROM new_workspace
             )
 
@@ -143,10 +143,10 @@ impl WorkspaceRepository {
             ))
             .push(format!(
                 " OFFSET {}",
-                offset.unwrap_or(crate::shared::constants::DEFAULT_OFFSET)
+                offset.unwrap_or(sql::shared::constants::DEFAULT_OFFSET)
             ));
 
-        let limit = crate::shared::utils::calculate_limit(limit);
+        let limit = sql::shared::utils::calculate_limit(limit);
 
         if limit > 0 {
             builder.push(format!("LIMIT {}", limit));
@@ -206,8 +206,8 @@ impl WorkspaceRepository {
     pub async fn create_workspace_access<'a>(
         executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
         dto: super::dto::CreateWorkspaceAccessDto,
-    ) -> Result<super::model::WorkspaceAccess, sqlx::Error> {
-        sqlx::query_as::<_, super::model::WorkspaceAccess>(
+    ) -> Result<WorkspaceAccess, sqlx::Error> {
+        sqlx::query_as::<_, WorkspaceAccess>(
             r#"
         INSERT INTO workspace_accesses (user_id, workspace_id, role)
         VALUES ($1, $2, $3)
@@ -226,9 +226,9 @@ impl WorkspaceRepository {
     pub async fn update_workspace_access<'a>(
         executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
         dto: super::dto::UpdateWorkspaceAccessDto,
-    ) -> Result<super::model::WorkspaceAccess, sqlx::Error> {
+    ) -> Result<WorkspaceAccess, sqlx::Error> {
         if dto.role.is_none() {
-            return sqlx::query_as::<_, super::model::WorkspaceAccess>(
+            return sqlx::query_as::<_, WorkspaceAccess>(
                 r#"
             DELETE FROM workspace_accesses
             WHERE user_id = $1 AND workspace_id = $2
@@ -241,7 +241,7 @@ impl WorkspaceRepository {
             .await;
         }
 
-        let workspace_access = sqlx::query_as::<_, super::model::WorkspaceAccess>(
+        let workspace_access = sqlx::query_as::<_, WorkspaceAccess>(
             r#"
             UPDATE workspace_accesses
             SET role = $3
@@ -262,8 +262,8 @@ impl WorkspaceRepository {
         executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
         user_id: Uuid,
         workspace_id: Uuid,
-    ) -> Result<super::model::WorkspaceAccess, sqlx::Error> {
-        sqlx::query_as::<_, super::model::WorkspaceAccess>(
+    ) -> Result<WorkspaceAccess, sqlx::Error> {
+        sqlx::query_as::<_, WorkspaceAccess>(
             r#"
         SELECT * FROM workspace_accesses
         WHERE user_id = $1 AND workspace_id = $2
@@ -278,8 +278,8 @@ impl WorkspaceRepository {
     pub async fn get_workspace_access_list<'a>(
         executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
         workspace_id: Uuid,
-    ) -> Result<Vec<super::model::WorkspaceAccess>, sqlx::Error> {
-        sqlx::query_as::<_, super::model::WorkspaceAccess>(
+    ) -> Result<Vec<WorkspaceAccess>, sqlx::Error> {
+        sqlx::query_as::<_, WorkspaceAccess>(
             r#"
         SELECT * FROM workspace_accesses
         WHERE workspace_id = $1

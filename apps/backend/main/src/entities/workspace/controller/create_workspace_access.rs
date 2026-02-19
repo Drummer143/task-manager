@@ -79,7 +79,7 @@ pub async fn create_workspace_access(
 
     let workspace_access = crate::entities::workspace::WorkspaceService::create_workspace_access(
         &state,
-        sql::workspace::dto::CreateWorkspaceAccessDto {
+        crate::entities::workspace::db::CreateWorkspaceAccessDto {
             user_id: dto.user_id,
             workspace_id,
             role: dto.role,

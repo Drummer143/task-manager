@@ -1,6 +1,6 @@
 use axum::extract::{Path, State};
 use error_handlers::handlers::ErrorResponse;
-use sql::workspace::dto::UpdateWorkspaceDto;
+use crate::entities::workspace::db::UpdateWorkspaceDto;
 use uuid::Uuid;
 
 use crate::{

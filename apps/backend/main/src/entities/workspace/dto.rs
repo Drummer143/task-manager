@@ -167,7 +167,7 @@ pub struct GetListQueryDto {
     pub limit: Option<i64>,
     pub offset: Option<i64>,
     pub search: Option<String>,
-    pub sort_by: Option<sql::workspace::dto::WorkspaceSortBy>,
+    pub sort_by: Option<crate::entities::workspace::db::WorkspaceSortBy>,
     pub sort_order: Option<sql::shared::types::SortOrder>,
     #[serde(
         default,

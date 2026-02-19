@@ -72,7 +72,7 @@ pub async fn create_page_access(
 
     let page_access = crate::entities::page::PageService::create_page_access(
         &state,
-        sql::page::dto::CreatePageAccessDto {
+        crate::entities::page::db::dto::CreatePageAccessDto {
             user_id: target_user.id,
             page_id: user_page_access.page_id,
             role: dto.role,

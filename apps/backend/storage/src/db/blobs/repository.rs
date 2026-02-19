@@ -1,9 +1,7 @@
-use crate::{
-    entities::blobs::{dto::CreateBlobDto, model::Blob},
-    shared::traits::{
-        PostgresqlRepositoryCreate, PostgresqlRepositoryDelete, PostgresqlRepositoryGetOneById,
-        RepositoryBase,
-    },
+use super::dto::CreateBlobDto;
+use sql::blobs::model::Blob;
+use sql::shared::traits::{
+    PostgresqlRepositoryCreate, PostgresqlRepositoryGetOneById, RepositoryBase,
 };
 
 pub struct BlobsRepository;
@@ -43,17 +41,17 @@ impl PostgresqlRepositoryGetOneById for BlobsRepository {
     }
 }
 
-impl PostgresqlRepositoryDelete for BlobsRepository {
-    async fn delete<'a>(
-        executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
-        id: uuid::Uuid,
-    ) -> Result<Self::Response, sqlx::Error> {
-        sqlx::query_as::<_, Blob>("DELETE FROM blobs WHERE id = $1 RETURNING *")
-            .bind(id)
-            .fetch_one(executor)
-            .await
-    }
-}
+// impl PostgresqlRepositoryDelete for BlobsRepository {
+//     async fn delete<'a>(
+//         executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
+//         id: uuid::Uuid,
+//     ) -> Result<Self::Response, sqlx::Error> {
+//         sqlx::query_as::<_, Blob>("DELETE FROM blobs WHERE id = $1 RETURNING *")
+//             .bind(id)
+//             .fetch_one(executor)
+//             .await
+//     }
+// }
 
 impl BlobsRepository {
     pub async fn get_one_by_hash<'a>(

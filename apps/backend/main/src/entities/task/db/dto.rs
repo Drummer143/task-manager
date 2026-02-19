@@ -2,8 +2,8 @@ use chrono::{DateTime, Utc};
 use serde::Deserialize;
 use uuid::Uuid;
 
-use crate::{
-    entities::task::model::Task,
+use sql::{
+    task::model::Task,
     shared::{tiptap_content::TipTapContent, traits::UpdateDto},
 };
 
@@ -48,10 +48,4 @@ impl UpdateDto for UpdateTaskDto {
     fn has_changes(&self, _: &Self::Model) -> bool {
         todo!("has_changes for UpdateTaskDto")
     }
-}
-
-#[derive(Debug, Deserialize, utoipa::ToSchema)]
-#[serde(rename_all = "camelCase")]
-pub struct ChangeStatusDto {
-    pub status_id: Uuid,
 }

@@ -3,12 +3,14 @@ use axum::{
     extract::{Path, State},
 };
 use error_handlers::handlers::ErrorResponse;
-use sql::shared::traits::PostgresqlRepositoryGetOneById;
 
 use crate::{
     entities::{
         page::dto::PageResponseWithoutInclude,
-        workspace::dto::{Include, WorkspaceResponse},
+        workspace::{
+            db::WorkspaceRepository,
+            dto::{Include, WorkspaceResponse},
+        },
     },
     shared::{extractors::query::ValidatedQuery, traits::ServiceGetOneByIdMethod},
 };
@@ -41,9 +43,8 @@ pub async fn get_by_id(
 
     let owner = if include.contains(&Include::Owner) {
         Some(
-            sql::user::UserRepository::get_one_by_id(&state.postgres, workspace.workspace.owner_id)
-                .await
-                .map_err(ErrorResponse::from)?,
+            crate::entities::user::UserService::get_one_by_id(&state, workspace.workspace.owner_id)
+                .await?,
         )
     } else {
         None
@@ -61,7 +62,7 @@ pub async fn get_by_id(
         None
     };
 
-    let role = sql::workspace::WorkspaceRepository::get_one_workspace_access(
+    let role = WorkspaceRepository::get_one_workspace_access(
         &state.postgres,
         user_id,
         workspace_id,

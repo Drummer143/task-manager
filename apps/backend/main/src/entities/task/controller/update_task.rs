@@ -1,6 +1,6 @@
 use axum::extract::{Path, State};
 use error_handlers::handlers::ErrorResponse;
-use sql::task::dto::UpdateTaskDto;
+use crate::entities::task::db::UpdateTaskDto;
 use uuid::Uuid;
 
 use crate::{

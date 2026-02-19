@@ -2,6 +2,7 @@ use axum::{Json, extract::{Path, State}};
 use axum_extra::{TypedHeader, headers::{Header, HeaderName, HeaderValue}};
 use error_handlers::handlers::ErrorResponse;
 use sql::{assets::model::EntityType, shared::traits::PostgresqlRepositoryGetOneById};
+use crate::entities::{assets::db::AssetsRepository, page::db::PageRepository, task::db::TaskRepository};
 use uuid::Uuid;
 
 pub struct XUserId(pub Uuid);
@@ -52,13 +53,13 @@ pub async fn validate_access(
     Path(asset_id): Path<Uuid>,
     TypedHeader(XUserId(user_id)): TypedHeader<XUserId>,
 ) -> Result<Json<ValidateAccessResponse>, ErrorResponse> {
-    let asset = sql::assets::AssetsRepository::get_one_by_id(&state.postgres, asset_id)
+    let asset = AssetsRepository::get_one_by_id(&state.postgres, asset_id)
         .await
         .map_err(ErrorResponse::from)?;
 
     let is_valid = match asset.entity_type {
         EntityType::PageText => {
-            let page = sql::page::PageRepository::get_one_page_access(
+            let page = PageRepository::get_one_page_access(
                 &state.postgres,
                 user_id,
                 asset.entity_id,
@@ -73,7 +74,7 @@ pub async fn validate_access(
         }
 
         EntityType::TaskDescription => {
-            sql::task::TaskRepository::has_access(&state.postgres, asset.entity_id, user_id)
+            TaskRepository::has_access(&state.postgres, asset.entity_id, user_id)
                 .await
                 .map_err(ErrorResponse::from)
         }

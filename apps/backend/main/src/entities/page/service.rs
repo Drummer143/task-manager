@@ -3,25 +3,29 @@ use std::collections::HashMap;
 use error_handlers::handlers::ErrorResponse;
 use uuid::Uuid;
 
-use sql::{
-    page::{
-        PageRepository,
-        dto::{CreatePageAccessDto, CreatePageDto, UpdatePageAccessDto},
-        model::{Page, PageAccess, PageType, PageWithContent},
-    },
-    shared::traits::{
-        PostgresqlRepositoryCreate, PostgresqlRepositoryDelete, PostgresqlRepositoryGetOneById,
-        PostgresqlRepositoryUpdate,
-    },
-};
-
 use crate::{
-    entities::page::dto::{PageAccessResponse, UpdatePageDto},
+    entities::{
+        board_statuses::db::{BoardStatusRepository, CreateBoardStatusDto},
+        page::{
+            db::{
+                CreatePageAccessDto, CreatePageDto, PageRepository, UpdatePageAccessDto,
+                UpdatePageDto,
+            },
+            dto::{PageAccessResponse, UpdatePageDto as ApiUpdatePageDto},
+        },
+    },
     shared::traits::{
         ServiceBase, ServiceCreateMethod, ServiceDeleteMethod, ServiceGetOneByIdMethod,
         ServiceUpdateMethod,
     },
     types::app_state::AppState,
+};
+use sql::{
+    page::model::{Page, PageAccess, PageType, PageWithContent},
+    shared::traits::{
+        PostgresqlRepositoryCreate, PostgresqlRepositoryDelete, PostgresqlRepositoryGetOneById,
+        PostgresqlRepositoryUpdate,
+    },
 };
 
 pub struct PageService;
@@ -55,9 +59,9 @@ impl ServiceCreateMethod for PageService {
                     .map(|(k, v)| (k.to_string(), v.to_string()))
                     .collect::<HashMap<String, String>>();
 
-                sql::board_statuses::BoardStatusRepository::create(
+                BoardStatusRepository::create(
                     &mut *tx,
-                    sql::board_statuses::dto::CreateBoardStatusDto {
+                    CreateBoardStatusDto {
                         page_id: page.id,
                         position: status.position,
                         // parent_status_id: None,
@@ -77,7 +81,7 @@ impl ServiceCreateMethod for PageService {
 }
 
 impl ServiceUpdateMethod for PageService {
-    type UpdateDto = UpdatePageDto;
+    type UpdateDto = ApiUpdatePageDto;
 
     async fn update(
         app_state: &AppState,
@@ -94,7 +98,7 @@ impl ServiceUpdateMethod for PageService {
             PageRepository::update(
                 &mut *tx,
                 id,
-                sql::page::dto::UpdatePageDto { title: dto.title },
+                UpdatePageDto { title: dto.title },
             )
             .await
             .map_err(ErrorResponse::from)?
@@ -170,7 +174,7 @@ impl PageService {
         app_state: &crate::types::app_state::AppState,
         dto: CreatePageAccessDto,
     ) -> Result<PageAccess, ErrorResponse> {
-        sql::page::PageRepository::create_page_access(&app_state.postgres, dto)
+        PageRepository::create_page_access(&app_state.postgres, dto)
             .await
             .map_err(|e| match e {
                 sqlx::Error::Database(e) => {
@@ -192,7 +196,7 @@ impl PageService {
         app_state: &crate::types::app_state::AppState,
         dto: UpdatePageAccessDto,
     ) -> Result<PageAccess, ErrorResponse> {
-        sql::page::PageRepository::update_page_access(&app_state.postgres, dto)
+        PageRepository::update_page_access(&app_state.postgres, dto)
             .await
             .map_err(|e| match e {
                 sqlx::Error::RowNotFound => ErrorResponse::not_found(
@@ -204,44 +208,43 @@ impl PageService {
             })
     }
 
-    #[allow(dead_code)]
-    pub async fn get_page_access(
-        app_state: &crate::types::app_state::AppState,
-        user_id: Uuid,
-        page_id: Uuid,
-    ) -> Result<PageAccessResponse, ErrorResponse> {
-        let page_access =
-            sql::page::PageRepository::get_one_page_access(&app_state.postgres, user_id, page_id)
-                .await
-                .map_err(|e| match e {
-                    sqlx::Error::RowNotFound => ErrorResponse::not_found(
-                        error_handlers::codes::NotFoundErrorCode::NotFound,
-                        None,
-                        Some(e.to_string()),
-                    ),
-                    error => ErrorResponse::internal_server_error(Some(error.to_string())),
-                })?;
+    // pub async fn get_page_access(
+    //     app_state: &crate::types::app_state::AppState,
+    //     user_id: Uuid,
+    //     page_id: Uuid,
+    // ) -> Result<PageAccessResponse, ErrorResponse> {
+    //     let page_access =
+    //         PageRepository::get_one_page_access(&app_state.postgres, user_id, page_id)
+    //             .await
+    //             .map_err(|e| match e {
+    //                 sqlx::Error::RowNotFound => ErrorResponse::not_found(
+    //                     error_handlers::codes::NotFoundErrorCode::NotFound,
+    //                     None,
+    //                     Some(e.to_string()),
+    //                 ),
+    //                 error => ErrorResponse::internal_server_error(Some(error.to_string())),
+    //             })?;
 
-        let user =
-            crate::entities::user::UserService::get_one_by_id(app_state, page_access.user_id)
-                .await?;
+    //     let user =
+    //         crate::entities::user::UserService::get_one_by_id(app_state, page_access.user_id)
+    //             .await?;
 
-        Ok(PageAccessResponse {
-            created_at: page_access.created_at,
-            updated_at: page_access.updated_at,
-            deleted_at: page_access.deleted_at,
-            id: page_access.id,
-            user,
-            role: page_access.role,
-        })
-    }
+    //     Ok(PageAccessResponse {
+    //         created_at: page_access.created_at,
+    //         updated_at: page_access.updated_at,
+    //         deleted_at: page_access.deleted_at,
+    //         id: page_access.id,
+    //         user,
+    //         role: page_access.role,
+    //     })
+    // }
 
     pub async fn get_page_access_list(
         app_state: &crate::types::app_state::AppState,
         page_id: Uuid,
     ) -> Result<Vec<PageAccessResponse>, ErrorResponse> {
         let page_access_list =
-            sql::page::PageRepository::get_page_access_list(&app_state.postgres, page_id)
+            PageRepository::get_page_access_list(&app_state.postgres, page_id)
                 .await
                 .map_err(|e| match e {
                     sqlx::Error::RowNotFound => ErrorResponse::not_found(

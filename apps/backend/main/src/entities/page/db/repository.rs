@@ -1,8 +1,8 @@
 use sqlx::{Executor, Postgres};
 use uuid::Uuid;
 
-use crate::{
-    entities::page::model::{PageType, PageWithContent, Role},
+use sql::{
+    page::model::{Page, PageAccess, PageType, PageWithContent, Role},
     shared::{
         tiptap_content::TipTapContent,
         traits::{
@@ -11,8 +11,6 @@ use crate::{
         },
     },
 };
-
-use super::model::Page;
 
 pub struct PageRepository;
 
@@ -48,7 +46,7 @@ impl PostgresqlRepositoryCreate for PageRepository {
             ),
             created_access AS (
                 INSERT INTO page_accesses (user_id, page_id, role)
-                SELECT $5, id, $6 
+                SELECT $5, id, $6
                 FROM new_page
             ),
             created_content AS (
@@ -182,8 +180,8 @@ impl PageRepository {
     pub async fn create_page_access<'a>(
         executor: impl Executor<'a, Database = sqlx::Postgres>,
         dto: super::dto::CreatePageAccessDto,
-    ) -> Result<super::model::PageAccess, sqlx::Error> {
-        sqlx::query_as::<_, super::model::PageAccess>(
+    ) -> Result<PageAccess, sqlx::Error> {
+        sqlx::query_as::<_, PageAccess>(
             r#"
         INSERT INTO page_accesses (user_id, page_id, role)
         VALUES ($1, $2, $3)
@@ -201,8 +199,8 @@ impl PageRepository {
         executor: impl Executor<'a, Database = sqlx::Postgres>,
         user_id: Uuid,
         page_id: Uuid,
-    ) -> Result<super::model::PageAccess, sqlx::Error> {
-        sqlx::query_as::<_, super::model::PageAccess>(
+    ) -> Result<PageAccess, sqlx::Error> {
+        sqlx::query_as::<_, PageAccess>(
             r#"
         SELECT * FROM page_accesses
         WHERE user_id = $1 AND page_id = $2
@@ -217,8 +215,8 @@ impl PageRepository {
     pub async fn get_page_access_list<'a>(
         executor: impl Executor<'a, Database = sqlx::Postgres>,
         page_id: Uuid,
-    ) -> Result<Vec<super::model::PageAccess>, sqlx::Error> {
-        sqlx::query_as::<_, super::model::PageAccess>(
+    ) -> Result<Vec<PageAccess>, sqlx::Error> {
+        sqlx::query_as::<_, PageAccess>(
             r#"
         SELECT * FROM page_accesses
         WHERE page_id = $1
@@ -232,9 +230,9 @@ impl PageRepository {
     pub async fn update_page_access<'a>(
         executor: impl Executor<'a, Database = sqlx::Postgres>,
         dto: super::dto::UpdatePageAccessDto,
-    ) -> Result<super::model::PageAccess, sqlx::Error> {
+    ) -> Result<PageAccess, sqlx::Error> {
         if dto.role.is_none() {
-            return sqlx::query_as::<_, super::model::PageAccess>(
+            return sqlx::query_as::<_, PageAccess>(
                 r#"
             DELETE FROM page_accesses
             WHERE user_id = $1 AND page_id = $2
@@ -247,7 +245,7 @@ impl PageRepository {
             .await;
         }
 
-        sqlx::query_as::<_, super::model::PageAccess>(
+        sqlx::query_as::<_, PageAccess>(
             r#"
             UPDATE page_accesses
             SET role = $3

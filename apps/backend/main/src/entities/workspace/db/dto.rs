@@ -1,7 +1,7 @@
 use serde::Deserialize;
 use uuid::Uuid;
 
-use crate::{entities::workspace::model::{Role, Workspace}, shared::traits::UpdateDto};
+use sql::{workspace::model::{Role, Workspace}, shared::traits::UpdateDto};
 
 #[derive(Debug, Deserialize, utoipa::ToSchema)]
 #[serde(rename_all = "camelCase")]

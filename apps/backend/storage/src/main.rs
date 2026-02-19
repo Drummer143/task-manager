@@ -6,6 +6,7 @@ use types::app_state::InternalAuthState;
 use utoipa::OpenApi;
 use utils::{shutdown_signal::shutdown_signal, types::jwks::JwkSet};
 
+mod db;
 mod db_connections;
 mod entities;
 mod redis;

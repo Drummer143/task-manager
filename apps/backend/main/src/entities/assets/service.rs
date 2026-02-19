@@ -2,14 +2,17 @@ use chrono::{Duration, Utc};
 use error_handlers::handlers::ErrorResponse;
 use serde::{Deserialize, Serialize};
 use sql::{
-    assets::{AssetsRepository, model::Asset},
-    page::PageRepository,
+    assets::model::Asset,
     shared::traits::{PostgresqlRepositoryCreate, PostgresqlRepositoryGetOneById, PostgresqlRepositoryUpdate},
-    task::TaskRepository,
 };
 use uuid::Uuid;
 
 use crate::{
+    entities::{
+        assets::db::{AssetsRepository, CreateAssetDto},
+        page::db::PageRepository,
+        task::db::{TaskRepository, UpdateTaskDto},
+    },
     entities::assets::dto::{AssetTarget, CreateAssetRequest, CreateUploadTokenRequest},
     types::app_state::AppState,
 };
@@ -165,7 +168,7 @@ impl AssetsService {
                     TaskRepository::update(
                         &state.postgres,
                         token.claims.entity_id,
-                        sql::task::dto::UpdateTaskDto {
+                        UpdateTaskDto {
                             description: Some(Some(content)),
                             assignee_id: None,
                             due_date: None,
@@ -189,7 +192,7 @@ impl AssetsService {
 
         AssetsRepository::create(
             &state.postgres,
-            sql::assets::dto::CreateAssetDto {
+            CreateAssetDto {
                 blob_id: body.blob.id,
                 entity_id: token.claims.entity_id,
                 entity_type: token.claims.entity_type,

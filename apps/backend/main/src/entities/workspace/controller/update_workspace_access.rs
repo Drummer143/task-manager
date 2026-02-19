@@ -4,12 +4,11 @@ use axum::{
     Extension,
     extract::{Path, State},
 };
-use sql::shared::traits::PostgresqlRepositoryGetOneById;
 use uuid::Uuid;
 
 use crate::{
     entities::workspace::dto::{UpdateWorkspaceAccessDto, WorkspaceAccessResponse},
-    shared::extractors::json::ValidatedJson,
+    shared::{extractors::json::ValidatedJson, traits::ServiceGetOneByIdMethod},
 };
 
 #[utoipa::path(
@@ -71,7 +70,7 @@ pub async fn update_workspace_access(
 
     let workspace_access = crate::entities::workspace::WorkspaceService::update_workspace_access(
         &state,
-        sql::workspace::dto::UpdateWorkspaceAccessDto {
+        crate::entities::workspace::db::UpdateWorkspaceAccessDto {
             user_id: dto.user_id,
             workspace_id,
             role: dto.role,
@@ -81,7 +80,7 @@ pub async fn update_workspace_access(
 
     Ok(WorkspaceAccessResponse {
         id: workspace_access.id,
-        user: sql::user::UserRepository::get_one_by_id(&state.postgres, dto.user_id).await?,
+        user: crate::entities::user::UserService::get_one_by_id(&state, dto.user_id).await?,
         role: workspace_access.role,
         created_at: workspace_access.created_at,
         updated_at: workspace_access.updated_at,

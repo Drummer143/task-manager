@@ -2,7 +2,7 @@ use axum::extract::State;
 use error_handlers::{codes, handlers::ErrorResponse};
 use uuid::Uuid;
 
-use crate::types::app_state::AppState;
+use crate::{entities::page::db::PageRepository, types::app_state::AppState};
 
 // works only with path `/task/{task_id}/...`
 pub async fn page_access_guard_task_route(
@@ -30,7 +30,7 @@ pub async fn page_access_guard_task_route(
 
     let task_id = task_id.unwrap();
 
-    let page = sql::page::PageRepository::get_page_by_task_id(&state.postgres, task_id).await;
+    let page = PageRepository::get_page_by_task_id(&state.postgres, task_id).await;
 
     if let Err(error) = page {
         let body = serde_json::to_string(&ErrorResponse::not_found(
@@ -110,7 +110,7 @@ pub async fn validate_page_access(
     let user_id = user_id.unwrap();
 
     let page_access =
-        sql::page::PageRepository::get_one_page_access(&state.postgres, *user_id, page_id).await;
+        PageRepository::get_one_page_access(&state.postgres, *user_id, page_id).await;
 
     if page_access.is_err() {
         let body = serde_json::to_string(&ErrorResponse::forbidden(

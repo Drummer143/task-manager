@@ -10,9 +10,9 @@ use uuid::Uuid;
 
 use crate::{
     entities::{
-        page::dto::{
+        page::{db::PageRepository, dto::{
             ChildPageResponse, PageListFormat, PageListInclude, PageListQuery, PageResponse,
-        },
+        }},
         workspace::dto::WorkspaceResponseWithoutInclude,
     },
     shared::{extractors::query::ValidatedQuery, traits::ServiceGetOneByIdMethod},
@@ -107,7 +107,7 @@ pub async fn get_list_in_workspace(
                     None
                 },
                 role: Some(
-                    sql::page::PageRepository::get_one_page_access(
+                    PageRepository::get_one_page_access(
                         &state.postgres,
                         page.owner_id,
                         page.id,
