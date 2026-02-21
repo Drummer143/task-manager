@@ -90,7 +90,7 @@ const NavPagesMenu: React.FC = () => {
 					pathParams: { workspaceId },
 					body: {
 						...values,
-						parentId:
+						parentPageId:
 							typeof creatingPageType === "string" ? creatingPageType : undefined
 					}
 				});

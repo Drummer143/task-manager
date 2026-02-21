@@ -1,7 +1,7 @@
 import React, { useCallback, useRef, useState } from "react";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createUploadToken, Page, updatePage } from "@task-manager/api";
+import { createUploadToken, DetailedPageResponseText, updatePage } from "@task-manager/api";
 import { Editor } from "@tiptap/react";
 import { App, Button } from "antd";
 
@@ -10,7 +10,7 @@ import { useStyles } from "./styled";
 import MDEditor from "../../../widgets/MDEditor";
 
 interface TextPageProps {
-	page: Omit<Page, "tasks" | "owner" | "childPages" | "parentPage" | "workspace">;
+	page: DetailedPageResponseText;
 }
 
 const TextPage: React.FC<TextPageProps> = ({ page }) => {
@@ -77,7 +77,7 @@ const TextPage: React.FC<TextPageProps> = ({ page }) => {
 			<MDEditor
 				ref={editorRef}
 				editable={editing}
-				value={page.content}
+				value={page.content ?? undefined}
 				getFileUploadToken={getFileUploadToken}
 			/>
 

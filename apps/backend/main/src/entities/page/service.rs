@@ -1,27 +1,39 @@
-use std::collections::HashMap;
+use std::collections::{HashMap, HashSet};
 
 use error_handlers::handlers::ErrorResponse;
 use uuid::Uuid;
 
 use crate::{
     entities::{
-        board_statuses::db::{BoardStatusRepository, CreateBoardStatusDto},
+        board_statuses::{
+            db::{BoardStatusRepository, CreateBoardStatusDto},
+            dto::BoardStatusResponseDto,
+        },
         page::{
             db::{
                 CreatePageAccessDto, CreatePageDto, PageRepository, UpdatePageAccessDto,
                 UpdatePageDto,
             },
-            dto::{PageAccessResponse, UpdatePageDto as ApiUpdatePageDto},
+            dto::{
+                DetailedPageResponse, DetailedPageResponseBase, DetailedPageResponseBoard,
+                DetailedPageResponseGroup, DetailedPageResponseText, PageAccessResponse,
+                PageResponseWithoutInclude, TaskResponse, UpdatePageDto as ApiUpdatePageDto,
+            },
         },
+        task::db::TaskRepository,
+        user::db::UserRepository,
     },
-    shared::traits::{
-        ServiceBase, ServiceCreateMethod, ServiceDeleteMethod, ServiceGetOneByIdMethod,
-        ServiceUpdateMethod,
+    shared::{
+        extractors::x_user_language::DEFAULT_LANGUAGE,
+        traits::{
+            ServiceBase, ServiceCreateMethod, ServiceDeleteMethod, ServiceGetOneByIdMethod,
+            ServiceUpdateMethod,
+        },
     },
     types::app_state::AppState,
 };
 use sql::{
-    page::model::{Page, PageAccess, PageType, PageWithContent},
+    page::model::{Page, PageAccess, PageType},
     shared::traits::{
         PostgresqlRepositoryCreate, PostgresqlRepositoryDelete, PostgresqlRepositoryGetOneById,
         PostgresqlRepositoryUpdate,
@@ -95,13 +107,9 @@ impl ServiceUpdateMethod for PageService {
             .map_err(ErrorResponse::from)?;
 
         let page = if dto.title.is_some() {
-            PageRepository::update(
-                &mut *tx,
-                id,
-                UpdatePageDto { title: dto.title },
-            )
-            .await
-            .map_err(ErrorResponse::from)?
+            PageRepository::update(&mut *tx, id, UpdatePageDto { title: dto.title })
+                .await
+                .map_err(ErrorResponse::from)?
         } else {
             PageRepository::get_one_by_id(&app_state.postgres, id)
                 .await
@@ -141,15 +149,6 @@ impl ServiceDeleteMethod for PageService {
 }
 
 impl PageService {
-    pub async fn get_one_with_content_by_id(
-        app_state: &AppState,
-        id: Uuid,
-    ) -> Result<PageWithContent, ErrorResponse> {
-        PageRepository::get_page_with_content(&app_state.postgres, id)
-            .await
-            .map_err(ErrorResponse::from)
-    }
-
     pub async fn get_all_in_workspace(
         app_state: &AppState,
         workspace_id: Uuid,
@@ -159,14 +158,14 @@ impl PageService {
             .map_err(ErrorResponse::from)
     }
 
-    pub async fn get_child_pages(
-        app_state: &AppState,
-        page_id: Uuid,
-    ) -> Result<Vec<Page>, ErrorResponse> {
-        PageRepository::get_child_pages(&app_state.postgres, page_id)
-            .await
-            .map_err(ErrorResponse::from)
-    }
+    // pub async fn get_child_pages(
+    //     app_state: &AppState,
+    //     page_id: Uuid,
+    // ) -> Result<Vec<Page>, ErrorResponse> {
+    //     PageRepository::get_child_pages(&app_state.postgres, page_id)
+    //         .await
+    //         .map_err(ErrorResponse::from)
+    // }
 
     // PAGE ACCESS
 
@@ -243,17 +242,16 @@ impl PageService {
         app_state: &crate::types::app_state::AppState,
         page_id: Uuid,
     ) -> Result<Vec<PageAccessResponse>, ErrorResponse> {
-        let page_access_list =
-            PageRepository::get_page_access_list(&app_state.postgres, page_id)
-                .await
-                .map_err(|e| match e {
-                    sqlx::Error::RowNotFound => ErrorResponse::not_found(
-                        error_handlers::codes::NotFoundErrorCode::NotFound,
-                        None,
-                        Some(e.to_string()),
-                    ),
-                    error => ErrorResponse::internal_server_error(Some(error.to_string())),
-                })?;
+        let page_access_list = PageRepository::get_page_access_list(&app_state.postgres, page_id)
+            .await
+            .map_err(|e| match e {
+                sqlx::Error::RowNotFound => ErrorResponse::not_found(
+                    error_handlers::codes::NotFoundErrorCode::NotFound,
+                    None,
+                    Some(e.to_string()),
+                ),
+                error => ErrorResponse::internal_server_error(Some(error.to_string())),
+            })?;
 
         let mut page_access_list_response = Vec::new();
 
@@ -272,5 +270,100 @@ impl PageService {
         }
 
         Ok(page_access_list_response)
+    }
+
+    pub async fn get_detailed_page(
+        app_state: &crate::types::app_state::AppState,
+        page_id: Uuid,
+        page_access: PageAccess,
+        lang: Option<String>,
+    ) -> Result<DetailedPageResponse, ErrorResponse> {
+        let lang = lang.unwrap_or(DEFAULT_LANGUAGE.to_string());
+        let page = PageRepository::get_one_by_id(&app_state.postgres, page_id).await?;
+
+        let base = DetailedPageResponseBase {
+            created_at: page.created_at,
+            updated_at: page.updated_at,
+            deleted_at: page.deleted_at,
+            id: page.id,
+            title: page.title,
+            user_role: page_access.role,
+        };
+
+        match page.r#type {
+            PageType::Text => {
+                let content =
+                    PageRepository::get_text_page_content(&app_state.postgres, page_id).await?;
+
+                Ok(DetailedPageResponse::Text(DetailedPageResponseText {
+                    base,
+                    content: content.content.0,
+                }))
+            }
+            PageType::Board => {
+                // TODO: Get board page details
+
+                let (statuses, tasks) = tokio::join!(
+                    BoardStatusRepository::get_board_statuses_by_page_id(
+                        &app_state.postgres,
+                        page_id,
+                    ),
+                    TaskRepository::get_all_tasks_by_page_id(&app_state.postgres, page_id,),
+                );
+
+                let statuses = statuses?;
+                let mut assignee_ids = HashSet::new();
+                let tasks = tasks?
+                    .iter()
+                    .map(|t| {
+                        if let Some(assignee_id) = t.assignee_id {
+                            assignee_ids.insert(assignee_id);
+                        }
+
+                        TaskResponse {
+                            id: t.id,
+                            title: t.title.clone(),
+                            due_date: t.due_date,
+                            position: t.position,
+                            is_draft: t.is_draft,
+                            status_id: t.status_id,
+                            assignee_id: t.assignee_id,
+                        }
+                    })
+                    .collect();
+
+                let assignee_ids: Vec<Uuid> = assignee_ids.into_iter().collect();
+                let assignees =
+                    UserRepository::get_users_by_ids(&app_state.postgres, &assignee_ids).await?;
+
+                Ok(DetailedPageResponse::Board(DetailedPageResponseBoard {
+                    base,
+                    assignees,
+                    statuses: statuses
+                        .into_iter()
+                        .map(|s| BoardStatusResponseDto {
+                            id: s.id,
+                            title: s.localizations.get(&lang).cloned().unwrap_or_else(|| {
+                                s.localizations.get("en").cloned().unwrap_or_default()
+                            }),
+                            initial: s.initial,
+                        })
+                        .collect(),
+                    tasks,
+                }))
+            }
+            PageType::Group => {
+                let child_pages =
+                    PageRepository::get_child_pages(&app_state.postgres, page_id).await?;
+
+                Ok(DetailedPageResponse::Group(DetailedPageResponseGroup {
+                    base,
+                    child_pages: child_pages
+                        .iter()
+                        .map(PageResponseWithoutInclude::from)
+                        .collect(),
+                }))
+            }
+        }
     }
 }

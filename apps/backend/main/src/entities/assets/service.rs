@@ -103,11 +103,11 @@ impl AssetsService {
 
         match token.claims.entity_type.as_str() {
             "page_text" => {
-                let page_with_content =
-                    PageRepository::get_page_with_content(&state.postgres, token.claims.entity_id)
+                let page_content =
+                    PageRepository::get_text_page_content(&state.postgres, token.claims.entity_id)
                         .await?;
 
-                let Some(content_json) = page_with_content.content else {
+                let Some(content_json) = page_content.content.0 else {
                     return Err(ErrorResponse::not_found(
                         error_handlers::codes::NotFoundErrorCode::NotFound,
                         None,
@@ -115,7 +115,7 @@ impl AssetsService {
                     ));
                 };
 
-                let mut content = content_json.0;
+                let mut content = content_json;
 
                 let found = content.hydrate_file_node(asset_id, |attrs| {
                     attrs.r#type = Some(body.blob.mime_type);

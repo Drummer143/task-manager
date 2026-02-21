@@ -1,8 +1,9 @@
+use axum::extract::FromRequestParts;
 use error_handlers::handlers::ErrorResponse;
 
 pub struct ValidatedQuery<T>(pub T);
 
-impl<S, T> axum::extract::FromRequestParts<S> for ValidatedQuery<T>
+impl<S, T> FromRequestParts<S> for ValidatedQuery<T>
 where
     T: serde::de::DeserializeOwned + Send,
     S: Send + Sync,

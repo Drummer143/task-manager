@@ -14,6 +14,7 @@ pub struct CreateUserDto {
     pub authentik_id: i32,
 
     pub picture: Option<String>,
+    #[allow(dead_code)]
     pub is_active: Option<bool>,
 
     pub created_at: Option<DateTime<Utc>>,

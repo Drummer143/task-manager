@@ -12,6 +12,8 @@ use utils::swagger::SecurityAddon;
         crate::entities::page::controller::update_page::update_page,
         crate::entities::page::controller::delete_page::delete_page,
 
+        crate::entities::page::controller::get_page_details::get_page_details,
+
         crate::entities::page::controller::get_page_access_list::get_page_access_list,
         crate::entities::page::controller::create_page_access::create_page_access,
         crate::entities::page::controller::update_page_access::update_page_access,
@@ -49,9 +51,7 @@ use utils::swagger::SecurityAddon;
         crate::types::pagination::Meta,
         crate::types::pagination::SortOrder,
 
-        crate::entities::page::dto::PageInclude,
         crate::entities::page::dto::PageListFormat,
-        crate::entities::page::dto::PageListInclude,
 
         crate::entities::workspace::dto::Include,
         crate::entities::workspace::dto::WorkspaceInfo,

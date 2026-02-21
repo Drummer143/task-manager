@@ -2,7 +2,7 @@ use sqlx::{Executor, Postgres};
 use uuid::Uuid;
 
 use sql::{
-    page::model::{Page, PageAccess, PageType, PageWithContent, Role},
+    page::model::{Page, PageAccess, PageType, Role, TextPageContent},
     shared::{
         tiptap_content::TipTapContent,
         traits::{
@@ -133,12 +133,12 @@ impl PageRepository {
             .await
     }
 
-    pub async fn get_page_with_content<'a>(
+    pub async fn get_text_page_content<'a>(
         executor: impl Executor<'a, Database = Postgres>,
         page_id: Uuid,
-    ) -> Result<PageWithContent, sqlx::Error> {
-        sqlx::query_as::<_, PageWithContent>(
-            "SELECT p.*, pt.content as content FROM pages p LEFT JOIN text_page_contents pt ON p.id = pt.page_id WHERE p.id = $1",
+    ) -> Result<TextPageContent, sqlx::Error> {
+        sqlx::query_as::<_, TextPageContent>(
+            "SELECT * FROM text_page_contents WHERE page_id = $1",
         )
         .bind(page_id)
         .fetch_one(executor)

@@ -67,16 +67,8 @@ export interface Page extends Timestamps {
 	id: string;
 	type: PageType;
 	title: string;
-	role: UserRole;
 
-	content?: TipTapContent;
-
-	boardStatuses: BoardStatus[];
-	owner: User;
-	parentPage: Page;
 	childPages?: Page[];
-	tasks: Task[];
-	workspace: Workspace;
 }
 
 export type PageAccess = EntityAccess;

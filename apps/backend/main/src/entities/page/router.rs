@@ -1,15 +1,23 @@
-use crate::{entities::page::controller, types::app_state::AppState};
+use crate::{
+    entities::page::controller::{
+        create_page::create_page, create_page_access::create_page_access, delete_page::delete_page,
+        get_list_in_workspace::get_list_in_workspace, get_page::get_page,
+        get_page_access_list::get_page_access_list, get_page_details::get_page_details,
+        update_page::update_page, update_page_access::update_page_access,
+    },
+    types::app_state::AppState,
+};
 use axum::{Router, routing};
 
 pub fn init(state: AppState) -> Router<AppState> {
     let general = Router::new()
         .route(
             "/workspaces/{workspace_id}/pages",
-            routing::post(controller::create_page::create_page),
+            routing::post(create_page),
         )
         .route(
             "/workspaces/{workspace_id}/pages",
-            routing::get(controller::get_list_in_workspace::get_list_in_workspace),
+            routing::get(get_list_in_workspace),
         )
         .layer(axum::middleware::from_fn_with_state(
             state.clone(),
@@ -17,29 +25,21 @@ pub fn init(state: AppState) -> Router<AppState> {
         ));
 
     let scoped = Router::new()
+        .route("/pages/{page_id}", routing::get(get_page))
+        .route("/pages/{page_id}", routing::put(update_page))
+        .route("/pages/{page_id}", routing::delete(delete_page))
+        .route("/pages/{page_id}/detailed", routing::get(get_page_details))
         .route(
-            "/pages/{page_id}",
-            routing::get(controller::get_page::get_page),
-        )
-        .route(
-            "/pages/{page_id}",
-            routing::put(controller::update_page::update_page),
-        )
-        .route(
-            "/pages/{page_id}",
-            routing::delete(controller::delete_page::delete_page),
+            "/pages/{page_id}/access",
+            axum::routing::get(get_page_access_list),
         )
         .route(
             "/pages/{page_id}/access",
-            axum::routing::get(controller::get_page_access_list::get_page_access_list),
+            axum::routing::post(create_page_access),
         )
         .route(
             "/pages/{page_id}/access",
-            axum::routing::post(controller::create_page_access::create_page_access),
-        )
-        .route(
-            "/pages/{page_id}/access",
-            axum::routing::put(controller::update_page_access::update_page_access),
+            axum::routing::put(update_page_access),
         )
         .layer(axum::middleware::from_fn_with_state(
             state.clone(),

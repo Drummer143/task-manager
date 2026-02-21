@@ -22,32 +22,6 @@ pub struct WorkspaceInfo {
 
 #[derive(Debug, Serialize, utoipa::ToSchema, Clone)]
 #[serde(rename_all = "camelCase")]
-pub struct WorkspaceResponseWithoutInclude {
-    pub id: Uuid,
-    pub name: String,
-    pub role: Option<Role>,
-
-    pub updated_at: DateTime<Utc>,
-    pub created_at: DateTime<Utc>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub deleted_at: Option<DateTime<Utc>>,
-}
-
-impl From<Workspace> for WorkspaceResponseWithoutInclude {
-    fn from(value: Workspace) -> Self {
-        Self {
-            id: value.id,
-            name: value.name,
-            role: None,
-            updated_at: value.updated_at,
-            created_at: value.created_at,
-            deleted_at: value.deleted_at,
-        }
-    }
-}
-
-#[derive(Debug, Serialize, utoipa::ToSchema, Clone)]
-#[serde(rename_all = "camelCase")]
 pub struct WorkspaceResponse {
     pub id: Uuid,
     pub name: String,

@@ -7,7 +7,7 @@ import AccessSettings from "./widgets/AccessSettings";
 import BoardLayoutSettings from "./widgets/BoardLayoutSettings";
 
 interface SettingsProps {
-	page: Omit<Page, "tasks" | "owner" | "childPages" | "parentPage" | "workspace">;
+	page: Page;
 	onClose: () => void;
 }
 
@@ -22,7 +22,7 @@ const Settings: React.FC<SettingsProps> = ({ page, onClose }) => {
 				<Button onClick={onClose}>Close settings</Button>
 			</Flex>
 
-			<AccessSettings page={page} />
+			<AccessSettings pageId={page.id} />
 
 			{page.type === "board" && <BoardLayoutSettings page={page} />}
 		</>

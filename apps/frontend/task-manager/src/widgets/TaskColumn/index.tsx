@@ -3,7 +3,7 @@ import React, { useEffect, useRef, useState } from "react";
 import { PlusOutlined } from "@ant-design/icons";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { BoardStatus, createDraft, Task } from "@task-manager/api";
+import { BoardStatus, createDraft, PreviewTaskModel, User } from "@task-manager/api";
 import { registerContextMenu } from "@task-manager/context-menu";
 import { App, Button, Typography } from "antd";
 
@@ -16,10 +16,10 @@ interface TaskColumnProps {
 	pageId: string;
 	status: BoardStatus;
 
-	tasks?: Task[];
+	tasks?: (PreviewTaskModel & { assignee?: User })[];
 	draggable?: boolean;
 
-	onTaskClick?: (task: Task) => void;
+	onTaskClick?: (taskId: string) => void;
 }
 
 const TaskColumn: React.FC<TaskColumnProps> = ({
@@ -47,7 +47,7 @@ const TaskColumn: React.FC<TaskColumnProps> = ({
 			}),
 		onSuccess: draft => {
 			queryClient.invalidateQueries({ queryKey: [pageId] });
-			onTaskClick?.(draft);
+			onTaskClick?.(draft.id);
 		},
 		onError: error => message.error(error.message ?? "Failed to create task")
 	});

@@ -231,4 +231,14 @@ impl UserRepository {
 
         Ok((users, total))
     }
+
+    pub async fn get_users_by_ids<'a>(
+        executor: impl sqlx::Executor<'a, Database = Postgres> + Copy,
+        ids: &[Uuid],
+    ) -> Result<Vec<User>, sqlx::Error> {
+        sqlx::query_as::<_, User>("SELECT * FROM users WHERE id = ANY($1)")
+            .bind(ids)
+            .fetch_all(executor)
+            .await
+    }
 }

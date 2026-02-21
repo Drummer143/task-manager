@@ -10,7 +10,7 @@ import {
 	type Edge,
 	extractClosestEdge
 } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
-import { Task } from "@task-manager/api";
+import { PreviewTaskModel, User } from "@task-manager/api";
 import { registerContextMenu } from "@task-manager/context-menu";
 import { Avatar, Flex, Tag, Typography } from "antd";
 
@@ -36,11 +36,11 @@ type TaskState =
 	  };
 
 interface TaskItemProps {
-	task: Task;
+	task: PreviewTaskModel & { assignee?: User };
 
 	draggable?: boolean;
 
-	onClick?: (task: Task) => void;
+	onClick?: (taskId: string) => void;
 }
 
 const idle: TaskState = { type: "idle" };
@@ -66,12 +66,16 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, draggable: taskDraggable, onC
 
 		const initialSourceData: TaskSourceData = {
 			type: "task-source",
-			task
+			id: task.id,
+			position: task.position,
+			statusId: task.statusId
 		};
 
 		const initialTargetData: TaskTargetData = {
 			type: "task-target",
-			task
+			id: task.id,
+			position: task.position,
+			statusId: task.statusId
 		};
 
 		return combine(
@@ -135,7 +139,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, draggable: taskDraggable, onC
 			name: `Task "${task.title}"`,
 			menu: [
 				{
-					onClick: () => onClick?.(task),
+					onClick: () => onClick?.(task.id),
 					title: "Open"
 				}
 			]
@@ -144,7 +148,7 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, draggable: taskDraggable, onC
 
 	return (
 		<div style={{ position: "relative" }}>
-			<div className={styles.taskWrapper} onClick={() => onClick?.(task)} ref={taskRef}>
+			<div className={styles.taskWrapper} onClick={() => onClick?.(task.id)} ref={taskRef}>
 				<Flex gap="var(--ant-padding-xxs)">
 					{task.isDraft && <Tag variant="filled">Draft</Tag>}
 
