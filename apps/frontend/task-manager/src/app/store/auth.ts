@@ -40,16 +40,15 @@ export const useAuthStore = create<AuthState>((set, get) => ({
 		set({ loading: true });
 
 		try {
-			promise = Promise.all([
-				getProfile({ pathParams: { include: ["workspace"] } }),
-				userManager.getUser()
-			]).then(([user, identity]) => {
-				if (!identity) {
-					throw new Error("Failed to get user profile");
-				}
+			promise = Promise.all([getProfile(), userManager.getUser()]).then(
+				([user, identity]) => {
+					if (!identity) {
+						throw new Error("Failed to get user profile");
+					}
 
-				return { user, identity };
-			});
+					return { user, identity };
+				}
+			);
 
 			const data = await promise;
 

@@ -4,25 +4,9 @@ import { BaseRequest, mainInstance } from "./base";
 
 import { User, Workspace } from "../types";
 
-type GetProfileIncludes = "workspace";
+type getProfileResponse = User & { workspace: Workspace };
 
-type GetProfileRequest<T extends GetProfileIncludes | undefined = undefined> = BaseRequest<{
-	include?: T[];
-}>;
-
-type ResponseWithIncludeFilter<T extends GetProfileIncludes | undefined = undefined> = Omit<
-	User & { workspace: Workspace },
-	Exclude<GetProfileIncludes, T>
->;
-
-export const getProfile = async <T extends GetProfileIncludes | undefined = undefined>(
-	params: GetProfileRequest<T>
-) =>
-	(
-		await mainInstance.get<ResponseWithIncludeFilter<T>>("/profile", {
-			params: { include: params.pathParams.include?.toString() }
-		})
-	).data;
+export const getProfile = async () => (await mainInstance.get<getProfileResponse>("/profile")).data;
 
 export type updateProfileRequest = BaseRequest<never, { username: string }>;
 
