@@ -7,12 +7,18 @@ use sql::{
         },
         types::ShiftAction,
     },
-    task::{TaskRepository, model::Task},
+    task::model::Task,
 };
 use uuid::Uuid;
 
 use crate::{
-    entities::task::controller::create_draft::CreateDraftRequest,
+    entities::{
+        board_statuses::db::BoardStatusRepository,
+        task::{
+            controller::create_draft::CreateDraftRequest,
+            db::{CreateTaskDto, TaskRepository, UpdateTaskDto},
+        },
+    },
     shared::traits::{
         ServiceBase, ServiceCreateMethod, ServiceDeleteMethod, ServiceGetOneByIdMethod,
         ServiceUpdateMethod,
@@ -27,7 +33,7 @@ impl ServiceBase for TaskService {
 }
 
 impl ServiceCreateMethod for TaskService {
-    type CreateDto = sql::task::dto::CreateTaskDto;
+    type CreateDto = CreateTaskDto;
 
     async fn create(
         app_state: &AppState,
@@ -40,7 +46,7 @@ impl ServiceCreateMethod for TaskService {
 }
 
 impl ServiceUpdateMethod for TaskService {
-    type UpdateDto = sql::task::dto::UpdateTaskDto;
+    type UpdateDto = UpdateTaskDto;
 
     async fn update(
         app_state: &AppState,
@@ -164,6 +170,35 @@ impl TaskService {
             .map_err(ErrorResponse::from)
     }
 
+    pub async fn create_for_page(
+        state: &AppState,
+        page_id: Uuid,
+        reporter_id: Uuid,
+        dto: crate::entities::task::dto::CreateTaskRequest,
+    ) -> Result<Task, ErrorResponse> {
+        let last_position = TaskRepository::get_last_position(&state.postgres, dto.status_id)
+            .await
+            .map_err(ErrorResponse::from)?
+            .unwrap_or_default();
+
+        TaskRepository::create(
+            &state.postgres,
+            CreateTaskDto {
+                title: dto.title,
+                status_id: dto.status_id,
+                description: dto.description,
+                due_date: dto.due_date,
+                assignee_id: dto.assignee_id,
+                reporter_id,
+                page_id,
+                position: last_position + 1,
+                is_draft: false,
+            },
+        )
+        .await
+        .map_err(ErrorResponse::from)
+    }
+
     pub async fn create_draft(
         state: &AppState,
         page_id: Uuid,
@@ -173,7 +208,7 @@ impl TaskService {
         let board_status_id = if let Some(status) = body.board_status_id {
             status
         } else {
-            sql::board_statuses::BoardStatusRepository::get_initial_board_status_by_page_id(
+            BoardStatusRepository::get_initial_board_status_by_page_id(
                 &state.postgres,
                 page_id,
             )
@@ -182,7 +217,7 @@ impl TaskService {
         };
 
         let position =
-            sql::task::TaskRepository::get_last_position(&state.postgres, board_status_id)
+            TaskRepository::get_last_position(&state.postgres, board_status_id)
                 .await?
                 .unwrap_or_default();
 
@@ -190,7 +225,7 @@ impl TaskService {
 
         TaskRepository::create(
             &state.postgres,
-            sql::task::dto::CreateTaskDto {
+            CreateTaskDto {
                 assignee_id: None,
                 description: None,
                 due_date: None,

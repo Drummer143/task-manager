@@ -3,8 +3,8 @@ import React, { useMemo } from "react";
 import { useQuery } from "@tanstack/react-query";
 import {
 	createWorkspaceAccess,
-	getWorkspace,
 	getWorkspaceAccess,
+	getWorkspaceDetailed,
 	parseApiError,
 	updateWorkspaceAccess
 } from "@task-manager/api";
@@ -30,13 +30,7 @@ const CurrentWorkspace: React.FC = () => {
 		error: errorWorkspace
 	} = useQuery({
 		queryKey: ["workspace", "owner", workspaceId],
-		queryFn: () =>
-			getWorkspace({
-				pathParams: {
-					workspaceId,
-					include: ["owner"]
-				}
-			})
+		queryFn: () => getWorkspaceDetailed({ pathParams: { workspaceId } })
 	});
 
 	const accessListProps = useMemo<AccessListProps>(
@@ -76,7 +70,7 @@ const CurrentWorkspace: React.FC = () => {
 
 			<Divider />
 
-			<WorkspaceInfo workspace={workspace} editable={editable} />
+			<WorkspaceInfo id={workspace.id} name={workspace.name} editable={editable} />
 
 			<Divider />
 

@@ -21,7 +21,7 @@ pub struct GetListQuery {
         deserialize_with = "crate::shared::deserialization::deserialize_comma_separated_query_param"
     )]
     exclude: Option<Vec<Uuid>>,
-    sort_by: Option<sql::user::dto::UserSortBy>,
+    sort_by: Option<crate::entities::user::db::UserSortBy>,
     sort_order: Option<sql::shared::types::SortOrder>,
 }
 
@@ -37,7 +37,7 @@ pub struct GetListQuery {
         ("query" = Option<String>, Query, description = "Search by username or email. Can't be used with email or username"),
         ("workspace_id" = Option<Uuid>, Query, description = "Filter by workspace id"),
         ("exclude" = Option<Vec<Uuid>>, Query, explode = false, description = "Array of ids to exclude separated by comma"),
-        ("sort_by" = Option<sql::user::dto::UserSortBy>, Query, description = "Sort by field. Default: createdAt"),
+        ("sort_by" = Option<crate::entities::user::db::UserSortBy>, Query, description = "Sort by field. Default: createdAt"),
         ("sort_order" = Option<crate::types::pagination::SortOrder>, Query, description = "Sort order. Default: asc"),
     ),
     responses(
@@ -52,7 +52,7 @@ pub async fn get_list(
     State(state): State<AppState>,
     ValidatedQuery(query): ValidatedQuery<GetListQuery>,
 ) -> Result<Pagination<User>, ErrorResponse> {
-    let filters = sql::user::dto::UserFilterBy {
+    let filters = crate::entities::user::db::UserFilterBy {
         email: query.email,
         username: query.username,
         query: query.query,

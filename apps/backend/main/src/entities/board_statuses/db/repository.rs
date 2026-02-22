@@ -1,7 +1,8 @@
 use uuid::Uuid;
 
-use crate::entities::board_statuses::{dto, model::BoardStatus};
-use crate::shared::traits::{
+use super::dto;
+use sql::board_statuses::model::BoardStatus;
+use sql::shared::traits::{
     PostgresqlRepositoryCreate, PostgresqlRepositoryDelete, PostgresqlRepositoryGetOneById,
     PostgresqlRepositoryUpdate, RepositoryBase, UpdateDto,
 };
@@ -120,16 +121,6 @@ impl BoardStatusRepository {
             .fetch_all(executor)
             .await
     }
-
-    // pub async fn get_child_statuses_by_parent_status_id(
-    //     executor: impl sqlx::Executor<'_, Database = sqlx::Postgres>,
-    //     parent_status_id: Uuid,
-    // ) -> Result<Vec<BoardStatus>, sqlx::Error> {
-    //     sqlx::query_as::<_, BoardStatus>("SELECT * FROM board_statuses WHERE parent_status_id = $1")
-    //         .bind(parent_status_id)
-    //         .fetch_all(executor)
-    //         .await
-    // }
 
     pub async fn get_initial_board_status_by_page_id(
         executor: impl sqlx::Executor<'_, Database = sqlx::Postgres>,

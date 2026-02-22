@@ -1,8 +1,8 @@
 use sqlx::Postgres;
 use uuid::Uuid;
 
-use crate::{
-    entities::assets::model::Asset,
+use sql::{
+    assets::model::Asset,
     shared::traits::{PostgresqlRepositoryCreate, PostgresqlRepositoryGetOneById, RepositoryBase},
 };
 

@@ -1,9 +1,9 @@
-use axum::extract::{Path, State};
+use axum::{Json, extract::{Path, State}};
 use error_handlers::handlers::ErrorResponse;
 use uuid::Uuid;
 
 use crate::{
-    entities::{board_statuses::dto::BoardStatusResponseDto, task::dto::TaskResponse},
+    entities::{board_statuses::dto::BoardStatusResponse, task::dto::TaskResponse},
     shared::traits::ServiceGetOneByIdMethod,
 };
 
@@ -24,7 +24,7 @@ pub async fn get_task(
     State(state): State<crate::types::app_state::AppState>,
     Path(task_id): Path<Uuid>,
     headers: axum::http::header::HeaderMap,
-) -> Result<TaskResponse, ErrorResponse> {
+) -> Result<Json<TaskResponse>, ErrorResponse> {
     let task = crate::entities::task::TaskService::get_one_by_id(&state, task_id).await?;
 
     let reporter =
@@ -48,11 +48,11 @@ pub async fn get_task(
 
     task_response.reporter = Some(reporter);
     task_response.assignee = assignee;
-    task_response.status = Some(BoardStatusResponseDto {
+    task_response.status = Some(BoardStatusResponse {
         id: board_status.id,
         title: board_status.localizations.get(lang).unwrap().to_string(),
         initial: board_status.initial,
     });
 
-    Ok(task_response)
+    Ok(Json(task_response))
 }

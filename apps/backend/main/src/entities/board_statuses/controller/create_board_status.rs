@@ -9,7 +9,7 @@ use uuid::Uuid;
 use crate::{
     entities::board_statuses::{
         BoardStatusService,
-        dto::{BoardStatusResponseDto, CreateBoardStatusDto},
+        dto::{BoardStatusResponse, CreateBoardStatusRequest},
     },
     shared::{extractors::json::ValidatedJson, traits::ServiceCreateMethod},
     types::app_state::AppState,
@@ -21,9 +21,9 @@ use crate::{
     params(
         ("page_id", Path, description = "Page ID"),
     ),
-    request_body = CreateBoardStatusDto,
+    request_body = CreateBoardStatusRequest,
     responses(
-        (status = 200, description = "Custom status created successfully", body = BoardStatusResponseDto),
+        (status = 200, description = "Custom status created successfully", body = BoardStatusResponse),
         (status = 400, description = "Invalid request body", body = ErrorResponse),
     ),
     tag = "Board Status"
@@ -33,11 +33,11 @@ pub async fn create_board_status(
     header_map: HeaderMap,
     State(app_state): State<AppState>,
     Path(page_id): Path<Uuid>,
-    ValidatedJson(dto): ValidatedJson<CreateBoardStatusDto>,
-) -> Result<Json<BoardStatusResponseDto>, ErrorResponse> {
+    ValidatedJson(dto): ValidatedJson<CreateBoardStatusRequest>,
+) -> Result<Json<BoardStatusResponse>, ErrorResponse> {
     BoardStatusService::create(
         &app_state,
-        sql::board_statuses::dto::CreateBoardStatusDto {
+        crate::entities::board_statuses::db::CreateBoardStatusDto {
             // parent_status_id: dto.parent_status_id,
             page_id,
             initial: dto.initial,
@@ -54,7 +54,7 @@ pub async fn create_board_status(
 
         let title = status.localizations.get(lang).unwrap().to_string();
 
-        Json(BoardStatusResponseDto {
+        Json(BoardStatusResponse {
             id: status.id,
             initial: status.initial,
             title,

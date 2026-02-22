@@ -12,6 +12,8 @@ use utils::swagger::SecurityAddon;
         crate::entities::page::controller::update_page::update_page,
         crate::entities::page::controller::delete_page::delete_page,
 
+        crate::entities::page::controller::get_page_details::get_page_details,
+
         crate::entities::page::controller::get_page_access_list::get_page_access_list,
         crate::entities::page::controller::create_page_access::create_page_access,
         crate::entities::page::controller::update_page_access::update_page_access,
@@ -34,6 +36,8 @@ use utils::swagger::SecurityAddon;
         crate::entities::workspace::controller::soft_delete::soft_delete,
         crate::entities::workspace::controller::cancel_soft_delete::cancel_soft_delete,
 
+        crate::entities::workspace::controller::get_detailed_workspace::get_detailed_workspace,
+
         crate::entities::workspace::controller::get_workspace_access_list::get_workspace_access_list,
         crate::entities::workspace::controller::create_workspace_access::create_workspace_access,
         crate::entities::workspace::controller::update_workspace_access::update_workspace_access,
@@ -49,13 +53,9 @@ use utils::swagger::SecurityAddon;
         crate::types::pagination::Meta,
         crate::types::pagination::SortOrder,
 
-        crate::entities::page::dto::PageInclude,
         crate::entities::page::dto::PageListFormat,
-        crate::entities::page::dto::PageListInclude,
 
-        crate::entities::workspace::dto::Include,
-        crate::entities::workspace::dto::WorkspaceInfo,
-        crate::entities::workspace::dto::WorkspaceSortBy,
+        crate::entities::workspace::db::WorkspaceSortBy,
     )),
     security(
         ("bearer_auth" = [])

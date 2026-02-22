@@ -1,59 +1,59 @@
 use std::collections::HashMap;
 
 use axum::{
-    extract::{Path, State},
     Json,
+    extract::{Path, State},
 };
-use error_handlers::{codes, handlers::ErrorResponse};
+use error_handlers::handlers::ErrorResponse;
 use sql::page::model::{Page, PageType};
 use uuid::Uuid;
 
 use crate::{
-    entities::{
-        page::dto::{
-            ChildPageResponse, PageListFormat, PageListInclude, PageListQuery, PageResponse,
-        },
-        workspace::dto::WorkspaceResponseWithoutInclude,
-    },
-    shared::{extractors::query::ValidatedQuery, traits::ServiceGetOneByIdMethod},
+    entities::page::dto::{PageSummary, PageListFormat, PageListQuery, PageResponse},
+    shared::extractors::query::ValidatedQuery,
     types::app_state::AppState,
 };
 
 pub fn build_page_tree(pages: Vec<(Page, PageResponse)>) -> Vec<(Page, PageResponse)> {
-    let mut tree = Vec::new();
-    let mut parent_map: HashMap<Option<Uuid>, Vec<(Page, PageResponse)>> = HashMap::new();
+    let mut children_by_parent: HashMap<Option<Uuid>, Vec<(Page, PageResponse)>> = HashMap::new();
 
-    for entry in pages.into_iter() {
-        parent_map
+    for entry in pages {
+        children_by_parent
             .entry(entry.0.parent_page_id)
             .or_default()
             .push(entry);
     }
 
-    if let Some(roots) = parent_map.get(&None) {
-        for (page, page_response) in roots {
+    let Some(roots) = children_by_parent.get(&None) else {
+        return Vec::new();
+    };
+
+    roots
+        .iter()
+        .map(|(page, response)| {
             if page.r#type != PageType::Group {
-                tree.push((page.clone(), page_response.clone()));
-            } else {
-                let children = parent_map
-                    .get(&Some(page.id))
-                    .into_iter()
-                    .flat_map(|v| v.iter())
-                    .map(|(_, resp)| ChildPageResponse::from(resp.clone()))
-                    .collect();
-
-                tree.push((
-                    page.clone(),
-                    PageResponse {
-                        child_pages: Some(children),
-                        ..page_response.clone()
-                    },
-                ));
+                return (page.clone(), response.clone());
             }
-        }
-    }
 
-    tree
+            let child_pages = children_by_parent
+                .get(&Some(page.id))
+                .map(|children| {
+                    children
+                        .iter()
+                        .map(|(_, resp)| PageSummary::from(resp.clone()))
+                        .collect()
+                })
+                .unwrap_or_default();
+
+            (
+                page.clone(),
+                PageResponse {
+                    child_pages: Some(child_pages),
+                    ..response.clone()
+                },
+            )
+        })
+        .collect()
 }
 
 #[utoipa::path(
@@ -62,7 +62,6 @@ pub fn build_page_tree(pages: Vec<(Page, PageResponse)>) -> Vec<(Page, PageRespo
     operation_id = "get_list_in_workspace",
     params(
         ("workspace_id", Path, description = "Workspace ID"),
-        ("include" = Option<Vec<PageListInclude>>, Query, explode = false, description = "Include related entities"),
         ("format" = Option<PageListFormat>, Query, description = "Format of response"),
     ),
     responses(
@@ -80,14 +79,7 @@ pub async fn get_list_in_workspace(
     let pages =
         crate::entities::page::PageService::get_all_in_workspace(&state, workspace_id).await?;
 
-    let mut include_owner = false;
-    let mut include_workspace = false;
     let is_tree = query.format == Some(PageListFormat::Tree);
-
-    if let Some(include) = query.include {
-        include_owner = include.contains(&PageListInclude::Owner);
-        include_workspace = include.contains(&PageListInclude::Workspace);
-    }
 
     let mut response: Vec<(Page, PageResponse)> = Vec::new();
 
@@ -98,50 +90,7 @@ pub async fn get_list_in_workspace(
                 id: page.id,
                 r#type: page.r#type,
                 title: page.title,
-                owner: if include_owner {
-                    Some(
-                        crate::entities::user::UserService::get_one_by_id(&state, page.owner_id)
-                            .await?,
-                    )
-                } else {
-                    None
-                },
-                role: Some(
-                    sql::page::PageRepository::get_one_page_access(
-                        &state.postgres,
-                        page.owner_id,
-                        page.id,
-                    )
-                    .await
-                    .map_err(|e| match e {
-                        sqlx::Error::RowNotFound => ErrorResponse::not_found(
-                            codes::NotFoundErrorCode::NotFound,
-                            None,
-                            Some(e.to_string()),
-                        ),
-                        error => ErrorResponse::internal_server_error(Some(error.to_string())),
-                    })?
-                    .role,
-                ),
-                workspace: if include_workspace {
-                    Some(
-                        crate::entities::workspace::WorkspaceService::get_one_by_id(
-                            &state,
-                            page.workspace_id,
-                        )
-                        .await
-                        .map(|workspace_info| {
-                            WorkspaceResponseWithoutInclude::from(workspace_info.workspace)
-                        })?,
-                    )
-                } else {
-                    None
-                },
-                content: None,
-                parent_page: None,
                 child_pages: None,
-                tasks: None,
-                board_statuses: None,
                 created_at: page.created_at,
                 updated_at: page.updated_at,
                 deleted_at: page.deleted_at,

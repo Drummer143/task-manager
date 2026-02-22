@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 
 import { useQuery } from "@tanstack/react-query";
-import { getPage } from "@task-manager/api";
+import { getDetailedPage } from "@task-manager/api";
 import { lazySuspense, useDisclosure } from "@task-manager/react-utils";
 import { Navigate, useNavigate, useParams } from "react-router";
 
@@ -28,15 +28,12 @@ const Page: React.FC = () => {
 	const { data: page, isLoading } = useQuery({
 		queryKey: [pageId],
 		queryFn: () =>
-			getPage({
-				pathParams: {
-					pageId,
-					include: ["childPages", "workspace", "boardStatuses"]
-				}
+			getDetailedPage({
+				pathParams: { pageId }
 			}).catch(error => {
 				navigate("/profile", { replace: true });
 
-				return error;
+				throw error;
 			})
 	});
 
@@ -61,7 +58,11 @@ const Page: React.FC = () => {
 				<Settings page={page} onClose={closeSettings} />
 			) : (
 				<>
-					<PageHeader page={page} onSettingsClick={openSettings} />
+					<PageHeader
+						pageTitle={page.title}
+						userRoleInPage={page.userRole}
+						onSettingsClick={openSettings}
+					/>
 
 					{page?.type === "board" ? (
 						<BoardPage page={page} />

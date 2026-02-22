@@ -1,16 +1,16 @@
 import React, { memo } from "react";
 
-import { Task } from "@task-manager/api";
+import { PreviewTaskModel, User } from "@task-manager/api";
 
 import { useStyles } from "./styles";
 
 import TaskItem from "../TaskItem";
 
 interface TaskListProps {
-	tasks?: Task[];
+	tasks?: (PreviewTaskModel & { assignee?: User })[];
 	draggable?: boolean;
 
-	onTaskClick?: (task: Task) => void;
+	onTaskClick?: (taskId: string) => void;
 }
 
 const TaskList: React.FC<TaskListProps> = ({ tasks, draggable, onTaskClick }) => {

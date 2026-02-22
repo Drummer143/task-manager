@@ -1,8 +1,8 @@
 use serde::Deserialize;
 use uuid::Uuid;
 
-use crate::{
-    entities::page::model::{Page, PageType, Role},
+use sql::{
+    page::model::{Page, PageType, Role},
     shared::{tiptap_content::TipTapContent, traits::UpdateDto},
 };
 

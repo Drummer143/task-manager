@@ -2,14 +2,17 @@ use chrono::{Duration, Utc};
 use error_handlers::handlers::ErrorResponse;
 use serde::{Deserialize, Serialize};
 use sql::{
-    assets::{AssetsRepository, model::Asset},
-    page::PageRepository,
+    assets::model::Asset,
     shared::traits::{PostgresqlRepositoryCreate, PostgresqlRepositoryGetOneById, PostgresqlRepositoryUpdate},
-    task::TaskRepository,
 };
 use uuid::Uuid;
 
 use crate::{
+    entities::{
+        assets::db::{AssetsRepository, CreateAssetDto},
+        page::db::PageRepository,
+        task::db::{TaskRepository, UpdateTaskDto},
+    },
     entities::assets::dto::{AssetTarget, CreateAssetRequest, CreateUploadTokenRequest},
     types::app_state::AppState,
 };
@@ -100,11 +103,11 @@ impl AssetsService {
 
         match token.claims.entity_type.as_str() {
             "page_text" => {
-                let page_with_content =
-                    PageRepository::get_page_with_content(&state.postgres, token.claims.entity_id)
+                let page_content =
+                    PageRepository::get_text_page_content(&state.postgres, token.claims.entity_id)
                         .await?;
 
-                let Some(content_json) = page_with_content.content else {
+                let Some(content_json) = page_content.content.0 else {
                     return Err(ErrorResponse::not_found(
                         error_handlers::codes::NotFoundErrorCode::NotFound,
                         None,
@@ -112,7 +115,7 @@ impl AssetsService {
                     ));
                 };
 
-                let mut content = content_json.0;
+                let mut content = content_json;
 
                 let found = content.hydrate_file_node(asset_id, |attrs| {
                     attrs.r#type = Some(body.blob.mime_type);
@@ -165,7 +168,7 @@ impl AssetsService {
                     TaskRepository::update(
                         &state.postgres,
                         token.claims.entity_id,
-                        sql::task::dto::UpdateTaskDto {
+                        UpdateTaskDto {
                             description: Some(Some(content)),
                             assignee_id: None,
                             due_date: None,
@@ -189,7 +192,7 @@ impl AssetsService {
 
         AssetsRepository::create(
             &state.postgres,
-            sql::assets::dto::CreateAssetDto {
+            CreateAssetDto {
                 blob_id: body.blob.id,
                 entity_id: token.claims.entity_id,
                 entity_type: token.claims.entity_type,

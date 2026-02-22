@@ -24,13 +24,10 @@ import UserCard from "../../../../../widgets/UserCard";
 import SettingsSection from "../SettingsSection";
 
 interface AccessSettingsProps {
-	page: Omit<
-		Page,
-		"tasks" | "owner" | "childPages" | "parentPage" | "workspace" | "boardStatuses"
-	>;
+	pageId: string;
 }
 
-const AccessSettings: React.FC<AccessSettingsProps> = ({ page }) => {
+const AccessSettings: React.FC<AccessSettingsProps> = ({ pageId }) => {
 	const styles = useStyles().styles;
 
 	const [newAddedUser, setNewAddedUser] = useState<User | undefined>();
@@ -45,7 +42,7 @@ const AccessSettings: React.FC<AccessSettingsProps> = ({ page }) => {
 		queryFn: async () =>
 			await getPageAccess({
 				pathParams: {
-					pageId: page.id
+					pageId
 				}
 			}),
 		queryKey: ["pageAccesses"]
@@ -59,7 +56,7 @@ const AccessSettings: React.FC<AccessSettingsProps> = ({ page }) => {
 		mutationFn: ({ userId, role }: { userId: string; role?: string }) =>
 			updatePageAccess({
 				pathParams: {
-					pageId: page.id
+					pageId
 				},
 				body: { userId, role }
 			}),
@@ -68,7 +65,7 @@ const AccessSettings: React.FC<AccessSettingsProps> = ({ page }) => {
 			setNewAddedUser(undefined);
 
 			if (userId === currentUser.id && role !== "admin" && role !== "owner") {
-				queryClient.invalidateQueries({ queryKey: [page.id] });
+				queryClient.invalidateQueries({ queryKey: [pageId] });
 			} else {
 				queryClient.invalidateQueries({ queryKey: ["pageAccesses"] });
 			}
@@ -81,14 +78,14 @@ const AccessSettings: React.FC<AccessSettingsProps> = ({ page }) => {
 		mutationFn: ({ userId, role }: { userId: string; role: string }) =>
 			createPageAccess({
 				pathParams: {
-					pageId: page.id
+					pageId
 				},
 				body: { userId, role }
 			}),
 		retry: (_, error) => (error.response?.status || 0) > 499,
 		onSuccess: () => {
 			setNewAddedUser(undefined);
-			queryClient.invalidateQueries({ queryKey: [page.id] });
+			queryClient.invalidateQueries({ queryKey: [pageId] });
 		},
 		onError: (error: AxiosError<ApiError>) =>
 			message.error(error.response?.data?.errorCode ?? "Failed to update page settings")

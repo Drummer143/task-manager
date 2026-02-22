@@ -50,14 +50,14 @@ pub async fn user_sync(
     State(state): State<crate::types::app_state::AppState>,
     ValidatedJson(payload): ValidatedJson<UserLifecycleEvents>,
 ) -> Result<axum::http::StatusCode, ErrorResponse> {
-    use sql::user;
+    use crate::entities::user::db as user;
 
     match payload {
         UserLifecycleEvents::Updated(payload) => {
             match user::UserRepository::update_by_authentik_id(
                 &state.postgres,
                 payload.pk,
-                user::dto::UpdateUserDto {
+                user::UpdateUserDto {
                     email: Some(payload.email),
 
                     is_active: Some(payload.is_active),
@@ -97,7 +97,7 @@ pub async fn user_sync(
                 user::UserRepository::update_by_authentik_id(
                     &state.postgres,
                     payload.pk,
-                    user::dto::UpdateUserDto {
+                    user::UpdateUserDto {
                         email: Some(payload.email),
                         username: Some(payload.username),
                         is_active: Some(payload.is_active),
@@ -107,9 +107,9 @@ pub async fn user_sync(
                 .await
                 .map_err(ErrorResponse::from)?;
             } else {
-                let user = user::UserRepository::create(
+                let created_user = user::UserRepository::create(
                     &state.postgres,
-                    user::dto::CreateUserDto {
+                    user::CreateUserDto {
                         email: payload.email,
                         username: payload.username,
                         authentik_id: payload.pk,
@@ -125,16 +125,16 @@ pub async fn user_sync(
 
                 crate::entities::workspace::WorkspaceService::create(
                     &state,
-                    sql::workspace::dto::CreateWorkspaceDto {
-                        name: format!("{}'s workspace", user.username),
-                        owner_id: user.id,
+                    crate::entities::workspace::db::CreateWorkspaceDto {
+                        name: format!("{}'s workspace", created_user.username),
+                        owner_id: created_user.id,
                     },
                 )
                 .await?;
             }
         }
         UserLifecycleEvents::Deleted(payload) => {
-            sql::user::UserRepository::delete_by_authentik_id(&state.postgres, payload.pk)
+            user::UserRepository::delete_by_authentik_id(&state.postgres, payload.pk)
                 .await
                 .map_err(ErrorResponse::from)?;
         }

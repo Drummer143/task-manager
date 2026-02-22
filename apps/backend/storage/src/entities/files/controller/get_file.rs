@@ -7,6 +7,7 @@ use axum::{
 use error_handlers::{codes, handlers::ErrorResponse};
 use serde::Deserialize;
 use sql::shared::traits::PostgresqlRepositoryGetOneById;
+use crate::db::blobs::BlobsRepository;
 use std::{path::PathBuf, str};
 use tokio::fs::File;
 use tokio::io::{AsyncReadExt, AsyncSeekExt};
@@ -43,7 +44,7 @@ pub async fn get_file(
 ) -> Result<(StatusCode, HeaderMap, Body), ErrorResponse> {
     let response = validate_access(&state.main_service_url, user_id, asset_id).await?;
 
-    let blob = sql::blobs::BlobsRepository::get_one_by_id(&state.postgres, response.blob_id)
+    let blob = BlobsRepository::get_one_by_id(&state.postgres, response.blob_id)
         .await
         .map_err(ErrorResponse::from)?;
 

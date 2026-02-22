@@ -1,12 +1,12 @@
 use axum::{
-    Extension,
+    Json, Extension,
     extract::{Path, State},
 };
 use error_handlers::handlers::ErrorResponse;
 use uuid::Uuid;
 
 use crate::{
-    entities::page::dto::{CreatePageDto, PageResponse},
+    entities::page::dto::{CreatePageRequest, PageResponse},
     shared::{extractors::json::ValidatedJson, traits::ServiceCreateMethod},
     types::app_state::AppState,
 };
@@ -18,7 +18,7 @@ use crate::{
     params(
         ("workspace_id", Path, description = "Workspace ID"),
     ),
-    request_body = CreatePageDto,
+    request_body = CreatePageRequest,
     responses(
         (status = 200, description = "Page created", body = PageResponse),
         (status = 401, description = "Unauthorized", body = ErrorResponse),
@@ -30,11 +30,11 @@ pub async fn create_page(
     State(state): State<AppState>,
     Extension(user_id): Extension<Uuid>,
     Path(workspace_id): Path<Uuid>,
-    ValidatedJson(create_page_dto): ValidatedJson<CreatePageDto>,
-) -> Result<PageResponse, ErrorResponse> {
+    ValidatedJson(create_page_dto): ValidatedJson<CreatePageRequest>,
+) -> Result<Json<PageResponse>, ErrorResponse> {
     crate::entities::page::PageService::create(
         &state,
-        sql::page::dto::CreatePageDto {
+        crate::entities::page::db::dto::CreatePageDto {
             title: create_page_dto.title,
             r#type: create_page_dto.r#type,
             parent_page_id: create_page_dto.parent_page_id,
@@ -44,5 +44,5 @@ pub async fn create_page(
         },
     )
     .await
-    .map(PageResponse::from)
+    .map(|p| Json(PageResponse::from(p)))
 }

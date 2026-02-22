@@ -3,7 +3,7 @@ use std::collections::HashMap;
 use sqlx::types::Json;
 use uuid::Uuid;
 
-use crate::{entities::board_statuses::model::BoardStatus, shared::traits::UpdateDto};
+use sql::{board_statuses::model::BoardStatus, shared::traits::UpdateDto};
 
 pub struct CreateBoardStatusDto {
     pub page_id: Uuid,

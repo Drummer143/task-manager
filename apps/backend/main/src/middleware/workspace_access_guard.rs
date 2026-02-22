@@ -2,7 +2,7 @@ use axum::extract::State;
 use error_handlers::{codes, handlers::ErrorResponse};
 use uuid::Uuid;
 
-use crate::types::app_state::AppState;
+use crate::{entities::workspace::db::WorkspaceRepository, types::app_state::AppState};
 
 /// works only with path `/workspace/{workspace_id}/...`
 pub async fn workspace_access_guard(
@@ -39,18 +39,18 @@ pub async fn workspace_access_guard(
     let workspace_id = workspace_id.unwrap();
 
     let workspace_access =
-        sql::workspace::WorkspaceRepository::get_one_workspace_access(
+        WorkspaceRepository::get_one_workspace_access(
             &state.postgres,
             *user_id,
             workspace_id,
         )
         .await;
 
-    if workspace_access.is_err() {
+    if let Err(error) = workspace_access {
         let body = serde_json::to_string(&ErrorResponse::forbidden(
             codes::ForbiddenErrorCode::InsufficientPermissions,
             None,
-            None,
+            Some(error.to_string()),
         ))
         .unwrap();
 

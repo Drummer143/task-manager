@@ -1,6 +1,6 @@
 use uuid::Uuid;
 
-use crate::shared::{
+use sql::shared::{
     traits::{
         PostgresqlRepositoryCreate, PostgresqlRepositoryDelete, PostgresqlRepositoryGetOneById,
         PostgresqlRepositoryUpdate, RepositoryBase,
@@ -8,7 +8,7 @@ use crate::shared::{
     types::ShiftAction,
 };
 
-use super::model::Task;
+use sql::task::model::Task;
 
 pub struct TaskRepository;
 
@@ -25,9 +25,9 @@ impl PostgresqlRepositoryCreate for TaskRepository {
     ) -> Result<Self::Response, sqlx::Error> {
         sqlx::query_as::<_, Task>(
             r#"
-            INSERT INTO tasks 
-            (title, status_id, position, due_date, assignee_id, page_id, reporter_id, description, is_draft) 
-            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9) 
+            INSERT INTO tasks
+            (title, status_id, position, due_date, assignee_id, page_id, reporter_id, description, is_draft)
+            VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9)
             RETURNING *
             "#,
         )

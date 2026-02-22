@@ -4,7 +4,7 @@ use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use uuid::Uuid;
 
-use crate::{entities::user::model::User, shared::traits::UpdateDto};
+use sql::{user::model::User, shared::traits::UpdateDto};
 
 #[derive(Debug, Deserialize)]
 pub struct CreateUserDto {
@@ -14,6 +14,7 @@ pub struct CreateUserDto {
     pub authentik_id: i32,
 
     pub picture: Option<String>,
+    #[allow(dead_code)]
     pub is_active: Option<bool>,
 
     pub created_at: Option<DateTime<Utc>>,

@@ -4,6 +4,7 @@ use uuid::Uuid;
 use error_handlers::handlers::ErrorResponse;
 
 use crate::{
+    entities::user::db::{UserFilterBy, UserRepository, UserSortBy},
     shared::traits::{ServiceBase, ServiceGetAllWithPaginationMethod, ServiceGetOneByIdMethod},
     types::app_state::AppState,
 };
@@ -19,15 +20,15 @@ impl ServiceGetOneByIdMethod for UserService {
         app_state: &AppState,
         id: Uuid,
     ) -> Result<Self::Response, ErrorResponse> {
-        sql::user::UserRepository::get_one_by_id(&app_state.postgres, id)
+        UserRepository::get_one_by_id(&app_state.postgres, id)
             .await
             .map_err(ErrorResponse::from)
     }
 }
 
 impl ServiceGetAllWithPaginationMethod for UserService {
-    type FilterBy = sql::user::dto::UserFilterBy;
-    type SortBy = sql::user::dto::UserSortBy;
+    type FilterBy = UserFilterBy;
+    type SortBy = UserSortBy;
 
     async fn get_all_with_pagination(
         app_state: &AppState,
@@ -40,7 +41,7 @@ impl ServiceGetAllWithPaginationMethod for UserService {
         let limit = limit.unwrap_or(sql::shared::constants::DEFAULT_LIMIT);
         let offset = offset.unwrap_or(sql::shared::constants::DEFAULT_OFFSET);
 
-        sql::user::UserRepository::get_list(
+        UserRepository::get_list(
             &app_state.postgres,
             limit,
             offset,

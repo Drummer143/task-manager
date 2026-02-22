@@ -34,8 +34,8 @@ pub async fn create_draft(
     Extension(user_id): Extension<Uuid>,
     ValidatedPath(page_id): ValidatedPath<Uuid>,
     Json(body): Json<CreateDraftRequest>,
-) -> Result<TaskResponse, ErrorResponse> {
+) -> Result<Json<TaskResponse>, ErrorResponse> {
     TaskService::create_draft(&state, page_id, user_id, body)
         .await
-        .map(TaskResponse::from)
+        .map(|t| Json(TaskResponse::from(t)))
 }

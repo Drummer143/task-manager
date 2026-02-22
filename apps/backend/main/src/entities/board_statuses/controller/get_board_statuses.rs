@@ -7,7 +7,7 @@ use error_handlers::handlers::ErrorResponse;
 use uuid::Uuid;
 
 use crate::{
-    entities::board_statuses::dto::BoardStatusResponseDto,
+    entities::board_statuses::dto::BoardStatusResponse,
     types::app_state::AppState,
 };
 
@@ -18,7 +18,7 @@ use crate::{
         ("page_id", Path, description = "Page ID"),
     ),
     responses(
-        (status = 200, description = "Board statuses retrieved successfully", body = Vec<BoardStatusResponseDto>),
+        (status = 200, description = "Board statuses retrieved successfully", body = Vec<BoardStatusResponse>),
         (status = 400, description = "Invalid request body", body = ErrorResponse),
         (status = 500, description = "Internal server error", body = ErrorResponse),
     ),
@@ -28,7 +28,7 @@ pub async fn get_board_statuses(
     State(state): State<AppState>,
     Path(page_id): Path<Uuid>,
     headers: HeaderMap,
-) -> Result<Json<Vec<BoardStatusResponseDto>>, ErrorResponse> {
+) -> Result<Json<Vec<BoardStatusResponse>>, ErrorResponse> {
     let lang = headers
         .get("User-Language")
         .map(|lang| lang.to_str().unwrap_or("en"))
@@ -41,25 +41,25 @@ pub async fn get_board_statuses(
     .map(|statuses| {
         let statuses = statuses
             .iter()
-            .map(|status| BoardStatusResponseDto {
+            .map(|status| BoardStatusResponse {
                 id: status.id,
                 initial: status.initial,
                 title: status.localizations.get(lang).unwrap().to_string(),
             })
-            .collect::<Vec<BoardStatusResponseDto>>();
+            .collect::<Vec<BoardStatusResponse>>();
 
         Json(statuses)
     })
 
     // for status in statuses.iter_mut() {
-    //     let child_statuses: Vec<ChildBoardStatusResponseDto> = sql::board_statuses::BoardStatusRepository::get_child_statuses_by_parent_status_id(
+    //     let child_statuses: Vec<ChildBoardStatusResponse> = sql::board_statuses::BoardStatusRepository::get_child_statuses_by_parent_status_id(
     //         &state.postgres, status.status.id,
     //     )
     //     .await
     //     .map(|statuses| {
     //             statuses
     //                 .iter()
-    //                 .map(|status| ChildBoardStatusResponseDto {
+    //                 .map(|status| ChildBoardStatusResponse {
     //                     code: status.code.clone(),
     //                     title: status
     //                         .localizations
@@ -70,7 +70,7 @@ pub async fn get_board_statuses(
     //                     position: status.position,
     //                     initial: status.initial,
     //                 })
-    //                 .collect::<Vec<ChildBoardStatusResponseDto>>()
+    //                 .collect::<Vec<ChildBoardStatusResponse>>()
     //         })?;
 
     //     if !child_statuses.is_empty() {

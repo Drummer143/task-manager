@@ -81,13 +81,6 @@ pub struct Page {
     pub deleted_at: Option<DateTime<Utc>>,
 }
 
-#[derive(Debug, FromRow, Clone)]
-pub struct PageWithContent {
-    #[sqlx(flatten)]
-    pub page: Page,
-    pub content: Option<sqlx::types::Json<TipTapContent>>,
-}
-
 // PAGE ACCESS
 
 #[derive(Debug, Serialize, Deserialize, Clone, PartialEq, Eq, utoipa::ToSchema, PartialOrd)]
@@ -164,4 +157,11 @@ pub struct PageAccess {
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
     pub deleted_at: Option<DateTime<Utc>>,
+}
+
+#[derive(Debug, FromRow, Clone)]
+pub struct TextPageContent {
+    pub page_id: Uuid,
+    pub content: sqlx::types::Json<Option<TipTapContent>>,
+    pub updated_at: DateTime<Utc>,
 }

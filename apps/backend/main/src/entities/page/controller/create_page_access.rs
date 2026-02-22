@@ -6,7 +6,7 @@ use sql::page::model::PageAccess;
 use error_handlers::handlers::ErrorResponse;
 
 use crate::{
-    entities::page::dto::{CreatePageAccessDto, PageAccessResponse},
+    entities::page::dto::{CreatePageAccessRequest, PageAccessResponse},
     shared::{extractors::json::ValidatedJson, traits::ServiceGetOneByIdMethod},
 };
 
@@ -24,14 +24,14 @@ use crate::{
     params(
         ("page_id" = Uuid, Path, description = "Page ID"),
     ),
-    request_body = CreatePageAccessDto,
+    request_body = CreatePageAccessRequest,
     tags = ["Page Access"],
 )]
 pub async fn create_page_access(
     State(state): State<crate::types::app_state::AppState>,
     Extension(user_page_access): Extension<PageAccess>,
-    ValidatedJson(dto): ValidatedJson<CreatePageAccessDto>,
-) -> Result<PageAccessResponse, ErrorResponse> {
+    ValidatedJson(dto): ValidatedJson<CreatePageAccessRequest>,
+) -> Result<axum::Json<PageAccessResponse>, ErrorResponse> {
     if user_page_access.role < sql::page::model::Role::Admin {
         return Err(error_handlers::handlers::ErrorResponse::forbidden(
             error_handlers::codes::ForbiddenErrorCode::InsufficientPermissions,
@@ -72,7 +72,7 @@ pub async fn create_page_access(
 
     let page_access = crate::entities::page::PageService::create_page_access(
         &state,
-        sql::page::dto::CreatePageAccessDto {
+        crate::entities::page::db::dto::CreatePageAccessDto {
             user_id: target_user.id,
             page_id: user_page_access.page_id,
             role: dto.role,
@@ -80,12 +80,12 @@ pub async fn create_page_access(
     )
     .await?;
 
-    Ok(crate::entities::page::dto::PageAccessResponse {
+    Ok(axum::Json(crate::entities::page::dto::PageAccessResponse {
         id: page_access.id,
         user: target_user,
         role: page_access.role,
         created_at: page_access.created_at,
         updated_at: page_access.updated_at,
         deleted_at: page_access.deleted_at,
-    })
+    }))
 }

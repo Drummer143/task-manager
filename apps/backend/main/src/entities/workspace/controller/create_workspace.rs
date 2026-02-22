@@ -1,8 +1,8 @@
-use axum::{Extension, extract::State};
+use axum::{Extension, Json, extract::State};
 use error_handlers::handlers::ErrorResponse;
 
 use crate::{
-    entities::workspace::dto::{CreateWorkspaceDto, WorkspaceResponse},
+    entities::workspace::dto::{CreateWorkspaceRequest, WorkspaceResponse},
     shared::{extractors::json::ValidatedJson, traits::ServiceCreateMethod},
 };
 
@@ -17,22 +17,21 @@ use crate::{
         (status = 500, description = "Internal server error", body = ErrorResponse),
     ),
     tags = ["Workspace"],
-    request_body = CreateWorkspaceDto,
+    request_body = CreateWorkspaceRequest,
 )]
 pub async fn create_workspace(
     State(state): State<crate::types::app_state::AppState>,
     Extension(user_id): Extension<uuid::Uuid>,
-    ValidatedJson(dto): ValidatedJson<CreateWorkspaceDto>,
-) -> Result<WorkspaceResponse, ErrorResponse> {
-    let workspace = crate::entities::workspace::WorkspaceService::create(
+    ValidatedJson(dto): ValidatedJson<CreateWorkspaceRequest>,
+) -> Result<Json<WorkspaceResponse>, ErrorResponse> {
+    crate::entities::workspace::WorkspaceService::create(
         &state,
-        sql::workspace::dto::CreateWorkspaceDto {
+        crate::entities::workspace::db::CreateWorkspaceDto {
             name: dto.name,
             owner_id: user_id,
         },
     )
     .await
-    .map_err(|_| ErrorResponse::internal_server_error(None))?;
-
-    Ok(workspace.into())
+    .map_err(|_| ErrorResponse::internal_server_error(None))
+    .map(|w| Json(w.into()))
 }

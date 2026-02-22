@@ -1,55 +1,31 @@
 import { BaseRequest, mainInstance } from "./base";
 
-import { PaginationQuery, ResponseWithPagination, Workspace } from "../types";
-
-type GetWorkspaceIncludes = "owner" | "pages";
-
-type ResponseWithIncludeFilter<T extends GetWorkspaceIncludes | undefined = undefined> = Omit<
-	Workspace,
-	Exclude<GetWorkspaceIncludes, T>
->;
+import {
+	ChildPage,
+	PaginationQuery,
+	ResponseWithPagination,
+	User,
+	UserRole,
+	Workspace
+} from "../types";
 
 interface Ids {
 	workspaceId: string;
 }
 
-export type GetWorkspaceListRequest<T extends GetWorkspaceIncludes | undefined = undefined> =
-	BaseRequest<
-		PaginationQuery & {
-			include?: T[];
-		}
-	>;
+export type GetWorkspaceListRequest = BaseRequest<PaginationQuery>;
 
-export const getWorkspaceList = async <T extends GetWorkspaceIncludes | undefined = undefined>(
-	params: GetWorkspaceListRequest<T>
-) =>
+export const getWorkspaceList = async (params: GetWorkspaceListRequest) =>
 	(
-		await mainInstance.get<ResponseWithPagination<ResponseWithIncludeFilter<T>>>(
-			"/workspaces",
-			{
-				params: params.pathParams
-			}
-		)
+		await mainInstance.get<ResponseWithPagination<Workspace>>("/workspaces", {
+			params: params.pathParams
+		})
 	).data;
 
-export type GetWorkspaceRequest<T extends GetWorkspaceIncludes | undefined = undefined> =
-	BaseRequest<
-		Ids & {
-			include?: T[];
-		}
-	>;
+export type GetWorkspaceRequest = BaseRequest<Ids>;
 
-export const getWorkspace = async <T extends GetWorkspaceIncludes | undefined = undefined>(
-	params: GetWorkspaceRequest<T>
-) =>
-	(
-		await mainInstance.get<ResponseWithIncludeFilter<T>>(
-			`/workspaces/${params.pathParams.workspaceId}`,
-			{
-				params: { include: params.pathParams.include?.join(",") }
-			}
-		)
-	).data;
+export const getWorkspace = async (params: GetWorkspaceRequest) =>
+	(await mainInstance.get<Workspace>(`/workspaces/${params.pathParams.workspaceId}`)).data;
 
 export type CreateWorkspaceRequest = BaseRequest<never, { name: string }>;
 
@@ -74,10 +50,28 @@ export const cancelSoftDeleteWorkspace = async (params: CancelSoftDeleteWorkspac
 export type UpdateWorkspaceRequest = BaseRequest<Ids, { name?: string }>;
 
 export const updateWorkspace = async (params: UpdateWorkspaceRequest) =>
+	(await mainInstance.put<Workspace>(`/workspaces/${params.pathParams.workspaceId}`, params.body))
+		.data;
+
+export type GetWorkspaceDetailedRequest = BaseRequest<Ids>;
+
+export interface DetailedWorkspaceResponse {
+	id: string;
+	name: string;
+	role: UserRole;
+
+	owner: User;
+	pages: ChildPage[];
+
+	updatedAt: string;
+	createdAt: string;
+	deletedAt?: string;
+}
+
+export const getWorkspaceDetailed = async (params: GetWorkspaceDetailedRequest) =>
 	(
-		await mainInstance.put<Workspace>(
-			`/workspaces/${params.pathParams.workspaceId}`,
-			params.body
+		await mainInstance.get<DetailedWorkspaceResponse>(
+			`/workspaces/${params.pathParams.workspaceId}/detailed`
 		)
 	).data;
 

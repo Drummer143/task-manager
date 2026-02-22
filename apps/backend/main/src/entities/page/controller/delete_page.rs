@@ -1,4 +1,4 @@
-use axum::extract::{Path, State};
+use axum::{Json, extract::{Path, State}};
 use error_handlers::handlers::ErrorResponse;
 use uuid::Uuid;
 
@@ -21,8 +21,8 @@ use crate::{entities::page::dto::PageResponse, shared::traits::ServiceDeleteMeth
 pub async fn delete_page(
     State(state): State<AppState>,
     Path(page_id): Path<Uuid>,
-) -> Result<PageResponse, ErrorResponse> {
+) -> Result<Json<PageResponse>, ErrorResponse> {
     crate::entities::page::PageService::delete(&state, page_id)
         .await
-        .map(PageResponse::from)
+        .map(|p| Json(PageResponse::from(p)))
 }

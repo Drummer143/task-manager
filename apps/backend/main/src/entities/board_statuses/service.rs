@@ -2,23 +2,24 @@ use std::collections::HashMap;
 
 use error_handlers::{codes, handlers::ErrorResponse};
 
-use sql::{
-    board_statuses::{
-        dto::{CreateBoardStatusDto, UpdateBoardStatusDto},
-        model::BoardStatus,
-        BoardStatusRepository,
-    },
-    shared::traits::{PostgresqlRepositoryCreate, PostgresqlRepositoryDelete, PostgresqlRepositoryGetOneById, PostgresqlRepositoryUpdate},
-};
-use uuid::Uuid;
-
 use crate::{
+    entities::board_statuses::db::{
+        BoardStatusRepository, CreateBoardStatusDto, UpdateBoardStatusDto,
+    },
     shared::traits::{
         ServiceBase, ServiceCreateMethod, ServiceDeleteMethod, ServiceGetOneByIdMethod,
         ServiceUpdateMethod,
     },
     types::app_state::AppState,
 };
+use sql::{
+    board_statuses::model::BoardStatus,
+    shared::traits::{
+        PostgresqlRepositoryCreate, PostgresqlRepositoryDelete, PostgresqlRepositoryGetOneById,
+        PostgresqlRepositoryUpdate,
+    },
+};
+use uuid::Uuid;
 
 pub struct BoardStatusService;
 
