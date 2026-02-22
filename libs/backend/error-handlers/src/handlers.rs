@@ -1,7 +1,6 @@
 use axum::{
     http::StatusCode,
     response::{IntoResponse, Response},
-    Json,
 };
 use serde::{Deserialize, Serialize};
 use std::{borrow::Cow, collections::HashMap};
@@ -24,7 +23,7 @@ impl IntoResponse for ErrorResponse {
     fn into_response(self) -> Response {
         let status =
             StatusCode::from_u16(self.status_code).unwrap_or(StatusCode::INTERNAL_SERVER_ERROR);
-        (status, Json(self)).into_response()
+        (status, self).into_response()
     }
 }
 

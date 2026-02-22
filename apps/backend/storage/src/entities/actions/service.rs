@@ -1,11 +1,11 @@
 use std::{collections::HashMap, io::SeekFrom, path::Path};
 
+use crate::db::blobs::{BlobsRepository, CreateBlobDto};
 use axum::body::Bytes;
 use error_handlers::handlers::ErrorResponse;
 use mime_guess::mime;
 use once_cell::sync::Lazy;
 use rand::Rng;
-use crate::db::blobs::{BlobsRepository, CreateBlobDto};
 use sql::{blobs::model::Blob, shared::traits::PostgresqlRepositoryCreate};
 use syntect::parsing::SyntaxSet;
 use tokio::{
@@ -229,10 +229,9 @@ impl ActionsService {
             }
             TransactionType::VerifyRanges { ranges } => {
                 // Get existing blob path from DB
-                let blob =
-                    BlobsRepository::get_one_by_hash(&state.postgres, &meta.hash)
-                        .await
-                        .map_err(|e| ErrorResponse::internal_server_error(Some(e.to_string())))?;
+                let blob = BlobsRepository::get_one_by_hash(&state.postgres, &meta.hash)
+                    .await
+                    .map_err(|e| ErrorResponse::internal_server_error(Some(e.to_string())))?;
 
                 let mut file = tokio::fs::File::open(&blob.path)
                     .await
@@ -360,8 +359,7 @@ impl ActionsService {
             ));
         }
 
-        let blob = match BlobsRepository::get_one_by_hash(&state.postgres, &hash).await
-        {
+        let blob = match BlobsRepository::get_one_by_hash(&state.postgres, &hash).await {
             Ok(blob) => Ok(Some(blob)),
             Err(e) => match e {
                 sqlx::Error::RowNotFound => Ok(None),
