@@ -1,7 +1,7 @@
 import React, { memo, useCallback, useEffect, useRef, useState } from "react";
 
 import { InfiniteData, QueryKey, useInfiniteQuery, useQueryClient } from "@tanstack/react-query";
-import { BaseRequest, PaginationQuery, ResponseWithPagination } from "@task-manager/api";
+import { PaginationQuery, ResponseWithPagination } from "@task-manager/api";
 import { List, ListProps, Spin } from "antd";
 
 import { useStyles } from "./styles";
@@ -15,7 +15,7 @@ export interface ListWithInfiniteScrollProps<
 	visible?: boolean;
 	extraParams?: Record<string, number | boolean | string | undefined | null>;
 
-	fetchItems: (params: BaseRequest<PaginationQuery>) => Promise<Response>;
+	fetchItems: (params: PaginationQuery) => Promise<Response>;
 	renderItem: (
 		item: Response["data"][number],
 		index: number,
@@ -51,8 +51,7 @@ const ListWithInfiniteScroll = <
 		number
 	>({
 		queryKey,
-		queryFn: ({ pageParam }) =>
-			fetchItems({ pathParams: { ...extraParams, offset: pageParam, limit: 10 } }),
+		queryFn: ({ pageParam }) => fetchItems({ ...extraParams, offset: pageParam, limit: 10 }),
 		getNextPageParam: lastPage =>
 			lastPage.meta.hasMore ? lastPage.meta.offset + lastPage.meta.limit : undefined,
 		initialPageParam: 0,

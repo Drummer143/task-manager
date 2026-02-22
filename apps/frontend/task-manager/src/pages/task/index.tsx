@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React from "react";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getTask, updateTask } from "@task-manager/api";
-import { App, Button, Col, Flex, Form, Row, Typography } from "antd";
+import { getTask, updateTask } from "@task-manager/api/main";
+import { TipTapContent } from "@task-manager/api/main/schemas";
+import { App, Button, Flex, Form, Typography } from "antd";
 import { createStyles } from "antd-style";
 import dayjs from "dayjs";
 import { useParams } from "react-router";
@@ -62,16 +63,13 @@ const Task: React.FC = () => {
 		queryKey: [taskId],
 		enabled: !!taskId,
 		queryFn: async () => {
-			const result = await getTask({
-				pathParams: {
-					taskId
-				}
-			});
+			const result = await getTask(taskId);
 
 			return {
 				task: result,
 				initialValues: {
-					statusId: result.status.id,
+					// TODO: fix
+					statusId: result.status!.id,
 					title: result.title,
 					description: result.description,
 					assigneeId: result.assignee?.id,
@@ -83,12 +81,11 @@ const Task: React.FC = () => {
 
 	const { mutateAsync: handleSubmit, isPending: isSubmitPending } = useMutation({
 		mutationFn: (values: FormValues) =>
-			updateTask({
-				pathParams: { taskId },
-				body: {
-					...values,
-					dueDate: values.dueDate?.toISOString()
-				}
+			updateTask(taskId, {
+				...values,
+				// TODO: fix
+				description: values.description as TipTapContent,
+				dueDate: values.dueDate?.toISOString()
 			}),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: [taskId] });

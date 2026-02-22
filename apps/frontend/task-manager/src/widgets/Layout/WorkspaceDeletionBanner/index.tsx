@@ -1,7 +1,7 @@
 import React, { memo, useMemo } from "react";
 
 import { useQuery } from "@tanstack/react-query";
-import { getWorkspace } from "@task-manager/api";
+import { getWorkspaceById } from "@task-manager/api/main";
 import { useStorage } from "@task-manager/react-utils";
 import { Alert } from "antd";
 import { useLocation } from "react-router";
@@ -13,15 +13,21 @@ const WorkspaceDeletionBanner: React.FC = () => {
 
 	const workspaceId = useAuthStore(state => state.user.workspace.id);
 
-	const [closed, setClosed] = useStorage("workspace-deletion-banner-closed", false, false, sessionStorage);
+	const [closed, setClosed] = useStorage(
+		"workspace-deletion-banner-closed",
+		false,
+		false,
+		sessionStorage
+	);
 
 	const { data } = useQuery({
 		queryKey: ["workspace", workspaceId],
-		queryFn: () => getWorkspace({ pathParams: { workspaceId } }),
+		queryFn: () => getWorkspaceById(workspaceId),
 		enabled: !closed && !!workspaceId && !location.pathname.startsWith("/profile")
 	});
 
-	const showWorkspaceBanner = !closed && !location.pathname.startsWith("/profile") && data?.deletedAt;
+	const showWorkspaceBanner =
+		!closed && !location.pathname.startsWith("/profile") && data?.deletedAt;
 
 	const deletionDate = useMemo(
 		() =>

@@ -59,9 +59,9 @@ pub fn build_page_tree(pages: Vec<(Page, PageResponse)>) -> Vec<(Page, PageRespo
 #[utoipa::path(
     get,
     path = "/workspaces/{workspace_id}/pages",
-    operation_id = "get_list_in_workspace",
+    operation_id = "get_page_list",
     params(
-        ("workspace_id", Path, description = "Workspace ID"),
+        ("workspace_id" = Uuid, Path, description = "Workspace ID"),
         ("format" = Option<PageListFormat>, Query, description = "Format of response"),
     ),
     responses(
@@ -71,7 +71,7 @@ pub fn build_page_tree(pages: Vec<(Page, PageResponse)>) -> Vec<(Page, PageRespo
     ),
     tags = ["Page"],
 )]
-pub async fn get_list_in_workspace(
+pub async fn get_page_list(
     State(state): State<AppState>,
     ValidatedQuery(query): ValidatedQuery<PageListQuery>,
     Path(workspace_id): Path<Uuid>,

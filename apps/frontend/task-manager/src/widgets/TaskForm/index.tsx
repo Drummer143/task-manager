@@ -2,7 +2,8 @@ import React, { useCallback, useMemo } from "react";
 
 import { useQuery } from "@tanstack/react-query";
 import { required } from "@task-manager/ant-validation";
-import { createUploadToken, getBoardStatuses, getUserList, User } from "@task-manager/api";
+import { createUploadToken, getBoardStatuses, getUsersList } from "@task-manager/api/main";
+import { User } from "@task-manager/api/main/schemas";
 import { lazySuspense } from "@task-manager/react-utils";
 import { DatePicker, Form, Input, Select } from "antd";
 import { DefaultOptionType } from "antd/es/select";
@@ -26,7 +27,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ taskLoading, taskId, pageId, worksp
 	const { data: statuses, isLoading: statusesLoading } = useQuery({
 		queryKey: ["statuses", pageId],
 		enabled: !!taskId,
-		queryFn: () => getBoardStatuses({ pathParams: { pageId } })
+		queryFn: () => getBoardStatuses(pageId)
 	});
 
 	const statusSelectOptions = useMemo(
@@ -55,13 +56,11 @@ const TaskForm: React.FC<TaskFormProps> = ({ taskLoading, taskId, pageId, worksp
 	const getFileUploadToken = useCallback(
 		async (file: File, assetId: string) =>
 			createUploadToken({
-				body: {
-					assetId,
-					name: file.name,
-					target: {
-						type: "taskDescription",
-						id: taskId
-					}
+				assetId,
+				name: file.name,
+				target: {
+					type: "taskDescription",
+					id: taskId
 				}
 			}).then(res => res.token),
 		[taskId]
@@ -84,7 +83,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ taskLoading, taskId, pageId, worksp
 			<Form.Item label="Assignee" name="assigneeId">
 				<SelectWithInfiniteScroll
 					placeholder="Select task assignee"
-					fetchItems={getUserList}
+					fetchItems={getUsersList}
 					allowClear
 					enabled={!!taskId && !taskLoading}
 					filterQueryName="query"

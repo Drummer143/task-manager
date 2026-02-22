@@ -10,6 +10,10 @@ test_auth_guard = []
 name = "app"
 path = "src/app.rs"
 
+[[bin]]
+name = "export-openapi"
+path = "src/bin/export_openapi.rs"
+
 [dependencies]
 mimalloc = { version = "0.1", default-features = false }
 axum = "0.8"

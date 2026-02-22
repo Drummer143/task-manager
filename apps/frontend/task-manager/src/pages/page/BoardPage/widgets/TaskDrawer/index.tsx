@@ -2,7 +2,9 @@ import React, { useCallback, useMemo } from "react";
 
 import { ExportOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getTask, updateTask } from "@task-manager/api";
+import { getTask, updateTask } from "@task-manager/api/main";
+import { TipTapContent } from "@task-manager/api/main/schemas";
+import { JSONContent } from "@tiptap/core";
 import { App, Button, Flex, FormProps, Space } from "antd";
 import dayjs from "dayjs";
 import { useNavigate, useParams, useSearchParams } from "react-router";
@@ -31,16 +33,14 @@ const TaskDrawer: React.FC = () => {
 		queryKey: [taskId],
 		enabled: !!taskId,
 		queryFn: async (): Promise<FormValues> => {
-			const result = await getTask({
-				pathParams: {
-					taskId: taskId!
-				}
-			});
+			const result = await getTask(taskId!);
 
 			return {
-				statusId: result.status.id,
+				// TODO: fix
+				statusId: result.status!.id,
 				title: result.title,
-				description: result.description,
+				// TODO: fix
+				description: result.description as JSONContent,
 				assigneeId: result.assignee?.id,
 				dueDate: result.dueDate ? dayjs(result.dueDate) : undefined
 			};
@@ -49,14 +49,11 @@ const TaskDrawer: React.FC = () => {
 
 	const { mutateAsync: handleSubmit, isPending: isSubmitPending } = useMutation({
 		mutationFn: (values: FormValues) =>
-			updateTask({
-				pathParams: {
-					taskId: taskId!
-				},
-				body: {
-					...values,
-					dueDate: values.dueDate?.toISOString()
-				}
+			updateTask(taskId!, {
+				...values,
+				// TODO: fix
+				description: values.description as TipTapContent,
+				dueDate: values.dueDate?.toISOString()
 			}),
 		onSuccess: () => {
 			queryClient.invalidateQueries({ queryKey: [pageId] });

@@ -9,7 +9,7 @@ import FileInput from "../../../../widgets/FileInput";
 import ImageCrop from "../../../../widgets/ImageCrop";
 
 interface AvatarUploaderProps {
-	avatarUrl?: string;
+	avatarUrl?: string | null;
 }
 
 const AvatarUploader: React.FC<AvatarUploaderProps> = ({ avatarUrl }) => {

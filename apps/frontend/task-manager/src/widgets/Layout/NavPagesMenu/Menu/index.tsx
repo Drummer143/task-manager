@@ -1,13 +1,13 @@
 import React, { memo } from "react";
 
-import { Page } from "@task-manager/api";
+import { PageResponse } from "@task-manager/api/main/schemas";
 import { NavLink } from "react-router";
 
 import ItemWithSubmenu from "./ItemWithSubmenu";
 import { useStyles } from "./styles";
 
 interface MenuProps {
-	pages?: Pick<Page, "childPages" | "title" | "type" | "id">[] | undefined;
+	pages?: PageResponse[] | undefined;
 	onSubPageCreate: (parentId: string) => void;
 }
 

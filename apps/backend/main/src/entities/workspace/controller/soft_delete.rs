@@ -9,6 +9,9 @@ use error_handlers::handlers::ErrorResponse;
     delete,
     path = "/workspaces/{workspace_id}",
     operation_id = "soft_delete_workspace",
+    params(
+        ("workspace_id" = Uuid, Path, description = "Workspace ID"),
+    ),
     responses(
         (status = 200, description = "Workspace soft deleted", body = ()),
         (status = 401, description = "Unauthorized", body = ErrorResponse),

@@ -10,6 +10,7 @@ use crate::{
 #[utoipa::path(
     get,
     path = "/tasks/{task_id}",
+    operation_id = "get_task",
     responses(
         (status = 200, description = "Task retrieved successfully", body = TaskResponse),
         (status = 400, description = "Invalid request", body = ErrorResponse),

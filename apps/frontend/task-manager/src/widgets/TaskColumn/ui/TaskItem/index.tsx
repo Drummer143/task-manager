@@ -10,7 +10,7 @@ import {
 	type Edge,
 	extractClosestEdge
 } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
-import { PreviewTaskModel, User } from "@task-manager/api";
+import { TaskSummary, User } from "@task-manager/api/main/schemas";
 import { registerContextMenu } from "@task-manager/context-menu";
 import { Avatar, Flex, Tag, Typography } from "antd";
 
@@ -36,7 +36,7 @@ type TaskState =
 	  };
 
 interface TaskItemProps {
-	task: PreviewTaskModel & { assignee?: User };
+	task: TaskSummary & { assignee?: User };
 
 	draggable?: boolean;
 

@@ -1,8 +1,10 @@
 import React, { useCallback, useRef, useState } from "react";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { createUploadToken, DetailedPageResponseText, updatePage } from "@task-manager/api";
-import { Editor } from "@tiptap/react";
+// import { createUploadToken, DetailedPageResponseText, updatePage } from "@task-manager/api";
+import { createUploadToken, updatePage } from "@task-manager/api/main";
+import { DetailedPageResponseText, TipTapContent } from "@task-manager/api/main/schemas";
+import { Editor, JSONContent } from "@tiptap/react";
 import { App, Button } from "antd";
 
 import { useStyles } from "./styled";
@@ -25,7 +27,7 @@ const TextPage: React.FC<TextPageProps> = ({ page }) => {
 	const queryClient = useQueryClient();
 
 	const { mutateAsync, isPending } = useMutation({
-		mutationFn: updatePage,
+		mutationFn: (content: TipTapContent) => updatePage(page.id, { content }),
 		onSuccess: data => {
 			setEditing(false);
 
@@ -41,32 +43,23 @@ const TextPage: React.FC<TextPageProps> = ({ page }) => {
 	}, []);
 
 	const handleReset = useCallback(() => {
-		editorRef.current?.commands.setContent(page.content || "");
+		editorRef.current?.commands.setContent(page.content as JSONContent);
 
 		setEditing(false);
 	}, [page.content]);
 
 	const handleSave = async () => {
-		mutateAsync({
-			pathParams: {
-				pageId: page.id
-			},
-			body: {
-				content: editorRef.current?.getJSON()
-			}
-		});
+		mutateAsync(editorRef.current?.getJSON() as TipTapContent);
 	};
 
 	const getFileUploadToken = useCallback(
 		async (file: File, assetId: string) =>
 			createUploadToken({
-				body: {
-					assetId,
-					name: file.name,
-					target: {
-						type: "pageText",
-						id: page.id
-					}
+				assetId,
+				name: file.name,
+				target: {
+					type: "pageText",
+					id: page.id
 				}
 			}).then(res => res.token),
 		[page.id]
@@ -77,7 +70,7 @@ const TextPage: React.FC<TextPageProps> = ({ page }) => {
 			<MDEditor
 				ref={editorRef}
 				editable={editing}
-				value={page.content ?? undefined}
+				value={(page.content as JSONContent) ?? undefined}
 				getFileUploadToken={getFileUploadToken}
 			/>
 

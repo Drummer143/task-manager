@@ -1,17 +1,5 @@
-use std::sync::Arc;
-
-use axum::http;
 use mimalloc::MiMalloc;
-use types::app_state::InternalAuthState;
-use utoipa::OpenApi;
-use utils::{shutdown_signal::shutdown_signal, types::jwks::JwkSet};
-
-mod db;
-mod db_connections;
-mod entities;
-mod redis;
-mod swagger;
-mod types;
+use utils::shutdown_signal::shutdown_signal;
 
 #[global_allocator]
 static GLOBAL: MiMalloc = MiMalloc;
@@ -27,109 +15,13 @@ async fn main() {
         .with(tracing_subscriber::fmt::layer())
         .init();
 
-    let cors_origins: Vec<http::HeaderValue> = std::env::var("CORS_ORIGINS")
-        .unwrap_or_else(|_| "http://localhost:1346,http://localhost:80".to_string())
-        .split(',')
-        .filter_map(|s| s.trim().parse().ok())
-        .collect();
-
-    let cors = tower_http::cors::CorsLayer::new()
-        .allow_origin(tower_http::cors::AllowOrigin::list(cors_origins))
-        .allow_methods([
-            http::Method::GET,
-            http::Method::POST,
-            http::Method::OPTIONS,
-            http::Method::PUT,
-            http::Method::DELETE,
-            http::Method::PATCH,
-            http::Method::OPTIONS,
-        ])
-        .allow_headers([
-            http::header::CONTENT_TYPE,
-            http::header::AUTHORIZATION,
-            http::header::ACCEPT,
-            http::header::RANGE,
-            http::header::CONTENT_RANGE,
-        ])
-        .expose_headers([
-            http::header::CONTENT_RANGE,
-            http::header::CONTENT_LENGTH,
-            http::header::ACCEPT_RANGES,
-        ])
-        .allow_credentials(true);
-
     let port = std::env::var("SELF_PORT").unwrap_or("3000".to_string());
     let addr = format!("0.0.0.0:{}", port);
 
-    let (db, redis) = db_connections::init_databases(
-        &std::env::var("DATABASE_URL").expect("DATABASE_URL not found"),
-        &std::env::var("REDIS_URL").expect("REDIS_URL not found"),
-    )
-    .await;
+    let app = storage_app::build().await;
 
-    migrator::migrator::migrate(migrator::MigrationDirection::Up)
-        .await
-        .expect("Failed to run migrations");
-
-    let static_folder_path = std::path::PathBuf::from(
-        std::env::var("STATIC_FOLDER_PATH").expect("STATIC_FOLDER_PATH not found"),
-    );
-
-    let jwt_secret = std::env::var("JWT_SECRET").expect("JWT_SECRET not found");
-
-    let main_service_url = std::env::var("MAIN_SERVICE_URL").expect("MAIN_SERVICE_URL not found");
-
-    let jwks_url = std::env::var("AUTHENTIK_JWKS_URL").expect("AUTHENTIK_JWKS_URL must be set");
-    let authentik_audience =
-        std::env::var("AUTHENTIK_AUDIENCE").expect("AUTHENTIK_AUDIENCE must be set");
-
-    let jwks = reqwest::get(&jwks_url)
-        .await
-        .expect("Failed to fetch JWKS")
-        .json::<JwkSet>()
-        .await
-        .expect("Failed to parse JWKS");
-
-    let auth = InternalAuthState {
-        jwks: Arc::new(tokio::sync::RwLock::new(jwks)),
-        authentik_jwks_url: Arc::new(jwks_url),
-        authentik_audience: Arc::new(authentik_audience),
-    };
-
-    let assets_folder_path = static_folder_path.join("assets");
-    let temp_folder_path = static_folder_path.join("temp");
-
-    if !assets_folder_path.exists() {
-        std::fs::create_dir_all(&assets_folder_path).expect("Failed to create assets folder");
-    }
-
-    if !temp_folder_path.exists() {
-        std::fs::create_dir_all(&temp_folder_path).expect("Failed to create temp folder");
-    }
-
-    let app_state = types::app_state::AppState {
-        postgres: db,
-        redis: Arc::new(redis),
-        assets_folder_path: Arc::new(assets_folder_path.to_str().unwrap().to_string()),
-        temp_folder_path: Arc::new(temp_folder_path.to_str().unwrap().to_string()),
-        jwt_secret: Arc::new(jwt_secret),
-        main_service_url: Arc::new(main_service_url),
-        auth,
-    };
-
-    let app = axum::Router::new()
-        .merge(entities::actions::router::init(app_state.clone()))
-        .merge(entities::files::router::init(app_state.clone()))
-        .merge(
-            utoipa_swagger_ui::SwaggerUi::new("/api")
-                .url("/api/openapi.json", swagger::ApiDoc::openapi()),
-        )
-        .with_state(app_state)
-        .layer(tower_http::trace::TraceLayer::new_for_http())
-        .layer(cors);
-
-    tracing::info!("Listening on {}", addr);
     println!("Listening on {}", addr);
+    tracing::info!("Listening on {}", addr);
 
     let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
 

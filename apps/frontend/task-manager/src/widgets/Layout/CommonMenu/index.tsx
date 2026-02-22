@@ -1,7 +1,7 @@
 import React, { useMemo } from "react";
 
 import { useQuery } from "@tanstack/react-query";
-import { getWorkspace } from "@task-manager/api";
+import { getWorkspaceById } from "@task-manager/api/main";
 import { Menu, Spin } from "antd";
 import { ItemType, MenuItemType } from "antd/es/menu/interface";
 import { useLocation, useNavigate } from "react-router";
@@ -17,7 +17,7 @@ const CommonMenu: React.FC = () => {
 
 	const { data: workspace, isLoading } = useQuery({
 		queryKey: ["workspace", workspaceId],
-		queryFn: () => getWorkspace({ pathParams: { workspaceId } }),
+		queryFn: () => getWorkspaceById(workspaceId),
 		enabled: !!workspaceId
 	});
 

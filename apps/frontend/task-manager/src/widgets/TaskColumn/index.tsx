@@ -3,7 +3,8 @@ import React, { useEffect, useRef, useState } from "react";
 import { PlusOutlined } from "@ant-design/icons";
 import { dropTargetForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { BoardStatus, createDraft, PreviewTaskModel, User } from "@task-manager/api";
+import { createDraftTask } from "@task-manager/api/main";
+import { BoardStatusResponse, TaskSummary, User } from "@task-manager/api/main/schemas";
 import { registerContextMenu } from "@task-manager/context-menu";
 import { App, Button, Typography } from "antd";
 
@@ -14,9 +15,9 @@ import { ColumnTargetData, isTaskSource } from "../../shared/dnd/board";
 
 interface TaskColumnProps {
 	pageId: string;
-	status: BoardStatus;
+	status: BoardStatusResponse;
 
-	tasks?: (PreviewTaskModel & { assignee?: User })[];
+	tasks?: (TaskSummary & { assignee?: User })[];
 	draggable?: boolean;
 
 	onTaskClick?: (taskId: string) => void;
@@ -37,13 +38,8 @@ const TaskColumn: React.FC<TaskColumnProps> = ({
 
 	const { mutateAsync, isPending } = useMutation({
 		mutationFn: () =>
-			createDraft({
-				pathParams: {
-					pageId
-				},
-				body: {
-					boardStatusId: status.id
-				}
+			createDraftTask(pageId, {
+				boardStatusId: status.id
 			}),
 		onSuccess: draft => {
 			queryClient.invalidateQueries({ queryKey: [pageId] });

@@ -1,11 +1,10 @@
 import React, { memo } from "react";
 
 import { ExportOutlined } from "@ant-design/icons";
-import { User } from "@task-manager/api";
+import { User } from "@task-manager/api/main/schemas";
 import { stopPropagation } from "@task-manager/utils";
-import { Avatar, Button, Col, Flex, Row, Typography } from "antd";
+import { Avatar, Button, Flex, Typography } from "antd";
 import { createStyles } from "antd-style";
-import { Link } from "react-router";
 
 interface UserCardProps {
 	user: User;

@@ -2,7 +2,7 @@ import React, { useMemo } from "react";
 
 import { DeleteOutlined, UndoOutlined } from "@ant-design/icons";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { cancelSoftDeleteWorkspace, softDeleteWorkspace } from "@task-manager/api";
+import { cancelSoftDeleteWorkspace, softDeleteWorkspace } from "@task-manager/api/main";
 import { useFunctionWithFeedback } from "@task-manager/react-utils";
 import { Button, Flex, Typography } from "antd";
 import { createStyles } from "antd-style";
@@ -13,7 +13,7 @@ import { today } from "../../../../shared/constants";
 interface DangerZoneProps {
 	workspaceId: string;
 
-	deletedAt?: string;
+	deletedAt?: string | null;
 }
 
 const useStyles = createStyles(({ css }) => ({
@@ -46,9 +46,7 @@ const DangerZone: React.FC<DangerZoneProps> = ({ workspaceId, deletedAt }) => {
 
 	const handleDeleteWorkspace = useFunctionWithFeedback({
 		callback: async () => {
-			await mutateAsync({
-				pathParams: { workspaceId }
-			});
+			await mutateAsync(workspaceId);
 
 			return true;
 		},

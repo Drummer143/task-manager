@@ -1,7 +1,7 @@
 use crate::{
     entities::page::controller::{
         create_page::create_page, create_page_access::create_page_access, delete_page::delete_page,
-        get_list_in_workspace::get_list_in_workspace, get_page::get_page,
+        get_page_list::get_page_list, get_page::get_page,
         get_page_access_list::get_page_access_list, get_page_details::get_page_details,
         update_page::update_page, update_page_access::update_page_access,
     },
@@ -17,7 +17,7 @@ pub fn init(state: AppState) -> Router<AppState> {
         )
         .route(
             "/workspaces/{workspace_id}/pages",
-            routing::get(get_list_in_workspace),
+            routing::get(get_page_list),
         )
         .layer(axum::middleware::from_fn_with_state(
             state.clone(),

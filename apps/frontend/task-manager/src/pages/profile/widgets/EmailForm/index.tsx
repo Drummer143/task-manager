@@ -6,7 +6,7 @@ import { changeEmail } from "@task-manager/api";
 import { App, Button, Form, Input } from "antd";
 
 interface EmailFormProps {
-	email: string;
+	email?: string | null;
 }
 
 const requiredRule = composeRules(required(), email());
@@ -14,7 +14,7 @@ const requiredRule = composeRules(required(), email());
 const EmailForm: React.FC<EmailFormProps> = ({ email }) => {
 	const queryClient = useQueryClient();
 
-	const initialValues = useMemo(() => ({ email }), [email]);
+	const initialValues = useMemo(() => ({ email: email ?? "" }), [email]);
 
 	const message = App.useApp().message;
 
@@ -44,3 +44,4 @@ const EmailForm: React.FC<EmailFormProps> = ({ email }) => {
 };
 
 export default EmailForm;
+

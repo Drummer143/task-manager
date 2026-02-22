@@ -1,6 +1,6 @@
 import React from "react";
 
-import { DetailedPageResponseBoard } from "@task-manager/api";
+import { DetailedPageResponseBoard } from "@task-manager/api/main/schemas";
 import { lazySuspense } from "@task-manager/react-utils";
 
 import TaskTable from "./widgets/TaskTable";

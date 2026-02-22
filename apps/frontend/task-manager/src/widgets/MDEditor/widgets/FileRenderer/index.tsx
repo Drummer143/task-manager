@@ -7,7 +7,7 @@ import {
 	EyeOutlined
 } from "@ant-design/icons";
 import { useMutation } from "@tanstack/react-query";
-import { storageInstance } from "@task-manager/api";
+import { axiosInstance } from "@task-manager/api";
 import { lazySuspense } from "@task-manager/react-utils";
 import { mergeDeep, NodeViewProps, NodeViewWrapper, ReactNodeViewRenderer } from "@tiptap/react";
 import { Button, Flex, Select, Spin } from "antd";
@@ -132,13 +132,13 @@ const FileRender: React.FC<NodeViewProps> = info => {
 				throw new Error("Unprocessable file");
 			}
 
-			const response = await storageInstance.get(url, {
+			const response = await axiosInstance.get(`/storage/${url}`, {
 				responseType: "text"
 			});
 
 			setLang(
-				data?.headers["Content-Type"]
-					? getLanguageFromMime(data.headers["Content-Type"].toString())
+				response?.headers["Content-Type"]
+					? getLanguageFromMime(response.headers["Content-Type"].toString())
 					: "text"
 			);
 
@@ -164,11 +164,11 @@ const FileRender: React.FC<NodeViewProps> = info => {
 
 	const link = useMemo(() => {
 		if (info.node.attrs["href"]) {
-			return info.node.attrs["href"];
+			return `/storage/${info.node.attrs["href"]}`;
 		} else if (info.node.attrs["src"]) {
-			return info.node.attrs["src"];
+			return `/storage/${info.node.attrs["src"]}`;
 		} else if (info.node.attrs["id"]) {
-			return `${storageInstance.defaults.baseURL}/files/${info.node.attrs["id"]}`;
+			return `/storage/files/${info.node.attrs["id"]}`;
 		}
 	}, [info.node.attrs]);
 

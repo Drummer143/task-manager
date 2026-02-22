@@ -1,4 +1,4 @@
-import { UploadSuccessResponse } from "@task-manager/api";
+import { UploadSuccessResponse } from "@task-manager/api/storage/schemas";
 
 export interface StartUploadEvent {
 	type: "upload";

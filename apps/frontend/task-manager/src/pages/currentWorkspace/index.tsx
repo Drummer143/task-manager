@@ -1,13 +1,13 @@
 import React, { useMemo } from "react";
 
 import { useQuery } from "@tanstack/react-query";
+import { parseApiError } from "@task-manager/api";
 import {
 	createWorkspaceAccess,
-	getWorkspaceAccess,
-	getWorkspaceDetailed,
-	parseApiError,
+	getDetailedWorkspace,
+	getWorkspaceAccessList,
 	updateWorkspaceAccess
-} from "@task-manager/api";
+} from "@task-manager/api/main";
 import { Alert, Divider, Typography } from "antd";
 
 import { useStyles } from "./styles";
@@ -30,26 +30,15 @@ const CurrentWorkspace: React.FC = () => {
 		error: errorWorkspace
 	} = useQuery({
 		queryKey: ["workspace", "owner", workspaceId],
-		queryFn: () => getWorkspaceDetailed({ pathParams: { workspaceId } })
+		queryFn: () => getDetailedWorkspace(workspaceId)
 	});
 
 	const accessListProps = useMemo<AccessListProps>(
 		() => ({
 			queryKey: ["access", workspaceId],
-			updateAccess: body =>
-				updateWorkspaceAccess({
-					pathParams: { workspaceId },
-					body
-				}),
-			getAccessList: () =>
-				getWorkspaceAccess({
-					pathParams: { workspaceId }
-				}),
-			createAccess: body =>
-				createWorkspaceAccess({
-					pathParams: { workspaceId },
-					body
-				})
+			updateAccess: body => updateWorkspaceAccess(workspaceId, body),
+			getAccessList: () => getWorkspaceAccessList(workspaceId),
+			createAccess: body => createWorkspaceAccess(workspaceId, body)
 		}),
 		[workspaceId]
 	);

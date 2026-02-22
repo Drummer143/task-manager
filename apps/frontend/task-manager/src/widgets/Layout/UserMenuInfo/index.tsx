@@ -5,7 +5,7 @@ import { createStyles } from "antd-style";
 
 interface UserMenuInfoProps {
 	mobile?: boolean;
-	picture?: string;
+	picture?: string | null;
 	username?: string;
 
 	onClick?: React.MouseEventHandler<HTMLDivElement>;

@@ -13,6 +13,10 @@ mod swagger;
 mod types;
 mod webhooks;
 
+pub fn openapi_json() -> String {
+    serde_json::to_string_pretty(&swagger::ApiDoc::openapi()).unwrap()
+}
+
 pub async fn build() -> axum::Router {
     let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL not found");
 

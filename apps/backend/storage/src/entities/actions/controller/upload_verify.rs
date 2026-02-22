@@ -16,6 +16,9 @@ use crate::{
 #[utoipa::path(
     post,
     path = "/actions/upload/{transaction_id}/verify",
+    params(
+        ("transaction_id" = Uuid, Path, description = "Transaction ID"),
+    ),
     request_body(
         content = UploadVerifyDto,
         content_type = "application/json",

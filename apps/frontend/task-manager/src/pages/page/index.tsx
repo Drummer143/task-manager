@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 
 import { useQuery } from "@tanstack/react-query";
-import { getDetailedPage } from "@task-manager/api";
+import { getPageDetailed } from "@task-manager/api/main";
 import { lazySuspense, useDisclosure } from "@task-manager/react-utils";
 import { Navigate, useNavigate, useParams } from "react-router";
 
@@ -28,9 +28,7 @@ const Page: React.FC = () => {
 	const { data: page, isLoading } = useQuery({
 		queryKey: [pageId],
 		queryFn: () =>
-			getDetailedPage({
-				pathParams: { pageId }
-			}).catch(error => {
+			getPageDetailed(pageId).catch(error => {
 				navigate("/profile", { replace: true });
 
 				throw error;

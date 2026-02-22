@@ -1,7 +1,7 @@
 import React, { memo, useMemo } from "react";
 
 import { useQuery } from "@tanstack/react-query";
-import { getPageList } from "@task-manager/api";
+import { getPageList } from "@task-manager/api/main";
 import { Empty, Tree, Typography } from "antd";
 
 import { preparePageTree } from "./utils";
@@ -15,10 +15,7 @@ interface PageTreeProps {
 const PageTree: React.FC<PageTreeProps> = ({ workspaceId, editable }) => {
 	const { data: pages, isLoading } = useQuery({
 		queryKey: ["pages", "tree", workspaceId],
-		queryFn: () =>
-			getPageList({
-				pathParams: { workspaceId, format: "tree" }
-			})
+		queryFn: () => getPageList(workspaceId, { format: "tree" })
 	});
 
 	const pageTree = useMemo(() => preparePageTree(pages, editable), [editable, pages]);

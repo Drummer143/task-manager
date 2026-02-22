@@ -19,7 +19,7 @@ use crate::{
     post,
     path = "/pages/{page_id}/board-statuses",
     params(
-        ("page_id", Path, description = "Page ID"),
+        ("page_id" = Uuid, Path, description = "Page ID"),
     ),
     request_body = CreateBoardStatusRequest,
     responses(

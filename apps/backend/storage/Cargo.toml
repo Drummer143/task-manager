@@ -3,6 +3,17 @@ name = "storage"
 version = "0.1.0"
 edition = "2024"
 
+[lib]
+name = "storage_app"
+path = "src/app.rs"
+
+[[bin]]
+name = "storage"
+path = "src/main.rs"
+
+[[bin]]
+name = "export-openapi-storage"
+path = "src/bin/export_openapi.rs"
 
 [dependencies]
 mimalloc = { version = "0.1", default-features = false }

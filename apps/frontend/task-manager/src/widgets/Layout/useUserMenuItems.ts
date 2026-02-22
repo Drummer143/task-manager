@@ -1,7 +1,7 @@
 import { useMemo } from "react";
 
 import { useQuery } from "@tanstack/react-query";
-import { getWorkspaceList } from "@task-manager/api";
+import { getWorkspacesList } from "@task-manager/api/main";
 import { MenuProps } from "antd";
 import { useNavigate } from "react-router";
 
@@ -15,7 +15,7 @@ export const useUserMenuItems = () => {
 
 	const { data, isLoading } = useQuery({
 		queryKey: ["workspaces"],
-		queryFn: () => getWorkspaceList({ pathParams: { limit: -1 } })
+		queryFn: () => getWorkspacesList({ limit: -1 })
 	});
 
 	const menu = useMemo<MenuProps>(

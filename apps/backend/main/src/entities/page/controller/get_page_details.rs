@@ -14,7 +14,7 @@ use crate::{
     path = "/pages/{page_id}/detailed",
     operation_id = "get_page_detailed",
     params(
-        ("page_id", Path, description = "Page ID"),
+        ("page_id" = Uuid, Path, description = "Page ID"),
     ),
     responses(
         (status = 200, description = "Page details", body = DetailedPageResponse),

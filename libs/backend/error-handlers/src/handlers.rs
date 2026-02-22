@@ -8,6 +8,7 @@ use std::{borrow::Cow, collections::HashMap};
 use super::codes;
 
 #[derive(Debug, Serialize, Deserialize, utoipa::ToSchema)]
+#[serde(rename_all = "camelCase")]
 pub struct ErrorResponse {
     pub error: Cow<'static, str>,
     pub error_code: String,
