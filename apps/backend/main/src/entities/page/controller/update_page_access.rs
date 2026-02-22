@@ -5,7 +5,7 @@ use error_handlers::handlers::ErrorResponse;
 use sql::page::model::PageAccess;
 
 use crate::{
-    entities::page::dto::{PageAccessResponse, UpdatePageAccessDto},
+    entities::page::dto::{PageAccessResponse, UpdatePageAccessRequest},
     shared::{extractors::json::ValidatedJson, traits::ServiceGetOneByIdMethod},
 };
 
@@ -23,15 +23,15 @@ use crate::{
     params(
         ("page_id" = Uuid, Path, description = "Page ID"),
     ),
-    request_body = UpdatePageAccessDto,
+    request_body = UpdatePageAccessRequest,
     tags = ["Page Access"],
 )]
 pub async fn update_page_access(
     State(state): State<crate::types::app_state::AppState>,
     Extension(user_page_access): Extension<PageAccess>,
     // Path(page_id): Path<Uuid>,
-    ValidatedJson(dto): ValidatedJson<UpdatePageAccessDto>,
-) -> Result<PageAccessResponse, ErrorResponse> {
+    ValidatedJson(dto): ValidatedJson<UpdatePageAccessRequest>,
+) -> Result<axum::Json<PageAccessResponse>, ErrorResponse> {
     if user_page_access.role < sql::page::model::Role::Admin {
         return Err(error_handlers::handlers::ErrorResponse::forbidden(
             error_handlers::codes::ForbiddenErrorCode::InsufficientPermissions,
@@ -55,7 +55,7 @@ pub async fn update_page_access(
     )
     .await?;
 
-    Ok(PageAccessResponse {
+    Ok(axum::Json(PageAccessResponse {
         id: page_access.id,
         user: crate::entities::user::UserService::get_one_by_id(&state, page_access.user_id)
             .await?,
@@ -63,5 +63,5 @@ pub async fn update_page_access(
         created_at: page_access.created_at,
         updated_at: page_access.updated_at,
         deleted_at: page_access.deleted_at,
-    })
+    }))
 }

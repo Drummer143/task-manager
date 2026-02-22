@@ -5,7 +5,7 @@ use uuid::Uuid;
 
 #[derive(utoipa::ToSchema, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct CreateBoardStatusDto {
+pub struct CreateBoardStatusRequest {
     pub position: i32,
     pub localizations: HashMap<String, String>,
     // pub parent_status_id: Option<Uuid>,
@@ -14,7 +14,7 @@ pub struct CreateBoardStatusDto {
 
 #[derive(Debug, Clone, utoipa::ToSchema, Serialize)]
 #[serde(rename_all = "camelCase")]
-pub struct BoardStatusResponseDto {
+pub struct BoardStatusResponse {
     pub id: Uuid,
     // pub position: i32,
     pub title: String,

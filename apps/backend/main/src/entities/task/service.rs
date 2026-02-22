@@ -174,7 +174,7 @@ impl TaskService {
         state: &AppState,
         page_id: Uuid,
         reporter_id: Uuid,
-        dto: crate::entities::task::dto::CreateTaskDto,
+        dto: crate::entities::task::dto::CreateTaskRequest,
     ) -> Result<Task, ErrorResponse> {
         let last_position = TaskRepository::get_last_position(&state.postgres, dto.status_id)
             .await

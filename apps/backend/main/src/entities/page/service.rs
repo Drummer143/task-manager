@@ -7,7 +7,7 @@ use crate::{
     entities::{
         board_statuses::{
             db::{BoardStatusRepository, CreateBoardStatusDto},
-            dto::BoardStatusResponseDto,
+            dto::BoardStatusResponse,
         },
         page::{
             db::{
@@ -17,7 +17,7 @@ use crate::{
             dto::{
                 DetailedPageResponse, DetailedPageResponseBase, DetailedPageResponseBoard,
                 DetailedPageResponseGroup, DetailedPageResponseText, PageAccessResponse,
-                PageResponseWithoutInclude, TaskResponse, UpdatePageDto as ApiUpdatePageDto,
+                PageSummary, TaskSummary, UpdatePageRequest,
             },
         },
         task::db::TaskRepository,
@@ -93,7 +93,7 @@ impl ServiceCreateMethod for PageService {
 }
 
 impl ServiceUpdateMethod for PageService {
-    type UpdateDto = ApiUpdatePageDto;
+    type UpdateDto = UpdatePageRequest;
 
     async fn update(
         app_state: &AppState,
@@ -320,7 +320,7 @@ impl PageService {
                             assignee_ids.insert(assignee_id);
                         }
 
-                        TaskResponse {
+                        TaskSummary {
                             id: t.id,
                             title: t.title.clone(),
                             due_date: t.due_date,
@@ -341,7 +341,7 @@ impl PageService {
                     assignees,
                     statuses: statuses
                         .into_iter()
-                        .map(|s| BoardStatusResponseDto {
+                        .map(|s| BoardStatusResponse {
                             id: s.id,
                             title: s.localizations.get(&lang).cloned().unwrap_or_else(|| {
                                 s.localizations.get("en").cloned().unwrap_or_default()
@@ -360,7 +360,7 @@ impl PageService {
                     base,
                     child_pages: child_pages
                         .iter()
-                        .map(PageResponseWithoutInclude::from)
+                        .map(PageSummary::from)
                         .collect(),
                 }))
             }

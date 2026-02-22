@@ -55,8 +55,7 @@ use utils::swagger::SecurityAddon;
 
         crate::entities::page::dto::PageListFormat,
 
-        crate::entities::workspace::dto::WorkspaceInfo,
-        crate::entities::workspace::dto::WorkspaceSortBy,
+        crate::entities::workspace::db::WorkspaceSortBy,
     )),
     security(
         ("bearer_auth" = [])

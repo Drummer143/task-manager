@@ -7,13 +7,13 @@ use sql::{
 };
 use uuid::Uuid;
 
-use crate::entities::board_statuses::dto::BoardStatusResponseDto;
+use crate::entities::board_statuses::dto::BoardStatusResponse;
 
 // PAGE
 
 #[derive(Debug, Deserialize, utoipa::ToSchema)]
 #[serde(rename_all = "camelCase")]
-pub struct CreatePageDto {
+pub struct CreatePageRequest {
     pub title: String,
     pub r#type: PageType,
     pub content: Option<TipTapContent>,
@@ -22,7 +22,7 @@ pub struct CreatePageDto {
 
 #[derive(Debug, utoipa::ToSchema, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct UpdatePageDto {
+pub struct UpdatePageRequest {
     pub title: Option<String>,
 
     pub content: Option<Option<TipTapContent>>,
@@ -30,7 +30,7 @@ pub struct UpdatePageDto {
 
 #[derive(Debug, Serialize, Clone, utoipa::ToSchema)]
 #[serde(rename_all = "camelCase")]
-pub struct PageResponseWithoutInclude {
+pub struct PageSummary {
     pub id: Uuid,
     pub r#type: PageType,
     pub title: String,
@@ -40,7 +40,7 @@ pub struct PageResponseWithoutInclude {
     pub deleted_at: Option<DateTime<Utc>>,
 }
 
-impl From<Page> for PageResponseWithoutInclude {
+impl From<Page> for PageSummary {
     fn from(page: Page) -> Self {
         Self {
             id: page.id,
@@ -53,7 +53,7 @@ impl From<Page> for PageResponseWithoutInclude {
     }
 }
 
-impl From<&Page> for PageResponseWithoutInclude {
+impl From<&Page> for PageSummary {
     fn from(page: &Page) -> Self {
         Self {
             id: page.id,
@@ -66,33 +66,7 @@ impl From<&Page> for PageResponseWithoutInclude {
     }
 }
 
-#[derive(Debug, Serialize, Clone, utoipa::ToSchema)]
-#[serde(rename_all = "camelCase")]
-pub struct ChildPageResponse {
-    pub id: Uuid,
-    pub r#type: PageType,
-    pub title: String,
-
-    pub created_at: DateTime<Utc>,
-    pub updated_at: DateTime<Utc>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub deleted_at: Option<DateTime<Utc>>,
-}
-
-impl From<Page> for ChildPageResponse {
-    fn from(page: Page) -> Self {
-        Self {
-            id: page.id,
-            r#type: page.r#type,
-            title: page.title,
-            created_at: page.created_at,
-            updated_at: page.updated_at,
-            deleted_at: page.deleted_at,
-        }
-    }
-}
-
-impl From<PageResponse> for ChildPageResponse {
+impl From<PageResponse> for PageSummary {
     fn from(page: PageResponse) -> Self {
         Self {
             id: page.id,
@@ -113,18 +87,12 @@ pub struct PageResponse {
     pub title: String,
 
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub child_pages: Option<Vec<ChildPageResponse>>,
+    pub child_pages: Option<Vec<PageSummary>>,
 
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub deleted_at: Option<DateTime<Utc>>,
-}
-
-impl axum::response::IntoResponse for PageResponse {
-    fn into_response(self) -> axum::response::Response {
-        (axum::http::StatusCode::OK, axum::Json(self)).into_response()
-    }
 }
 
 impl From<Page> for PageResponse {
@@ -157,14 +125,14 @@ pub struct PageListQuery {
 
 #[derive(Debug, utoipa::ToSchema, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct CreatePageAccessDto {
+pub struct CreatePageAccessRequest {
     pub user_id: Uuid,
     pub role: Role,
 }
 
 #[derive(Debug, utoipa::ToSchema, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct UpdatePageAccessDto {
+pub struct UpdatePageAccessRequest {
     pub user_id: Uuid,
     pub role: Option<Role>,
 }
@@ -178,12 +146,6 @@ pub struct PageAccessResponse {
     pub updated_at: DateTime<Utc>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub deleted_at: Option<DateTime<Utc>>,
-}
-
-impl axum::response::IntoResponse for PageAccessResponse {
-    fn into_response(self) -> axum::response::Response {
-        (axum::http::StatusCode::OK, axum::Json(self)).into_response()
-    }
 }
 
 #[derive(Debug, Serialize, utoipa::ToSchema)]
@@ -208,7 +170,7 @@ pub struct DetailedPageResponseText {
 
 #[derive(Debug, Serialize, utoipa::ToSchema)]
 #[serde(rename_all = "camelCase")]
-pub struct TaskResponse {
+pub struct TaskSummary {
     pub id: Uuid,
     pub title: String,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -225,8 +187,8 @@ pub struct TaskResponse {
 pub struct DetailedPageResponseBoard {
     #[serde(flatten)]
     pub base: DetailedPageResponseBase,
-    pub statuses: Vec<BoardStatusResponseDto>,
-    pub tasks: Vec<TaskResponse>,
+    pub statuses: Vec<BoardStatusResponse>,
+    pub tasks: Vec<TaskSummary>,
     pub assignees: Vec<User>,
 }
 
@@ -236,7 +198,7 @@ pub struct DetailedPageResponseGroup {
     #[serde(flatten)]
     pub base: DetailedPageResponseBase,
 
-    pub child_pages: Vec<PageResponseWithoutInclude>,
+    pub child_pages: Vec<PageSummary>,
 }
 
 #[derive(Debug, Serialize, utoipa::ToSchema)]

@@ -1,9 +1,9 @@
-use axum::extract::{Extension, Path, State};
+use axum::{Json, extract::{Extension, Path, State}};
 use error_handlers::handlers::ErrorResponse;
 use uuid::Uuid;
 
 use crate::{
-    entities::task::dto::{CreateTaskDto, TaskResponse},
+    entities::task::dto::{CreateTaskRequest, TaskResponse},
     shared::extractors::json::ValidatedJson,
 };
 
@@ -18,16 +18,16 @@ use crate::{
     params(
         ("page_id" = Uuid, Path, description = "Page ID"),
     ),
-    request_body(content = CreateTaskDto),
+    request_body(content = CreateTaskRequest),
     tag = "Tasks",
 )]
 pub async fn create_task(
     State(state): State<crate::types::app_state::AppState>,
     Extension(reporter_id): Extension<Uuid>,
     Path(page_id): Path<Uuid>,
-    ValidatedJson(dto): ValidatedJson<CreateTaskDto>,
-) -> Result<TaskResponse, ErrorResponse> {
+    ValidatedJson(dto): ValidatedJson<CreateTaskRequest>,
+) -> Result<Json<TaskResponse>, ErrorResponse> {
     crate::entities::task::TaskService::create_for_page(&state, page_id, reporter_id, dto)
         .await
-        .map(TaskResponse::from)
+        .map(|t| Json(TaskResponse::from(t)))
 }

@@ -1,9 +1,9 @@
-use axum::extract::{Path, State};
+use axum::{Json, extract::{Path, State}};
 use error_handlers::handlers::ErrorResponse;
 use uuid::Uuid;
 
 use crate::{
-    entities::page::dto::{PageResponse, UpdatePageDto},
+    entities::page::dto::{PageResponse, UpdatePageRequest},
     shared::{extractors::json::ValidatedJson, traits::ServiceUpdateMethod},
     types::app_state::AppState,
 };
@@ -15,7 +15,7 @@ use crate::{
     params(
         ("page_id" = Uuid, Path, description = "Page ID"),
     ),
-    request_body = UpdatePageDto,
+    request_body = UpdatePageRequest,
     responses(
         (status = 200, description = "Page updated successfully", body = PageResponse),
         (status = 400, description = "Bad request", body = ErrorResponse),
@@ -27,9 +27,9 @@ use crate::{
 pub async fn update_page(
     State(state): State<AppState>,
     Path(page_id): Path<Uuid>,
-    ValidatedJson(update_page_dto): ValidatedJson<UpdatePageDto>,
-) -> Result<PageResponse, ErrorResponse> {
+    ValidatedJson(update_page_dto): ValidatedJson<UpdatePageRequest>,
+) -> Result<Json<PageResponse>, ErrorResponse> {
     crate::entities::page::PageService::update(&state, page_id, update_page_dto)
         .await
-        .map(PageResponse::from)
+        .map(|p| Json(PageResponse::from(p)))
 }

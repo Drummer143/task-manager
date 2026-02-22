@@ -9,7 +9,7 @@ use error_handlers::handlers::ErrorResponse;
 use sql::workspace::model::WorkspaceAccess;
 
 use crate::{
-    entities::workspace::dto::CreateWorkspaceAccessDto,
+    entities::workspace::dto::CreateWorkspaceAccessRequest,
     shared::{extractors::json::ValidatedJson, traits::ServiceGetOneByIdMethod},
 };
 
@@ -27,15 +27,15 @@ use crate::{
     params(
         ("workspace_id" = Uuid, Path, description = "Workspace ID"),
     ),
-    request_body = CreateWorkspaceAccessDto,
+    request_body = CreateWorkspaceAccessRequest,
     tags = ["Workspace Access"],
 )]
 pub async fn create_workspace_access(
     State(state): State<crate::types::app_state::AppState>,
     Extension(user_workspace_access): Extension<WorkspaceAccess>,
     Path(workspace_id): Path<uuid::Uuid>,
-    ValidatedJson(dto): ValidatedJson<CreateWorkspaceAccessDto>,
-) -> impl axum::response::IntoResponse {
+    ValidatedJson(dto): ValidatedJson<CreateWorkspaceAccessRequest>,
+) -> Result<axum::Json<crate::entities::workspace::dto::WorkspaceAccessResponse>, error_handlers::handlers::ErrorResponse> {
     if user_workspace_access.role < sql::workspace::model::Role::Admin {
         return Err(error_handlers::handlers::ErrorResponse::forbidden(
             error_handlers::codes::ForbiddenErrorCode::InsufficientPermissions,
@@ -87,12 +87,12 @@ pub async fn create_workspace_access(
     )
     .await?;
 
-    Ok(crate::entities::workspace::dto::WorkspaceAccessResponse {
+    Ok(axum::Json(crate::entities::workspace::dto::WorkspaceAccessResponse {
         id: workspace_access.id,
         user: target_user,
         role: workspace_access.role,
         created_at: workspace_access.created_at,
         updated_at: workspace_access.updated_at,
         deleted_at: workspace_access.deleted_at,
-    })
+    }))
 }

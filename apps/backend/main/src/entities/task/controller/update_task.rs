@@ -1,4 +1,4 @@
-use axum::extract::{Path, State};
+use axum::{Json, extract::{Path, State}};
 use error_handlers::handlers::ErrorResponse;
 use crate::entities::task::db::UpdateTaskDto;
 use uuid::Uuid;
@@ -26,8 +26,8 @@ pub async fn update_task(
     State(state): State<crate::types::app_state::AppState>,
     Path(task_id): Path<Uuid>,
     ValidatedJson(dto): ValidatedJson<UpdateTaskDto>,
-) -> Result<TaskResponse, ErrorResponse> {
+) -> Result<Json<TaskResponse>, ErrorResponse> {
     crate::entities::task::TaskService::update(&state, task_id, dto)
         .await
-        .map(TaskResponse::from)
+        .map(|t| Json(TaskResponse::from(t)))
 }

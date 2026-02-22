@@ -7,7 +7,7 @@ use axum::{
 use uuid::Uuid;
 
 use crate::{
-    entities::workspace::dto::{UpdateWorkspaceAccessDto, WorkspaceAccessResponse},
+    entities::workspace::dto::{UpdateWorkspaceAccessRequest, WorkspaceAccessResponse},
     shared::{extractors::json::ValidatedJson, traits::ServiceGetOneByIdMethod},
 };
 
@@ -25,15 +25,15 @@ use crate::{
     params(
         ("workspace_id" = Uuid, Path, description = "Workspace ID"),
     ),
-    request_body = UpdateWorkspaceAccessDto,
+    request_body = UpdateWorkspaceAccessRequest,
     tags = ["Workspace Access"],
 )]
 pub async fn update_workspace_access(
     State(state): State<crate::types::app_state::AppState>,
     Extension(user_id): Extension<Uuid>,
     Path(workspace_id): Path<Uuid>,
-    ValidatedJson(dto): ValidatedJson<UpdateWorkspaceAccessDto>,
-) -> impl axum::response::IntoResponse {
+    ValidatedJson(dto): ValidatedJson<UpdateWorkspaceAccessRequest>,
+) -> Result<axum::Json<WorkspaceAccessResponse>, error_handlers::handlers::ErrorResponse> {
     let user_workspace_access = crate::entities::workspace::WorkspaceService::get_workspace_access(
         &state,
         user_id,
@@ -78,12 +78,12 @@ pub async fn update_workspace_access(
     )
     .await?;
 
-    Ok(WorkspaceAccessResponse {
+    Ok(axum::Json(WorkspaceAccessResponse {
         id: workspace_access.id,
         user: crate::entities::user::UserService::get_one_by_id(&state, dto.user_id).await?,
         role: workspace_access.role,
         created_at: workspace_access.created_at,
         updated_at: workspace_access.updated_at,
         deleted_at: workspace_access.deleted_at,
-    })
+    }))
 }

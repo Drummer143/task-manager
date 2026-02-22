@@ -1,4 +1,4 @@
-use axum::extract::{Path, State};
+use axum::{Json, extract::{Path, State}};
 use error_handlers::handlers::ErrorResponse;
 
 use crate::{
@@ -23,8 +23,8 @@ use crate::{
 pub async fn get_by_id(
     State(state): State<crate::types::app_state::AppState>,
     Path(workspace_id): Path<uuid::Uuid>,
-) -> Result<WorkspaceResponse, ErrorResponse> {
+) -> Result<Json<WorkspaceResponse>, ErrorResponse> {
     WorkspaceService::get_one_by_id(&state, workspace_id)
         .await
-        .map(WorkspaceResponse::from)
+        .map(|w| Json(WorkspaceResponse::from(w)))
 }

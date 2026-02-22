@@ -4,7 +4,7 @@ use sql::shared::types::SortOrder;
 use uuid::Uuid;
 
 use crate::{
-    entities::workspace::{WorkspaceService, db::WorkspaceSortBy, dto::{GetListQueryDto, WorkspaceResponse}}, shared::extractors::query::ValidatedQuery,
+    entities::workspace::{WorkspaceService, db::WorkspaceSortBy, dto::{WorkspaceListQuery, WorkspaceResponse}}, shared::extractors::query::ValidatedQuery,
     types::{app_state::AppState, pagination::Pagination},
 };
 
@@ -30,9 +30,9 @@ use crate::{
 pub async fn get_list(
     State(state): State<AppState>,
     Extension(user_id): Extension<Uuid>,
-    ValidatedQuery(query): ValidatedQuery<GetListQueryDto>,
+    ValidatedQuery(query): ValidatedQuery<WorkspaceListQuery>,
 ) -> Result<Pagination<WorkspaceResponse>, ErrorResponse> {
-    let (result, count) = WorkspaceService::get_list(
+    let (workspaces, count) = WorkspaceService::get_list(
         &state,
         user_id,
         query.limit,
@@ -44,7 +44,7 @@ pub async fn get_list(
     .await?;
 
     Ok(Pagination::new(
-        result.iter().map(WorkspaceResponse::from).collect(),
+        workspaces,
         count,
         query.limit.unwrap_or(sql::shared::constants::DEFAULT_LIMIT),
         query

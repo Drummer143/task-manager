@@ -1,4 +1,4 @@
-use axum::extract::{Path, State};
+use axum::{Json, extract::{Path, State}};
 use error_handlers::handlers::ErrorResponse;
 use crate::entities::workspace::db::UpdateWorkspaceDto;
 use uuid::Uuid;
@@ -28,8 +28,8 @@ pub async fn update_workspace(
     State(state): State<crate::types::app_state::AppState>,
     Path(workspace_id): Path<Uuid>,
     ValidatedJson(dto): ValidatedJson<UpdateWorkspaceDto>,
-) -> Result<WorkspaceResponse, ErrorResponse> {
+) -> Result<Json<WorkspaceResponse>, ErrorResponse> {
     crate::entities::workspace::WorkspaceService::update(&state, workspace_id, dto)
         .await
-        .map(WorkspaceResponse::from)
+        .map(|w| Json(WorkspaceResponse::from(w)))
 }

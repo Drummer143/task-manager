@@ -3,11 +3,11 @@ use serde::{Deserialize, Serialize};
 use sql::{shared::tiptap_content::TipTapContent, task::model::Task, user::model::User};
 use uuid::Uuid;
 
-use crate::entities::board_statuses::dto::BoardStatusResponseDto;
+use crate::entities::board_statuses::dto::BoardStatusResponse;
 
 #[derive(Debug, Deserialize, utoipa::ToSchema)]
 #[serde(rename_all = "camelCase")]
-pub struct CreateTaskDto {
+pub struct CreateTaskRequest {
     pub title: String,
     pub status_id: Uuid,
     pub description: Option<TipTapContent>,
@@ -28,7 +28,7 @@ pub struct TaskResponse {
     pub is_draft: bool,
     pub page_id: Uuid,
 
-    pub status: Option<BoardStatusResponseDto>,
+    pub status: Option<BoardStatusResponse>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub reporter: Option<User>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -57,11 +57,5 @@ impl From<Task> for TaskResponse {
             updated_at: value.updated_at,
             deleted_at: value.deleted_at,
         }
-    }
-}
-
-impl axum::response::IntoResponse for TaskResponse {
-    fn into_response(self) -> axum::response::Response {
-        (axum::http::StatusCode::OK, axum::Json(self)).into_response()
     }
 }

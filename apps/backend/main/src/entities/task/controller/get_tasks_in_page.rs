@@ -6,7 +6,7 @@ use error_handlers::handlers::ErrorResponse;
 use uuid::Uuid;
 
 use crate::{
-    entities::{board_statuses::dto::BoardStatusResponseDto, task::dto::TaskResponse},
+    entities::{board_statuses::dto::BoardStatusResponse, task::dto::TaskResponse},
     shared::traits::ServiceGetOneByIdMethod,
 };
 
@@ -43,7 +43,7 @@ pub async fn get_tasks_in_page(
         )
         .await?
         .iter()
-        .map(|status| BoardStatusResponseDto {
+        .map(|status| BoardStatusResponse {
             id: status.id,
             title: status.localizations.get(lang).unwrap().to_string(),
             initial: status.initial,

@@ -4,7 +4,7 @@ use error_handlers::handlers::ErrorResponse;
 use sql::shared::traits::PostgresqlRepositoryGetOneById;
 
 use crate::{
-    entities::{profile::dto::GetProfileDto, workspace::db::WorkspaceRepository},
+    entities::{profile::dto::ProfileResponse, workspace::db::WorkspaceRepository},
     shared::traits::ServiceGetOneByIdMethod,
     types::app_state::AppState,
 };
@@ -13,7 +13,7 @@ use crate::{
     get,
     path = "/profile",
     responses(
-        (status = 200, description = "Profile", body = GetProfileDto),
+        (status = 200, description = "Profile", body = ProfileResponse),
         (status = 401, description = "Unauthorized", body = ErrorResponse),
     ),
     tags = ["Profile"],
@@ -58,7 +58,7 @@ pub async fn get_profile(
     Ok((
         axum::http::StatusCode::OK,
         cookie_jar,
-        Json(GetProfileDto {
+        Json(ProfileResponse {
             user,
             workspace,
         }),

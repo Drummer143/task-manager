@@ -19,7 +19,7 @@ use crate::{
                 CreateWorkspaceAccessDto, UpdateWorkspaceAccessDto, WorkspaceRepository,
                 WorkspaceSortBy,
             },
-            dto::{DetailedWorkspaceResponse, WorkspaceAccessResponse},
+            dto::{DetailedWorkspaceResponse, WorkspaceAccessResponse, WorkspaceResponse},
         },
     },
     shared::traits::{
@@ -27,8 +27,6 @@ use crate::{
     },
     types::app_state::AppState,
 };
-
-use super::dto::WorkspaceInfo;
 
 pub struct WorkspaceService;
 
@@ -84,7 +82,7 @@ impl WorkspaceService {
         search: Option<String>,
         sort_by: Option<WorkspaceSortBy>,
         sort_order: Option<SortOrder>,
-    ) -> Result<(Vec<super::dto::WorkspaceInfo>, i64), ErrorResponse> {
+    ) -> Result<(Vec<WorkspaceResponse>, i64), ErrorResponse> {
         let (rows, count) = WorkspaceRepository::get_list(
             &app_state.postgres,
             user_id,
@@ -97,24 +95,9 @@ impl WorkspaceService {
         .await
         .map_err(ErrorResponse::from)?;
 
-        let mut workspace_info_arr: Vec<WorkspaceInfo> = Vec::with_capacity(rows.len());
+        let workspaces = rows.into_iter().map(WorkspaceResponse::from).collect();
 
-        for row in rows {
-            workspace_info_arr.push(WorkspaceInfo {
-                workspace: Workspace {
-                    id: row.id,
-                    name: row.name,
-                    owner_id: row.owner_id,
-                    created_at: row.created_at,
-                    updated_at: row.updated_at,
-                    deleted_at: row.deleted_at,
-                },
-                role: Some(row.role),
-                owner: None,
-            });
-        }
-
-        Ok((workspace_info_arr, count))
+        Ok((workspaces, count))
     }
 
     pub async fn soft_delete(

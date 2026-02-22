@@ -9,7 +9,7 @@ use sql::page::model::{Page, PageType};
 use uuid::Uuid;
 
 use crate::{
-    entities::page::dto::{ChildPageResponse, PageListFormat, PageListQuery, PageResponse},
+    entities::page::dto::{PageSummary, PageListFormat, PageListQuery, PageResponse},
     shared::extractors::query::ValidatedQuery,
     types::app_state::AppState,
 };
@@ -40,7 +40,7 @@ pub fn build_page_tree(pages: Vec<(Page, PageResponse)>) -> Vec<(Page, PageRespo
                 .map(|children| {
                     children
                         .iter()
-                        .map(|(_, resp)| ChildPageResponse::from(resp.clone()))
+                        .map(|(_, resp)| PageSummary::from(resp.clone()))
                         .collect()
                 })
                 .unwrap_or_default();
