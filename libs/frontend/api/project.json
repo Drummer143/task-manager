@@ -17,8 +17,15 @@
 		"build": {
 			"dependsOn": ["prepare"]
 		},
+		"typecheck": {
+			"dependsOn": ["prepare"]
+		},
+		"lint": {
+			"dependsOn": ["prepare"]
+		},
 		"lint:fix": {
 			"executor": "nx:run-commands",
+			"dependsOn": ["prepare"],
 			"options": {
 				"commands": ["eslint --fix {projectRoot}/**/*.{ts,tsx,js,jsx}"]
 			}
