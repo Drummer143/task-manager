@@ -63,12 +63,18 @@ export interface BoardStatus extends Timestamps {
 	title: string;
 }
 
+export interface ChildPage extends Timestamps {
+	id: string;
+	type: PageType;
+	title: string;
+}
+
 export interface Page extends Timestamps {
 	id: string;
 	type: PageType;
 	title: string;
 
-	childPages?: Page[];
+	childPages?: ChildPage[];
 }
 
 export type PageAccess = EntityAccess;
@@ -85,7 +91,6 @@ export interface Task extends Timestamps {
 	dueDate?: string;
 	assignee?: User;
 	description?: TipTapContent;
-
 }
 
 export interface ApiError {

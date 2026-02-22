@@ -1,11 +1,12 @@
 import React, { memo, useMemo } from "react";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { updateWorkspace, Workspace } from "@task-manager/api";
+import { updateWorkspace } from "@task-manager/api";
 import { Button, Flex, Form, Input, Typography } from "antd";
 
 interface WorkspaceInfoProps {
-	workspace: Omit<Workspace, "pages">;
+	id: string;
+	name: string;
 
 	editable?: boolean;
 }
@@ -14,19 +15,19 @@ interface FormValues {
 	name: string;
 }
 
-const WorkspaceInfo: React.FC<WorkspaceInfoProps> = ({ workspace, editable }) => {
+const WorkspaceInfo: React.FC<WorkspaceInfoProps> = ({ id, name, editable }) => {
 	const [form] = Form.useForm<FormValues>();
 
 	const queryClient = useQueryClient();
 
 	const initialValues = useMemo<FormValues | undefined>(
 		() =>
-			workspace
+			name
 				? {
-						name: workspace.name
+						name
 					}
 				: undefined,
-		[workspace]
+		[name]
 	);
 
 	const { mutateAsync, isPending } = useMutation({
@@ -36,14 +37,14 @@ const WorkspaceInfo: React.FC<WorkspaceInfoProps> = ({ workspace, editable }) =>
 			}
 
 			return updateWorkspace({
-				pathParams: { workspaceId: workspace.id },
+				pathParams: { workspaceId: id },
 				body
 			});
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({
 				predicate: query =>
-					query.queryKey.includes("workspace") || query.queryKey.includes(workspace.id)
+					query.queryKey.includes("workspace") || query.queryKey.includes(id)
 			});
 		}
 	});
@@ -53,7 +54,7 @@ const WorkspaceInfo: React.FC<WorkspaceInfoProps> = ({ workspace, editable }) =>
 			<Typography.Title level={4}>Workspace info</Typography.Title>
 
 			<Form.Item label="Name" name="name">
-				{editable ? <Input /> : <Typography.Text>{workspace.name}</Typography.Text>}
+				{editable ? <Input /> : <Typography.Text>{name}</Typography.Text>}
 			</Form.Item>
 
 			{editable && (

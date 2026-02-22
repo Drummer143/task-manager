@@ -12,14 +12,14 @@ use uuid::Uuid;
 
 use crate::{
     entities::{
-        page::dto::PageResponseWithoutInclude,
+        page::db::PageRepository,
         user::db::UserRepository,
         workspace::{
             db::{
                 CreateWorkspaceAccessDto, UpdateWorkspaceAccessDto, WorkspaceRepository,
                 WorkspaceSortBy,
             },
-            dto::WorkspaceAccessResponse,
+            dto::{DetailedWorkspaceResponse, WorkspaceAccessResponse},
         },
     },
     shared::traits::{
@@ -33,7 +33,7 @@ use super::dto::WorkspaceInfo;
 pub struct WorkspaceService;
 
 impl ServiceBase for WorkspaceService {
-    type Response = WorkspaceInfo;
+    type Response = Workspace;
 }
 
 impl ServiceCreateMethod for WorkspaceService {
@@ -42,15 +42,10 @@ impl ServiceCreateMethod for WorkspaceService {
     async fn create(
         app_state: &AppState,
         dto: Self::CreateDto,
-    ) -> Result<Self::Response, ErrorResponse> {
-        let workspace = WorkspaceRepository::create(&app_state.postgres, dto).await?;
-
-        Ok(WorkspaceInfo {
-            workspace,
-            role: Some(sql::workspace::model::Role::Owner),
-            owner: None,
-            pages: None,
-        })
+    ) -> Result<Workspace, ErrorResponse> {
+        WorkspaceRepository::create(&app_state.postgres, dto)
+            .await
+            .map_err(ErrorResponse::from)
     }
 }
 
@@ -62,16 +57,9 @@ impl ServiceUpdateMethod for WorkspaceService {
         id: Uuid,
         dto: Self::UpdateDto,
     ) -> Result<Self::Response, ErrorResponse> {
-        let workspace = WorkspaceRepository::update(&app_state.postgres, id, dto)
+        WorkspaceRepository::update(&app_state.postgres, id, dto)
             .await
-            .map_err(ErrorResponse::from)?;
-
-        Ok(WorkspaceInfo {
-            workspace,
-            role: None,
-            owner: None,
-            pages: None,
-        })
+            .map_err(ErrorResponse::from)
     }
 }
 
@@ -80,16 +68,9 @@ impl ServiceGetOneByIdMethod for WorkspaceService {
         app_state: &AppState,
         id: Uuid,
     ) -> Result<Self::Response, ErrorResponse> {
-        let workspace = WorkspaceRepository::get_one_by_id(&app_state.postgres, id)
+        WorkspaceRepository::get_one_by_id(&app_state.postgres, id)
             .await
-            .map_err(ErrorResponse::from)?;
-
-        Ok(WorkspaceInfo {
-            workspace,
-            role: None,
-            owner: None,
-            pages: None,
-        })
+            .map_err(ErrorResponse::from)
     }
 }
 
@@ -103,8 +84,6 @@ impl WorkspaceService {
         search: Option<String>,
         sort_by: Option<WorkspaceSortBy>,
         sort_order: Option<SortOrder>,
-        include_owner: bool,
-        include_pages: bool,
     ) -> Result<(Vec<super::dto::WorkspaceInfo>, i64), ErrorResponse> {
         let (rows, count) = WorkspaceRepository::get_list(
             &app_state.postgres,
@@ -131,34 +110,7 @@ impl WorkspaceService {
                     deleted_at: row.deleted_at,
                 },
                 role: Some(row.role),
-                owner: if include_owner {
-                    Some(
-                        UserRepository::get_one_by_id(&app_state.postgres, row.owner_id)
-                            .await
-                            .map_err(ErrorResponse::from)?,
-                    )
-                } else {
-                    None
-                },
-                pages: if include_pages {
-                    Some(
-                        sqlx::query_as::<_, sql::page::model::Page>(
-                            "SELECT * FROM pages WHERE workspace_id = $1",
-                        )
-                        .bind(row.id)
-                        .fetch_all(&app_state.postgres)
-                        .await
-                        .map(|pages| {
-                            pages
-                                .into_iter()
-                                .map(PageResponseWithoutInclude::from)
-                                .collect()
-                        })
-                        .map_err(ErrorResponse::from)?,
-                    )
-                } else {
-                    None
-                },
+                owner: None,
             });
         }
 
@@ -187,12 +139,9 @@ impl WorkspaceService {
         app_state: &AppState,
         user_id: Uuid,
     ) -> Result<Workspace, ErrorResponse> {
-        WorkspaceRepository::get_any_workspace_user_has_access_to(
-            &app_state.postgres,
-            user_id,
-        )
-        .await
-        .map_err(ErrorResponse::from)
+        WorkspaceRepository::get_any_workspace_user_has_access_to(&app_state.postgres, user_id)
+            .await
+            .map_err(ErrorResponse::from)
     }
 
     // Workspace Access
@@ -229,8 +178,7 @@ impl WorkspaceService {
         .map_err(ErrorResponse::from)?;
 
         let user =
-            UserRepository::get_one_by_id(&app_state.postgres, workspace_access.user_id)
-                .await?;
+            UserRepository::get_one_by_id(&app_state.postgres, workspace_access.user_id).await?;
 
         Ok(WorkspaceAccessResponse {
             created_at: workspace_access.created_at,
@@ -246,21 +194,16 @@ impl WorkspaceService {
         app_state: &crate::types::app_state::AppState,
         workspace_id: Uuid,
     ) -> Result<Vec<WorkspaceAccessResponse>, ErrorResponse> {
-        let workspace_access_list = WorkspaceRepository::get_workspace_access_list(
-            &app_state.postgres,
-            workspace_id,
-        )
-        .await
-        .map_err(ErrorResponse::from)?;
+        let workspace_access_list =
+            WorkspaceRepository::get_workspace_access_list(&app_state.postgres, workspace_id)
+                .await
+                .map_err(ErrorResponse::from)?;
 
         let mut workspace_access_list_response = Vec::new();
 
         for workspace_access in workspace_access_list {
-            let user = UserRepository::get_one_by_id(
-                &app_state.postgres,
-                workspace_access.user_id,
-            )
-            .await?;
+            let user = UserRepository::get_one_by_id(&app_state.postgres, workspace_access.user_id)
+                .await?;
             workspace_access_list_response.push(WorkspaceAccessResponse {
                 created_at: workspace_access.created_at,
                 updated_at: workspace_access.updated_at,
@@ -272,5 +215,31 @@ impl WorkspaceService {
         }
 
         Ok(workspace_access_list_response)
+    }
+
+    pub async fn get_detailed_workspace(
+        app_state: &AppState,
+        access: WorkspaceAccess,
+    ) -> Result<DetailedWorkspaceResponse, ErrorResponse> {
+        let (pages, workspace, owner) = tokio::join!(
+            PageRepository::get_all_in_workspace(&app_state.postgres, access.workspace_id),
+            WorkspaceRepository::get_one_by_id(&app_state.postgres, access.workspace_id),
+            UserRepository::get_one_by_id(&app_state.postgres, access.user_id),
+        );
+
+        let pages = pages?;
+        let workspace = workspace?;
+        let owner = owner?;
+
+        Ok(DetailedWorkspaceResponse {
+            owner,
+            role: access.role,
+            pages: pages.into_iter().map(Into::into).collect(),
+            id: workspace.id,
+            name: workspace.name,
+            updated_at: workspace.updated_at,
+            created_at: workspace.created_at,
+            deleted_at: workspace.deleted_at,
+        })
     }
 }

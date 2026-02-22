@@ -36,6 +36,8 @@ use utils::swagger::SecurityAddon;
         crate::entities::workspace::controller::soft_delete::soft_delete,
         crate::entities::workspace::controller::cancel_soft_delete::cancel_soft_delete,
 
+        crate::entities::workspace::controller::get_detailed_workspace::get_detailed_workspace,
+
         crate::entities::workspace::controller::get_workspace_access_list::get_workspace_access_list,
         crate::entities::workspace::controller::create_workspace_access::create_workspace_access,
         crate::entities::workspace::controller::update_workspace_access::update_workspace_access,
@@ -53,7 +55,6 @@ use utils::swagger::SecurityAddon;
 
         crate::entities::page::dto::PageListFormat,
 
-        crate::entities::workspace::dto::Include,
         crate::entities::workspace::dto::WorkspaceInfo,
         crate::entities::workspace::dto::WorkspaceSortBy,
     )),

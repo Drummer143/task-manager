@@ -46,11 +46,11 @@ pub async fn workspace_access_guard(
         )
         .await;
 
-    if workspace_access.is_err() {
+    if let Err(error) = workspace_access {
         let body = serde_json::to_string(&ErrorResponse::forbidden(
             codes::ForbiddenErrorCode::InsufficientPermissions,
             None,
-            None,
+            Some(error.to_string()),
         ))
         .unwrap();
 

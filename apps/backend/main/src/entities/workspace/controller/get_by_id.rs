@@ -1,18 +1,9 @@
-use axum::{
-    Extension,
-    extract::{Path, State},
-};
+use axum::extract::{Path, State};
 use error_handlers::handlers::ErrorResponse;
 
 use crate::{
-    entities::{
-        page::dto::PageResponseWithoutInclude,
-        workspace::{
-            db::WorkspaceRepository,
-            dto::{Include, WorkspaceResponse},
-        },
-    },
-    shared::{extractors::query::ValidatedQuery, traits::ServiceGetOneByIdMethod},
+    entities::workspace::{WorkspaceService, dto::WorkspaceResponse},
+    shared::traits::ServiceGetOneByIdMethod,
 };
 
 #[utoipa::path(
@@ -21,7 +12,6 @@ use crate::{
     operation_id = "get_workspace_by_id",
     params(
         ("workspace_id", Path, description = "Workspace ID"),
-        ("include" = Option<Vec<Include>>, Query, description = "Include related entities"),
     ),
     responses(
         (status = 200, description = "Workspace found", body = WorkspaceResponse),
@@ -32,50 +22,9 @@ use crate::{
 )]
 pub async fn get_by_id(
     State(state): State<crate::types::app_state::AppState>,
-    Extension(user_id): Extension<uuid::Uuid>,
     Path(workspace_id): Path<uuid::Uuid>,
-    ValidatedQuery(query): ValidatedQuery<crate::entities::workspace::dto::GetWorkspaceQuery>,
 ) -> Result<WorkspaceResponse, ErrorResponse> {
-    let include = query.include.unwrap_or_default();
-
-    let workspace =
-        crate::entities::workspace::WorkspaceService::get_one_by_id(&state, workspace_id).await?;
-
-    let owner = if include.contains(&Include::Owner) {
-        Some(
-            crate::entities::user::UserService::get_one_by_id(&state, workspace.workspace.owner_id)
-                .await?,
-        )
-    } else {
-        None
-    };
-
-    let pages = if include.contains(&Include::Pages) {
-        Some(
-            crate::entities::page::PageService::get_all_in_workspace(&state, workspace_id)
-                .await?
-                .iter()
-                .map(PageResponseWithoutInclude::from)
-                .collect(),
-        )
-    } else {
-        None
-    };
-
-    let role = WorkspaceRepository::get_one_workspace_access(
-        &state.postgres,
-        user_id,
-        workspace_id,
-    )
-    .await
-    .map_err(ErrorResponse::from)?
-    .role;
-
-    let mut workspace_response = WorkspaceResponse::from(workspace);
-
-    workspace_response.owner = owner;
-    workspace_response.pages = pages;
-    workspace_response.role = Some(role);
-
-    Ok(workspace_response)
+    WorkspaceService::get_one_by_id(&state, workspace_id)
+        .await
+        .map(WorkspaceResponse::from)
 }
