@@ -19,7 +19,7 @@ use crate::{
     params(
         ("task_id" = Uuid, Path, description = "Task ID"),
     ),
-    request_body(content = UpdateTaskDto),
+    request_body = UpdateTaskDto,
     tag = "Tasks",
 )]
 pub async fn update_task(

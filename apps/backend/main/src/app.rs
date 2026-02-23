@@ -12,6 +12,7 @@ mod shared;
 mod swagger;
 mod types;
 mod webhooks;
+mod authentik_api;
 
 pub fn openapi_json() -> String {
     serde_json::to_string_pretty(&swagger::ApiDoc::openapi()).unwrap()
@@ -32,6 +33,9 @@ pub async fn build() -> axum::Router {
         std::env::var("AUTHENTIK_AUDIENCE").expect("AUTHENTIK_AUDIENCE must be set");
 
     let jwt_secret = std::env::var("JWT_SECRET").expect("JWT_SECRET must be set");
+    
+    let authentik_api_url = std::env::var("AUTHENTIK_API_URL").expect("AUTHENTIK_API_URL must be set");
+    let authentik_api_token = std::env::var("AUTHENTIK_API_TOKEN").expect("AUTHENTIK_API_TOKEN must be set");
 
     let jwks = reqwest::get(&jwks_url)
         .await
@@ -80,6 +84,8 @@ pub async fn build() -> axum::Router {
         postgres,
         auth,
         jwt_secret: Arc::new(jwt_secret),
+        authentik_api_url: Arc::new(authentik_api_url),
+        authentik_api_token: Arc::new(authentik_api_token),
     };
 
     axum::Router::new()

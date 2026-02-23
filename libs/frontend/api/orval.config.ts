@@ -11,14 +11,12 @@ export default defineConfig({
 			client: "axios-functions",
 			mode: "split",
 			clean: true,
+			baseUrl: "/api",
 			override: {
 				mutator: {
 					path: "./src/fetcher.ts",
 					name: "fetcher"
 				}
-				// fetch: {
-				// 	forceSuccessResponse: true
-				// }
 			}
 		}
 	},
@@ -32,14 +30,12 @@ export default defineConfig({
 			client: "axios-functions",
 			mode: "split",
 			clean: true,
+			baseUrl: "/storage",
 			override: {
 				mutator: {
 					path: "./src/fetcher.ts",
 					name: "fetcher"
 				}
-				// fetch: {
-				// 	forceSuccessResponse: true
-				// }
 			}
 		}
 	}

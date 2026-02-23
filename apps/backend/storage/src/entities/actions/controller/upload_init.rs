@@ -13,10 +13,7 @@ use crate::{
 #[utoipa::path(
     post,
     path = "/actions/upload/init",
-    request_body(
-        content = UploadInitDto,
-        content_type = "application/json",
-    ),
+    request_body = UploadInitDto,
     responses(
         (status = 200, description = "Upload chunked init", body = UploadInitResponse),
     ),

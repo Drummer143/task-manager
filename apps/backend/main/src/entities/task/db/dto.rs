@@ -44,8 +44,4 @@ impl UpdateDto for UpdateTaskDto {
             && self.due_date.is_none()
             && self.assignee_id.is_none()
     }
-
-    fn has_changes(&self, _: &Self::Model) -> bool {
-        todo!("has_changes for UpdateTaskDto")
-    }
 }

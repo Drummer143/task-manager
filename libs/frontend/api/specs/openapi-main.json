@@ -858,6 +858,44 @@
             }
           }
         }
+      },
+      "put": {
+        "tags": [
+          "Profile"
+        ],
+        "operationId": "update_profile",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UpdateProfileRequest"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Profile",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/tasks/{task_id}": {
@@ -3175,6 +3213,29 @@
             ]
           },
           "title": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "UpdateProfileRequest": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "picture": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "username": {
             "type": [
               "string",
               "null"

@@ -19,7 +19,7 @@ use crate::{
     params(
         ("page_id" = Uuid, Path, description = "Page ID"),
     ),
-    request_body(content = CreateTaskRequest),
+    request_body = CreateTaskRequest,
     tag = "Tasks",
 )]
 pub async fn create_task(

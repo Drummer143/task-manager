@@ -19,10 +19,7 @@ use crate::{
     params(
         ("transaction_id" = Uuid, Path, description = "Transaction ID"),
     ),
-    request_body(
-        content = UploadVerifyDto,
-        content_type = "application/json",
-    ),
+    request_body = UploadVerifyDto,
     responses(
         (status = 200, description = "Verification result", body = UploadSuccessResponse),
     ),

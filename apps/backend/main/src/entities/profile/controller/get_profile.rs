@@ -12,6 +12,7 @@ use crate::{
 #[utoipa::path(
     get,
     path = "/profile",
+    operation_id = "get_profile",
     responses(
         (status = 200, description = "Profile", body = ProfileResponse),
         (status = 401, description = "Unauthorized", body = ErrorResponse),

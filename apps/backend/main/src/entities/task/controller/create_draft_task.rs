@@ -20,7 +20,7 @@ pub struct CreateDraftRequest {
     post,
     path = "/pages/{page_id}/tasks/draft",
     operation_id = "create_draft_task",
-    request_body(content = CreateDraftRequest),
+    request_body = CreateDraftRequest,
     responses(
         (status = 200, description = "Task created successfully", body = TaskResponse),
         (status = 400, description = "Invalid request", body = ErrorResponse),
