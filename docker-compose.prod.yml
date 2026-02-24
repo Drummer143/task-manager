@@ -238,6 +238,9 @@ services:
             RABBITMQ_URL: ${RABBITMQ_URL}
             AUTHENTIK_JWKS_URL: ${AUTHENTIK_JWKS_URL}
             AUTHENTIK_AUDIENCE: ${AUTHENTIK_AUDIENCE}
+            AUTHENTIK_API_URL: ${AUTHENTIK_API_URL}
+            AUTHENTIK_API_TOKEN: ${AUTHENTIK_API_TOKEN}
+            STORAGE_SERVICE_URL: http://storage-service:8082
             CORS_ORIGINS: https://${DOMAIN}
         networks:
             - net
