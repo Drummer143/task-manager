@@ -1,4 +1,5 @@
-import { insertAccessToken, uploadCancel } from "@task-manager/api";
+import { insertAccessToken } from "@task-manager/api";
+import { uploadCancel } from "@task-manager/api/storage";
 
 import init from "./hasher";
 import { InnerMessageToHost, MessageToWorker, StartUploadEvent } from "./types";
@@ -118,9 +119,7 @@ const abortUpload = (fileId: string) => {
 		currentUpload.abortController.abort();
 
 		if (currentUpload.transactionId) {
-			uploadCancel({
-				pathParams: { transactionId: currentUpload.transactionId }
-			}).catch(() => undefined);
+			uploadCancel(currentUpload.transactionId).catch(() => undefined);
 		}
 
 		sendProgressEvent({
@@ -144,9 +143,7 @@ const abortAll = () => {
 		currentUpload.abortController.abort();
 
 		if (currentUpload.transactionId) {
-			uploadCancel({
-				pathParams: { transactionId: currentUpload.transactionId }
-			}).catch(() => undefined);
+			uploadCancel(currentUpload.transactionId).catch(() => undefined);
 		}
 	}
 };
@@ -160,9 +157,7 @@ const reorderQueue = (fileId: string, newIndex: number) => {
 		currentItem.abortController.abort();
 
 		if (currentItem.transactionId) {
-			uploadCancel({
-				pathParams: { transactionId: currentItem.transactionId }
-			}).catch(() => undefined);
+			uploadCancel(currentItem.transactionId).catch(() => undefined);
 		}
 
 		// Create new item for re-queue (need fresh abort controller)

@@ -1,4 +1,9 @@
-import { uploadComplete, uploadInit, uploadVerify, uploadWholeFile } from "@task-manager/api";
+import {
+	uploadComplete,
+	uploadInit,
+	uploadVerify,
+	uploadWholeFile
+} from "@task-manager/api/storage";
 
 import { uploadFileByChunks } from "./uploadChunks";
 
@@ -81,13 +86,11 @@ export const handleUploadFlow = async ({
 
 				const response = await uploadInit(
 					{
-						body: {
-							hash: await calculateHash(currentStep.file, signal),
-							uploadToken: currentStep.uploadToken,
-							size: currentStep.file.size
-						}
+						hash: await calculateHash(currentStep.file, signal),
+						uploadToken: currentStep.uploadToken,
+						size: currentStep.file.size
 					},
-					signal
+					{ signal }
 				);
 
 				if (response.nextStep === "verifyRanges") {
@@ -130,17 +133,19 @@ export const handleUploadFlow = async ({
 				);
 
 				const result = await uploadVerify(
+					currentStep.transactionId,
 					{
-						pathParams: {
-							transactionId: currentStep.transactionId
-						},
-						body: {
-							ranges: Array.from(
-								await Promise.all(rangesToVerify.map(range => range.arrayBuffer()))
+						ranges: Array.from(
+							await Promise.all(
+								rangesToVerify.map(range =>
+									range
+										.arrayBuffer()
+										.then(array => Array.from(new Uint8Array(array)))
+								)
 							)
-						}
+						)
 					},
-					signal
+					{ signal }
 				);
 
 				onProgress({
@@ -172,15 +177,9 @@ export const handleUploadFlow = async ({
 			}
 
 			case "uploadWhole": {
-				const result = await uploadWholeFile(
-					{
-						pathParams: {
-							transactionId: currentStep.transactionId
-						},
-						body: currentStep.file
-					},
+				const result = await uploadWholeFile(currentStep.transactionId, currentStep.file, {
 					signal
-				);
+				});
 
 				onProgress({
 					type: "uploadComplete",
@@ -198,14 +197,7 @@ export const handleUploadFlow = async ({
 					data: { step: "checkingIntegrity" }
 				});
 
-				const result = await uploadComplete(
-					{
-						pathParams: {
-							transactionId: currentStep.transactionId
-						}
-					},
-					signal
-				);
+				const result = await uploadComplete(currentStep.transactionId, { signal });
 
 				onProgress({
 					type: "uploadComplete",

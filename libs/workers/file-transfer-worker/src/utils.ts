@@ -1,4 +1,4 @@
-import { uploadCancel } from "@task-manager/api";
+import { uploadCancel } from "@task-manager/api/storage";
 
 import { FileHasher } from "./hasher/wasm_source";
 import { MessageToHost } from "./types";
@@ -76,7 +76,7 @@ export const sendProgressEvent = (event: MessageToHost) => {
 export const checkAborted = (signal?: AbortSignal, transactionId?: string) => {
 	if (signal?.aborted) {
 		if (transactionId) {
-			uploadCancel({ pathParams: { transactionId } }).catch(() => undefined);
+			uploadCancel(transactionId).catch(() => undefined);
 		}
 		throw new DOMException("Upload aborted", "AbortError");
 	}

@@ -2,7 +2,7 @@ import axios, { AxiosRequestConfig } from "axios";
 
 export const axiosInstance = axios.create();
 
-export const insertAccessToken = (getToken: () => Promise<string>) => {
+export const insertAccessToken = (getToken: () => Promise<string> | string) => {
 	const id = axiosInstance.interceptors.request.use(async config => {
 		const token = await getToken();
 

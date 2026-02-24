@@ -1,4 +1,4 @@
-import { uploadChunk } from "@task-manager/api";
+import { uploadChunk } from "@task-manager/api/storage";
 
 import { MessageToHost } from "../types";
 import { checkAborted, sendProgressEvent } from "../utils";
@@ -46,20 +46,10 @@ export const uploadFileByChunks = async (
 				const end = Math.min(start + chunkSize, file.size);
 				const chunkBlob = file.slice(start, end);
 
-				await uploadChunk(
-					{
-						pathParams: {
-							transactionId
-						},
-						body: {
-							chunk: chunkBlob,
-							start,
-							end,
-							total: file.size
-						}
-					},
-					signal
-				);
+				await uploadChunk(transactionId, chunkBlob, {
+					signal,
+					headers: { "Content-Range": `bytes ${start}-${end}/${file.size}` }
+				});
 
 				updateGlobalProgress(chunkBlob.size);
 			} catch (error) {

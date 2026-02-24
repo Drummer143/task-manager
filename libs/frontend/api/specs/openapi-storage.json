@@ -186,6 +186,48 @@
         }
       }
     },
+    "/actions/upload/{transaction_id}/verify": {
+      "post": {
+        "tags": [
+          "Upload file"
+        ],
+        "operationId": "upload_verify",
+        "parameters": [
+          {
+            "name": "transaction_id",
+            "in": "path",
+            "description": "Transaction ID",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UploadVerifyDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Verification result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadSuccessResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/actions/upload/{transaction_id}/whole-file": {
       "post": {
         "tags": [
@@ -580,6 +622,25 @@
           },
           "mime_type": {
             "type": "string"
+          }
+        }
+      },
+      "UploadVerifyDto": {
+        "type": "object",
+        "required": [
+          "ranges"
+        ],
+        "properties": {
+          "ranges": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "format": "int32",
+                "minimum": 0
+              }
+            }
           }
         }
       },
