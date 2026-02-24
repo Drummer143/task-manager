@@ -1,10 +1,12 @@
 import React, { memo, useCallback, useState } from "react";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { uploadAvatar } from "@task-manager/api";
+import { uploadAvatar } from "@task-manager/api/main";
 import { App, Flex } from "antd";
 import { Area } from "react-easy-crop";
 
+import { useAuthStore } from "../../../../app/store/auth";
+import { buildStorageUrl } from "../../../../shared/utils/buildStorageUrl";
 import FileInput from "../../../../widgets/FileInput";
 import ImageCrop from "../../../../widgets/ImageCrop";
 
@@ -21,7 +23,7 @@ const AvatarUploader: React.FC<AvatarUploaderProps> = ({ avatarUrl }) => {
 
 	const { mutateAsync } = useMutation({
 		mutationFn: uploadAvatar,
-		onSuccess: () => queryClient.invalidateQueries({ queryKey: ["profile"] }),
+		onSuccess: (data) => queryClient.setQueryData(["profile"], data),
 		onError: error => message.error(error.message ?? "Failed to upload avatar")
 	});
 
@@ -38,14 +40,27 @@ const AvatarUploader: React.FC<AvatarUploaderProps> = ({ avatarUrl }) => {
 				return;
 			}
 
-			mutateAsync({ body: { ...area, file: image } });
+			mutateAsync({
+				file: image,
+				x: area.x,
+				y: area.y,
+				width: area.width,
+				height: area.height
+			});
 		},
 		[image, mutateAsync]
 	);
 
 	return (
 		<Flex vertical align="center" gap="1rem">
-			{avatarUrl && <img src={avatarUrl} alt="Avatar" width="200" height="200" />}
+			{avatarUrl && (
+				<img
+					src={buildStorageUrl(avatarUrl, useAuthStore.getState().identity.access_token)}
+					alt="Avatar"
+					width="200"
+					height="200"
+				/>
+			)}
 
 			<FileInput onChange={handleUploadAvatar} accept=".jpg, .jpeg, .png">
 				Update avatar
@@ -62,3 +77,4 @@ const AvatarUploader: React.FC<AvatarUploaderProps> = ({ avatarUrl }) => {
 };
 
 export default memo(AvatarUploader);
+

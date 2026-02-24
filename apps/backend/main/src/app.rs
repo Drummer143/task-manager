@@ -28,14 +28,15 @@ pub async fn build() -> axum::Router {
         .with(tracing_subscriber::fmt::layer())
         .init();
 
+    let authentik_api_url = std::env::var("AUTHENTIK_API_URL").expect("AUTHENTIK_API_URL must be set");
+    let authentik_api_token = std::env::var("AUTHENTIK_API_TOKEN").expect("AUTHENTIK_API_TOKEN must be set");
     let jwks_url = std::env::var("AUTHENTIK_JWKS_URL").expect("AUTHENTIK_JWKS_URL must be set");
     let authentik_audience =
         std::env::var("AUTHENTIK_AUDIENCE").expect("AUTHENTIK_AUDIENCE must be set");
 
     let jwt_secret = std::env::var("JWT_SECRET").expect("JWT_SECRET must be set");
-    
-    let authentik_api_url = std::env::var("AUTHENTIK_API_URL").expect("AUTHENTIK_API_URL must be set");
-    let authentik_api_token = std::env::var("AUTHENTIK_API_TOKEN").expect("AUTHENTIK_API_TOKEN must be set");
+
+    let storage_service_url = std::env::var("STORAGE_SERVICE_URL").expect("STORAGE_SERVICE_URL must be set");
 
     let jwks = reqwest::get(&jwks_url)
         .await
@@ -86,6 +87,7 @@ pub async fn build() -> axum::Router {
         jwt_secret: Arc::new(jwt_secret),
         authentik_api_url: Arc::new(authentik_api_url),
         authentik_api_token: Arc::new(authentik_api_token),
+        storage_service_url: Arc::new(storage_service_url),
     };
 
     axum::Router::new()

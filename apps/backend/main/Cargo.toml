@@ -16,7 +16,7 @@ path = "src/bin/export_openapi.rs"
 
 [dependencies]
 mimalloc = { version = "0.1", default-features = false }
-axum = "0.8"
+axum = { version = "0.8", features = ["multipart"] }
 axum-extra = { version = "0.10", features = ["cookie", "typed-header"] }
 axum-macros = "0.5"
 bcrypt = "0.17"
@@ -25,6 +25,7 @@ insta = { version = "1.45", features = ["json", "redactions"] }
 http-body-util = "0.1"
 sql = { path = "../../../libs/backend/sql" }
 migrator = { path = "../../../libs/backend/migrator" }
+image = { version = "0.25", default-features = false, features = ["jpeg", "png", "webp"] }
 mime = "0.3"
 tokio = { version = "1", features = ["full"] }
 tower = "0.5"
@@ -39,6 +40,7 @@ jsonwebtoken = { version = "10", default-features = false, features = [
 # lapin = { version = "2.5", default-features = false, features = ["rustls"] }
 reqwest = { version = "0.12", default-features = false, features = [
     "json",
+    "multipart",
     "rustls-tls",
     "charset",
     "http2",

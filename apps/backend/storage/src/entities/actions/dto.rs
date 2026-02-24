@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use sql::assets::model::EntityType;
 use sqlx::types::chrono::{DateTime, Utc};
 use uuid::Uuid;
 
@@ -79,7 +80,7 @@ pub struct UploadToken {
     #[allow(dead_code)]
     pub entity_id: Uuid,
     #[allow(dead_code)]
-    pub entity_type: String,
+    pub entity_type: EntityType,
 }
 
 #[derive(Serialize, Deserialize, utoipa::ToSchema)]

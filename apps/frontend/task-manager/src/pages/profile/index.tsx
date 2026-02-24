@@ -2,13 +2,12 @@ import React from "react";
 
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { required } from "@task-manager/ant-validation";
-import { updateProfile } from "@task-manager/api/main";
+import { getProfile, updateProfile } from "@task-manager/api/main";
 import { Alert, Button, Flex, Form, Input, Spin } from "antd";
 
 import { useStyles } from "./styles";
 import AvatarInput from "./widgets/AvatarUpload";
 
-import { useAuthStore } from "../../app/store/auth";
 import { withAuthPageCheck } from "../../shared/HOCs";
 
 const requiredRule = required();
@@ -17,7 +16,7 @@ const Profile: React.FC = () => {
 	const { formsContainer, wrapper } = useStyles().styles;
 
 	const { data, isLoading, error } = useQuery({
-		queryFn: useAuthStore.getState().getSession,
+		queryFn: getProfile,
 		queryKey: ["profile"]
 	});
 
@@ -25,10 +24,8 @@ const Profile: React.FC = () => {
 
 	const { mutateAsync: updateProfileMutation } = useMutation({
 		mutationFn: updateProfile,
-		onSuccess: () => {
-			queryClient.invalidateQueries({
-				queryKey: ["profile"]
-			});
+		onSuccess: data => {
+			queryClient.setQueryData(["profile"], data);
 		}
 	});
 
@@ -41,8 +38,8 @@ const Profile: React.FC = () => {
 	}
 
 	const initialValues = {
-		username: data.user.username,
-		email: data.user.email
+		username: data.username,
+		email: data.email
 	};
 
 	return (
@@ -69,7 +66,7 @@ const Profile: React.FC = () => {
 				</Form>
 			</div>
 
-			{/* <AvatarInput avatarUrl={data.user.picture} /> */}
+			<AvatarInput avatarUrl={data.picture} />
 		</Flex>
 	);
 };

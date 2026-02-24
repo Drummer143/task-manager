@@ -107,6 +107,7 @@ pub async fn build() -> axum::Router {
     axum::Router::new()
         .merge(entities::actions::router::init(app_state.clone()))
         .merge(entities::files::router::init(app_state.clone()))
+        .merge(entities::internal::router::init())
         .merge(
             utoipa_swagger_ui::SwaggerUi::new("/api")
                 .url("/api/openapi.json", swagger::ApiDoc::openapi()),

@@ -8,6 +8,7 @@ use uuid::Uuid;
 pub enum AssetTarget {
     PageText(Uuid),
     TaskDescription(Uuid),
+    Avatar(Uuid),
 }
 
 #[derive(Deserialize, utoipa::ToSchema)]

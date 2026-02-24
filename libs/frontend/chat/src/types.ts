@@ -50,6 +50,8 @@ export interface ChatProps {
 		limit?: number
 	) => void;
 
+	buildAvatarUrl: (avatar: string) => string;
+
 	subscribeToNewMessages: (cb: (newMessage: MessageData) => void) => () => void;
 	subscribeToUpdatedMessages: (
 		cb: (payload: { action: "edit" | "pin" | "unpin"; message: MessageData }) => void

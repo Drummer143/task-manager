@@ -8,6 +8,7 @@ import Message from "../ui/Message";
 
 export const useMessageRenderer = (
 	currentUserId: string,
+	buildAvatarUrl: (avatar: string) => string,
 	onUserClick?: (userId: string) => void
 ) => {
 	const chatStoreSnapshot = useSnapshot(chatStore);
@@ -33,7 +34,11 @@ export const useMessageRenderer = (
 							sentByCurrentUser={item.message.sender.id === currentUserId}
 							senderName={item.message.sender.username}
 							showUserInfo={item.uiProps.showUserInfo}
-							avatarUrl={item.message.sender.avatar}
+							avatarUrl={
+								item.message.sender.avatar
+									? buildAvatarUrl(item.message.sender.avatar)
+									: undefined
+							}
 							onSenderClick={onUserClick}
 							replyTo={item.message.replyTarget}
 							updatedAt={item.message.updatedAt}
@@ -53,7 +58,8 @@ export const useMessageRenderer = (
 			chatStoreSnapshot.highlightedItemId,
 			chatStoreSnapshot.listInfo.items,
 			currentUserId,
-			onUserClick
+			onUserClick,
+			buildAvatarUrl
 		]
 	);
 };

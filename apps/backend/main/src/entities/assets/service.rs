@@ -2,7 +2,7 @@ use chrono::{Duration, Utc};
 use error_handlers::handlers::ErrorResponse;
 use serde::{Deserialize, Serialize};
 use sql::{
-    assets::model::Asset,
+    assets::model::{Asset, EntityType},
     shared::traits::{PostgresqlRepositoryCreate, PostgresqlRepositoryGetOneById, PostgresqlRepositoryUpdate},
 };
 use uuid::Uuid;
@@ -26,7 +26,7 @@ pub struct UploadToken {
     pub name: String,
     pub user_id: Uuid,
     pub entity_id: Uuid,
-    pub entity_type: String,
+    pub entity_type: EntityType,
 }
 
 impl AssetsService {
@@ -41,7 +41,7 @@ impl AssetsService {
                     PageRepository::get_one_page_access(&state.postgres, user_id, page_id).await;
 
                 match result {
-                    Ok(_) => Ok(("page_text", page_id)),
+                    Ok(_) => Ok((EntityType::PageText, page_id)),
                     Err(error) => match error {
                         sqlx::Error::RowNotFound => Err(ErrorResponse::forbidden(
                             error_handlers::codes::ForbiddenErrorCode::AccessDenied,
@@ -66,8 +66,10 @@ impl AssetsService {
                     ));
                 }
 
-                Ok(("task_description", task_id))
+                Ok((EntityType::TaskDescription, task_id))
             }
+
+            AssetTarget::Avatar(user_id) => Ok((EntityType::UserAvatar, user_id)),
         }?;
 
         jsonwebtoken::encode(
@@ -77,7 +79,7 @@ impl AssetsService {
                 name: body.name,
                 user_id,
                 entity_id,
-                entity_type: entity_type.to_string(),
+                entity_type,
                 exp: Utc::now()
                     .checked_add_signed(Duration::minutes(10))
                     .expect("invalid timestamp")
@@ -101,8 +103,8 @@ impl AssetsService {
 
         let asset_id = token.claims.sub;
 
-        match token.claims.entity_type.as_str() {
-            "page_text" => {
+        match token.claims.entity_type {
+            EntityType::PageText => {
                 let page_content =
                     PageRepository::get_text_page_content(&state.postgres, token.claims.entity_id)
                         .await?;
@@ -139,7 +141,7 @@ impl AssetsService {
                     .map_err(ErrorResponse::from)?;
                 }
             }
-            "task_description" => {
+            EntityType::TaskDescription => {
                 let task =
                     TaskRepository::get_one_by_id(&state.postgres, token.claims.entity_id)
                         .await?;
