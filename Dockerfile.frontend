@@ -42,8 +42,7 @@ ENV VITE_CLIENT_ID=${VITE_CLIENT_ID}
 ENV VITE_REDIRECT_URI=${VITE_REDIRECT_URI}
 ENV VITE_POST_LOGOUT_REDIRECT_URI=${VITE_POST_LOGOUT_REDIRECT_URI}
 
-# Skip prepare target since WASM is already built
-RUN pnpm exec nx run ${APP_NAME}:build --skip-nx-cache
+RUN pnpm exec nx run ${APP_NAME}:build
 
 RUN apk add --no-cache gzip findutils
 
