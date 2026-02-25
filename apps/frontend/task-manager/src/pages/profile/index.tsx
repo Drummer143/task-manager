@@ -22,7 +22,7 @@ const Profile: React.FC = () => {
 
 	const queryClient = useQueryClient();
 
-	const { mutateAsync: updateProfileMutation } = useMutation({
+	const { mutateAsync: updateProfileMutation, isPending } = useMutation({
 		mutationFn: updateProfile,
 		onSuccess: data => {
 			queryClient.setQueryData(["profile"], data);
@@ -51,15 +51,15 @@ const Profile: React.FC = () => {
 					onFinish={updateProfileMutation}
 				>
 					<Form.Item name="username" label="Username" rules={requiredRule}>
-						<Input />
+						<Input data-test-id="profile-username-input" />
 					</Form.Item>
 
 					<Form.Item name="email" label="Email" rules={requiredRule}>
-						<Input />
+						<Input data-test-id="profile-email-input" />
 					</Form.Item>
 
 					<Form.Item>
-						<Button type="primary" htmlType="submit">
+						<Button data-test-id="profile-save-button" loading={isPending} type="primary" htmlType="submit">
 							Save
 						</Button>
 					</Form.Item>

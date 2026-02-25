@@ -45,7 +45,7 @@ const UserMenuInfo: React.FC<UserMenuInfoProps> = ({ username, picture, mobile, 
 
 	return (
 		<div className={wrapper} onClick={onClick}>
-			<p>{username}</p>
+			<p data-test-id="user-menu-top-right-info-username">{username}</p>
 
 			<Avatar
 				src={
