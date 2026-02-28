@@ -4,13 +4,15 @@ use axum::{Extension, Json, extract::Multipart, extract::State, http::StatusCode
 use error_handlers::handlers::ErrorResponse;
 use image::GenericImageView;
 use sql::{
-    assets::model::EntityType, shared::traits::{PostgresqlRepositoryCreate, PostgresqlRepositoryUpdate}, user::model::User
+    assets::model::EntityType,
+    shared::traits::{PostgresqlRepositoryCreate, PostgresqlRepositoryUpdate},
+    user::model::User,
 };
 use uuid::Uuid;
 
 use crate::{
     entities::{
-        assets::db::{AssetsRepository, CreateAssetDto},
+        assets::db::{AssetsRepository, CreateAssetDto, UpdateAssetDto},
         user::db::UserRepository,
     },
     types::app_state::AppState,
@@ -197,19 +199,40 @@ pub async fn upload_avatar(
         )))
     })?;
 
-    // Create asset record
-    let asset = AssetsRepository::create(
-        &state.postgres,
-        CreateAssetDto {
-            id: Some(Uuid::new_v4()),
-            name: file_name,
-            blob_id: blob.id,
-            entity_id: user_id,
-            entity_type: EntityType::UserAvatar,
-        },
-    )
-    .await
-    .map_err(ErrorResponse::from)?;
+    let current_asset = match AssetsRepository::get_user_avatar(&state.postgres, user_id).await {
+        Ok(asset) => Some(asset),
+        Err(sqlx::Error::RowNotFound) => None,
+        Err(e) => {
+            return Err(ErrorResponse::from(e));
+        }
+    };
+
+    let current_asset = if let Some(asset) = current_asset {
+        AssetsRepository::update(
+            &state.postgres,
+            asset.id,
+            UpdateAssetDto {
+                id: Some(Uuid::new_v4()),
+                blob_id: Some(blob.id),
+                name: None,
+            },
+        )
+        .await
+        .map_err(ErrorResponse::from)
+    } else {
+        AssetsRepository::create(
+            &state.postgres,
+            CreateAssetDto {
+                id: Some(Uuid::new_v4()),
+                name: file_name,
+                blob_id: blob.id,
+                entity_id: user_id,
+                entity_type: EntityType::UserAvatar,
+            },
+        )
+        .await
+        .map_err(ErrorResponse::from)
+    }?;
 
     // Update user picture
     let user = UserRepository::update(
@@ -219,7 +242,8 @@ pub async fn upload_avatar(
             username: None,
             is_active: None,
             email: None,
-            picture: Some(Some(format!("/files/{}", asset.id))),
+            picture: Some(Some(format!("/files/{}", current_asset.id))),
+            is_avatar_default: Some(false),
         },
     )
     .await

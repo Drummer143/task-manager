@@ -21,6 +21,7 @@ use utils::swagger::SecurityAddon;
         crate::entities::profile::controller::get_profile::get_profile,
         crate::entities::profile::controller::update_profile::update_profile,
         crate::entities::profile::controller::upload_avatar::upload_avatar,
+        crate::entities::profile::controller::delete_avatar::delete_avatar,
 
         crate::entities::task::controller::get_task::get_task,
         crate::entities::task::controller::get_tasks_in_page::get_tasks_in_page,

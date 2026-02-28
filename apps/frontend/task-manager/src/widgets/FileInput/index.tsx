@@ -13,9 +13,7 @@ interface FileInputProps {
 const FileInput: React.FC<FileInputProps> = ({ accept, onChange, children }) => {
 	const inputRef = useRef<HTMLInputElement>(null);
 
-	const handleClick = () => {
-		inputRef.current?.click();
-	};
+	const handleClick = () => inputRef.current?.click();
 
 	return (
 		<Button icon={<DownloadOutlined />} onClick={handleClick}>

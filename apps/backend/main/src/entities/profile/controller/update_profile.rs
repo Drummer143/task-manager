@@ -32,6 +32,7 @@ pub async fn update_profile(
             is_active: None,
             email: body.email,
             picture: body.picture,
+            is_avatar_default: None,
         },
     )
     .await

@@ -3,6 +3,7 @@ import React from "react";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { required } from "@task-manager/ant-validation";
 import { getProfile, updateProfile } from "@task-manager/api/main";
+import { User, Workspace } from "@task-manager/api/main/schemas";
 import { Alert, Button, Flex, Form, Input, Spin } from "antd";
 
 import { useStyles } from "./styles";
@@ -25,7 +26,16 @@ const Profile: React.FC = () => {
 	const { mutateAsync: updateProfileMutation, isPending } = useMutation({
 		mutationFn: updateProfile,
 		onSuccess: data => {
-			queryClient.setQueryData(["profile"], data);
+			const profile = queryClient.getQueryData<(User & { workspace: Workspace }) | null>([
+				"profile"
+			]);
+
+			if (profile?.workspace) {
+				queryClient.setQueryData(["profile"], {
+					...data,
+					workspace: profile?.workspace
+				});
+			}
 		}
 	});
 
@@ -59,14 +69,19 @@ const Profile: React.FC = () => {
 					</Form.Item>
 
 					<Form.Item>
-						<Button data-test-id="profile-save-button" loading={isPending} type="primary" htmlType="submit">
+						<Button
+							data-test-id="profile-save-button"
+							loading={isPending}
+							type="primary"
+							htmlType="submit"
+						>
 							Save
 						</Button>
 					</Form.Item>
 				</Form>
 			</div>
 
-			<AvatarInput avatarUrl={data.picture} />
+			<AvatarInput avatarUrl={data.picture} isAvatarDefault={data.isAvatarDefault} />
 		</Flex>
 	);
 };

@@ -946,6 +946,44 @@
             }
           }
         }
+      },
+      "delete": {
+        "tags": [
+          "Profile"
+        ],
+        "operationId": "delete_avatar",
+        "responses": {
+          "200": {
+            "description": "Updated user with new avatar",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/User"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Bad request",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Unauthorized",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
       }
     },
     "/tasks/{task_id}": {
@@ -2932,6 +2970,7 @@
                 "isActive",
                 "username",
                 "authentikId",
+                "isAvatarDefault",
                 "createdAt",
                 "updatedAt"
               ],
@@ -2962,6 +3001,9 @@
                   "format": "uuid"
                 },
                 "isActive": {
+                  "type": "boolean"
+                },
+                "isAvatarDefault": {
                   "type": "boolean"
                 },
                 "picture": {
@@ -3445,6 +3487,7 @@
           "isActive",
           "username",
           "authentikId",
+          "isAvatarDefault",
           "createdAt",
           "updatedAt"
         ],
@@ -3475,6 +3518,9 @@
             "format": "uuid"
           },
           "isActive": {
+            "type": "boolean"
+          },
+          "isAvatarDefault": {
             "type": "boolean"
           },
           "picture": {

@@ -149,6 +149,12 @@ impl PostgresqlRepositoryUpdate for UserRepository {
                 .push_bind_unseparated(username);
         }
 
+        if let Some(is_avatar_default) = dto.is_avatar_default {
+            separated
+                .push("is_avatar_default = ")
+                .push_bind_unseparated(is_avatar_default);
+        }
+
         separated
             .push("updated_at = ")
             .push_bind_unseparated(chrono::Utc::now());
@@ -215,6 +221,12 @@ impl UserRepository {
             separated
                 .push("username = ")
                 .push_bind_unseparated(username);
+        }
+
+        if let Some(is_avatar_default) = dto.is_avatar_default {
+            separated
+                .push("is_avatar_default = ")
+                .push_bind_unseparated(is_avatar_default);
         }
 
         separated

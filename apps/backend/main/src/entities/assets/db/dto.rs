@@ -9,3 +9,10 @@ pub struct CreateAssetDto {
     pub entity_id: Uuid,
     pub entity_type: EntityType,
 }
+
+#[derive(Debug, Clone)]
+pub struct UpdateAssetDto {
+    pub id: Option<Uuid>,
+    pub name: Option<String>,
+    pub blob_id: Option<Uuid>,
+}

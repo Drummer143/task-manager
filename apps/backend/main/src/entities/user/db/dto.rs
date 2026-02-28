@@ -27,6 +27,7 @@ pub struct UpdateUserDto {
 
     pub email: Option<Option<String>>,
     pub picture: Option<Option<String>>,
+    pub is_avatar_default: Option<bool>,
 }
 
 impl UpdateDto for UpdateUserDto {
@@ -37,6 +38,7 @@ impl UpdateDto for UpdateUserDto {
             && self.username.is_none()
             && self.picture.is_none()
             && self.is_active.is_none()
+            && self.is_avatar_default.is_none()
     }
 }
 

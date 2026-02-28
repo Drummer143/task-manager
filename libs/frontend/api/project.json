@@ -8,7 +8,14 @@
 	"targets": {
 		"prepare": {
 			"executor": "nx:run-commands",
-			"// dependsOn": ["main:export-openapi", "storage:export-openapi"],
+			"options": {
+				"cwd": "libs/frontend/api",
+				"command": "npx orval --config ./orval.config.ts"
+			}
+		},
+		"prepare-local": {
+			"executor": "nx:run-commands",
+			"dependsOn": ["main:export-openapi", "storage:export-openapi"],
 			"options": {
 				"cwd": "libs/frontend/api",
 				"command": "npx orval --config ./orval.config.ts"
