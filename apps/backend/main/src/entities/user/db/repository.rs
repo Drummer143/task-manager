@@ -100,7 +100,7 @@ impl PostgresqlRepositoryCreate for UserRepository {
         dto: Self::CreateDto,
     ) -> Result<User, sqlx::Error> {
         sqlx::query_as::<_, User>(
-            "INSERT INTO users (id, authentik_id, email, username, picture, created_at) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
+            "INSERT INTO users (id, authentik_id, email, username, picture, created_at, is_avatar_default) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *",
         )
         .bind(dto.id)
         .bind(dto.authentik_id)
@@ -108,6 +108,7 @@ impl PostgresqlRepositoryCreate for UserRepository {
         .bind(&dto.username)
         .bind(&dto.picture)
         .bind(dto.created_at)
+        .bind(dto.is_avatar_default.unwrap_or(false))
         .fetch_one(executor)
         .await
     }

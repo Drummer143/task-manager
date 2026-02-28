@@ -144,6 +144,7 @@ const AvatarUploader: React.FC<AvatarUploaderProps> = ({ avatarUrl, isAvatarDefa
 			{avatarUrl && (
 				<div className={styles.imageWrapper}>
 					<Image
+						data-test-id="user-menu-top-right-info-avatar"
 						className={styles.image}
 						src={buildStorageUrl(avatarUrl, token)}
 						preview={false}

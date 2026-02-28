@@ -16,6 +16,7 @@ pub struct CreateUserDto {
     pub picture: Option<String>,
     #[allow(dead_code)]
     pub is_active: Option<bool>,
+    pub is_avatar_default: Option<bool>,
 
     pub created_at: Option<DateTime<Utc>>,
 }

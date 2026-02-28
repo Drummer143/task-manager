@@ -15,6 +15,10 @@ interface ImageCropProps {
 	onCancel?: () => void;
 }
 
+const okButtonProps = {
+	id: "image-crop-ok-button"
+};
+
 const ImageCrop: React.FC<ImageCropProps> = ({
 	image,
 	isOpen,
@@ -59,6 +63,7 @@ const ImageCrop: React.FC<ImageCropProps> = ({
 			confirmLoading={confirmLoading}
 			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
 			onOk={() => onCropFinish(croppedAreaPixels!)}
+			okButtonProps={okButtonProps}
 		>
 			<div className={cropWrapper} ref={cropWrapperRef}>
 				<Cropper

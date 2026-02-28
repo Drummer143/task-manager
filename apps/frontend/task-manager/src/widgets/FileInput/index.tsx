@@ -17,7 +17,7 @@ const FileInput: React.FC<FileInputProps> = ({ accept, onChange, children }) => 
 
 	return (
 		<Button icon={<DownloadOutlined />} onClick={handleClick}>
-			<input type="file" accept={accept} ref={inputRef} hidden onChange={onChange} />
+			<input type="file" data-test-id="avatar-input" accept={accept} ref={inputRef} hidden onChange={onChange} />
 			{children}
 		</Button>
 	);
