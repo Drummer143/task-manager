@@ -9,6 +9,7 @@ import { DatePicker, Form, Input, Select } from "antd";
 import { DefaultOptionType } from "antd/es/select";
 
 import { today } from "../../shared/constants";
+import { queryKeys } from "../../shared/queryKeys";
 import FullSizeLoader from "../../shared/ui/FullSizeLoader";
 import SelectWithInfiniteScroll from "../SelectWithInfiniteScroll";
 
@@ -25,7 +26,7 @@ export interface TaskFormProps {
 
 const TaskForm: React.FC<TaskFormProps> = ({ taskLoading, taskId, pageId, workspaceId }) => {
 	const { data: statuses, isLoading: statusesLoading } = useQuery({
-		queryKey: ["statuses", pageId],
+		queryKey: queryKeys.boardStatuses.byPage(pageId),
 		enabled: !!taskId,
 		queryFn: () => getBoardStatuses(pageId)
 	});
@@ -42,7 +43,7 @@ const TaskForm: React.FC<TaskFormProps> = ({ taskLoading, taskId, pageId, worksp
 
 	const memoizedAssigneeSelectProps = useMemo(
 		() => ({
-			queryKey: ["users", workspaceId],
+			queryKey: queryKeys.users.byWorkspace(workspaceId),
 			extraQueryParams: { workspaceId },
 			transformItem: (user: User): DefaultOptionType => ({
 				value: user.id,

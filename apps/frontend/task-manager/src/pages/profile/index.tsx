@@ -10,6 +10,7 @@ import { useStyles } from "./styles";
 import AvatarInput from "./widgets/AvatarUpload";
 
 import { withAuthPageCheck } from "../../shared/HOCs";
+import { queryKeys } from "../../shared/queryKeys";
 
 const requiredRule = required();
 
@@ -18,24 +19,21 @@ const Profile: React.FC = () => {
 
 	const { data, isLoading, error } = useQuery({
 		queryFn: getProfile,
-		queryKey: ["profile"]
+		queryKey: queryKeys.profile.root()
 	});
 
 	const queryClient = useQueryClient();
 
 	const { mutateAsync: updateProfileMutation, isPending } = useMutation({
 		mutationFn: updateProfile,
-		onSuccess: data => {
-			const profile = queryClient.getQueryData<(User & { workspace: Workspace }) | null>([
-				"profile"
-			]);
-
-			if (profile?.workspace) {
-				queryClient.setQueryData(["profile"], {
-					...data,
-					workspace: profile?.workspace
-				});
-			}
+		onSuccess: user => {
+			queryClient.setQueryData(
+				queryKeys.profile.root(),
+				(oldUser: User & { workspace: Workspace }) => ({
+					...user,
+					workspace: oldUser?.workspace
+				})
+			);
 		}
 	});
 

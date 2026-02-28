@@ -26,6 +26,7 @@ import { AxiosError } from "axios";
 import { useStyles } from "./styles";
 
 import { useAuthStore } from "../../../../../app/store/auth";
+import { queryKeys } from "../../../../../shared/queryKeys";
 import AccessListItem from "../../../../../widgets/AccessList/AccessListItem";
 import PopoverInfiniteSelect from "../../../../../widgets/PopoverInfiniteSelect";
 import UserCard from "../../../../../widgets/UserCard";
@@ -48,7 +49,7 @@ const AccessSettings: React.FC<AccessSettingsProps> = ({ pageId }) => {
 
 	const { data, error } = useQuery({
 		queryFn: async () => await getPageAccessList(pageId),
-		queryKey: ["pageAccesses"]
+		queryKey: queryKeys.pageAccess.root()
 	});
 
 	const {
@@ -63,9 +64,9 @@ const AccessSettings: React.FC<AccessSettingsProps> = ({ pageId }) => {
 			setNewAddedUser(undefined);
 
 			if (userId === currentUser.id && role !== "admin" && role !== "owner") {
-				queryClient.invalidateQueries({ queryKey: [pageId] });
+				queryClient.invalidateQueries({ queryKey: queryKeys.pages.detail(pageId) });
 			} else {
-				queryClient.invalidateQueries({ queryKey: ["pageAccesses"] });
+				queryClient.invalidateQueries({ queryKey: queryKeys.pageAccess.root() });
 			}
 		},
 		onError: (error: AxiosError<ErrorResponse>) =>
@@ -78,7 +79,7 @@ const AccessSettings: React.FC<AccessSettingsProps> = ({ pageId }) => {
 		retry: (_, error) => (error.response?.status || 0) > 499,
 		onSuccess: () => {
 			setNewAddedUser(undefined);
-			queryClient.invalidateQueries({ queryKey: [pageId] });
+			queryClient.invalidateQueries({ queryKey: queryKeys.pages.detail(pageId) });
 		},
 		onError: (error: AxiosError<ErrorResponse>) =>
 			message.error(error.response?.data?.errorCode ?? "Failed to update page settings")
@@ -116,7 +117,7 @@ const AccessSettings: React.FC<AccessSettingsProps> = ({ pageId }) => {
 					fetchItems={getUsersList}
 					getItemValue={user => user.id}
 					renderItem={user => <UserCard hideOpenLink user={user} />}
-					queryKey={["users"]}
+					queryKey={queryKeys.users.root()}
 					onChange={setNewAddedUser}
 					value={newAddedUser}
 					extraParams={{ exclude: data?.map(access => access.user.id).join(",") }}

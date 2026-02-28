@@ -7,6 +7,7 @@ import { ItemType, MenuItemType } from "antd/es/menu/interface";
 import { useLocation, useNavigate } from "react-router";
 
 import { useAuthStore } from "../../../app/store/auth";
+import { queryKeys } from "../../../shared/queryKeys";
 
 const CommonMenu: React.FC = () => {
 	const workspaceId = useAuthStore(state => state.user.workspace.id);
@@ -16,7 +17,7 @@ const CommonMenu: React.FC = () => {
 	const location = useLocation();
 
 	const { data: workspace, isLoading } = useQuery({
-		queryKey: ["workspace", workspaceId],
+		queryKey: queryKeys.workspaces.detail(workspaceId),
 		queryFn: () => getWorkspaceById(workspaceId),
 		enabled: !!workspaceId
 	});

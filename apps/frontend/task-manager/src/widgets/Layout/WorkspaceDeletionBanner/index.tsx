@@ -7,6 +7,7 @@ import { Alert } from "antd";
 import { useLocation } from "react-router";
 
 import { useAuthStore } from "../../../app/store/auth";
+import { queryKeys } from "../../../shared/queryKeys";
 
 const WorkspaceDeletionBanner: React.FC = () => {
 	const location = useLocation();
@@ -21,7 +22,7 @@ const WorkspaceDeletionBanner: React.FC = () => {
 	);
 
 	const { data } = useQuery({
-		queryKey: ["workspace", workspaceId],
+		queryKey: queryKeys.workspaces.detail(workspaceId),
 		queryFn: () => getWorkspaceById(workspaceId),
 		enabled: !closed && !!workspaceId && !location.pathname.startsWith("/profile")
 	});

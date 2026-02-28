@@ -10,6 +10,7 @@ import dayjs from "dayjs";
 import { useNavigate, useParams, useSearchParams } from "react-router";
 
 import { useAuthStore } from "../../../../../app/store/auth";
+import { queryKeys } from "../../../../../shared/queryKeys";
 import Drawer from "../../../../../widgets/Drawer";
 import TaskForm from "../../../../../widgets/TaskForm";
 import { FormValues } from "../../../../../widgets/TaskForm/types";
@@ -30,7 +31,7 @@ const TaskDrawer: React.FC = () => {
 	const navigate = useNavigate();
 
 	const { data: taskInitialValues, isLoading: taskLoading } = useQuery({
-		queryKey: [taskId],
+		queryKey: queryKeys.tasks.detail(taskId!),
 		enabled: !!taskId,
 		queryFn: async (): Promise<FormValues> => {
 			const result = await getTask(taskId!);
@@ -56,7 +57,7 @@ const TaskDrawer: React.FC = () => {
 				dueDate: values.dueDate?.toISOString()
 			}),
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: [pageId] });
+			queryClient.invalidateQueries({ queryKey: queryKeys.pages.detail(pageId) });
 			navigate(`/pages/${pageId}`);
 		},
 		onError: error => message.error(error.message ?? "Failed to update task")

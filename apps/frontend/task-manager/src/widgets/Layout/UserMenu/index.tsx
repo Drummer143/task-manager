@@ -4,13 +4,14 @@ import { useQuery } from "@tanstack/react-query";
 import { getProfile } from "@task-manager/api/main";
 import { Dropdown, Flex, Spin } from "antd";
 
+import { queryKeys } from "../../../shared/queryKeys";
 import UserMenuInfo from "../../../widgets/Layout/UserMenuInfo";
 import { useUserMenuItems } from "../../../widgets/Layout/useUserMenuItems";
 
 const UserMenu: React.FC = () => {
 	const { data, isLoading } = useQuery({
 		queryFn: getProfile,
-		queryKey: ["profile"]
+		queryKey: queryKeys.profile.root()
 	});
 
 	const menu = useUserMenuItems();

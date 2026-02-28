@@ -6,6 +6,8 @@ import { Empty, Tree, Typography } from "antd";
 
 import { preparePageTree } from "./utils";
 
+import { queryKeys } from "../../../../shared/queryKeys";
+
 interface PageTreeProps {
 	workspaceId: string;
 
@@ -14,7 +16,7 @@ interface PageTreeProps {
 
 const PageTree: React.FC<PageTreeProps> = ({ workspaceId, editable }) => {
 	const { data: pages, isLoading } = useQuery({
-		queryKey: ["pages", "tree", workspaceId],
+		queryKey: queryKeys.pages.tree(workspaceId),
 		queryFn: () => getPageList(workspaceId, { format: "tree" })
 	});
 

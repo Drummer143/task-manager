@@ -9,6 +9,7 @@ import { createStyles } from "antd-style";
 import { Area } from "react-easy-crop";
 
 import { useAuthStore } from "../../../../app/store/auth";
+import { queryKeys } from "../../../../shared/queryKeys";
 import { buildStorageUrl } from "../../../../shared/utils/buildStorageUrl";
 import FileInput from "../../../../widgets/FileInput";
 import ImageCrop from "../../../../widgets/ImageCrop";
@@ -75,16 +76,14 @@ const AvatarUploader: React.FC<AvatarUploaderProps> = ({ avatarUrl, isAvatarDefa
 
 	const hydrateProfile = useCallback(
 		(user: User) => {
-			const profile = queryClient.getQueryData<(User & { workspace: Workspace }) | null>([
-				"profile"
-			]);
-
-			if (profile?.workspace) {
-				queryClient.setQueryData(["profile"], {
+			queryClient.setQueryData(
+				queryKeys.profile.root(),
+				(oldUser: User & { workspace: Workspace }) => ({
 					...user,
-					workspace: profile?.workspace
-				});
-			}
+					workspace: oldUser?.workspace
+				})
+			);
+
 			setImage(undefined);
 		},
 		[queryClient]

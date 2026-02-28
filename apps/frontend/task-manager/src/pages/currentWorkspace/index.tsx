@@ -16,6 +16,7 @@ import PageTree from "./widgets/PageTree";
 import WorkspaceInfo from "./widgets/WorkspaceInfo";
 
 import { useAuthStore } from "../../app/store/auth";
+import { queryKeys } from "../../shared/queryKeys";
 import FullSizeLoader from "../../shared/ui/FullSizeLoader";
 import AccessList, { AccessListProps } from "../../widgets/AccessList";
 
@@ -29,13 +30,13 @@ const CurrentWorkspace: React.FC = () => {
 		isLoading: isLoadingWorkspace,
 		error: errorWorkspace
 	} = useQuery({
-		queryKey: ["workspace", "owner", workspaceId],
+		queryKey: queryKeys.workspaces.owner(workspaceId),
 		queryFn: () => getDetailedWorkspace(workspaceId)
 	});
 
 	const accessListProps = useMemo<AccessListProps>(
 		() => ({
-			queryKey: ["access", workspaceId],
+			queryKey: queryKeys.workspaceAccess.byWorkspace(workspaceId),
 			updateAccess: body => updateWorkspaceAccess(workspaceId, body),
 			getAccessList: () => getWorkspaceAccessList(workspaceId),
 			createAccess: body => createWorkspaceAccess(workspaceId, body)

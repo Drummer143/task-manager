@@ -10,6 +10,7 @@ import { useStyles } from "./styles";
 import PageHeader from "./widgets/PageHeader";
 
 import { withAuthPageCheck } from "../../shared/HOCs/withAuthPageCheck";
+import { queryKeys } from "../../shared/queryKeys";
 import FullSizeLoader from "../../shared/ui/FullSizeLoader";
 
 const BoardPage = lazySuspense(() => import("./BoardPage"), <FullSizeLoader />);
@@ -26,7 +27,7 @@ const Page: React.FC = () => {
 	const navigate = useNavigate();
 
 	const { data: page, isLoading } = useQuery({
-		queryKey: [pageId],
+		queryKey: queryKeys.pages.detail(pageId),
 		queryFn: () =>
 			getPageDetailed(pageId).catch(error => {
 				navigate("/profile", { replace: true });

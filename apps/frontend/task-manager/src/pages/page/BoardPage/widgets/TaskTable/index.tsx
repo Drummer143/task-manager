@@ -17,6 +17,7 @@ import {
 	isTaskTarget,
 	TaskSourceData
 } from "../../../../../shared/dnd/board";
+import { queryKeys } from "../../../../../shared/queryKeys";
 import TaskColumn from "../../../../../widgets/TaskColumn";
 
 interface TaskTableProps {
@@ -68,7 +69,7 @@ const TaskTable: React.FC<TaskTableProps> = ({ page }) => {
 				statusId,
 				position
 			}),
-		onSuccess: () => queryClient.invalidateQueries({ queryKey: [page.id] }),
+		onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.pages.detail(page.id) }),
 		onError: error => message.error(error.message ?? "Failed to change task status")
 	});
 

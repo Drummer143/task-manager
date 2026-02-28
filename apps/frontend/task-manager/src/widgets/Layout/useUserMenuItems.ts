@@ -7,6 +7,7 @@ import { useNavigate } from "react-router";
 
 import { useAuthStore } from "../../app/store/auth";
 import { userManager } from "../../app/userManager";
+import { queryKeys } from "../../shared/queryKeys";
 
 export const useUserMenuItems = () => {
 	const workspaceId = useAuthStore(state => state.user.workspace.id);
@@ -14,7 +15,7 @@ export const useUserMenuItems = () => {
 	const navigate = useNavigate();
 
 	const { data, isLoading } = useQuery({
-		queryKey: ["workspaces"],
+		queryKey: queryKeys.workspaces.root(),
 		queryFn: () => getWorkspacesList({ limit: -1 })
 	});
 

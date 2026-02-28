@@ -12,6 +12,7 @@ import { useStyles } from "./styles";
 import TaskList from "./ui/TaskList";
 
 import { ColumnTargetData, isTaskSource } from "../../shared/dnd/board";
+import { queryKeys } from "../../shared/queryKeys";
 
 interface TaskColumnProps {
 	pageId: string;
@@ -42,7 +43,7 @@ const TaskColumn: React.FC<TaskColumnProps> = ({
 				boardStatusId: status.id
 			}),
 		onSuccess: draft => {
-			queryClient.invalidateQueries({ queryKey: [pageId] });
+			queryClient.invalidateQueries({ queryKey: queryKeys.pages.detail(pageId) });
 			onTaskClick?.(draft.id);
 		},
 		onError: error => message.error(error.message ?? "Failed to create task")

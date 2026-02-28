@@ -9,6 +9,7 @@ import { App, Button } from "antd";
 
 import { useStyles } from "./styled";
 
+import { queryKeys } from "../../../shared/queryKeys";
 import MDEditor from "../../../widgets/MDEditor";
 
 interface TextPageProps {
@@ -31,7 +32,7 @@ const TextPage: React.FC<TextPageProps> = ({ page }) => {
 		onSuccess: data => {
 			setEditing(false);
 
-			queryClient.invalidateQueries({ queryKey: [data.id] });
+			queryClient.invalidateQueries({ queryKey: queryKeys.pages.detail(data.id) });
 		},
 		onError: error => message.error(error.message ?? "Failed to update page")
 	});

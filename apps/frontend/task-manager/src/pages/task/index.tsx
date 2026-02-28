@@ -9,6 +9,7 @@ import dayjs from "dayjs";
 import { useParams } from "react-router";
 
 import { useAuthStore } from "../../app/store/auth";
+import { queryKeys } from "../../shared/queryKeys";
 import FullSizeLoader from "../../shared/ui/FullSizeLoader";
 import TaskChat from "../../widgets/TaskChat";
 import TaskForm from "../../widgets/TaskForm";
@@ -60,7 +61,7 @@ const Task: React.FC = () => {
 	const queryClient = useQueryClient();
 
 	const { data, isLoading: taskLoading } = useQuery({
-		queryKey: [taskId],
+		queryKey: queryKeys.tasks.detail(taskId),
 		enabled: !!taskId,
 		queryFn: async () => {
 			const result = await getTask(taskId);
@@ -88,7 +89,7 @@ const Task: React.FC = () => {
 				dueDate: values.dueDate?.toISOString()
 			}),
 		onSuccess: () => {
-			queryClient.invalidateQueries({ queryKey: [taskId] });
+			queryClient.invalidateQueries({ queryKey: queryKeys.tasks.detail(taskId) });
 
 			message.success("Task saved");
 		},

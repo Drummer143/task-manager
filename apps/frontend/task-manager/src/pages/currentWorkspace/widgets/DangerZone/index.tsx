@@ -9,6 +9,7 @@ import { createStyles } from "antd-style";
 import dayjs from "dayjs";
 
 import { today } from "../../../../shared/constants";
+import { queryKeys } from "../../../../shared/queryKeys";
 
 interface DangerZoneProps {
 	workspaceId: string;
@@ -31,7 +32,7 @@ const DangerZone: React.FC<DangerZoneProps> = ({ workspaceId, deletedAt }) => {
 	const queryClient = useQueryClient();
 
 	const { mutateAsync } = useMutation({
-		mutationKey: ["workspace", workspaceId],
+		mutationKey: queryKeys.workspaces.detail(workspaceId),
 		mutationFn: deletedAt ? cancelSoftDeleteWorkspace : softDeleteWorkspace,
 		onSuccess: () =>
 			queryClient.invalidateQueries({

@@ -13,6 +13,7 @@ import Menu from "./Menu";
 
 import { useAuthStore } from "../../../app/store/auth";
 import { pageTypes } from "../../../shared/constants";
+import { queryKeys } from "../../../shared/queryKeys";
 import FullSizeLoader from "../../../shared/ui/FullSizeLoader";
 import Drawer from "../../../widgets/Drawer";
 
@@ -59,7 +60,7 @@ const NavPagesMenu: React.FC = () => {
 	const workspaceId = useAuthStore(state => state.user.workspace.id);
 
 	const { data, isLoading } = useQuery({
-		queryKey: ["pages", "tree", workspaceId],
+		queryKey: queryKeys.pages.tree(workspaceId),
 		enabled: !!workspaceId,
 		queryFn: () => getPageList(workspaceId, { format: "tree" })
 	});
@@ -67,8 +68,8 @@ const NavPagesMenu: React.FC = () => {
 	const { mutateAsync, isPending, error, reset } = useMutation({
 		mutationFn: (body: CreatePageRequest) => createPage(workspaceId, body),
 		onSuccess: page => {
-			queryClient.invalidateQueries({ queryKey: ["pages"] });
-			queryClient.invalidateQueries({ queryKey: ["page", page.id] });
+			queryClient.invalidateQueries({ queryKey: queryKeys.pages.root() });
+			queryClient.invalidateQueries({ queryKey: queryKeys.pages.detail(page.id) });
 
 			setCreatingPageType(false);
 		}
