@@ -16,7 +16,7 @@ use crate::{
     path = "/workspaces/{workspace_id}/pages",
     operation_id = "create_page",
     params(
-        ("workspace_id", Path, description = "Workspace ID"),
+        ("workspace_id" = Uuid, Path, description = "Workspace ID"),
     ),
     request_body = CreatePageRequest,
     responses(

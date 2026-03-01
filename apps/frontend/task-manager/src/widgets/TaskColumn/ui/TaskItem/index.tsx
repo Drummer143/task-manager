@@ -10,14 +10,16 @@ import {
 	type Edge,
 	extractClosestEdge
 } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
-import { PreviewTaskModel, User } from "@task-manager/api";
+import { TaskSummary, User } from "@task-manager/api/main/schemas";
 import { registerContextMenu } from "@task-manager/context-menu";
 import { Avatar, Flex, Tag, Typography } from "antd";
 
 import { useStyles } from "./styles";
 
+import { useAuthStore } from "../../../../app/store/auth";
 import { isTaskSource, TaskSourceData, TaskTargetData } from "../../../../shared/dnd/board";
 import DropLine from "../../../../shared/ui/DropLine";
+import { buildStorageUrl } from "../../../../shared/utils/buildStorageUrl";
 
 type TaskState =
 	| {
@@ -36,7 +38,7 @@ type TaskState =
 	  };
 
 interface TaskItemProps {
-	task: PreviewTaskModel & { assignee?: User };
+	task: TaskSummary & { assignee?: User };
 
 	draggable?: boolean;
 
@@ -165,7 +167,14 @@ const TaskItem: React.FC<TaskItemProps> = ({ task, draggable: taskDraggable, onC
 					<Flex align="center" gap="var(--ant-padding-xs)">
 						<Avatar
 							className={styles.userAvatar}
-							src={task.assignee.picture || "/avatar-placeholder-32.jpg"}
+							src={
+								task.assignee.picture
+									? buildStorageUrl(
+											task.assignee.picture,
+											useAuthStore.getState().identity.access_token
+										)
+									: "/avatar-placeholder-32.jpg"
+							}
 							alt={task.assignee.username}
 							size={24}
 						/>

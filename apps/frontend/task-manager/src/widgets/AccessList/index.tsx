@@ -2,7 +2,8 @@ import React, { memo, useMemo, useState } from "react";
 
 import { PlusOutlined } from "@ant-design/icons";
 import { QueryKey, useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { getUserList as defaultGetUserList, EntityAccess, User } from "@task-manager/api";
+import { getUsersList as defaultGetUsersList } from "@task-manager/api/main";
+import { Role, User } from "@task-manager/api/main/schemas";
 import { Button, Tooltip, Typography } from "antd";
 
 import AccessListItem from "./AccessListItem";
@@ -10,21 +11,32 @@ import AccessListItem from "./AccessListItem";
 import PopoverInfiniteSelect from "../PopoverInfiniteSelect";
 import UserCard from "../UserCard";
 
+export interface EntityAccess {
+	id: string;
+	role: Role;
+
+	user: User;
+
+	createdAt: string;
+	updatedAt: string;
+	deletedAt?: string | null;
+}
+
 export interface AccessListProps<Q extends EntityAccess[] = EntityAccess[]> {
 	queryKey: QueryKey;
 
 	editable?: boolean;
 
-	createAccess: (body: { role: string; userId: string }) => Promise<unknown>;
-	updateAccess: (body: { role?: string; userId: string }) => Promise<unknown>;
+	createAccess: (body: { role: Role; userId: string }) => Promise<unknown>;
+	updateAccess: (body: { role?: Role; userId: string }) => Promise<unknown>;
 	getAccessList: () => Promise<Q>;
 
-	getUserList?: typeof defaultGetUserList;
+	getUserList?: typeof defaultGetUsersList;
 }
 
 const AccessList = <Q extends EntityAccess[] = EntityAccess[]>({
 	editable,
-	getUserList = defaultGetUserList,
+	getUserList = defaultGetUsersList,
 	createAccess: propsCreateAccess,
 	updateAccess: propsUpdateAccess,
 	getAccessList,

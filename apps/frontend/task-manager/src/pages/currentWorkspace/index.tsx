@@ -1,13 +1,13 @@
 import React, { useMemo } from "react";
 
 import { useQuery } from "@tanstack/react-query";
+import { parseApiError } from "@task-manager/api";
 import {
 	createWorkspaceAccess,
-	getWorkspaceAccess,
-	getWorkspaceDetailed,
-	parseApiError,
+	getDetailedWorkspace,
+	getWorkspaceAccessList,
 	updateWorkspaceAccess
-} from "@task-manager/api";
+} from "@task-manager/api/main";
 import { Alert, Divider, Typography } from "antd";
 
 import { useStyles } from "./styles";
@@ -16,6 +16,7 @@ import PageTree from "./widgets/PageTree";
 import WorkspaceInfo from "./widgets/WorkspaceInfo";
 
 import { useAuthStore } from "../../app/store/auth";
+import { queryKeys } from "../../shared/queryKeys";
 import FullSizeLoader from "../../shared/ui/FullSizeLoader";
 import AccessList, { AccessListProps } from "../../widgets/AccessList";
 
@@ -29,27 +30,16 @@ const CurrentWorkspace: React.FC = () => {
 		isLoading: isLoadingWorkspace,
 		error: errorWorkspace
 	} = useQuery({
-		queryKey: ["workspace", "owner", workspaceId],
-		queryFn: () => getWorkspaceDetailed({ pathParams: { workspaceId } })
+		queryKey: queryKeys.workspaces.owner(workspaceId),
+		queryFn: () => getDetailedWorkspace(workspaceId)
 	});
 
 	const accessListProps = useMemo<AccessListProps>(
 		() => ({
-			queryKey: ["access", workspaceId],
-			updateAccess: body =>
-				updateWorkspaceAccess({
-					pathParams: { workspaceId },
-					body
-				}),
-			getAccessList: () =>
-				getWorkspaceAccess({
-					pathParams: { workspaceId }
-				}),
-			createAccess: body =>
-				createWorkspaceAccess({
-					pathParams: { workspaceId },
-					body
-				})
+			queryKey: queryKeys.workspaceAccess.byWorkspace(workspaceId),
+			updateAccess: body => updateWorkspaceAccess(workspaceId, body),
+			getAccessList: () => getWorkspaceAccessList(workspaceId),
+			createAccess: body => createWorkspaceAccess(workspaceId, body)
 		}),
 		[workspaceId]
 	);

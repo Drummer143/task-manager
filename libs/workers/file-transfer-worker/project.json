@@ -14,9 +14,6 @@
 				"cwd": "{projectRoot}"
 			}
 		},
-		"build": {
-			"dependsOn": ["prepare"]
-		},
 		"test": {
 			"executor": "nx:noop"
 		}

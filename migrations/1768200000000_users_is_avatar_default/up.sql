@@ -1,0 +1,1 @@
+ALTER TABLE users ADD COLUMN is_avatar_default BOOLEAN NOT NULL DEFAULT true;

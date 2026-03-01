@@ -15,7 +15,7 @@ use crate::{
     entities::{
         board_statuses::db::BoardStatusRepository,
         task::{
-            controller::create_draft::CreateDraftRequest,
+            controller::create_draft_task::CreateDraftRequest,
             db::{CreateTaskDto, TaskRepository, UpdateTaskDto},
         },
     },

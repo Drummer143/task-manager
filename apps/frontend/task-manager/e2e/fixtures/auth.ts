@@ -8,3 +8,10 @@ export function getTestUser(): { username: string; email: string } {
 
 	return JSON.parse(fs.readFileSync(filePath, "utf-8"));
 }
+
+export function updateTestUser(user: { username: string; email: string }) {
+	const filePath = path.resolve("apps/frontend/task-manager/e2e/.auth/test-user.json");
+
+	fs.writeFileSync(filePath, JSON.stringify(user));
+}
+

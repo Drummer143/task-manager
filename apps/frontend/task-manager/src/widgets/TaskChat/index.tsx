@@ -7,6 +7,7 @@ import { Channel, Presence } from "phoenix";
 import { useAuthStore } from "../../app/store/auth";
 import { useSocketStore } from "../../app/store/socket";
 import { userManager } from "../../app/userManager";
+import { buildStorageUrl } from "../../shared/utils/buildStorageUrl";
 
 interface RawPresenceInfo {
 	[key: string]: {
@@ -27,6 +28,10 @@ const TaskChat: React.FC<{ taskId?: string }> = ({ taskId }) => {
 	const [isJoined, setIsJoined] = useState(false);
 
 	const userId = useAuthStore.getState().user.id;
+
+	const token = useAuthStore().identity.access_token;
+
+	const buildAvatarUrl = useCallback((avatar: string) => buildStorageUrl(token, avatar), [token]);
 
 	const loadMessages = useCallback<ChatProps["loadMessages"]>(
 		(cb, query) => {
@@ -180,6 +185,7 @@ const TaskChat: React.FC<{ taskId?: string }> = ({ taskId }) => {
 		<Chat
 			presence={presence}
 			onTypingChange={handleTypingChange}
+			buildAvatarUrl={buildAvatarUrl}
 			currentUserId={userId}
 			subscribeToNewMessages={subscribeToNewMessages}
 			subscribeToDeletedMessages={subscribeToDeletedMessages}

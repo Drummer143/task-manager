@@ -1,11 +1,10 @@
 use axum::extract::State;
 use error_handlers::handlers::ErrorResponse;
-use sql::user::model::User;
+use sql::{shared::types::SortOrder, user::model::User};
 use uuid::Uuid;
 
 use crate::{
-    shared::{extractors::query::ValidatedQuery, traits::ServiceGetAllWithPaginationMethod},
-    types::{app_state::AppState, pagination::Pagination},
+    entities::user::db::UserSortBy, shared::{extractors::query::ValidatedQuery, traits::ServiceGetAllWithPaginationMethod}, types::{app_state::AppState, pagination::Pagination}
 };
 
 #[derive(serde::Deserialize, Debug)]
@@ -37,8 +36,8 @@ pub struct GetListQuery {
         ("query" = Option<String>, Query, description = "Search by username or email. Can't be used with email or username"),
         ("workspace_id" = Option<Uuid>, Query, description = "Filter by workspace id"),
         ("exclude" = Option<Vec<Uuid>>, Query, explode = false, description = "Array of ids to exclude separated by comma"),
-        ("sort_by" = Option<crate::entities::user::db::UserSortBy>, Query, description = "Sort by field. Default: createdAt"),
-        ("sort_order" = Option<crate::types::pagination::SortOrder>, Query, description = "Sort order. Default: asc"),
+        ("sort_by" = Option<UserSortBy>, Query, description = "Sort by field. Default: createdAt"),
+        ("sort_order" = Option<SortOrder>, Query, description = "Sort order. Default: asc"),
     ),
     responses(
         (status = 200, description = "List of users", body = Pagination<User>),

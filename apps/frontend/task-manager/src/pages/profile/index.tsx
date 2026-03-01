@@ -1,22 +1,40 @@
 import React from "react";
 
-import { useQuery } from "@tanstack/react-query";
-import { Alert, Flex, Spin } from "antd";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { required } from "@task-manager/ant-validation";
+import { getProfile, updateProfile } from "@task-manager/api/main";
+import { User, Workspace } from "@task-manager/api/main/schemas";
+import { Alert, Button, Flex, Form, Input, Spin } from "antd";
 
 import { useStyles } from "./styles";
 import AvatarInput from "./widgets/AvatarUpload";
-import EmailForm from "./widgets/EmailForm";
-import UserInfoForm from "./widgets/UserInfoForm";
 
-import { useAuthStore } from "../../app/store/auth";
 import { withAuthPageCheck } from "../../shared/HOCs";
+import { queryKeys } from "../../shared/queryKeys";
+
+const requiredRule = required();
 
 const Profile: React.FC = () => {
 	const { formsContainer, wrapper } = useStyles().styles;
 
 	const { data, isLoading, error } = useQuery({
-		queryFn: useAuthStore.getState().getSession,
-		queryKey: ["profile"]
+		queryFn: getProfile,
+		queryKey: queryKeys.profile.root()
+	});
+
+	const queryClient = useQueryClient();
+
+	const { mutateAsync: updateProfileMutation, isPending } = useMutation({
+		mutationFn: updateProfile,
+		onSuccess: user => {
+			queryClient.setQueryData(
+				queryKeys.profile.root(),
+				(oldUser: User & { workspace: Workspace }) => ({
+					...user,
+					workspace: oldUser?.workspace
+				})
+			);
+		}
 	});
 
 	if (error) {
@@ -27,16 +45,44 @@ const Profile: React.FC = () => {
 		return <Spin />;
 	}
 
+	const initialValues = {
+		username: data.username,
+		email: data.email
+	};
+
 	return (
 		<Flex className={wrapper} gap="2rem">
 			<div className={formsContainer}>
-				<UserInfoForm username={data.user.username} />
-				<EmailForm email={data.user.email} />
+				<Form
+					layout="vertical"
+					initialValues={initialValues}
+					onFinish={updateProfileMutation}
+				>
+					<Form.Item name="username" label="Username" rules={requiredRule}>
+						<Input data-test-id="profile-username-input" />
+					</Form.Item>
+
+					<Form.Item name="email" label="Email" rules={requiredRule}>
+						<Input data-test-id="profile-email-input" />
+					</Form.Item>
+
+					<Form.Item>
+						<Button
+							data-test-id="profile-save-button"
+							loading={isPending}
+							type="primary"
+							htmlType="submit"
+						>
+							Save
+						</Button>
+					</Form.Item>
+				</Form>
 			</div>
 
-			<AvatarInput avatarUrl={data.user.picture} />
+			<AvatarInput avatarUrl={data.picture} isAvatarDefault={data.isAvatarDefault} />
 		</Flex>
 	);
 };
 
 export default withAuthPageCheck(Profile);
+

@@ -41,15 +41,24 @@
 				"command": "cargo clippy -p main -- -D warnings"
 			}
 		},
+		"export-openapi": {
+			"cache": true,
+			"executor": "nx:run-commands",
+			"outputs": ["{workspaceRoot}/libs/frontend/api/specs/openapi-main.json"],
+			"options": {
+				"cwd": ".",
+				"command": "cargo run --bin export-openapi -- libs/frontend/api/specs/openapi-main.json"
+			}
+		},
 		"dev": {
 			"executor": "nx:run-commands",
 			"options": {
 				"cwd": ".",
-				"command": "cargo run -p main"
+				"command": "cargo run --bin main"
 			},
 			"configurations": {
 				"production": {
-					"command": "cargo run -p main --release"
+					"command": "cargo run --bin main --release"
 				}
 			}
 		}

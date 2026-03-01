@@ -1,11 +1,11 @@
 import React from "react";
 
-import { Page } from "@task-manager/api";
+import { PageSummary } from "@task-manager/api/main/schemas";
 
 import SettingsSection from "../SettingsSection";
 
 interface BoardLayoutSettingsProps {
-	page: Omit<Page, "tasks" | "owner" | "childPages" | "parentPage" | "workspace">;
+	page: PageSummary;
 }
 
 const BoardLayoutSettings: React.FC<BoardLayoutSettingsProps> = props => {

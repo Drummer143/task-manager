@@ -1,14 +1,14 @@
 import React, { memo, useCallback, useEffect, useMemo, useState } from "react";
 
 import { DownOutlined, PlusOutlined } from "@ant-design/icons";
-import { Page } from "@task-manager/api";
+import { PageResponse } from "@task-manager/api/main/schemas";
 import { Button, Flex, theme } from "antd";
 import { NavLink } from "react-router";
 
 import { useStyles } from "./styles";
 
 interface ItemWithSubmenuProps {
-	rootPage: Pick<Page, "childPages" | "title" | "type" | "id">;
+	rootPage: PageResponse;
 	onSubPageCreate: (id: string) => void;
 }
 

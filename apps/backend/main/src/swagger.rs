@@ -6,7 +6,7 @@ use utils::swagger::SecurityAddon;
         crate::entities::board_statuses::controller::create_board_status::create_board_status,
         crate::entities::board_statuses::controller::get_board_statuses::get_board_statuses,
 
-        crate::entities::page::controller::get_list_in_workspace::get_list_in_workspace,
+        crate::entities::page::controller::get_page_list::get_page_list,
         crate::entities::page::controller::get_page::get_page,
         crate::entities::page::controller::create_page::create_page,
         crate::entities::page::controller::update_page::update_page,
@@ -19,10 +19,14 @@ use utils::swagger::SecurityAddon;
         crate::entities::page::controller::update_page_access::update_page_access,
 
         crate::entities::profile::controller::get_profile::get_profile,
+        crate::entities::profile::controller::update_profile::update_profile,
+        crate::entities::profile::controller::upload_avatar::upload_avatar,
+        crate::entities::profile::controller::delete_avatar::delete_avatar,
 
         crate::entities::task::controller::get_task::get_task,
         crate::entities::task::controller::get_tasks_in_page::get_tasks_in_page,
         crate::entities::task::controller::create_task::create_task,
+        crate::entities::task::controller::create_draft_task::create_draft_task,
         crate::entities::task::controller::update_task::update_task,
         crate::entities::task::controller::delete_task::delete_task,
 
@@ -56,6 +60,7 @@ use utils::swagger::SecurityAddon;
         crate::entities::page::dto::PageListFormat,
 
         crate::entities::workspace::db::WorkspaceSortBy,
+        crate::entities::user::db::dto::UserSortBy,
     )),
     security(
         ("bearer_auth" = [])

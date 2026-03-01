@@ -13,7 +13,7 @@ use uuid::Uuid;
     get,
     path = "/actions/upload/{transaction_id}/status",
     params(
-        ("transaction_id", Path, description = "Transaction ID"),
+        ("transaction_id" = Uuid, Path, description = "Transaction ID"),
     ),
     responses(
         (status = 200, description = "Upload status", body = UploadStatusResponse),

@@ -1,6 +1,6 @@
 pub mod create_page;
 pub mod delete_page;
-pub mod get_list_in_workspace;
+pub mod get_page_list;
 pub mod get_page;
 pub mod update_page;
 

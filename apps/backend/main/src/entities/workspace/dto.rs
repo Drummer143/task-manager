@@ -86,6 +86,7 @@ pub struct UpdateWorkspaceAccessRequest {
 }
 
 #[derive(Debug, serde::Serialize, utoipa::ToSchema, Clone)]
+#[serde(rename_all = "camelCase")]
 pub struct WorkspaceAccessResponse {
     pub id: Uuid,
     pub user: sql::user::model::User,

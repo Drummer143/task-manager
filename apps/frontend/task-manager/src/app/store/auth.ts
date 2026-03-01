@@ -1,4 +1,5 @@
-import { getProfile, User, Workspace } from "@task-manager/api";
+import { getProfile } from "@task-manager/api/main";
+import { User, Workspace } from "@task-manager/api/main/schemas";
 import { User as OidcUser } from "oidc-client-ts";
 import { create } from "zustand";
 

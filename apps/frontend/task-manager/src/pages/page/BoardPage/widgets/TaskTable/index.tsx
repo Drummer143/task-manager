@@ -3,7 +3,9 @@ import React, { memo, useCallback, useEffect, useMemo } from "react";
 import { monitorForElements } from "@atlaskit/pragmatic-drag-and-drop/element/adapter";
 import { extractClosestEdge } from "@atlaskit/pragmatic-drag-and-drop-hitbox/closest-edge";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { DetailedPageResponseBoard, PreviewTaskModel, updateTask, User } from "@task-manager/api";
+// import { DetailedPageResponseBoard, PreviewTaskModel, updateTask, User } from "@task-manager/api";
+import { updateTask } from "@task-manager/api/main";
+import { DetailedPageResponseBoard, TaskSummary, User } from "@task-manager/api/main/schemas";
 import { App } from "antd";
 import { useSearchParams } from "react-router";
 
@@ -15,6 +17,7 @@ import {
 	isTaskTarget,
 	TaskSourceData
 } from "../../../../../shared/dnd/board";
+import { queryKeys } from "../../../../../shared/queryKeys";
 import TaskColumn from "../../../../../widgets/TaskColumn";
 
 interface TaskTableProps {
@@ -31,7 +34,7 @@ const TaskTable: React.FC<TaskTableProps> = ({ page }) => {
 	const queryClient = useQueryClient();
 
 	const tasks = useMemo<
-		Record<string, (Omit<PreviewTaskModel, "assigneeId"> & { assignee?: User })[]>
+		Record<string, (Omit<TaskSummary, "assigneeId"> & { assignee?: User })[]>
 	>(() => {
 		const usersMap = new Map(page.assignees.map(user => [user.id, user]));
 
@@ -43,12 +46,12 @@ const TaskTable: React.FC<TaskTableProps> = ({ page }) => {
 
 				acc[task.statusId] = acc[task.statusId] || [];
 				acc[task.statusId].push(
-					taskWithAssignee as Omit<PreviewTaskModel, "assigneeId"> & { assignee?: User }
+					taskWithAssignee as Omit<TaskSummary, "assigneeId"> & { assignee?: User }
 				);
 
 				return acc;
 			},
-			{} as Record<string, (Omit<PreviewTaskModel, "assigneeId"> & { assignee?: User })[]>
+			{} as Record<string, (Omit<TaskSummary, "assigneeId"> & { assignee?: User })[]>
 		);
 	}, [page.tasks, page.assignees]);
 
@@ -62,16 +65,11 @@ const TaskTable: React.FC<TaskTableProps> = ({ page }) => {
 			statusId?: string;
 			position?: number;
 		}) =>
-			updateTask({
-				pathParams: {
-					taskId
-				},
-				body: {
-					statusId,
-					position
-				}
+			updateTask(taskId, {
+				statusId,
+				position
 			}),
-		onSuccess: () => queryClient.invalidateQueries({ queryKey: [page.id] }),
+		onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.pages.detail(page.id) }),
 		onError: error => message.error(error.message ?? "Failed to change task status")
 	});
 

@@ -1,7 +1,7 @@
 import React, { memo, useMemo } from "react";
 
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { updateWorkspace } from "@task-manager/api";
+import { updateWorkspace } from "@task-manager/api/main";
 import { Button, Flex, Form, Input, Typography } from "antd";
 
 interface WorkspaceInfoProps {
@@ -36,10 +36,7 @@ const WorkspaceInfo: React.FC<WorkspaceInfoProps> = ({ id, name, editable }) => 
 				throw new Error("Cancelled");
 			}
 
-			return updateWorkspace({
-				pathParams: { workspaceId: id },
-				body
-			});
+			return updateWorkspace(id, body);
 		},
 		onSuccess: () => {
 			queryClient.invalidateQueries({

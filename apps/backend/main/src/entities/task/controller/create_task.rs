@@ -10,6 +10,7 @@ use crate::{
 #[utoipa::path(
     post,
     path = "/pages/{page_id}/tasks",
+    operation_id = "create_task",
     responses(
         (status = 200, description = "Task created successfully", body = TaskResponse),
         (status = 400, description = "Invalid request", body = ErrorResponse),
@@ -18,7 +19,7 @@ use crate::{
     params(
         ("page_id" = Uuid, Path, description = "Page ID"),
     ),
-    request_body(content = CreateTaskRequest),
+    request_body = CreateTaskRequest,
     tag = "Tasks",
 )]
 pub async fn create_task(

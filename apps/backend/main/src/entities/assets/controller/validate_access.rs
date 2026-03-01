@@ -37,7 +37,7 @@ use crate::{entities::assets::dto::ValidateAccessResponse, types::app_state::App
     path = "/assets/{id}/blob-id",
     operation_id = "validate_access",
     params(
-        ("id", Path, description = "Asset id"),
+        ("id" = Uuid, Path, description = "Asset id"),
         ("x-user-id", Header, description = "User ID from auth middleware"),
     ),
     responses(

@@ -15,10 +15,6 @@ impl UpdateDto for UpdateWorkspaceDto {
     fn is_empty(&self) -> bool {
         self.name.is_none()
     }
-
-    fn has_changes(&self, _: &Self::Model) -> bool {
-        todo!("has_changes for UpdateWorkspaceDto")
-    }
 }
 
 #[derive(Debug)]

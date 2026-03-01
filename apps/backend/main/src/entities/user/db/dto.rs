@@ -16,6 +16,7 @@ pub struct CreateUserDto {
     pub picture: Option<String>,
     #[allow(dead_code)]
     pub is_active: Option<bool>,
+    pub is_avatar_default: Option<bool>,
 
     pub created_at: Option<DateTime<Utc>>,
 }
@@ -27,6 +28,7 @@ pub struct UpdateUserDto {
 
     pub email: Option<Option<String>>,
     pub picture: Option<Option<String>>,
+    pub is_avatar_default: Option<bool>,
 }
 
 impl UpdateDto for UpdateUserDto {
@@ -37,34 +39,7 @@ impl UpdateDto for UpdateUserDto {
             && self.username.is_none()
             && self.picture.is_none()
             && self.is_active.is_none()
-    }
-
-    fn has_changes(&self, model: &Self::Model) -> bool {
-        if let Some(email) = &self.email
-            && email != &model.email
-        {
-            return true;
-        }
-
-        if let Some(username) = &self.username
-            && username != &model.username
-        {
-            return true;
-        }
-
-        if let Some(picture) = &self.picture
-            && picture != &model.picture
-        {
-            return true;
-        }
-
-        if let Some(is_active) = &self.is_active
-            && is_active != &model.is_active
-        {
-            return true;
-        }
-
-        false
+            && self.is_avatar_default.is_none()
     }
 }
 

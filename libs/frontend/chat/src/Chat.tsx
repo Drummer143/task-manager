@@ -63,7 +63,8 @@ const Chat: React.FC<ChatProps> = ({
 	updateMessage,
 	pinMessage,
 	loadPins,
-	loadMessagesAround
+	loadMessagesAround,
+	buildAvatarUrl
 }) => {
 	const modal = App.useApp().modal;
 
@@ -75,7 +76,7 @@ const Chat: React.FC<ChatProps> = ({
 	const [atBottom, setAtBottom] = useState(false);
 	const [newMessagesCount, setNewMessagesCount] = useState<number>(0);
 
-	const renderMessage = useMessageRenderer(currentUserId, onUserClick);
+	const renderMessage = useMessageRenderer(currentUserId, buildAvatarUrl, onUserClick);
 
 	const { styles, cx } = useStyles();
 

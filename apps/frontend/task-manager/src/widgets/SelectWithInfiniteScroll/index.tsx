@@ -1,15 +1,13 @@
 import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
 import { InfiniteData, QueryKey, useInfiniteQuery } from "@tanstack/react-query";
-import { BaseRequest, PaginationQuery, ResponseWithPagination } from "@task-manager/api";
+import { PaginationQuery, ResponseWithPagination } from "@task-manager/api";
 import { useDebouncedEffect } from "@task-manager/react-utils";
 import { GetProp, GetRef, Select, Spin, Tooltip } from "antd";
 import { DefaultOptionType, SelectProps } from "antd/es/select";
 
-interface SelectWithInfiniteScrollProps<
-	ItemType,
-	Response extends ResponseWithPagination<ItemType>,
-> extends Omit<
+interface SelectWithInfiniteScrollProps<ItemType, Response extends ResponseWithPagination<ItemType>>
+	extends Omit<
 		SelectProps,
 		| "options"
 		| "onPopupScroll"
@@ -20,7 +18,7 @@ interface SelectWithInfiniteScrollProps<
 		| "maxTagPlaceholder"
 		| "optionRender"
 	> {
-	fetchItems: (params: BaseRequest<PaginationQuery>) => Promise<Response>;
+	fetchItems: (params: PaginationQuery) => Promise<Response>;
 	transformItem: (item: Response["data"][number]) => DefaultOptionType;
 	optionRender?: (
 		item: Response["data"][number],
@@ -47,10 +45,7 @@ interface SelectWithInfiniteScrollProps<
 		  ) => React.ReactNode);
 }
 
-const SelectWithInfiniteScroll = <
-	ItemType,
-	Response extends ResponseWithPagination<ItemType>,
->({
+const SelectWithInfiniteScroll = <ItemType, Response extends ResponseWithPagination<ItemType>>({
 	fetchItems,
 	transformItem,
 	onFocus,
@@ -85,7 +80,7 @@ const SelectWithInfiniteScroll = <
 	>({
 		queryKey,
 		queryFn: ({ pageParam }) => {
-			return fetchItems({ pathParams: { ...extraParams, offset: pageParam, limit: 10 } });
+			return fetchItems({ ...extraParams, offset: pageParam, limit: 10 });
 		},
 		getNextPageParam: lastPage =>
 			lastPage.meta.hasMore ? lastPage.meta.offset + lastPage.meta.limit : undefined,

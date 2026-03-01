@@ -16,10 +16,10 @@ use crate::{
 #[utoipa::path(
     post,
     path = "/actions/upload/{transaction_id}/verify",
-    request_body(
-        content = UploadVerifyDto,
-        content_type = "application/json",
+    params(
+        ("transaction_id" = Uuid, Path, description = "Transaction ID"),
     ),
+    request_body = UploadVerifyDto,
     responses(
         (status = 200, description = "Verification result", body = UploadSuccessResponse),
     ),

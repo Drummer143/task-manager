@@ -27,8 +27,4 @@ impl UpdateDto for UpdateBoardStatusDto {
         self.initial.is_none() && self.position.is_none() && self.localizations.is_none()
         // && self.parent_status_id.is_none()
     }
-
-    fn has_changes(&self, _: &Self::Model) -> bool {
-        todo!("has_changes for UpdateBoardStatusDto")
-    }
 }

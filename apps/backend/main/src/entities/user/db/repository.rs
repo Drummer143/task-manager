@@ -1,6 +1,7 @@
 use sql::shared::{
     traits::{
-        PostgresqlRepositoryCreate, PostgresqlRepositoryGetOneById, RepositoryBase, UpdateDto,
+        PostgresqlRepositoryCreate, PostgresqlRepositoryGetOneById, PostgresqlRepositoryUpdate,
+        RepositoryBase, UpdateDto,
     },
     types::SortOrder,
 };
@@ -99,7 +100,7 @@ impl PostgresqlRepositoryCreate for UserRepository {
         dto: Self::CreateDto,
     ) -> Result<User, sqlx::Error> {
         sqlx::query_as::<_, User>(
-            "INSERT INTO users (id, authentik_id, email, username, picture, created_at) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
+            "INSERT INTO users (id, authentik_id, email, username, picture, created_at, is_avatar_default) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *",
         )
         .bind(dto.id)
         .bind(dto.authentik_id)
@@ -107,8 +108,65 @@ impl PostgresqlRepositoryCreate for UserRepository {
         .bind(&dto.username)
         .bind(&dto.picture)
         .bind(dto.created_at)
+        .bind(dto.is_avatar_default.unwrap_or(false))
         .fetch_one(executor)
         .await
+    }
+}
+
+impl PostgresqlRepositoryUpdate for UserRepository {
+    type UpdateDto = super::dto::UpdateUserDto;
+
+    async fn update<'a>(
+        executor: impl sqlx::Executor<'a, Database = Postgres>,
+        id: Uuid,
+        dto: Self::UpdateDto,
+    ) -> Result<Self::Response, sqlx::Error> {
+        if dto.is_empty() {
+            return Self::get_one_by_id(executor, id).await;
+        }
+
+        let mut query_builder = sqlx::QueryBuilder::new("UPDATE users SET ");
+
+        let mut separated = query_builder.separated(", ");
+
+        if let Some(email) = dto.email {
+            separated.push("email = ").push_bind_unseparated(email);
+        }
+
+        if let Some(is_active) = dto.is_active {
+            separated
+                .push("is_active = ")
+                .push_bind_unseparated(is_active);
+        }
+
+        if let Some(picture) = dto.picture {
+            separated.push("picture = ").push_bind_unseparated(picture);
+        }
+
+        if let Some(username) = dto.username {
+            separated
+                .push("username = ")
+                .push_bind_unseparated(username);
+        }
+
+        if let Some(is_avatar_default) = dto.is_avatar_default {
+            separated
+                .push("is_avatar_default = ")
+                .push_bind_unseparated(is_avatar_default);
+        }
+
+        separated
+            .push("updated_at = ")
+            .push_bind_unseparated(chrono::Utc::now());
+
+        query_builder
+            .push(" WHERE id = ")
+            .push_bind(id)
+            .push(" RETURNING *")
+            .build_query_as::<User>()
+            .fetch_one(executor)
+            .await
     }
 }
 
@@ -138,10 +196,8 @@ impl UserRepository {
         authentik_id: i32,
         dto: UpdateUserDto,
     ) -> Result<User, sqlx::Error> {
-        let current = Self::get_one_by_authentik_id(executor.clone(), authentik_id).await?;
-
-        if dto.is_empty() || !dto.has_changes(&current) {
-            return Ok(current);
+        if dto.is_empty() {
+            return Self::get_one_by_authentik_id(executor.clone(), authentik_id).await;
         }
 
         let mut query_builder = sqlx::QueryBuilder::new("UPDATE users SET ");
@@ -166,6 +222,12 @@ impl UserRepository {
             separated
                 .push("username = ")
                 .push_bind_unseparated(username);
+        }
+
+        if let Some(is_avatar_default) = dto.is_avatar_default {
+            separated
+                .push("is_avatar_default = ")
+                .push_bind_unseparated(is_avatar_default);
         }
 
         separated

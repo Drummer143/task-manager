@@ -1,0 +1,722 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "storage",
+    "description": "",
+    "license": {
+      "name": ""
+    },
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/actions/upload/init": {
+      "post": {
+        "tags": [
+          "Upload file"
+        ],
+        "operationId": "upload_init",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UploadInitDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Upload chunked init",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadInitResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/actions/upload/{transaction_id}/cancel": {
+      "delete": {
+        "tags": [
+          "Upload file"
+        ],
+        "operationId": "upload_cancel",
+        "parameters": [
+          {
+            "name": "transaction_id",
+            "in": "path",
+            "description": "Transaction ID",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Upload cancelled"
+          }
+        }
+      }
+    },
+    "/actions/upload/{transaction_id}/chunk": {
+      "post": {
+        "tags": [
+          "Upload file"
+        ],
+        "operationId": "upload_chunk",
+        "parameters": [
+          {
+            "name": "transaction_id",
+            "in": "path",
+            "description": "Transaction id",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "Content-Range",
+            "in": "header",
+            "description": "Format: bytes start-end/total (e.g. bytes 0-1024/5000)",
+            "required": true,
+            "schema": {
+              "type": "string"
+            }
+          },
+          {
+            "name": "Content-Type",
+            "in": "header",
+            "required": true,
+            "schema": {
+              "type": "string"
+            },
+            "example": "application/octet-stream"
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/octet-stream": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "format": "int32",
+                  "minimum": 0
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "File uploaded successfully"
+          }
+        }
+      }
+    },
+    "/actions/upload/{transaction_id}/complete": {
+      "post": {
+        "tags": [
+          "Upload file"
+        ],
+        "operationId": "upload_complete",
+        "parameters": [
+          {
+            "name": "transaction_id",
+            "in": "path",
+            "description": "Transaction ID",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Upload completion result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadSuccessResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/actions/upload/{transaction_id}/status": {
+      "get": {
+        "tags": [
+          "Upload file"
+        ],
+        "operationId": "upload_status",
+        "parameters": [
+          {
+            "name": "transaction_id",
+            "in": "path",
+            "description": "Transaction ID",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Upload status",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadStatusResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/actions/upload/{transaction_id}/verify": {
+      "post": {
+        "tags": [
+          "Upload file"
+        ],
+        "operationId": "upload_verify",
+        "parameters": [
+          {
+            "name": "transaction_id",
+            "in": "path",
+            "description": "Transaction ID",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/UploadVerifyDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Verification result",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadSuccessResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/actions/upload/{transaction_id}/whole-file": {
+      "post": {
+        "tags": [
+          "Upload file"
+        ],
+        "operationId": "upload_whole_file",
+        "parameters": [
+          {
+            "name": "transaction_id",
+            "in": "path",
+            "description": "Transaction ID",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/octet-stream": {
+              "schema": {
+                "type": "array",
+                "items": {
+                  "type": "integer",
+                  "format": "int32",
+                  "minimum": 0
+                }
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "201": {
+            "description": "File uploaded successfully",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/UploadSuccessResponse"
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Invalid request body",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/files/{asset_id}": {
+      "get": {
+        "tags": [
+          "Files"
+        ],
+        "operationId": "get_file",
+        "parameters": [
+          {
+            "name": "asset_id",
+            "in": "path",
+            "description": "Asset ID",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          },
+          {
+            "name": "filename",
+            "in": "query",
+            "description": "File name",
+            "required": false,
+            "schema": {
+              "type": "string"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "File found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "206": {
+            "description": "Partial content",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "File not found",
+            "content": {
+              "text/plain": {
+                "schema": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "AssetResponse": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "created_at"
+        ],
+        "properties": {
+          "created_at": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          }
+        }
+      },
+      "ErrorResponse": {
+        "type": "object",
+        "required": [
+          "error",
+          "errorCode",
+          "statusCode"
+        ],
+        "properties": {
+          "details": {
+            "type": [
+              "object",
+              "null"
+            ],
+            "additionalProperties": {
+              "type": "string"
+            },
+            "propertyNames": {
+              "type": "string"
+            }
+          },
+          "devDetails": {
+            "type": [
+              "string",
+              "null"
+            ]
+          },
+          "error": {
+            "type": "string"
+          },
+          "errorCode": {
+            "type": "string"
+          },
+          "statusCode": {
+            "type": "integer",
+            "format": "int32",
+            "minimum": 0
+          }
+        }
+      },
+      "UploadChunkedResponse": {
+        "type": "object",
+        "required": [
+          "transactionId",
+          "maxConcurrentUploads",
+          "chunkSize"
+        ],
+        "properties": {
+          "chunkSize": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "maxConcurrentUploads": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "transactionId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "UploadChunkedStatusResponse": {
+        "type": "object",
+        "required": [
+          "maxConcurrentUploads",
+          "chunkSize"
+        ],
+        "properties": {
+          "chunkSize": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "maxConcurrentUploads": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "missingChunks": {
+            "type": [
+              "array",
+              "null"
+            ],
+            "items": {
+              "type": "integer",
+              "format": "int64",
+              "minimum": 0
+            }
+          }
+        }
+      },
+      "UploadInitDto": {
+        "type": "object",
+        "required": [
+          "uploadToken",
+          "hash",
+          "size"
+        ],
+        "properties": {
+          "hash": {
+            "type": "string"
+          },
+          "size": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "uploadToken": {
+            "type": "string"
+          }
+        }
+      },
+      "UploadInitResponse": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "data",
+              "nextStep"
+            ],
+            "properties": {
+              "data": {
+                "$ref": "#/components/schemas/UploadChunkedResponse"
+              },
+              "nextStep": {
+                "type": "string",
+                "enum": [
+                  "startUploadChunked"
+                ]
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "data",
+              "nextStep"
+            ],
+            "properties": {
+              "data": {
+                "$ref": "#/components/schemas/UploadWholeFileResponse"
+              },
+              "nextStep": {
+                "type": "string",
+                "enum": [
+                  "startUploadWholeFile"
+                ]
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "data",
+              "nextStep"
+            ],
+            "properties": {
+              "data": {
+                "$ref": "#/components/schemas/VerifyRangesResponse"
+              },
+              "nextStep": {
+                "type": "string",
+                "enum": [
+                  "verifyRanges"
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "UploadStatusResponse": {
+        "oneOf": [
+          {
+            "type": "object",
+            "required": [
+              "data",
+              "currentStep"
+            ],
+            "properties": {
+              "currentStep": {
+                "type": "string",
+                "enum": [
+                  "uploadChunked"
+                ]
+              },
+              "data": {
+                "$ref": "#/components/schemas/UploadChunkedStatusResponse"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "currentStep"
+            ],
+            "properties": {
+              "currentStep": {
+                "type": "string",
+                "enum": [
+                  "uploadWholeFile"
+                ]
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "data",
+              "currentStep"
+            ],
+            "properties": {
+              "currentStep": {
+                "type": "string",
+                "enum": [
+                  "verifyRanges"
+                ]
+              },
+              "data": {
+                "$ref": "#/components/schemas/VerifyRangesStatusResponse"
+              }
+            }
+          },
+          {
+            "type": "object",
+            "required": [
+              "currentStep"
+            ],
+            "properties": {
+              "currentStep": {
+                "type": "string",
+                "enum": [
+                  "complete"
+                ]
+              }
+            }
+          }
+        ]
+      },
+      "UploadSuccessResponse": {
+        "type": "object",
+        "required": [
+          "asset",
+          "mime_type"
+        ],
+        "properties": {
+          "asset": {
+            "$ref": "#/components/schemas/AssetResponse"
+          },
+          "mime_type": {
+            "type": "string"
+          }
+        }
+      },
+      "UploadVerifyDto": {
+        "type": "object",
+        "required": [
+          "ranges"
+        ],
+        "properties": {
+          "ranges": {
+            "type": "array",
+            "items": {
+              "type": "array",
+              "items": {
+                "type": "integer",
+                "format": "int32",
+                "minimum": 0
+              }
+            }
+          }
+        }
+      },
+      "UploadWholeFileResponse": {
+        "type": "object",
+        "required": [
+          "transactionId"
+        ],
+        "properties": {
+          "transactionId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "VerifyRange": {
+        "type": "object",
+        "required": [
+          "start",
+          "end"
+        ],
+        "properties": {
+          "end": {
+            "type": "integer",
+            "format": "int64"
+          },
+          "start": {
+            "type": "integer",
+            "format": "int64"
+          }
+        }
+      },
+      "VerifyRangesResponse": {
+        "type": "object",
+        "required": [
+          "transactionId",
+          "ranges"
+        ],
+        "properties": {
+          "ranges": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VerifyRange"
+            }
+          },
+          "transactionId": {
+            "type": "string",
+            "format": "uuid"
+          }
+        }
+      },
+      "VerifyRangesStatusResponse": {
+        "type": "object",
+        "required": [
+          "ranges"
+        ],
+        "properties": {
+          "ranges": {
+            "type": "array",
+            "items": {
+              "$ref": "#/components/schemas/VerifyRange"
+            }
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "bearer_auth": {
+        "type": "http",
+        "scheme": "bearer"
+      }
+    }
+  },
+  "security": [
+    {
+      "bearer_auth": []
+    }
+  ]
+}

@@ -1,17 +1,19 @@
 use std::collections::HashMap;
 
 use axum::{
-    extract::{Path, State},
-    Extension,
+    Extension, Json, extract::{Path, State}
 };
 
 use error_handlers::{codes, handlers::ErrorResponse};
+use uuid::Uuid;
+
+use crate::{entities::workspace::{WorkspaceService, dto::WorkspaceAccessResponse}, types::app_state::AppState};
 
 #[utoipa::path(
     get,
     path = "/workspaces/{workspace_id}/access",
     responses(
-        (status = 200, description = "Workspace access list retrieved successfully", body = crate::entities::workspace::dto::WorkspaceAccessResponse),
+        (status = 200, description = "Workspace access list retrieved successfully", body = Vec<WorkspaceAccessResponse>),
         (status = 400, description = "Invalid request", body = ErrorResponse),
         (status = 401, description = "Unauthorized", body = ErrorResponse),
         (status = 403, description = "Forbidden", body = ErrorResponse),
@@ -24,15 +26,15 @@ use error_handlers::{codes, handlers::ErrorResponse};
     tags = ["Workspace Access"],
 )]
 pub async fn get_workspace_access_list(
-    State(state): State<crate::types::app_state::AppState>,
-    Extension(user_id): Extension<uuid::Uuid>,
-    Path(workspace_id): Path<uuid::Uuid>,
+    State(state): State<AppState>,
+    Extension(user_id): Extension<Uuid>,
+    Path(workspace_id): Path<Uuid>,
 ) -> Result<
-    axum::Json<Vec<crate::entities::workspace::dto::WorkspaceAccessResponse>>,
+    Json<Vec<WorkspaceAccessResponse>>,
     ErrorResponse,
 > {
     let user_workspace_access =
-        crate::entities::workspace::WorkspaceService::get_workspace_access(
+        WorkspaceService::get_workspace_access(
             &state,
             user_id,
             workspace_id,
@@ -65,7 +67,7 @@ pub async fn get_workspace_access_list(
     }
 
     let workspace_access_list =
-        crate::entities::workspace::WorkspaceService::get_workspace_access_list(
+        WorkspaceService::get_workspace_access_list(
             &state,
             workspace_id,
         )
@@ -85,5 +87,5 @@ pub async fn get_workspace_access_list(
             e
         })?;
 
-    Ok(axum::Json(workspace_access_list))
+    Ok(Json(workspace_access_list))
 }

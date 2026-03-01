@@ -9,7 +9,7 @@ use crate::shared::{extractors::path::ValidatedPath, traits::ServiceGetOneByIdMe
     path = "/users/{id}",
     operation_id = "get_user_by_id",
     params(
-        ("id", Path, description = "ID of user to get"),
+        ("id" = Uuid, Path, description = "ID of user to get"),
     ),
     responses(
         (status = 200, description = "User", body = User),

@@ -14,6 +14,7 @@ pub struct User {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub email: Option<String>,
     pub picture: Option<String>,
+    pub is_avatar_default: bool,
 
     pub created_at: DateTime<Utc>,
     pub updated_at: DateTime<Utc>,

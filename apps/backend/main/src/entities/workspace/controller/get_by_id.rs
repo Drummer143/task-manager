@@ -11,7 +11,7 @@ use crate::{
     path = "/workspaces/{workspace_id}",
     operation_id = "get_workspace_by_id",
     params(
-        ("workspace_id", Path, description = "Workspace ID"),
+        ("workspace_id" = Uuid, Path, description = "Workspace ID"),
     ),
     responses(
         (status = 200, description = "Workspace found", body = WorkspaceResponse),

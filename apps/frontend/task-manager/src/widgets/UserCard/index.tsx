@@ -1,11 +1,13 @@
 import React, { memo } from "react";
 
 import { ExportOutlined } from "@ant-design/icons";
-import { User } from "@task-manager/api";
+import { User } from "@task-manager/api/main/schemas";
 import { stopPropagation } from "@task-manager/utils";
-import { Avatar, Button, Col, Flex, Row, Typography } from "antd";
+import { Avatar, Button, Flex, Typography } from "antd";
 import { createStyles } from "antd-style";
-import { Link } from "react-router";
+
+import { useAuthStore } from "../../app/store/auth";
+import { buildStorageUrl } from "../../shared/utils/buildStorageUrl";
 
 interface UserCardProps {
 	user: User;
@@ -28,14 +30,14 @@ const useStyles = createStyles(({ css }) => ({
 const UserCard: React.FC<UserCardProps> = ({ user, hideOpenLink, oneLine }) => {
 	const { styles } = useStyles();
 
+	const avatarUrl = user.picture
+		? buildStorageUrl(user.picture, useAuthStore.getState().identity.access_token)
+		: "/avatar-placeholder-32.jpg";
+
 	if (oneLine) {
 		return (
 			<Flex align="center" gap="var(--ant-padding-xs)">
-				<Avatar
-					size="small"
-					src={user.picture || "/avatar-placeholder-32.jpg"}
-					alt={user.username}
-				/>
+				<Avatar size="small" src={avatarUrl} alt={user.username} />
 
 				<Typography className={styles.username}>{user.username}</Typography>
 			</Flex>
@@ -44,7 +46,7 @@ const UserCard: React.FC<UserCardProps> = ({ user, hideOpenLink, oneLine }) => {
 
 	return (
 		<Flex align="center" gap="var(--ant-padding-sm)">
-			<Avatar src={user.picture || "/avatar-placeholder-32.jpg"} alt={user.username} />
+			<Avatar src={avatarUrl} alt={user.username} />
 
 			<Flex vertical>
 				{hideOpenLink ? (

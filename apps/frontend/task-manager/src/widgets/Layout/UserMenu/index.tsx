@@ -1,17 +1,22 @@
 import React from "react";
 
+import { useQuery } from "@tanstack/react-query";
+import { getProfile } from "@task-manager/api/main";
 import { Dropdown, Flex, Spin } from "antd";
 
-import { useAuthStore } from "../../../app/store/auth";
+import { queryKeys } from "../../../shared/queryKeys";
 import UserMenuInfo from "../../../widgets/Layout/UserMenuInfo";
 import { useUserMenuItems } from "../../../widgets/Layout/useUserMenuItems";
 
 const UserMenu: React.FC = () => {
-	const { user, loading } = useAuthStore(state => state);
+	const { data, isLoading } = useQuery({
+		queryFn: getProfile,
+		queryKey: queryKeys.profile.root()
+	});
 
 	const menu = useUserMenuItems();
 
-	if (loading) {
+	if (isLoading || !data) {
 		return (
 			<Flex style={{ width: "100px" }}>
 				<Spin />
@@ -22,7 +27,7 @@ const UserMenu: React.FC = () => {
 	return (
 		<Dropdown menu={menu} trigger={["click"]}>
 			<div>
-				<UserMenuInfo username={user.username} picture={user.picture} />
+				<UserMenuInfo username={data.username} picture={data.picture} />
 			</div>
 		</Dropdown>
 	);

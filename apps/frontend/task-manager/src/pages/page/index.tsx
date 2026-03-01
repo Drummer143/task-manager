@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 
 import { useQuery } from "@tanstack/react-query";
-import { getDetailedPage } from "@task-manager/api";
+import { getPageDetailed } from "@task-manager/api/main";
 import { lazySuspense, useDisclosure } from "@task-manager/react-utils";
 import { Navigate, useNavigate, useParams } from "react-router";
 
@@ -10,6 +10,7 @@ import { useStyles } from "./styles";
 import PageHeader from "./widgets/PageHeader";
 
 import { withAuthPageCheck } from "../../shared/HOCs/withAuthPageCheck";
+import { queryKeys } from "../../shared/queryKeys";
 import FullSizeLoader from "../../shared/ui/FullSizeLoader";
 
 const BoardPage = lazySuspense(() => import("./BoardPage"), <FullSizeLoader />);
@@ -26,11 +27,9 @@ const Page: React.FC = () => {
 	const navigate = useNavigate();
 
 	const { data: page, isLoading } = useQuery({
-		queryKey: [pageId],
+		queryKey: queryKeys.pages.detail(pageId),
 		queryFn: () =>
-			getDetailedPage({
-				pathParams: { pageId }
-			}).catch(error => {
+			getPageDetailed(pageId).catch(error => {
 				navigate("/profile", { replace: true });
 
 				throw error;

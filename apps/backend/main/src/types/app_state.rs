@@ -9,6 +9,9 @@ pub struct AppState {
     // pub rabbitmq: std::sync::Arc<lapin::Channel>,
     pub auth: InternalAuthState,
     pub jwt_secret: Arc<String>,
+    pub authentik_api_url: Arc<String>,
+    pub authentik_api_token: Arc<String>,
+    pub storage_service_url: Arc<String>,
 }
 
 impl FromRef<AppState> for InternalAuthState {

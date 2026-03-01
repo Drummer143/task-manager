@@ -1,12 +1,13 @@
 import React, { useMemo } from "react";
 
 import { useQuery } from "@tanstack/react-query";
-import { getWorkspace } from "@task-manager/api";
+import { getWorkspaceById } from "@task-manager/api/main";
 import { Menu, Spin } from "antd";
 import { ItemType, MenuItemType } from "antd/es/menu/interface";
 import { useLocation, useNavigate } from "react-router";
 
 import { useAuthStore } from "../../../app/store/auth";
+import { queryKeys } from "../../../shared/queryKeys";
 
 const CommonMenu: React.FC = () => {
 	const workspaceId = useAuthStore(state => state.user.workspace.id);
@@ -16,8 +17,8 @@ const CommonMenu: React.FC = () => {
 	const location = useLocation();
 
 	const { data: workspace, isLoading } = useQuery({
-		queryKey: ["workspace", workspaceId],
-		queryFn: () => getWorkspace({ pathParams: { workspaceId } }),
+		queryKey: queryKeys.workspaces.detail(workspaceId),
+		queryFn: () => getWorkspaceById(workspaceId),
 		enabled: !!workspaceId
 	});
 

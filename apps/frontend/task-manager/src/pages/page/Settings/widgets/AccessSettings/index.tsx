@@ -2,22 +2,31 @@ import React, { useMemo, useState } from "react";
 
 import { PlusOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+// import {
+// 	ApiError,
+// 	createPageAccess,
+// 	getPageAccess,
+// 	getUserList,
+// 	Page,
+// 	parseApiError,
+// 	updatePageAccess,
+// 	User
+// } from "@task-manager/api";
+import { parseApiError } from "@task-manager/api";
 import {
-	ApiError,
 	createPageAccess,
-	getPageAccess,
-	getUserList,
-	Page,
-	parseApiError,
-	updatePageAccess,
-	User
-} from "@task-manager/api";
+	getPageAccessList,
+	getUsersList,
+	updatePageAccess
+} from "@task-manager/api/main";
+import { ErrorResponse, Role, User } from "@task-manager/api/main/schemas";
 import { App, Button, List, Tooltip } from "antd";
 import { AxiosError } from "axios";
 
 import { useStyles } from "./styles";
 
 import { useAuthStore } from "../../../../../app/store/auth";
+import { queryKeys } from "../../../../../shared/queryKeys";
 import AccessListItem from "../../../../../widgets/AccessList/AccessListItem";
 import PopoverInfiniteSelect from "../../../../../widgets/PopoverInfiniteSelect";
 import UserCard from "../../../../../widgets/UserCard";
@@ -39,13 +48,8 @@ const AccessSettings: React.FC<AccessSettingsProps> = ({ pageId }) => {
 	const message = App.useApp().message;
 
 	const { data, error } = useQuery({
-		queryFn: async () =>
-			await getPageAccess({
-				pathParams: {
-					pageId
-				}
-			}),
-		queryKey: ["pageAccesses"]
+		queryFn: async () => await getPageAccessList(pageId),
+		queryKey: queryKeys.pageAccess.root()
 	});
 
 	const {
@@ -53,41 +57,31 @@ const AccessSettings: React.FC<AccessSettingsProps> = ({ pageId }) => {
 		variables,
 		isPending
 	} = useMutation({
-		mutationFn: ({ userId, role }: { userId: string; role?: string }) =>
-			updatePageAccess({
-				pathParams: {
-					pageId
-				},
-				body: { userId, role }
-			}),
+		mutationFn: ({ userId, role }: { userId: string; role?: Role }) =>
+			updatePageAccess(pageId, { userId, role }),
 		retry: (_, error) => (error.response?.status || 0) > 499,
 		onSuccess: (_, { role, userId }) => {
 			setNewAddedUser(undefined);
 
 			if (userId === currentUser.id && role !== "admin" && role !== "owner") {
-				queryClient.invalidateQueries({ queryKey: [pageId] });
+				queryClient.invalidateQueries({ queryKey: queryKeys.pages.detail(pageId) });
 			} else {
-				queryClient.invalidateQueries({ queryKey: ["pageAccesses"] });
+				queryClient.invalidateQueries({ queryKey: queryKeys.pageAccess.root() });
 			}
 		},
-		onError: (error: AxiosError<ApiError>) =>
+		onError: (error: AxiosError<ErrorResponse>) =>
 			message.error(error.response?.data?.errorCode ?? "Failed to update page settings")
 	});
 
 	const { mutateAsync: createAccess } = useMutation({
-		mutationFn: ({ userId, role }: { userId: string; role: string }) =>
-			createPageAccess({
-				pathParams: {
-					pageId
-				},
-				body: { userId, role }
-			}),
+		mutationFn: ({ userId, role }: { userId: string; role: Role }) =>
+			createPageAccess(pageId, { userId, role }),
 		retry: (_, error) => (error.response?.status || 0) > 499,
 		onSuccess: () => {
 			setNewAddedUser(undefined);
-			queryClient.invalidateQueries({ queryKey: [pageId] });
+			queryClient.invalidateQueries({ queryKey: queryKeys.pages.detail(pageId) });
 		},
-		onError: (error: AxiosError<ApiError>) =>
+		onError: (error: AxiosError<ErrorResponse>) =>
 			message.error(error.response?.data?.errorCode ?? "Failed to update page settings")
 	});
 
@@ -120,10 +114,10 @@ const AccessSettings: React.FC<AccessSettingsProps> = ({ pageId }) => {
 
 			<div className={styles.addMemberButtonContainer}>
 				<PopoverInfiniteSelect
-					fetchItems={getUserList}
+					fetchItems={getUsersList}
 					getItemValue={user => user.id}
 					renderItem={user => <UserCard hideOpenLink user={user} />}
-					queryKey={["users"]}
+					queryKey={queryKeys.users.root()}
 					onChange={setNewAddedUser}
 					value={newAddedUser}
 					extraParams={{ exclude: data?.map(access => access.user.id).join(",") }}

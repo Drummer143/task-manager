@@ -11,7 +11,7 @@ use sql::workspace::model::WorkspaceAccess;
     path = "/workspaces/{workspace_id}/detailed",
     operation_id = "get_detailed_workspace",
     params(
-        ("workspace_id", Path, description = "Workspace ID"),
+        ("workspace_id" = Uuid, Path, description = "Workspace ID"),
     ),
     responses(
         (status = 200, description = "Workspace found", body = DetailedWorkspaceResponse),

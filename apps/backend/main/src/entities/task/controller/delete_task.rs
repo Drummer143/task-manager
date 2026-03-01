@@ -7,6 +7,7 @@ use crate::{entities::task::dto::TaskResponse, shared::traits::ServiceDeleteMeth
 #[utoipa::path(
     delete,
     path = "/tasks/{task_id}",
+    operation_id = "delete_task",
     responses(
         (status = 200, description = "Task deleted successfully", body = TaskResponse),
         (status = 400, description = "Invalid request", body = ErrorResponse),

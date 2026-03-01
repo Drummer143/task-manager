@@ -1,13 +1,13 @@
 import React, { memo } from "react";
 
-import { PreviewTaskModel, User } from "@task-manager/api";
+import { TaskSummary, User } from "@task-manager/api/main/schemas";
 
 import { useStyles } from "./styles";
 
 import TaskItem from "../TaskItem";
 
 interface TaskListProps {
-	tasks?: (PreviewTaskModel & { assignee?: User })[];
+	tasks?: (TaskSummary & { assignee?: User })[];
 	draggable?: boolean;
 
 	onTaskClick?: (taskId: string) => void;

@@ -14,6 +14,9 @@ use crate::{
 #[utoipa::path(
     post,
     path = "/actions/upload/{transaction_id}/whole-file",
+    params(
+        ("transaction_id" = Uuid, Path, description = "Transaction ID"),
+    ),
     request_body(
         content = Vec<u8>,
         content_type = "application/octet-stream"

@@ -1,7 +1,7 @@
 import React, { memo } from "react";
 
 import { CloseOutlined } from "@ant-design/icons";
-import { User } from "@task-manager/api";
+import { Role, User } from "@task-manager/api/main/schemas";
 import { Button, Flex, Select, Typography } from "antd";
 
 import { useStyles } from "./styles";
@@ -16,7 +16,7 @@ interface AccessListItemProps {
 	isPending?: boolean;
 
 	onDelete?: (body: { userId: string }) => void;
-	onRoleChange?: (body: { userId: string; role: string }) => void;
+	onRoleChange?: (body: { userId: string; role: Role }) => void;
 }
 
 const AccessListItem: React.FC<AccessListItemProps> = ({
@@ -37,7 +37,7 @@ const AccessListItem: React.FC<AccessListItemProps> = ({
 				<Flex align="center" gap="var(--ant-margin-xxs)">
 					<Select
 						className={roleSelect}
-						onChange={role => onRoleChange?.({ userId: user.id, role })}
+						onChange={role => onRoleChange?.({ userId: user.id, role: role as Role })}
 						value={role}
 						loading={isPending}
 						options={userBoardRoleOptions}
@@ -60,3 +60,4 @@ const AccessListItem: React.FC<AccessListItemProps> = ({
 };
 
 export default memo(AccessListItem);
+

@@ -2,18 +2,19 @@ import React, { useMemo } from "react";
 
 import { DeleteOutlined, UndoOutlined } from "@ant-design/icons";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
-import { cancelSoftDeleteWorkspace, softDeleteWorkspace } from "@task-manager/api";
+import { cancelSoftDeleteWorkspace, softDeleteWorkspace } from "@task-manager/api/main";
 import { useFunctionWithFeedback } from "@task-manager/react-utils";
 import { Button, Flex, Typography } from "antd";
 import { createStyles } from "antd-style";
 import dayjs from "dayjs";
 
 import { today } from "../../../../shared/constants";
+import { queryKeys } from "../../../../shared/queryKeys";
 
 interface DangerZoneProps {
 	workspaceId: string;
 
-	deletedAt?: string;
+	deletedAt?: string | null;
 }
 
 const useStyles = createStyles(({ css }) => ({
@@ -31,7 +32,7 @@ const DangerZone: React.FC<DangerZoneProps> = ({ workspaceId, deletedAt }) => {
 	const queryClient = useQueryClient();
 
 	const { mutateAsync } = useMutation({
-		mutationKey: ["workspace", workspaceId],
+		mutationKey: queryKeys.workspaces.detail(workspaceId),
 		mutationFn: deletedAt ? cancelSoftDeleteWorkspace : softDeleteWorkspace,
 		onSuccess: () =>
 			queryClient.invalidateQueries({
@@ -46,9 +47,7 @@ const DangerZone: React.FC<DangerZoneProps> = ({ workspaceId, deletedAt }) => {
 
 	const handleDeleteWorkspace = useFunctionWithFeedback({
 		callback: async () => {
-			await mutateAsync({
-				pathParams: { workspaceId }
-			});
+			await mutateAsync(workspaceId);
 
 			return true;
 		},

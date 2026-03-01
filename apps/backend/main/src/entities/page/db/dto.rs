@@ -29,10 +29,6 @@ impl UpdateDto for UpdatePageDto {
     fn is_empty(&self) -> bool {
         self.title.is_none()
     }
-
-    fn has_changes(&self, _: &Self::Model) -> bool {
-        todo!("has_changes for UpdatePageDto")
-    }
 }
 
 // PAGE ACCESS

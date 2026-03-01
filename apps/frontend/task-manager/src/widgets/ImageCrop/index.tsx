@@ -6,15 +6,26 @@ import Cropper, { Area } from "react-easy-crop";
 import { useStyles } from "./styles";
 
 interface ImageCropProps {
-	onCropFinish: (croppedAreaPixels: Area) => void;
+	onCropFinish: (croppedAreaPixels: Area) => Promise<void> | void;
 
 	image?: File;
 	isOpen?: boolean;
+	confirmLoading?: boolean;
 
 	onCancel?: () => void;
 }
 
-const ImageCrop: React.FC<ImageCropProps> = ({ image, isOpen, onCancel, onCropFinish }) => {
+const okButtonProps = {
+	id: "image-crop-ok-button"
+};
+
+const ImageCrop: React.FC<ImageCropProps> = ({
+	image,
+	isOpen,
+	confirmLoading,
+	onCancel,
+	onCropFinish
+}) => {
 	const [zoom, setZoom] = useState(1);
 	const [crop, setCrop] = useState({ x: 0, y: 0 });
 	const [imageUrl, setImageUrl] = useState<string | undefined>(undefined);
@@ -46,8 +57,14 @@ const ImageCrop: React.FC<ImageCropProps> = ({ image, isOpen, onCancel, onCropFi
 	}, [image, isOpen]);
 
 	return (
-		// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-		<Modal open={isOpen} onCancel={handleClose} onOk={() => onCropFinish(croppedAreaPixels!)}>
+		<Modal
+			open={isOpen}
+			onCancel={handleClose}
+			confirmLoading={confirmLoading}
+			// eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+			onOk={() => onCropFinish(croppedAreaPixels!)}
+			okButtonProps={okButtonProps}
+		>
 			<div className={cropWrapper} ref={cropWrapperRef}>
 				<Cropper
 					crop={crop}
@@ -64,3 +81,4 @@ const ImageCrop: React.FC<ImageCropProps> = ({ image, isOpen, onCancel, onCropFi
 };
 
 export default ImageCrop;
+

@@ -1,10 +1,10 @@
 import { EditOutlined, ExportOutlined } from "@ant-design/icons";
-import { Page } from "@task-manager/api";
+import { PageResponse, PageSummary } from "@task-manager/api/main/schemas";
 import { Button, Flex, Typography } from "antd";
 import { BasicDataNode, DataNode } from "antd/es/tree";
 
 export const preparePageTree = (
-	pages?: Omit<Page, "workspace" | "owner" | "parentPage" | "tasks" | "boardStatuses">[],
+	pages?: (PageResponse | PageSummary)[] | null,
 	editable?: boolean
 ): (BasicDataNode | DataNode)[] | undefined =>
 	pages?.map(page => ({
@@ -21,10 +21,15 @@ export const preparePageTree = (
 					icon={<ExportOutlined />}
 				/>
 
-				{editable && <Button type="text" title="Edit page" size="small" icon={<EditOutlined />} />}
+				{editable && (
+					<Button type="text" title="Edit page" size="small" icon={<EditOutlined />} />
+				)}
 			</Flex>
 		),
 		checkable: false,
 		selectable: false,
-		children: preparePageTree(page.childPages)
+		children: (page as PageResponse).childPages
+			? preparePageTree((page as PageResponse).childPages)
+			: undefined
 	}));
+

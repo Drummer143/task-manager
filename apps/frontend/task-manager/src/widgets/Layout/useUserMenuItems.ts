@@ -1,12 +1,13 @@
 import { useMemo } from "react";
 
 import { useQuery } from "@tanstack/react-query";
-import { getWorkspaceList } from "@task-manager/api";
+import { getWorkspacesList } from "@task-manager/api/main";
 import { MenuProps } from "antd";
 import { useNavigate } from "react-router";
 
 import { useAuthStore } from "../../app/store/auth";
 import { userManager } from "../../app/userManager";
+import { queryKeys } from "../../shared/queryKeys";
 
 export const useUserMenuItems = () => {
 	const workspaceId = useAuthStore(state => state.user.workspace.id);
@@ -14,8 +15,8 @@ export const useUserMenuItems = () => {
 	const navigate = useNavigate();
 
 	const { data, isLoading } = useQuery({
-		queryKey: ["workspaces"],
-		queryFn: () => getWorkspaceList({ pathParams: { limit: -1 } })
+		queryKey: queryKeys.workspaces.root(),
+		queryFn: () => getWorkspacesList({ limit: -1 })
 	});
 
 	const menu = useMemo<MenuProps>(

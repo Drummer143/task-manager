@@ -1,12 +1,12 @@
 import React, { memo } from "react";
 
 import { SettingOutlined } from "@ant-design/icons";
-import { UserRole } from "@task-manager/api";
+import { Role } from "@task-manager/api/main/schemas";
 import { Button, Flex, Typography } from "antd";
 
 interface PageHeaderProps {
 	pageTitle: string;
-	userRoleInPage: UserRole;
+	userRoleInPage: Role;
 
 	onSettingsClick: () => void;
 }

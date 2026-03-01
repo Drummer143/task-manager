@@ -2,7 +2,9 @@ import React, { memo, useCallback, useMemo, useState } from "react";
 
 import { PlusOutlined } from "@ant-design/icons";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
-import { createPage, getPageList, PageType, parseApiError } from "@task-manager/api";
+import { parseApiError } from "@task-manager/api";
+import { createPage, getPageList } from "@task-manager/api/main";
+import { CreatePageRequest, PageType } from "@task-manager/api/main/schemas";
 import { Button, Form, Input, Select, Typography } from "antd";
 import { DefaultOptionType } from "antd/es/select";
 import { createStyles } from "antd-style";
@@ -11,6 +13,7 @@ import Menu from "./Menu";
 
 import { useAuthStore } from "../../../app/store/auth";
 import { pageTypes } from "../../../shared/constants";
+import { queryKeys } from "../../../shared/queryKeys";
 import FullSizeLoader from "../../../shared/ui/FullSizeLoader";
 import Drawer from "../../../widgets/Drawer";
 
@@ -57,22 +60,16 @@ const NavPagesMenu: React.FC = () => {
 	const workspaceId = useAuthStore(state => state.user.workspace.id);
 
 	const { data, isLoading } = useQuery({
-		queryKey: ["pages", "tree", workspaceId],
+		queryKey: queryKeys.pages.tree(workspaceId),
 		enabled: !!workspaceId,
-		queryFn: () =>
-			getPageList({
-				pathParams: {
-					workspaceId,
-					format: "tree"
-				}
-			})
+		queryFn: () => getPageList(workspaceId, { format: "tree" })
 	});
 
 	const { mutateAsync, isPending, error, reset } = useMutation({
-		mutationFn: createPage,
+		mutationFn: (body: CreatePageRequest) => createPage(workspaceId, body),
 		onSuccess: page => {
-			queryClient.invalidateQueries({ queryKey: ["pages"] });
-			queryClient.invalidateQueries({ queryKey: ["page", page.id] });
+			queryClient.invalidateQueries({ queryKey: queryKeys.pages.root() });
+			queryClient.invalidateQueries({ queryKey: queryKeys.pages.detail(page.id) });
 
 			setCreatingPageType(false);
 		}
@@ -87,16 +84,13 @@ const NavPagesMenu: React.FC = () => {
 			form,
 			onFinish: async (values: FormValues) => {
 				await mutateAsync({
-					pathParams: { workspaceId },
-					body: {
-						...values,
-						parentPageId:
-							typeof creatingPageType === "string" ? creatingPageType : undefined
-					}
+					...values,
+					parentPageId:
+						typeof creatingPageType === "string" ? creatingPageType : undefined
 				});
 			}
 		}),
-		[creatingPageType, form, mutateAsync, workspaceId]
+		[creatingPageType, form, mutateAsync]
 	);
 
 	const handleAfterClose = useCallback(() => {
@@ -136,10 +130,7 @@ const NavPagesMenu: React.FC = () => {
 				onClose={closeCreatingPageType}
 			>
 				<Form.Item label="Page title" name="title">
-					<Input
-						placeholder="Page title"
-						data-test-id="create-page-drawer-title-input"
-					/>
+					<Input placeholder="Page title" data-test-id="create-page-drawer-title-input" />
 				</Form.Item>
 
 				<Form.Item label="Page type" name="type">

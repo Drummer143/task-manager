@@ -3,9 +3,12 @@ import React, { memo } from "react";
 import { Avatar } from "antd";
 import { createStyles } from "antd-style";
 
+import { useAuthStore } from "../../../app/store/auth";
+import { buildStorageUrl } from "../../../shared/utils/buildStorageUrl";
+
 interface UserMenuInfoProps {
 	mobile?: boolean;
-	picture?: string;
+	picture?: string | null;
 	username?: string;
 
 	onClick?: React.MouseEventHandler<HTMLDivElement>;
@@ -42,9 +45,15 @@ const UserMenuInfo: React.FC<UserMenuInfoProps> = ({ username, picture, mobile, 
 
 	return (
 		<div className={wrapper} onClick={onClick}>
-			<p>{username}</p>
+			<p data-test-id="user-menu-top-right-info-username">{username}</p>
 
-			<Avatar src={picture || "avatar-placeholder-32.jpg"} />
+			<Avatar
+				src={
+					picture
+						? buildStorageUrl(picture, useAuthStore.getState().identity.access_token)
+						: "avatar-placeholder-32.jpg"
+				}
+			/>
 		</div>
 	);
 };

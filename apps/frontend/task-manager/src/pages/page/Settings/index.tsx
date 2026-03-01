@@ -1,20 +1,28 @@
 import React from "react";
 
-import { Page } from "@task-manager/api";
+import { PageSummary } from "@task-manager/api/main/schemas";
 import { Button, Flex, Typography } from "antd";
 
 import AccessSettings from "./widgets/AccessSettings";
 import BoardLayoutSettings from "./widgets/BoardLayoutSettings";
 
 interface SettingsProps {
-	page: Page;
+	page: PageSummary;
 	onClose: () => void;
 }
 
 const Settings: React.FC<SettingsProps> = ({ page, onClose }) => {
 	return (
 		<>
-			<Flex justify="space-between" style={{ position: "sticky", top: 0, zIndex: 1, backgroundColor: "var(--ant-layout-body-bg)" }}>
+			<Flex
+				justify="space-between"
+				style={{
+					position: "sticky",
+					top: 0,
+					zIndex: 1,
+					backgroundColor: "var(--ant-layout-body-bg)"
+				}}
+			>
 				<Typography.Title level={3}>
 					Settings for page &quot;{page.title}&quot;
 				</Typography.Title>
