@@ -51,7 +51,7 @@ test("should update avatar", async ({ page }) => {
 	await page.waitForFunction(selector => {
 		const img = document.querySelector(selector) as HTMLImageElement;
 		return img.complete && img.naturalWidth > 0;
-	}, '[data-test-id="user-menu-top-right-info-avatar"]');
+	}, '[data-test-id="user-menu-top-right-info-avatar"] img');
 
 	let screenshotAfter = await page.getByTestId("user-menu-top-right-info-avatar").screenshot();
 
