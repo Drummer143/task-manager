@@ -32,7 +32,7 @@ pub async fn update_user(
         .map_err(|e| {
             ErrorResponse::internal_server_error(Some(format!(
                 "Failed to connect to Authentik: {}",
-                e.to_string()
+                e
             )))
         })?;
 
@@ -54,7 +54,7 @@ pub async fn update_user(
             let mut errors: HashMap<String, String> = HashMap::new();
 
             if let Some(non_field_errors) = error.non_field_errors
-                && non_field_errors.len() > 0
+                && !non_field_errors.is_empty()
             {
                 errors.insert(
                     "non_field_errors".to_string(),
