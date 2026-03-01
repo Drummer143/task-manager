@@ -130,7 +130,7 @@ const Task: React.FC = () => {
 					</div>
 
 					<div className={styles.flexItem}>
-						<UserCard oneLine user={data.task.reporter} hideOpenLink />
+						<UserCard oneLine user={data.task.reporter!} hideOpenLink />
 					</div>
 				</Flex>
 
