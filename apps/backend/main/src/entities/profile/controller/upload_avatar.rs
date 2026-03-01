@@ -39,12 +39,6 @@ fn bad_request(msg: String) -> ErrorResponse {
     )
 }
 
-fn parse_f64_field(value: &str, name: &str) -> Result<f64, ErrorResponse> {
-    value
-        .parse::<f64>()
-        .map_err(|_| bad_request(format!("Invalid '{}' value", name)))
-}
-
 #[derive(utoipa::ToSchema)]
 struct UploadAvatarForm {
     #[allow(dead_code)]
@@ -113,19 +107,31 @@ pub async fn upload_avatar(
             }
             "x" => {
                 let val = field.text().await.map_err(|e| bad_request(e.to_string()))?;
-                crop_x = Some(parse_f64_field(&val, "x")?);
+                crop_x = Some(
+                    val.parse::<f64>()
+                        .map_err(|_| bad_request("Invalid 'x' value".to_string()))?,
+                );
             }
             "y" => {
                 let val = field.text().await.map_err(|e| bad_request(e.to_string()))?;
-                crop_y = Some(parse_f64_field(&val, "y")?);
+                crop_y = Some(
+                    val.parse::<f64>()
+                        .map_err(|_| bad_request("Invalid 'y' value".to_string()))?,
+                );
             }
             "width" => {
                 let val = field.text().await.map_err(|e| bad_request(e.to_string()))?;
-                crop_width = Some(parse_f64_field(&val, "width")?);
+                crop_width = Some(
+                    val.parse::<f64>()
+                        .map_err(|_| bad_request("Invalid 'width' value".to_string()))?,
+                );
             }
             "height" => {
                 let val = field.text().await.map_err(|e| bad_request(e.to_string()))?;
-                crop_height = Some(parse_f64_field(&val, "height")?);
+                crop_height = Some(
+                    val.parse::<f64>()
+                        .map_err(|_| bad_request("Invalid 'height' value".to_string()))?,
+                );
             }
             _ => {}
         }
