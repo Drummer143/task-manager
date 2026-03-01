@@ -4,7 +4,7 @@ export default [
 	...baseConfig,
 	{
 		ignores: ["src/hasher/wasm_source.js"]
-	}
+	},
 	{
 		rules: {
 			"@nx/enforce-module-boundaries": "off"
