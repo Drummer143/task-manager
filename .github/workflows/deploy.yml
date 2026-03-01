@@ -24,12 +24,14 @@ jobs:
     steps:
       - name: Determine deploy parameters
         id: params
+        env:
+          HEAD_BRANCH: ${{ github.event.workflow_run.head_branch }}
         run: |
           if [ "${{ github.event_name }}" == "workflow_dispatch" ]; then
             echo "image_tag=${{ github.event.inputs.image_tag || 'latest' }}" >> $GITHUB_OUTPUT
             echo "ref=${{ github.ref }}" >> $GITHUB_OUTPUT
           else
-            BRANCH="${{ github.event.workflow_run.head_branch }}"
+            BRANCH="${HEAD_BRANCH}"
             if [ "$BRANCH" == "main" ]; then
               echo "image_tag=latest" >> $GITHUB_OUTPUT
             else

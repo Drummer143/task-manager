@@ -38,21 +38,18 @@ pub async fn upload(
     })? {
         let field_name = field.name().unwrap_or_default();
 
-        match field_name {
-            "file" => {
-                filename = field.file_name().map(|s| s.to_string());
+        if field_name == "file" {
+            filename = field.file_name().map(|s| s.to_string());
 
-                let bytes = field.bytes().await.map_err(|e| {
-                    ErrorResponse::bad_request(
-                        error_handlers::codes::BadRequestErrorCode::InvalidBody,
-                        None,
-                        Some(e.to_string()),
-                    )
-                })?;
+            let bytes = field.bytes().await.map_err(|e| {
+                ErrorResponse::bad_request(
+                    error_handlers::codes::BadRequestErrorCode::InvalidBody,
+                    None,
+                    Some(e.to_string()),
+                )
+            })?;
 
-                file_bytes = Some(bytes.to_vec());
-            }
-            _ => {}
+            file_bytes = Some(bytes.to_vec());
         }
     }
 
