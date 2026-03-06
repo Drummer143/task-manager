@@ -18,7 +18,7 @@ export const useStyles = createStyles(({ css }) => {
 
 	return {
 		wrapper: css`
-			width: 50%;
+			width: 100%;
 			position: relative;
 			height: auto;
 

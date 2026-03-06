@@ -24,11 +24,13 @@ const ImageRenderer: React.FC<NodeViewProps> = ({ HTMLAttributes, node, getPos, 
 
 		const pos = getPos();
 
-		editor
-			.chain()
-			.focus()
-			.deleteRange({ from: pos, to: pos + node.nodeSize })
-			.run();
+		if (pos) {
+			editor
+				.chain()
+				.focus()
+				.deleteRange({ from: pos, to: pos + node.nodeSize })
+				.run();
+		}
 	};
 
 	const token = useAuthStore(state => state.identity.access_token);
@@ -38,7 +40,7 @@ const ImageRenderer: React.FC<NodeViewProps> = ({ HTMLAttributes, node, getPos, 
 			return HTMLAttributes.src;
 		}
 
-		const url = new URL(HTMLAttributes.src);
+		const url = new URL(`${window.location.origin}${HTMLAttributes.src}`);
 
 		url.searchParams.set("token", token);
 

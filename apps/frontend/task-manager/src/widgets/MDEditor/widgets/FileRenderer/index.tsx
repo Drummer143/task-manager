@@ -155,11 +155,13 @@ const FileRender: React.FC<NodeViewProps> = info => {
 
 		const pos = info.getPos();
 
-		info.editor
-			.chain()
-			.focus()
-			.deleteRange({ from: pos, to: pos + info.node.nodeSize })
-			.run();
+		if (pos) {
+			info.editor
+				.chain()
+				.focus()
+				.deleteRange({ from: pos, to: pos + info.node.nodeSize })
+				.run();
+		}
 	};
 
 	const link = useMemo(() => {

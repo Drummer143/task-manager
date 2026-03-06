@@ -2,8 +2,10 @@ import React, { memo } from "react";
 
 import Icon from "@ant-design/icons";
 import { preventDefault } from "@task-manager/utils";
-import { Editor, BubbleMenu as TipTapBubbleMenu } from "@tiptap/react";
-import { Button, GetProp, Tooltip, Typography } from "antd";
+import { Editor } from "@tiptap/react";
+// @ts-expect-error - tiptap/react/menus is not typed
+import { BubbleMenu as TipTapBubbleMenu } from "@tiptap/react/menus";
+import { Button, Tooltip, Typography } from "antd";
 
 import { useStyles } from "./styles";
 
@@ -46,15 +48,15 @@ const bubbleMenuButtons = [
 	}
 ] as const;
 
-const tippyOptions: GetProp<typeof TipTapBubbleMenu, "tippyOptions"> = {
-	moveTransition: "transform var(--ant-motion-duration-fast) var(--ant-motion-ease-in-out)"
-};
+// const tippyOptions: GetProp<typeof TipTapBubbleMenu, "tippyOption"> = {
+// 	moveTransition: "transform var(--ant-motion-duration-fast) var(--ant-motion-ease-in-out)"
+// };
 
 const BubbleMenu: React.FC<BubbleMenuProps> = ({ editor, selectionParams, onItemClick }) => {
 	const { styles, cx } = useStyles();
 
 	return (
-		<TipTapBubbleMenu tippyOptions={tippyOptions} editor={editor}>
+		<TipTapBubbleMenu editor={editor ?? undefined}>
 			<div
 				className={styles.menu}
 				onContextMenu={preventDefault}

@@ -46,11 +46,13 @@ const VideoRenderer: React.FC<NodeViewProps> = ({ HTMLAttributes, editor, getPos
 
 					const pos = getPos();
 
-					editor
-						.chain()
-						.focus()
-						.deleteRange({ from: pos, to: pos + node.nodeSize })
-						.run();
+					if (pos) {
+						editor
+							.chain()
+							.focus()
+							.deleteRange({ from: pos, to: pos + node.nodeSize })
+							.run();
+					}
 				}
 			});
 		}
@@ -65,7 +67,7 @@ const VideoRenderer: React.FC<NodeViewProps> = ({ HTMLAttributes, editor, getPos
 			return HTMLAttributes.src;
 		}
 
-		const url = new URL(HTMLAttributes.src);
+		const url = new URL(`${window.location.origin}${HTMLAttributes.src}`);
 
 		url.searchParams.set("token", token);
 
