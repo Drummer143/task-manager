@@ -1,3 +1,5 @@
+name: task-manager
+
 services:
     caddy:
         image: caddy:2-alpine
