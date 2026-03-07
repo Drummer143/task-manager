@@ -69,8 +69,41 @@ const TaskTable: React.FC<TaskTableProps> = ({ page }) => {
 				statusId,
 				position
 			}),
-		onSuccess: () => queryClient.invalidateQueries({ queryKey: queryKeys.pages.detail(page.id) }),
-		onError: error => message.error(error.message ?? "Failed to change task status")
+		onMutate: async payload => {
+			await queryClient.cancelQueries({ queryKey: queryKeys.pages.detail(page.id) });
+
+			const cache: DetailedPageResponseBoard | undefined = queryClient.getQueryData(
+				queryKeys.pages.detail(page.id)
+			);
+
+			if (!cache) {
+				return queryClient.invalidateQueries({ queryKey: queryKeys.pages.detail(page.id) });
+			}
+
+			queryClient.setQueryData(queryKeys.pages.detail(page.id), {
+				...cache,
+				tasks: cache.tasks.map(task => {
+					if (task.id === payload.taskId) {
+						return {
+							...task,
+							statusId: payload.statusId ?? task.statusId,
+							position: payload.position ?? task.position
+						};
+					}
+
+					return task;
+				})
+			});
+
+			return { cache };
+		},
+		onError: (error, _, context) => {
+			if (context?.cache) {
+				queryClient.setQueryData(queryKeys.pages.detail(page.id), context.cache);
+			}
+
+			message.error(error.message ?? "Failed to change task status");
+		}
 	});
 
 	const handleOpenTask = useCallback(
@@ -100,6 +133,8 @@ const TaskTable: React.FC<TaskTableProps> = ({ page }) => {
 				if (isTaskTarget(target) && source.id !== target.id) {
 					const edge = extractClosestEdge(target);
 
+					payload.statusId = target.statusId;
+
 					if (target.position > source.position) {
 						if (edge === "top") {
 							payload.position = target.position - 1;
@@ -115,10 +150,7 @@ const TaskTable: React.FC<TaskTableProps> = ({ page }) => {
 					}
 				}
 
-				if (
-					(payload.statusId && payload.statusId !== source.statusId) ||
-					(payload.position && payload.position !== source.position)
-				) {
+				if (payload.statusId && payload.statusId !== source.statusId) {
 					changeTaskStatus(payload);
 				}
 			}
