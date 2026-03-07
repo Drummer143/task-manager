@@ -3,62 +3,53 @@ use std::sync::Arc;
 use utils::{auth_middleware::InternalAuthState, types::jwks::JwkSet};
 use utoipa::OpenApi;
 
-use crate::types::app_state::AppState;
+use crate::{config::Config, types::app_state::AppState};
 
+mod authentik_api;
+mod config;
 mod db_connections;
-mod entities;
+mod controllers;
 mod middleware;
+mod repos;
+mod router;
+mod services;
 mod shared;
 mod swagger;
 mod types;
 mod webhooks;
-mod authentik_api;
 
 pub fn openapi_json() -> String {
     serde_json::to_string_pretty(&swagger::ApiDoc::openapi()).unwrap()
 }
 
-pub async fn build() -> axum::Router {
-    let db_url = std::env::var("DATABASE_URL").expect("DATABASE_URL not found");
+pub async fn build() -> (axum::Router, Config) {
+    let config = Config::from_env().expect("Invalid configuration");
 
     use tracing_subscriber::{EnvFilter, layer::SubscriberExt, util::SubscriberInitExt};
 
     tracing_subscriber::registry()
-        .with(EnvFilter::new("debug,lapin=warn,sqlx=warn"))
+        .with(EnvFilter::new(&config.log_filter))
         .with(tracing_subscriber::fmt::layer())
         .init();
 
-    let authentik_api_url = std::env::var("AUTHENTIK_API_URL").expect("AUTHENTIK_API_URL must be set");
-    let authentik_api_token = std::env::var("AUTHENTIK_API_TOKEN").expect("AUTHENTIK_API_TOKEN must be set");
-    let jwks_url = std::env::var("AUTHENTIK_JWKS_URL").expect("AUTHENTIK_JWKS_URL must be set");
-    let authentik_audience =
-        std::env::var("AUTHENTIK_AUDIENCE").expect("AUTHENTIK_AUDIENCE must be set");
-
-    let jwt_secret = std::env::var("JWT_SECRET").expect("JWT_SECRET must be set");
-
-    let storage_service_url = std::env::var("STORAGE_SERVICE_URL").expect("STORAGE_SERVICE_URL must be set");
-
-    let jwks = reqwest::get(&jwks_url)
+    let jwks = reqwest::get(&config.authentik_jwks_url)
         .await
         .expect("Failed to fetch JWKS")
         .json::<JwkSet>()
         .await
         .expect("Failed to parse JWKS");
 
-    let postgres = db_connections::init_databases(&db_url).await;
+    let postgres =
+        db_connections::init_databases(&config.database_url, config.db_max_connections).await;
 
     migrator::migrator::migrate(migrator::MigrationDirection::Up)
         .await
         .expect("Failed to run migrations");
 
-    let cors_origins: Vec<http::HeaderValue> = std::env::var("CORS_ORIGINS")
-        .unwrap_or_else(|_| "http://localhost:1346,http://localhost:80".to_string())
-        .split(',')
-        .filter_map(|s| s.trim().parse().ok())
-        .collect();
-
     let cors = tower_http::cors::CorsLayer::new()
-        .allow_origin(tower_http::cors::AllowOrigin::list(cors_origins))
+        .allow_origin(tower_http::cors::AllowOrigin::list(
+            config.cors_origins.clone(),
+        ))
         .allow_methods([
             http::Method::GET,
             http::Method::POST,
@@ -66,7 +57,6 @@ pub async fn build() -> axum::Router {
             http::Method::PUT,
             http::Method::DELETE,
             http::Method::PATCH,
-            http::Method::OPTIONS,
         ])
         .allow_headers([
             http::header::CONTENT_TYPE,
@@ -77,27 +67,21 @@ pub async fn build() -> axum::Router {
 
     let auth = InternalAuthState {
         jwks: Arc::new(tokio::sync::RwLock::new(jwks)),
-        authentik_jwks_url: Arc::new(jwks_url),
-        authentik_audience: Arc::new(authentik_audience),
+        authentik_jwks_url: Arc::new(config.authentik_jwks_url.clone()),
+        authentik_audience: Arc::new(config.authentik_audience.clone()),
     };
 
     let app_state = AppState {
         postgres,
         auth,
-        jwt_secret: Arc::new(jwt_secret),
-        authentik_api_url: Arc::new(authentik_api_url),
-        authentik_api_token: Arc::new(authentik_api_token),
-        storage_service_url: Arc::new(storage_service_url),
+        jwt_secret: Arc::new(config.jwt_secret.clone()),
+        authentik_api_url: Arc::new(config.authentik_api_url.clone()),
+        authentik_api_token: Arc::new(config.authentik_api_token.clone()),
+        storage_service_url: Arc::new(config.storage_service_url.clone()),
     };
 
-    axum::Router::new()
-        .merge(entities::user::router::init(app_state.clone()))
-        .merge(entities::profile::router::init(app_state.clone()))
-        .merge(entities::workspace::router::init(app_state.clone()))
-        .merge(entities::page::router::init(app_state.clone()))
-        .merge(entities::task::router::init(app_state.clone()))
-        .merge(entities::board_statuses::router::init(app_state.clone()))
-        .merge(entities::assets::router::init(app_state.clone()))
+    let router = axum::Router::new()
+        .merge(router::init_router(app_state.clone()))
         .merge(
             utoipa_swagger_ui::SwaggerUi::new("/api")
                 .url("/api/api.json", swagger::ApiDoc::openapi())
@@ -112,5 +96,7 @@ pub async fn build() -> axum::Router {
         .merge(webhooks::authentik::router::init())
         .with_state(app_state)
         .layer(tower_http::trace::TraceLayer::new_for_http())
-        .layer(cors)
+        .layer(cors);
+
+    (router, config)
 }

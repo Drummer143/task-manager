@@ -1,30 +1,9 @@
 use sqlx::{PgPool, postgres::PgPoolOptions};
 
-pub async fn init_databases(postgres_url: &str) -> PgPool {
+pub async fn init_databases(postgres_url: &str, max_connections: u32) -> PgPool {
     PgPoolOptions::new()
-        .max_connections(5)
+        .max_connections(max_connections)
         .connect(postgres_url)
         .await
         .expect("Failed to connect to Postgres")
-
-    // let rabbitmq = lapin::Connection::connect(rabbitmq_url, lapin::ConnectionProperties::default())
-    //     .await
-    //     .expect("Failed to connect to RabbitMQ");
-
-    // let channel = rabbitmq
-    //     .create_channel()
-    //     .await
-    //     .expect("Failed to create channel");
-
-    // let mut queue_options = lapin::options::QueueDeclareOptions::default();
-    // queue_options.durable = true;
-
-    // channel
-    //     .queue_declare(
-    //         "refresh_signals",
-    //         queue_options,
-    //         lapin::types::FieldTable::default(),
-    //     )
-    //     .await
-    //     .expect("Failed to declare queue");
 }

@@ -1,8 +1,11 @@
 use axum::extract::State;
+use axum::http::StatusCode;
 use error_handlers::{codes, handlers::ErrorResponse};
 use uuid::Uuid;
 
-use crate::{entities::workspace::db::WorkspaceRepository, types::app_state::AppState};
+use crate::{repos::workspaces::WorkspaceRepository, types::app_state::AppState};
+
+use super::json_error_response;
 
 /// works only with path `/workspace/{workspace_id}/...`
 pub async fn workspace_access_guard(
@@ -10,57 +13,45 @@ pub async fn workspace_access_guard(
     mut req: axum::http::Request<axum::body::Body>,
     next: axum::middleware::Next,
 ) -> axum::response::Response<axum::body::Body> {
-    let path = req.uri().path();
+    let workspace_id = req.uri().path().split('/').nth(2).unwrap_or_default();
 
-    let workspace_id = path.split('/').nth(2).unwrap_or_default();
+    let Ok(workspace_id) = Uuid::parse_str(workspace_id) else {
+        return json_error_response(
+            StatusCode::BAD_REQUEST,
+            ErrorResponse::bad_request(
+                codes::BadRequestErrorCode::InvalidParams,
+                None,
+                Some("Invalid workspace id".to_string()),
+            ),
+        );
+    };
 
-    let workspace_id = Uuid::parse_str(workspace_id);
+    let Some(user_id) = req.extensions().get::<Uuid>() else {
+        return json_error_response(
+            StatusCode::UNAUTHORIZED,
+            ErrorResponse::unauthorized(
+                codes::UnauthorizedErrorCode::Unauthorized,
+                Some("User is not authorized".to_string()),
+            ),
+        );
+    };
 
-    if workspace_id.is_err() {
-        return next.run(req).await;
-    }
+    let user_id = *user_id;
 
-    let user_id = req.extensions().get::<Uuid>();
+    let Ok(workspace_access) =
+        WorkspaceRepository::get_one_workspace_access(&state.postgres, user_id, workspace_id).await
+    else {
+        return json_error_response(
+            StatusCode::FORBIDDEN,
+            ErrorResponse::forbidden(
+                codes::ForbiddenErrorCode::InsufficientPermissions,
+                None,
+                None,
+            ),
+        );
+    };
 
-    if user_id.is_none() {
-        let body = serde_json::to_string(&ErrorResponse::unauthorized(
-            codes::UnauthorizedErrorCode::Unauthorized,
-            Some("User is not authorized".to_string()),
-        ))
-        .unwrap();
-
-        return axum::response::Response::builder()
-            .status(axum::http::StatusCode::UNAUTHORIZED)
-            .body(axum::body::Body::from(body))
-            .unwrap();
-    }
-
-    let user_id = user_id.unwrap();
-    let workspace_id = workspace_id.unwrap();
-
-    let workspace_access =
-        WorkspaceRepository::get_one_workspace_access(
-            &state.postgres,
-            *user_id,
-            workspace_id,
-        )
-        .await;
-
-    if let Err(error) = workspace_access {
-        let body = serde_json::to_string(&ErrorResponse::forbidden(
-            codes::ForbiddenErrorCode::InsufficientPermissions,
-            None,
-            Some(error.to_string()),
-        ))
-        .unwrap();
-
-        return axum::response::Response::builder()
-            .status(axum::http::StatusCode::FORBIDDEN)
-            .body(axum::body::Body::from(body))
-            .unwrap();
-    }
-
-    req.extensions_mut().insert(workspace_access.unwrap());
+    req.extensions_mut().insert(workspace_access);
 
     next.run(req).await
 }

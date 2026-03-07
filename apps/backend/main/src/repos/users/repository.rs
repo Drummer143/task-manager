@@ -1,0 +1,219 @@
+use sql::shared::{traits::UpdateDto, types::SortOrder};
+use sqlx::Postgres;
+use uuid::Uuid;
+
+use crate::repos::users::utils::apply_filter;
+
+use super::dto::{CreateUserDto, UpdateUserDto, UserFilterBy, UserSortBy};
+use sql::user::model::User;
+
+pub struct UserRepository;
+
+impl UserRepository {
+    pub async fn get_one_by_id<'a>(
+        executor: impl sqlx::Executor<'a, Database = Postgres>,
+        id: Uuid,
+    ) -> Result<User, sqlx::Error> {
+        let user = sqlx::query_as::<_, User>("SELECT * FROM users WHERE id = $1")
+            .bind(id)
+            .fetch_one(executor)
+            .await?;
+
+        Ok(user)
+    }
+}
+
+impl UserRepository {
+    pub async fn create<'a>(
+        executor: impl sqlx::Executor<'a, Database = Postgres>,
+        dto: CreateUserDto,
+    ) -> Result<User, sqlx::Error> {
+        sqlx::query_as::<_, User>(
+            "INSERT INTO users (id, authentik_id, email, username, picture, created_at, is_avatar_default) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *",
+        )
+        .bind(dto.id)
+        .bind(dto.authentik_id)
+        .bind(&dto.email)
+        .bind(&dto.username)
+        .bind(&dto.picture)
+        .bind(dto.created_at)
+        .bind(dto.is_avatar_default.unwrap_or(false))
+        .fetch_one(executor)
+        .await
+    }
+
+    pub async fn update<'a>(
+        executor: impl sqlx::Executor<'a, Database = Postgres>,
+        id: Uuid,
+        dto: UpdateUserDto,
+    ) -> Result<User, sqlx::Error> {
+        if dto.is_empty() {
+            return Self::get_one_by_id(executor, id).await;
+        }
+
+        let mut query_builder = sqlx::QueryBuilder::new("UPDATE users SET ");
+
+        let mut separated = query_builder.separated(", ");
+
+        if let Some(email) = dto.email {
+            separated.push("email = ").push_bind_unseparated(email);
+        }
+
+        if let Some(is_active) = dto.is_active {
+            separated
+                .push("is_active = ")
+                .push_bind_unseparated(is_active);
+        }
+
+        if let Some(picture) = dto.picture {
+            separated.push("picture = ").push_bind_unseparated(picture);
+        }
+
+        if let Some(username) = dto.username {
+            separated
+                .push("username = ")
+                .push_bind_unseparated(username);
+        }
+
+        if let Some(is_avatar_default) = dto.is_avatar_default {
+            separated
+                .push("is_avatar_default = ")
+                .push_bind_unseparated(is_avatar_default);
+        }
+
+        separated
+            .push("updated_at = ")
+            .push_bind_unseparated(chrono::Utc::now());
+
+        query_builder
+            .push(" WHERE id = ")
+            .push_bind(id)
+            .push(" RETURNING *")
+            .build_query_as::<User>()
+            .fetch_one(executor)
+            .await
+    }
+
+    pub async fn get_one_by_authentik_id<'a>(
+        executor: impl sqlx::Executor<'a, Database = Postgres>,
+        authentik_id: i32,
+    ) -> Result<User, sqlx::Error> {
+        sqlx::query_as::<_, User>("SELECT * FROM users WHERE authentik_id = $1")
+            .bind(authentik_id)
+            .fetch_one(executor)
+            .await
+    }
+
+    pub async fn update_by_authentik_id<'a>(
+        executor: impl sqlx::Executor<'a, Database = Postgres> + Clone,
+        authentik_id: i32,
+        dto: UpdateUserDto,
+    ) -> Result<User, sqlx::Error> {
+        if dto.is_empty() {
+            return Self::get_one_by_authentik_id(executor.clone(), authentik_id).await;
+        }
+
+        let mut query_builder = sqlx::QueryBuilder::new("UPDATE users SET ");
+
+        let mut separated = query_builder.separated(", ");
+
+        if let Some(email) = dto.email {
+            separated.push("email = ").push_bind_unseparated(email);
+        }
+
+        if let Some(is_active) = dto.is_active {
+            separated
+                .push("is_active = ")
+                .push_bind_unseparated(is_active);
+        }
+
+        if let Some(picture) = dto.picture {
+            separated.push("picture = ").push_bind_unseparated(picture);
+        }
+
+        if let Some(username) = dto.username {
+            separated
+                .push("username = ")
+                .push_bind_unseparated(username);
+        }
+
+        if let Some(is_avatar_default) = dto.is_avatar_default {
+            separated
+                .push("is_avatar_default = ")
+                .push_bind_unseparated(is_avatar_default);
+        }
+
+        separated
+            .push("updated_at = ")
+            .push_bind_unseparated(chrono::Utc::now());
+
+        query_builder
+            .push(" WHERE authentik_id = ")
+            .push_bind(authentik_id)
+            .push(" RETURNING *")
+            .build_query_as::<User>()
+            .fetch_one(executor)
+            .await
+    }
+
+    pub async fn delete_by_authentik_id<'a>(
+        executor: impl sqlx::Executor<'a, Database = Postgres>,
+        id: i32,
+    ) -> Result<User, sqlx::Error> {
+        sqlx::query_as::<_, User>("DELETE FROM users WHERE authentik_id = $1 RETURNING *")
+            .bind(id)
+            .fetch_one(executor)
+            .await
+    }
+
+    pub async fn get_list<'a>(
+        executor: impl sqlx::Executor<'a, Database = Postgres> + Copy,
+        limit: i64,
+        offset: i64,
+        filter: Option<&UserFilterBy>,
+        sort_by: Option<&UserSortBy>,
+        sort_order: Option<&SortOrder>,
+    ) -> Result<(Vec<User>, i64), sqlx::Error> {
+        let mut query_builder = sqlx::QueryBuilder::<Postgres>::new("SELECT users.* FROM users");
+        let mut total_builder =
+            sqlx::QueryBuilder::<Postgres>::new("SELECT COUNT(DISTINCT users.id) FROM users");
+
+        if let Some(filter) = filter
+            && !filter.is_empty()
+            && filter.is_valid()
+        {
+            query_builder = apply_filter(query_builder, filter);
+            total_builder = apply_filter(total_builder, filter);
+        }
+
+        query_builder.push(format!(
+            " ORDER BY {} {} LIMIT {} OFFSET {}",
+            sort_by.unwrap_or(&UserSortBy::CreatedAt),
+            sort_order.unwrap_or(&SortOrder::Asc),
+            limit,
+            offset
+        ));
+
+        let users = query_builder
+            .build_query_as::<User>()
+            .fetch_all(executor)
+            .await?;
+
+        let total = total_builder
+            .build_query_scalar::<i64>()
+            .fetch_one(executor)
+            .await?;
+
+        Ok((users, total))
+    }
+
+    pub async fn get_users_by_ids<'a>(
+        executor: impl sqlx::Executor<'a, Database = Postgres> + Copy,
+        ids: &[Uuid],
+    ) -> Result<Vec<User>, sqlx::Error> {
+        sqlx::query_as::<_, User>("SELECT * FROM users WHERE id = ANY($1)")
+            .bind(ids)
+            .fetch_all(executor)
+            .await
+    }
+}

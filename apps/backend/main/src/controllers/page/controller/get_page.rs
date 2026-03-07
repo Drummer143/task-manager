@@ -1,0 +1,33 @@
+use axum::{
+    Json,
+    extract::{Path, State},
+};
+use error_handlers::handlers::ErrorResponse;
+use uuid::Uuid;
+
+use crate::{
+    controllers::page::dto::PageResponse, services::pages::PageService, types::app_state::AppState,
+};
+
+#[utoipa::path(
+    get,
+    path = "/pages/{page_id}",
+    operation_id = "get_page",
+    params(
+        ("page_id" = Uuid, Path, description = "Page ID"),
+    ),
+    responses(
+        (status = 200, description = "Page details", body = PageResponse),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 500, description = "Internal server error", body = ErrorResponse),
+    ),
+    tags = ["Page"],
+)]
+pub async fn get_page(
+    State(state): State<AppState>,
+    Path(page_id): Path<Uuid>,
+) -> Result<Json<PageResponse>, ErrorResponse> {
+    PageService::get_one_by_id(&state.postgres, page_id)
+        .await
+        .map(|p| Json(PageResponse::from(p)))
+}

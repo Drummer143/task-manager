@@ -74,7 +74,7 @@ pub async fn update_user(
         }
         _ => Err(ErrorResponse::internal_server_error(Some(format!(
             "Unknown error: {}",
-            response.text().await.unwrap()
+            response.text().await.unwrap_or_else(|_| "Failed to read response body".to_string())
         )))),
     }
 }
