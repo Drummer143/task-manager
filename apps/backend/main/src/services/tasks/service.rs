@@ -9,7 +9,7 @@ use sql::{
 use uuid::Uuid;
 
 use crate::{
-    entities::{
+    controllers::{
         board_statuses::dto::BoardStatusResponse,
         task::{controller::create_draft_task::CreateDraftRequest, dto::TaskResponse},
     },
@@ -128,7 +128,7 @@ impl TaskService {
         pool: &sqlx::PgPool,
         page_id: Uuid,
         reporter_id: Uuid,
-        dto: crate::entities::task::dto::CreateTaskRequest,
+        dto: crate::controllers::task::dto::CreateTaskRequest,
     ) -> Result<Task, ErrorResponse> {
         let last_position = TaskRepository::get_last_position(pool, dto.status_id)
             .await

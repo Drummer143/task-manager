@@ -9,7 +9,7 @@ use sql::{
 use uuid::Uuid;
 
 use crate::{
-    entities::workspace::dto::{
+    controllers::workspace::dto::{
         DetailedWorkspaceResponse, WorkspaceAccessResponse, WorkspaceResponse,
     },
     repos::{

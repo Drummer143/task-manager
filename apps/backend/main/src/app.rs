@@ -8,14 +8,15 @@ use crate::{config::Config, types::app_state::AppState};
 mod authentik_api;
 mod config;
 mod db_connections;
-mod entities;
+mod controllers;
 mod middleware;
 mod repos;
+mod router;
+mod services;
 mod shared;
 mod swagger;
 mod types;
 mod webhooks;
-mod services;
 
 pub fn openapi_json() -> String {
     serde_json::to_string_pretty(&swagger::ApiDoc::openapi()).unwrap()
@@ -80,13 +81,7 @@ pub async fn build() -> (axum::Router, Config) {
     };
 
     let router = axum::Router::new()
-        .merge(entities::user::router::init(app_state.clone()))
-        .merge(entities::profile::router::init(app_state.clone()))
-        .merge(entities::workspace::router::init(app_state.clone()))
-        .merge(entities::page::router::init(app_state.clone()))
-        .merge(entities::task::router::init(app_state.clone()))
-        .merge(entities::board_statuses::router::init(app_state.clone()))
-        .merge(entities::assets::router::init(app_state.clone()))
+        .merge(router::init_router(app_state.clone()))
         .merge(
             utoipa_swagger_ui::SwaggerUi::new("/api")
                 .url("/api/api.json", swagger::ApiDoc::openapi())

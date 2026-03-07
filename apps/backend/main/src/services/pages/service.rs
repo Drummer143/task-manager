@@ -6,7 +6,7 @@ use sqlx::PgConnection;
 use uuid::Uuid;
 
 use crate::{
-    entities::{
+    controllers::{
         board_statuses::dto::BoardStatusResponse,
         page::dto::{
             DetailedPageResponse, DetailedPageResponseBase, DetailedPageResponseBoard,
