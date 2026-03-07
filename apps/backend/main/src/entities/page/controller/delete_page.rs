@@ -2,7 +2,7 @@ use axum::{Json, extract::{Path, State}};
 use error_handlers::handlers::ErrorResponse;
 use uuid::Uuid;
 
-use crate::{entities::page::dto::PageResponse, shared::traits::ServiceDeleteMethod, types::app_state::AppState};
+use crate::{entities::page::dto::PageResponse, types::app_state::AppState};
 
 #[utoipa::path(
     delete,
@@ -22,7 +22,7 @@ pub async fn delete_page(
     State(state): State<AppState>,
     Path(page_id): Path<Uuid>,
 ) -> Result<Json<PageResponse>, ErrorResponse> {
-    crate::entities::page::PageService::delete(&state, page_id)
+    crate::entities::page::PageService::delete(&state.postgres, page_id)
         .await
         .map(|p| Json(PageResponse::from(p)))
 }

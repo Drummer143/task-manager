@@ -77,7 +77,7 @@ pub async fn get_page_list(
     Path(workspace_id): Path<Uuid>,
 ) -> Result<Json<Vec<PageResponse>>, ErrorResponse> {
     let pages =
-        crate::entities::page::PageService::get_all_in_workspace(&state, workspace_id).await?;
+        crate::entities::page::PageService::get_all_in_workspace(&state.postgres, workspace_id).await?;
 
     let is_tree = query.format == Some(PageListFormat::Tree);
 

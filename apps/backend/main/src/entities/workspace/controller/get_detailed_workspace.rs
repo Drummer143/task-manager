@@ -24,7 +24,7 @@ pub async fn get_detailed_workspace(
     State(app_state): State<AppState>,
     Extension(workspace_access): Extension<WorkspaceAccess>,
 ) -> Result<Json<DetailedWorkspaceResponse>, ErrorResponse> {
-    WorkspaceService::get_detailed_workspace(&app_state, workspace_access)
+    WorkspaceService::get_detailed_workspace(&app_state.postgres, workspace_access)
         .await
         .map(Json)
 }

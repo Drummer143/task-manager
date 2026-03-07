@@ -4,7 +4,7 @@ use uuid::Uuid;
 
 use crate::{
     entities::page::dto::{PageResponse, UpdatePageRequest},
-    shared::{extractors::json::ValidatedJson, traits::ServiceUpdateMethod},
+    shared::extractors::json::ValidatedJson,
     types::app_state::AppState,
 };
 
@@ -29,7 +29,7 @@ pub async fn update_page(
     Path(page_id): Path<Uuid>,
     ValidatedJson(update_page_dto): ValidatedJson<UpdatePageRequest>,
 ) -> Result<Json<PageResponse>, ErrorResponse> {
-    crate::entities::page::PageService::update(&state, page_id, update_page_dto)
+    crate::entities::page::PageService::update(&state.postgres, page_id, update_page_dto)
         .await
         .map(|p| Json(PageResponse::from(p)))
 }

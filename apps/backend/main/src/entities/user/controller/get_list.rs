@@ -4,7 +4,7 @@ use sql::{shared::types::SortOrder, user::model::User};
 use uuid::Uuid;
 
 use crate::{
-    entities::user::db::UserSortBy, shared::{extractors::query::ValidatedQuery, traits::ServiceGetAllWithPaginationMethod}, types::{app_state::AppState, pagination::Pagination}
+    entities::user::db::UserSortBy, shared::extractors::query::ValidatedQuery, types::{app_state::AppState, pagination::Pagination}
 };
 
 #[derive(serde::Deserialize, Debug)]
@@ -72,7 +72,7 @@ pub async fn get_list(
     }
 
     let (users, total) = crate::entities::user::UserService::get_all_with_pagination(
-        &state,
+        &state.postgres,
         query.limit,
         query.offset,
         Some(filters),

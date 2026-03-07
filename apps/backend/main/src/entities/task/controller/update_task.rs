@@ -5,7 +5,7 @@ use uuid::Uuid;
 
 use crate::{
     entities::task::dto::TaskResponse,
-    shared::{extractors::json::ValidatedJson, traits::ServiceUpdateMethod},
+    shared::extractors::json::ValidatedJson,
 };
 
 #[utoipa::path(
@@ -27,7 +27,7 @@ pub async fn update_task(
     Path(task_id): Path<Uuid>,
     ValidatedJson(dto): ValidatedJson<UpdateTaskDto>,
 ) -> Result<Json<TaskResponse>, ErrorResponse> {
-    crate::entities::task::TaskService::update(&state, task_id, dto)
+    crate::entities::task::TaskService::update(&state.postgres, task_id, dto)
         .await
         .map(|t| Json(TaskResponse::from(t)))
 }

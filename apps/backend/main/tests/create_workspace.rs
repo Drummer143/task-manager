@@ -20,6 +20,7 @@ async fn create_workspace_empty_body() {
     });
 
     let resp = app
+        .0
         .oneshot(
             http::Request::builder()
                 .uri("/webhooks/authentik/user_sync")

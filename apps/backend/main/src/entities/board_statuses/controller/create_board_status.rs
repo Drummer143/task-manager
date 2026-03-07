@@ -11,7 +11,7 @@ use crate::{
         BoardStatusService,
         dto::{BoardStatusResponse, CreateBoardStatusRequest},
     },
-    shared::{extractors::json::ValidatedJson, traits::ServiceCreateMethod},
+    shared::extractors::json::ValidatedJson,
     types::app_state::AppState,
 };
 
@@ -36,7 +36,7 @@ pub async fn create_board_status(
     ValidatedJson(dto): ValidatedJson<CreateBoardStatusRequest>,
 ) -> Result<Json<BoardStatusResponse>, ErrorResponse> {
     BoardStatusService::create(
-        &app_state,
+        &app_state.postgres,
         crate::entities::board_statuses::db::CreateBoardStatusDto {
             // parent_status_id: dto.parent_status_id,
             page_id,

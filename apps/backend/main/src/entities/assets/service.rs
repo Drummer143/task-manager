@@ -17,6 +17,27 @@ use crate::{
     types::app_state::AppState,
 };
 
+fn hydrate_asset(
+    content: &mut sql::shared::tiptap_content::TipTapContent,
+    asset_id: Uuid,
+    mime_type: &str,
+    size: i64,
+    name: &str,
+    storage_url: &str,
+) -> bool {
+    content.hydrate_file_node(asset_id, |attrs| {
+        attrs.r#type = Some(mime_type.to_string());
+        attrs.size = Some(size as u64);
+        attrs.alt = Some(name.to_string());
+        attrs.width = Some("100%".to_string());
+        attrs.height = Some("auto".to_string());
+        attrs.title = Some(name.to_string());
+        attrs.href = Some(format!("{}/files/{}", storage_url, asset_id));
+        attrs.src = Some(format!("{}/files/{}", storage_url, asset_id));
+        attrs.id = Some(asset_id);
+    })
+}
+
 pub struct AssetsService;
 
 #[derive(Serialize, Deserialize)]
@@ -30,6 +51,7 @@ pub struct UploadToken {
 }
 
 impl AssetsService {
+    /// Needs AppState for jwt_secret + postgres
     pub async fn create_upload_token(
         state: &AppState,
         body: CreateUploadTokenRequest,
@@ -90,6 +112,7 @@ impl AssetsService {
         .map_err(|error| ErrorResponse::internal_server_error(Some(error.to_string())))
     }
 
+    /// Needs AppState for jwt_secret + storage_service_url + postgres
     pub async fn create_asset(
         state: &AppState,
         body: CreateAssetRequest,
@@ -119,17 +142,14 @@ impl AssetsService {
 
                 let mut content = content_json;
 
-                let found = content.hydrate_file_node(asset_id, |attrs| {
-                    attrs.r#type = Some(body.blob.mime_type);
-                    attrs.size = Some(body.blob.size as u64);
-                    attrs.alt = Some(token.claims.name.clone());
-                    attrs.width = Some("100%".to_string());
-                    attrs.height = Some("auto".to_string());
-                    attrs.title = Some(token.claims.name.clone());
-                    attrs.href = Some(format!("http://localhost:8082/files/{}", asset_id));
-                    attrs.src = Some(format!("http://localhost:8082/files/{}", asset_id));
-                    attrs.id = Some(asset_id);
-                });
+                let found = hydrate_asset(
+                    &mut content,
+                    asset_id,
+                    &body.blob.mime_type,
+                    body.blob.size,
+                    &token.claims.name,
+                    &state.storage_service_url,
+                );
 
                 if found {
                     PageRepository::update_content(
@@ -154,17 +174,14 @@ impl AssetsService {
                     ));
                 };
 
-                let found = content.hydrate_file_node(asset_id, |attrs| {
-                    attrs.r#type = Some(body.blob.mime_type);
-                    attrs.size = Some(body.blob.size as u64);
-                    attrs.alt = Some(token.claims.name.clone());
-                    attrs.width = Some("100%".to_string());
-                    attrs.height = Some("auto".to_string());
-                    attrs.title = Some(token.claims.name.clone());
-                    attrs.href = Some(format!("http://localhost:8082/files/{}", asset_id));
-                    attrs.src = Some(format!("http://localhost:8082/files/{}", asset_id));
-                    attrs.id = Some(asset_id);
-                });
+                let found = hydrate_asset(
+                    &mut content,
+                    asset_id,
+                    &body.blob.mime_type,
+                    body.blob.size,
+                    &token.claims.name,
+                    &state.storage_service_url,
+                );
 
                 if found {
                     TaskRepository::update(

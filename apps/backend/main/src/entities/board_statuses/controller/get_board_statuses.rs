@@ -35,7 +35,7 @@ pub async fn get_board_statuses(
         .unwrap_or("en");
 
     crate::entities::board_statuses::BoardStatusService::get_board_statuses_by_page_id(
-        &state, page_id,
+        &state.postgres, page_id,
     )
     .await
     .map(|statuses| {

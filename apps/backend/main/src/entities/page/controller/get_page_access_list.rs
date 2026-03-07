@@ -41,7 +41,7 @@ pub async fn get_page_access_list(
         ));
     }
 
-    let page_access_list = PageService::get_page_access_list(&state, user_page_access.page_id)
+    let page_access_list = PageService::get_page_access_list(&state.postgres, user_page_access.page_id)
         .await
         .map_err(|e| {
             if e.status_code == 404 {

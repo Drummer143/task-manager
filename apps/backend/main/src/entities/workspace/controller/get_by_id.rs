@@ -1,10 +1,7 @@
 use axum::{Json, extract::{Path, State}};
 use error_handlers::handlers::ErrorResponse;
 
-use crate::{
-    entities::workspace::{WorkspaceService, dto::WorkspaceResponse},
-    shared::traits::ServiceGetOneByIdMethod,
-};
+use crate::entities::workspace::{WorkspaceService, dto::WorkspaceResponse};
 
 #[utoipa::path(
     get,
@@ -24,7 +21,7 @@ pub async fn get_by_id(
     State(state): State<crate::types::app_state::AppState>,
     Path(workspace_id): Path<uuid::Uuid>,
 ) -> Result<Json<WorkspaceResponse>, ErrorResponse> {
-    WorkspaceService::get_one_by_id(&state, workspace_id)
+    WorkspaceService::get_one_by_id(&state.postgres, workspace_id)
         .await
         .map(|w| Json(WorkspaceResponse::from(w)))
 }

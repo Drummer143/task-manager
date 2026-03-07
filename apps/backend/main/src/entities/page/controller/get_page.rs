@@ -2,10 +2,7 @@ use axum::{Json, extract::{Path, State}};
 use error_handlers::handlers::ErrorResponse;
 use uuid::Uuid;
 
-use crate::{
-    entities::page::dto::PageResponse, shared::traits::ServiceGetOneByIdMethod,
-    types::app_state::AppState,
-};
+use crate::{entities::page::dto::PageResponse, types::app_state::AppState};
 
 #[utoipa::path(
     get,
@@ -25,7 +22,7 @@ pub async fn get_page(
     State(state): State<AppState>,
     Path(page_id): Path<Uuid>,
 ) -> Result<Json<PageResponse>, ErrorResponse> {
-    crate::entities::page::PageService::get_one_by_id(&state, page_id)
+    crate::entities::page::PageService::get_one_by_id(&state.postgres, page_id)
         .await
         .map(|p| Json(PageResponse::from(p)))
 }

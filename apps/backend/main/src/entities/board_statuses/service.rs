@@ -2,15 +2,8 @@ use std::collections::HashMap;
 
 use error_handlers::{codes, handlers::ErrorResponse};
 
-use crate::{
-    entities::board_statuses::db::{
-        BoardStatusRepository, CreateBoardStatusDto, UpdateBoardStatusDto,
-    },
-    shared::traits::{
-        ServiceBase, ServiceCreateMethod, ServiceDeleteMethod, ServiceGetOneByIdMethod,
-        ServiceUpdateMethod,
-    },
-    types::app_state::AppState,
+use crate::entities::board_statuses::db::{
+    BoardStatusRepository, CreateBoardStatusDto, UpdateBoardStatusDto,
 };
 use sql::{
     board_statuses::model::BoardStatus,
@@ -23,22 +16,12 @@ use uuid::Uuid;
 
 pub struct BoardStatusService;
 
-impl ServiceBase for BoardStatusService {
-    type Response = BoardStatus;
-}
-
-impl ServiceCreateMethod for BoardStatusService {
-    type CreateDto = CreateBoardStatusDto;
-
-    async fn create(
-        app_state: &AppState,
-        dto: Self::CreateDto,
-    ) -> Result<Self::Response, ErrorResponse> {
-        let mut tx = app_state
-            .postgres
-            .begin()
-            .await
-            .map_err(ErrorResponse::from)?;
+impl BoardStatusService {
+    pub async fn create(
+        pool: &sqlx::PgPool,
+        dto: CreateBoardStatusDto,
+    ) -> Result<BoardStatus, ErrorResponse> {
+        let mut tx = pool.begin().await.map_err(ErrorResponse::from)?;
 
         let initial = dto.initial.unwrap_or(false);
 
@@ -63,7 +46,6 @@ impl ServiceCreateMethod for BoardStatusService {
                             initial: Some(false),
                             localizations: None,
                             position: None,
-                            // parent_status_id: None,
                         },
                     )
                     .await
@@ -92,21 +74,13 @@ impl ServiceCreateMethod for BoardStatusService {
             }
         }
     }
-}
 
-impl ServiceUpdateMethod for BoardStatusService {
-    type UpdateDto = UpdateBoardStatusDto;
-
-    async fn update(
-        app_state: &AppState,
+    pub async fn update(
+        pool: &sqlx::PgPool,
         status_id: Uuid,
-        dto: Self::UpdateDto,
-    ) -> Result<Self::Response, ErrorResponse> {
-        let mut tx = app_state
-            .postgres
-            .begin()
-            .await
-            .map_err(ErrorResponse::from)?;
+        dto: UpdateBoardStatusDto,
+    ) -> Result<BoardStatus, ErrorResponse> {
+        let mut tx = pool.begin().await.map_err(ErrorResponse::from)?;
 
         let initial = dto.initial.unwrap_or(false);
 
@@ -145,7 +119,6 @@ impl ServiceUpdateMethod for BoardStatusService {
                                 initial: Some(false),
                                 localizations: None,
                                 position: None,
-                                // parent_status_id: None,
                             },
                         )
                         .await
@@ -163,22 +136,21 @@ impl ServiceUpdateMethod for BoardStatusService {
         tx.commit().await.map_err(ErrorResponse::from)?;
         Ok(updated_status)
     }
-}
 
-impl ServiceGetOneByIdMethod for BoardStatusService {
-    async fn get_one_by_id(
-        app_state: &AppState,
+    pub async fn get_one_by_id<'a>(
+        executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
         id: Uuid,
-    ) -> Result<Self::Response, ErrorResponse> {
-        BoardStatusRepository::get_one_by_id(&app_state.postgres, id)
+    ) -> Result<BoardStatus, ErrorResponse> {
+        BoardStatusRepository::get_one_by_id(executor, id)
             .await
             .map_err(ErrorResponse::from)
     }
-}
 
-impl ServiceDeleteMethod for BoardStatusService {
-    async fn delete(app_state: &AppState, id: Uuid) -> Result<Self::Response, ErrorResponse> {
-        let target_status = BoardStatusRepository::get_one_by_id(&app_state.postgres, id)
+    pub async fn delete(
+        pool: &sqlx::PgPool,
+        id: Uuid,
+    ) -> Result<BoardStatus, ErrorResponse> {
+        let target_status = BoardStatusRepository::get_one_by_id(pool, id)
             .await
             .map_err(ErrorResponse::from)?;
 
@@ -193,18 +165,16 @@ impl ServiceDeleteMethod for BoardStatusService {
             ));
         }
 
-        BoardStatusRepository::delete(&app_state.postgres, id)
+        BoardStatusRepository::delete(pool, id)
             .await
             .map_err(ErrorResponse::from)
     }
-}
 
-impl BoardStatusService {
-    pub async fn get_board_statuses_by_page_id(
-        app_state: &AppState,
+    pub async fn get_board_statuses_by_page_id<'a>(
+        executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
         page_id: Uuid,
     ) -> Result<Vec<BoardStatus>, ErrorResponse> {
-        BoardStatusRepository::get_board_statuses_by_page_id(&app_state.postgres, page_id)
+        BoardStatusRepository::get_board_statuses_by_page_id(executor, page_id)
             .await
             .map_err(ErrorResponse::from)
     }

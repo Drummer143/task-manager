@@ -7,7 +7,7 @@ use error_handlers::handlers::ErrorResponse;
 
 use crate::{
     entities::page::dto::{CreatePageAccessRequest, PageAccessResponse},
-    shared::{extractors::json::ValidatedJson, traits::ServiceGetOneByIdMethod},
+    shared::extractors::json::ValidatedJson,
 };
 
 #[utoipa::path(
@@ -56,7 +56,7 @@ pub async fn create_page_access(
         ));
     }
 
-    let target_user = crate::entities::user::UserService::get_one_by_id(&state, dto.user_id)
+    let target_user = crate::entities::user::UserService::get_one_by_id(&state.postgres, dto.user_id)
         .await
         .map_err(|e| {
             if e.status_code == 404 {
@@ -71,7 +71,7 @@ pub async fn create_page_access(
         })?;
 
     let page_access = crate::entities::page::PageService::create_page_access(
-        &state,
+        &state.postgres,
         crate::entities::page::db::dto::CreatePageAccessDto {
             user_id: target_user.id,
             page_id: user_page_access.page_id,

@@ -23,5 +23,5 @@ pub async fn soft_delete(
     State(state): State<crate::types::app_state::AppState>,
     Path(workspace_id): Path<uuid::Uuid>,
 ) -> impl IntoResponse {
-    crate::entities::workspace::WorkspaceService::soft_delete(&state, workspace_id).await
+    crate::entities::workspace::WorkspaceService::soft_delete(&state.postgres, workspace_id).await
 }

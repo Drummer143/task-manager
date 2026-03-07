@@ -28,7 +28,7 @@ pub async fn create_task(
     Path(page_id): Path<Uuid>,
     ValidatedJson(dto): ValidatedJson<CreateTaskRequest>,
 ) -> Result<Json<TaskResponse>, ErrorResponse> {
-    crate::entities::task::TaskService::create_for_page(&state, page_id, reporter_id, dto)
+    crate::entities::task::TaskService::create_for_page(&state.postgres, page_id, reporter_id, dto)
         .await
         .map(|t| Json(TaskResponse::from(t)))
 }

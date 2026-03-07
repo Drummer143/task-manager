@@ -8,7 +8,7 @@ use uuid::Uuid;
 
 use crate::{
     entities::workspace::dto::{UpdateWorkspaceAccessRequest, WorkspaceAccessResponse},
-    shared::{extractors::json::ValidatedJson, traits::ServiceGetOneByIdMethod},
+    shared::extractors::json::ValidatedJson,
 };
 
 #[utoipa::path(
@@ -35,7 +35,7 @@ pub async fn update_workspace_access(
     ValidatedJson(dto): ValidatedJson<UpdateWorkspaceAccessRequest>,
 ) -> Result<axum::Json<WorkspaceAccessResponse>, error_handlers::handlers::ErrorResponse> {
     let user_workspace_access = crate::entities::workspace::WorkspaceService::get_workspace_access(
-        &state,
+        &state.postgres,
         user_id,
         workspace_id,
     )
@@ -69,7 +69,7 @@ pub async fn update_workspace_access(
     // TODO: complete access checks
 
     let workspace_access = crate::entities::workspace::WorkspaceService::update_workspace_access(
-        &state,
+        &state.postgres,
         crate::entities::workspace::db::UpdateWorkspaceAccessDto {
             user_id: dto.user_id,
             workspace_id,
@@ -80,7 +80,7 @@ pub async fn update_workspace_access(
 
     Ok(axum::Json(WorkspaceAccessResponse {
         id: workspace_access.id,
-        user: crate::entities::user::UserService::get_one_by_id(&state, dto.user_id).await?,
+        user: crate::entities::user::UserService::get_one_by_id(&state.postgres, dto.user_id).await?,
         role: workspace_access.role,
         created_at: workspace_access.created_at,
         updated_at: workspace_access.updated_at,

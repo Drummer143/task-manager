@@ -35,7 +35,7 @@ pub async fn get_workspace_access_list(
 > {
     let user_workspace_access =
         WorkspaceService::get_workspace_access(
-            &state,
+            &state.postgres,
             user_id,
             workspace_id,
         )
@@ -68,7 +68,7 @@ pub async fn get_workspace_access_list(
 
     let workspace_access_list =
         WorkspaceService::get_workspace_access_list(
-            &state,
+            &state.postgres,
             workspace_id,
         )
         .await

@@ -8,15 +8,13 @@ static GLOBAL: MiMalloc = MiMalloc;
 async fn main() {
     let _ = dotenvy::dotenv();
 
-    let port = std::env::var("PORT").unwrap_or("3000".to_string());
-    let addr = format!("0.0.0.0:{}", port);
+    let (app, config) = app::build().await;
 
-    let app = app::build().await;
+    let addr = format!("0.0.0.0:{}", config.port);
 
-    println!("Listening on {}", addr);
     tracing::info!("Listening on {}", addr);
 
-    let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
+    let listener = tokio::net::TcpListener::bind(&addr).await.unwrap();
 
     axum::serve(listener, app)
         .with_graceful_shutdown(shutdown_signal())

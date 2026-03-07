@@ -29,7 +29,7 @@ pub async fn get_page_details(
     ValidatedPath(page_id): ValidatedPath<Uuid>,
     XUserLanguage(lang): XUserLanguage,
 ) -> Result<Json<DetailedPageResponse>, ErrorResponse> {
-    PageService::get_detailed_page(&state, page_id, page_access, lang)
+    PageService::get_detailed_page(&state.postgres, page_id, page_access, lang)
         .await
         .map(Json)
 }

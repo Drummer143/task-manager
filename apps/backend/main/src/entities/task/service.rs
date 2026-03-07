@@ -1,3 +1,5 @@
+use std::collections::{HashMap, HashSet};
+
 use error_handlers::handlers::ErrorResponse;
 use sql::{
     shared::{
@@ -8,58 +10,44 @@ use sql::{
         types::ShiftAction,
     },
     task::model::Task,
+    user::model::User,
 };
 use uuid::Uuid;
 
-use crate::{
-    entities::{
-        board_statuses::db::BoardStatusRepository,
-        task::{
-            controller::create_draft_task::CreateDraftRequest,
-            db::{CreateTaskDto, TaskRepository, UpdateTaskDto},
-        },
+use crate::entities::{
+    board_statuses::{db::BoardStatusRepository, dto::BoardStatusResponse},
+    task::{
+        controller::create_draft_task::CreateDraftRequest,
+        db::{CreateTaskDto, TaskRepository, UpdateTaskDto},
+        dto::TaskResponse,
     },
-    shared::traits::{
-        ServiceBase, ServiceCreateMethod, ServiceDeleteMethod, ServiceGetOneByIdMethod,
-        ServiceUpdateMethod,
-    },
-    types::app_state::AppState,
+    user::db::UserRepository,
 };
 
 pub struct TaskService;
 
-impl ServiceBase for TaskService {
-    type Response = Task;
-}
-
-impl ServiceCreateMethod for TaskService {
-    type CreateDto = CreateTaskDto;
-
-    async fn create(
-        app_state: &AppState,
-        dto: Self::CreateDto,
-    ) -> Result<Self::Response, ErrorResponse> {
-        TaskRepository::create(&app_state.postgres, dto)
+impl TaskService {
+    pub async fn create<'a>(
+        executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
+        dto: CreateTaskDto,
+    ) -> Result<Task, ErrorResponse> {
+        TaskRepository::create(executor, dto)
             .await
             .map_err(ErrorResponse::from)
     }
-}
 
-impl ServiceUpdateMethod for TaskService {
-    type UpdateDto = UpdateTaskDto;
-
-    async fn update(
-        app_state: &AppState,
+    pub async fn update(
+        pool: &sqlx::PgPool,
         id: Uuid,
-        dto: Self::UpdateDto,
-    ) -> Result<Self::Response, ErrorResponse> {
+        dto: UpdateTaskDto,
+    ) -> Result<Task, ErrorResponse> {
         if dto.is_empty() {
-            return TaskRepository::get_one_by_id(&app_state.postgres, id)
+            return TaskRepository::get_one_by_id(pool, id)
                 .await
                 .map_err(ErrorResponse::from);
         }
 
-        let mut tx = app_state.postgres.begin().await?;
+        let mut tx = pool.begin().await?;
 
         let current_task = TaskRepository::get_one_by_id(&mut *tx, id)
             .await
@@ -139,50 +127,47 @@ impl ServiceUpdateMethod for TaskService {
             }
         }
     }
-}
 
-impl ServiceGetOneByIdMethod for TaskService {
-    async fn get_one_by_id(
-        app_state: &AppState,
+    pub async fn get_one_by_id<'a>(
+        executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
         id: Uuid,
-    ) -> Result<Self::Response, ErrorResponse> {
-        TaskRepository::get_one_by_id(&app_state.postgres, id)
+    ) -> Result<Task, ErrorResponse> {
+        TaskRepository::get_one_by_id(executor, id)
             .await
             .map_err(ErrorResponse::from)
     }
-}
 
-impl ServiceDeleteMethod for TaskService {
-    async fn delete(app_state: &AppState, id: Uuid) -> Result<Self::Response, ErrorResponse> {
-        TaskRepository::delete(&app_state.postgres, id)
+    pub async fn delete<'a>(
+        executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
+        id: Uuid,
+    ) -> Result<Task, ErrorResponse> {
+        TaskRepository::delete(executor, id)
             .await
             .map_err(ErrorResponse::from)
     }
-}
 
-impl TaskService {
-    pub async fn get_all_tasks_by_page_id(
-        app_state: &AppState,
+    pub async fn get_all_tasks_by_page_id<'a>(
+        executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
         page_id: Uuid,
     ) -> Result<Vec<Task>, ErrorResponse> {
-        TaskRepository::get_all_tasks_by_page_id(&app_state.postgres, page_id)
+        TaskRepository::get_all_tasks_by_page_id(executor, page_id)
             .await
             .map_err(ErrorResponse::from)
     }
 
     pub async fn create_for_page(
-        state: &AppState,
+        pool: &sqlx::PgPool,
         page_id: Uuid,
         reporter_id: Uuid,
         dto: crate::entities::task::dto::CreateTaskRequest,
     ) -> Result<Task, ErrorResponse> {
-        let last_position = TaskRepository::get_last_position(&state.postgres, dto.status_id)
+        let last_position = TaskRepository::get_last_position(pool, dto.status_id)
             .await
             .map_err(ErrorResponse::from)?
             .unwrap_or_default();
 
         TaskRepository::create(
-            &state.postgres,
+            pool,
             CreateTaskDto {
                 title: dto.title,
                 status_id: dto.status_id,
@@ -200,7 +185,7 @@ impl TaskService {
     }
 
     pub async fn create_draft(
-        state: &AppState,
+        pool: &sqlx::PgPool,
         page_id: Uuid,
         user_id: Uuid,
         body: CreateDraftRequest,
@@ -208,23 +193,17 @@ impl TaskService {
         let board_status_id = if let Some(status) = body.board_status_id {
             status
         } else {
-            BoardStatusRepository::get_initial_board_status_by_page_id(
-                &state.postgres,
-                page_id,
-            )
-            .await?
-            .id
+            BoardStatusRepository::get_initial_board_status_by_page_id(pool, page_id)
+                .await?
+                .id
         };
 
-        let position =
-            TaskRepository::get_last_position(&state.postgres, board_status_id)
-                .await?
-                .unwrap_or_default();
-
-        println!("position: {} for status: {}", position, board_status_id);
+        let position = TaskRepository::get_last_position(pool, board_status_id)
+            .await?
+            .unwrap_or_default();
 
         TaskRepository::create(
-            &state.postgres,
+            pool,
             CreateTaskDto {
                 assignee_id: None,
                 description: None,
@@ -239,5 +218,113 @@ impl TaskService {
         )
         .await
         .map_err(ErrorResponse::from)
+    }
+
+    pub async fn get_task_with_details(
+        pool: &sqlx::PgPool,
+        task_id: Uuid,
+        lang: &str,
+    ) -> Result<TaskResponse, ErrorResponse> {
+        let task = TaskRepository::get_one_by_id(pool, task_id)
+            .await
+            .map_err(ErrorResponse::from)?;
+
+        let board_status = BoardStatusRepository::get_one_by_id(pool, task.status_id)
+            .await
+            .map_err(ErrorResponse::from)?;
+
+        let mut user_ids = HashSet::new();
+        user_ids.insert(task.reporter_id);
+        if let Some(assignee_id) = task.assignee_id {
+            user_ids.insert(assignee_id);
+        }
+
+        let user_ids_vec: Vec<Uuid> = user_ids.into_iter().collect();
+        let users = UserRepository::get_users_by_ids(pool, &user_ids_vec).await?;
+        let users_map: HashMap<Uuid, User> = users.into_iter().map(|u| (u.id, u)).collect();
+
+        let reporter = users_map.get(&task.reporter_id).cloned();
+        let assignee = task.assignee_id.and_then(|id| users_map.get(&id).cloned());
+
+        let mut task_response = TaskResponse::from(task);
+        task_response.reporter = reporter;
+        task_response.assignee = assignee;
+        task_response.status = Some(BoardStatusResponse {
+            id: board_status.id,
+            title: board_status
+                .localizations
+                .get(lang)
+                .or_else(|| board_status.localizations.get("en"))
+                .cloned()
+                .unwrap_or_default(),
+            initial: board_status.initial,
+        });
+
+        Ok(task_response)
+    }
+
+    pub async fn get_tasks_in_page_with_details(
+        pool: &sqlx::PgPool,
+        page_id: Uuid,
+        lang: &str,
+    ) -> Result<Vec<TaskResponse>, ErrorResponse> {
+        let (tasks, board_statuses) = tokio::join!(
+            TaskRepository::get_all_tasks_by_page_id(pool, page_id),
+            BoardStatusRepository::get_board_statuses_by_page_id(pool, page_id),
+        );
+
+        let tasks = tasks.map_err(ErrorResponse::from)?;
+        let board_statuses = board_statuses.map_err(ErrorResponse::from)?;
+
+        let status_map: HashMap<Uuid, BoardStatusResponse> = board_statuses
+            .into_iter()
+            .map(|s| {
+                let title = s
+                    .localizations
+                    .get(lang)
+                    .or_else(|| s.localizations.get("en"))
+                    .cloned()
+                    .unwrap_or_default();
+                (
+                    s.id,
+                    BoardStatusResponse {
+                        id: s.id,
+                        title,
+                        initial: s.initial,
+                    },
+                )
+            })
+            .collect();
+
+        // Batch load all users (reporters + assignees)
+        let mut user_ids = HashSet::new();
+        for task in &tasks {
+            user_ids.insert(task.reporter_id);
+            if let Some(assignee_id) = task.assignee_id {
+                user_ids.insert(assignee_id);
+            }
+        }
+
+        let user_ids_vec: Vec<Uuid> = user_ids.into_iter().collect();
+        let users = UserRepository::get_users_by_ids(pool, &user_ids_vec).await?;
+        let users_map: HashMap<Uuid, User> = users.into_iter().map(|u| (u.id, u)).collect();
+
+        let task_responses = tasks
+            .into_iter()
+            .map(|task| {
+                let reporter = users_map.get(&task.reporter_id).cloned();
+                let assignee = task.assignee_id.and_then(|id| users_map.get(&id).cloned());
+                let status = status_map.get(&task.status_id).cloned();
+
+                let mut resp = TaskResponse::from(task);
+                resp.description = None;
+                resp.reporter = reporter;
+                resp.assignee = assignee;
+                resp.status = status;
+                resp
+            })
+            .collect();
+
+        Ok(task_responses)
     }
 }

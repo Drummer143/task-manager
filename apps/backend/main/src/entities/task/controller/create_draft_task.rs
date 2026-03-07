@@ -38,7 +38,7 @@ pub async fn create_draft_task(
     ValidatedPath(page_id): ValidatedPath<Uuid>,
     Json(body): Json<CreateDraftRequest>,
 ) -> Result<Json<TaskResponse>, ErrorResponse> {
-    TaskService::create_draft(&state, page_id, user_id, body)
+    TaskService::create_draft(&state.postgres, page_id, user_id, body)
         .await
         .map(|t| Json(TaskResponse::from(t)))
 }

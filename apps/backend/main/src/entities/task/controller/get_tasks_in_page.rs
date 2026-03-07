@@ -5,10 +5,7 @@ use axum::{
 use error_handlers::handlers::ErrorResponse;
 use uuid::Uuid;
 
-use crate::{
-    entities::{board_statuses::dto::BoardStatusResponse, task::dto::TaskResponse},
-    shared::traits::ServiceGetOneByIdMethod,
-};
+use crate::entities::task::dto::TaskResponse;
 
 #[utoipa::path(
     get,
@@ -28,51 +25,12 @@ pub async fn get_tasks_in_page(
     Path(page_id): Path<Uuid>,
     headers: axum::http::header::HeaderMap,
 ) -> Result<Json<Vec<TaskResponse>>, ErrorResponse> {
-    let tasks =
-        crate::entities::task::TaskService::get_all_tasks_by_page_id(&state, page_id).await?;
-
-    let mut task_responses = Vec::new();
     let lang = headers
         .get("User-Language")
         .map(|h| h.to_str().unwrap_or("en"))
         .unwrap_or("en");
 
-    let board_statuses =
-        crate::entities::board_statuses::BoardStatusService::get_board_statuses_by_page_id(
-            &state, page_id,
-        )
-        .await?
-        .iter()
-        .map(|status| BoardStatusResponse {
-            id: status.id,
-            title: status.localizations.get(lang).unwrap().to_string(),
-            initial: status.initial,
-        })
-        .collect::<Vec<_>>();
-
-    for task in tasks {
-        let reporter =
-            crate::entities::user::UserService::get_one_by_id(&state, task.reporter_id).await?;
-        let assignee = if let Some(assignee_id) = task.assignee_id {
-            Some(crate::entities::user::UserService::get_one_by_id(&state, assignee_id).await?)
-        } else {
-            None
-        };
-
-        let status = board_statuses
-            .iter()
-            .find(|status| status.id == task.status_id)
-            .cloned();
-
-        let mut task_response = TaskResponse::from(task);
-
-        task_response.description = None;
-        task_response.reporter = Some(reporter);
-        task_response.assignee = assignee;
-        task_response.status = status;
-
-        task_responses.push(task_response);
-    }
-
-    Ok(Json(task_responses))
+    crate::entities::task::TaskService::get_tasks_in_page_with_details(&state.postgres, page_id, lang)
+        .await
+        .map(Json)
 }

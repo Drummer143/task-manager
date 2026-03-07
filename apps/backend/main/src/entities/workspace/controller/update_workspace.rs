@@ -5,7 +5,7 @@ use uuid::Uuid;
 
 use crate::{
     entities::workspace::dto::WorkspaceResponse,
-    shared::{extractors::json::ValidatedJson, traits::ServiceUpdateMethod},
+    shared::extractors::json::ValidatedJson,
 };
 
 #[utoipa::path(
@@ -29,7 +29,7 @@ pub async fn update_workspace(
     Path(workspace_id): Path<Uuid>,
     ValidatedJson(dto): ValidatedJson<UpdateWorkspaceDto>,
 ) -> Result<Json<WorkspaceResponse>, ErrorResponse> {
-    crate::entities::workspace::WorkspaceService::update(&state, workspace_id, dto)
+    crate::entities::workspace::WorkspaceService::update(&state.postgres, workspace_id, dto)
         .await
         .map(|w| Json(WorkspaceResponse::from(w)))
 }

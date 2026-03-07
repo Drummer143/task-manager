@@ -38,8 +38,6 @@ pub async fn update_profile(
     .await
     .map_err(ErrorResponse::from)?;
 
-    println!("User updated in DB: {:#?}", user);
-
     crate::authentik_api::update_user(
         &app_state,
         user.authentik_id,
@@ -51,8 +49,6 @@ pub async fn update_profile(
         },
     )
     .await?;
-
-    println!("User updated in Authentik: {}", user.authentik_id);
 
     Ok(Json(user))
 }

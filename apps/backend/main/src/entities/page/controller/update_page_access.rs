@@ -6,7 +6,7 @@ use sql::page::model::PageAccess;
 
 use crate::{
     entities::page::dto::{PageAccessResponse, UpdatePageAccessRequest},
-    shared::{extractors::json::ValidatedJson, traits::ServiceGetOneByIdMethod},
+    shared::extractors::json::ValidatedJson,
 };
 
 #[utoipa::path(
@@ -46,7 +46,7 @@ pub async fn update_page_access(
     // TODO: complete access checks
 
     let page_access = crate::entities::page::PageService::update_page_access(
-        &state,
+        &state.postgres,
         crate::entities::page::db::UpdatePageAccessDto {
             user_id: dto.user_id,
             page_id: user_page_access.page_id,
@@ -57,7 +57,7 @@ pub async fn update_page_access(
 
     Ok(axum::Json(PageAccessResponse {
         id: page_access.id,
-        user: crate::entities::user::UserService::get_one_by_id(&state, page_access.user_id)
+        user: crate::entities::user::UserService::get_one_by_id(&state.postgres, page_access.user_id)
             .await?,
         role: page_access.role,
         created_at: page_access.created_at,

@@ -10,7 +10,7 @@ use sql::workspace::model::WorkspaceAccess;
 
 use crate::{
     entities::workspace::dto::CreateWorkspaceAccessRequest,
-    shared::{extractors::json::ValidatedJson, traits::ServiceGetOneByIdMethod},
+    shared::extractors::json::ValidatedJson,
 };
 
 #[utoipa::path(
@@ -60,7 +60,7 @@ pub async fn create_workspace_access(
         ));
     }
 
-    let target_user = crate::entities::user::UserService::get_one_by_id(&state, dto.user_id)
+    let target_user = crate::entities::user::UserService::get_one_by_id(&state.postgres, dto.user_id)
         .await
         .map_err(|e| {
             if e.status_code == 404 {
@@ -78,7 +78,7 @@ pub async fn create_workspace_access(
         })?;
 
     let workspace_access = crate::entities::workspace::WorkspaceService::create_workspace_access(
-        &state,
+        &state.postgres,
         crate::entities::workspace::db::CreateWorkspaceAccessDto {
             user_id: dto.user_id,
             workspace_id,

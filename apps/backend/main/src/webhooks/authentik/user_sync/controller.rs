@@ -9,7 +9,6 @@ use uuid::Uuid;
 
 use crate::shared::{
     extractors::json::ValidatedJson, generate_initials_avatar::fetch_png_avatar,
-    traits::ServiceCreateMethod,
 };
 
 #[derive(serde::Deserialize)]
@@ -192,7 +191,7 @@ pub async fn user_sync(
                 .map_err(ErrorResponse::from)?;
 
                 crate::entities::workspace::WorkspaceService::create(
-                    &state,
+                    &state.postgres,
                     crate::entities::workspace::db::CreateWorkspaceDto {
                         name: format!("{}'s workspace", created_user.username),
                         owner_id: created_user.id,

@@ -7,7 +7,7 @@ use uuid::Uuid;
 
 use crate::{
     entities::page::dto::{CreatePageRequest, PageResponse},
-    shared::{extractors::json::ValidatedJson, traits::ServiceCreateMethod},
+    shared::extractors::json::ValidatedJson,
     types::app_state::AppState,
 };
 
@@ -33,7 +33,7 @@ pub async fn create_page(
     ValidatedJson(create_page_dto): ValidatedJson<CreatePageRequest>,
 ) -> Result<Json<PageResponse>, ErrorResponse> {
     crate::entities::page::PageService::create(
-        &state,
+        &state.postgres,
         crate::entities::page::db::dto::CreatePageDto {
             title: create_page_dto.title,
             r#type: create_page_dto.r#type,

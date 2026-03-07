@@ -3,7 +3,7 @@ use error_handlers::handlers::ErrorResponse;
 
 use crate::{
     entities::workspace::dto::{CreateWorkspaceRequest, WorkspaceResponse},
-    shared::{extractors::json::ValidatedJson, traits::ServiceCreateMethod},
+    shared::extractors::json::ValidatedJson,
 };
 
 #[utoipa::path(
@@ -25,7 +25,7 @@ pub async fn create_workspace(
     ValidatedJson(dto): ValidatedJson<CreateWorkspaceRequest>,
 ) -> Result<Json<WorkspaceResponse>, ErrorResponse> {
     crate::entities::workspace::WorkspaceService::create(
-        &state,
+        &state.postgres,
         crate::entities::workspace::db::CreateWorkspaceDto {
             name: dto.name,
             owner_id: user_id,

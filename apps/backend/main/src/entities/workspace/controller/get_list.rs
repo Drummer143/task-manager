@@ -33,7 +33,7 @@ pub async fn get_list(
     ValidatedQuery(query): ValidatedQuery<WorkspaceListQuery>,
 ) -> Result<Pagination<WorkspaceResponse>, ErrorResponse> {
     let (workspaces, count) = WorkspaceService::get_list(
-        &state,
+        &state.postgres,
         user_id,
         query.limit,
         query.offset,
