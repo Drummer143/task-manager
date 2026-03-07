@@ -2,40 +2,27 @@ use std::collections::{HashMap, HashSet};
 
 use error_handlers::handlers::ErrorResponse;
 use sql::{
-    shared::{
-        traits::{
-            PostgresqlRepositoryCreate, PostgresqlRepositoryDelete, PostgresqlRepositoryGetOneById,
-            PostgresqlRepositoryUpdate, UpdateDto,
-        },
-        types::ShiftAction,
-    },
+    shared::{traits::UpdateDto, types::ShiftAction},
     task::model::Task,
     user::model::User,
 };
 use uuid::Uuid;
 
-use crate::entities::{
-    board_statuses::{db::BoardStatusRepository, dto::BoardStatusResponse},
-    task::{
-        controller::create_draft_task::CreateDraftRequest,
-        db::{CreateTaskDto, TaskRepository, UpdateTaskDto},
-        dto::TaskResponse,
+use crate::{
+    entities::{
+        board_statuses::dto::BoardStatusResponse,
+        task::{controller::create_draft_task::CreateDraftRequest, dto::TaskResponse},
     },
-    user::db::UserRepository,
+    repos::{
+        board_statuses::BoardStatusRepository,
+        tasks::{CreateTaskDto, TaskRepository, UpdateTaskDto},
+        users::UserRepository,
+    },
 };
 
 pub struct TaskService;
 
 impl TaskService {
-    pub async fn create<'a>(
-        executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
-        dto: CreateTaskDto,
-    ) -> Result<Task, ErrorResponse> {
-        TaskRepository::create(executor, dto)
-            .await
-            .map_err(ErrorResponse::from)
-    }
-
     pub async fn update(
         pool: &sqlx::PgPool,
         id: Uuid,
@@ -128,29 +115,11 @@ impl TaskService {
         }
     }
 
-    pub async fn get_one_by_id<'a>(
-        executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
-        id: Uuid,
-    ) -> Result<Task, ErrorResponse> {
-        TaskRepository::get_one_by_id(executor, id)
-            .await
-            .map_err(ErrorResponse::from)
-    }
-
     pub async fn delete<'a>(
         executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
         id: Uuid,
     ) -> Result<Task, ErrorResponse> {
         TaskRepository::delete(executor, id)
-            .await
-            .map_err(ErrorResponse::from)
-    }
-
-    pub async fn get_all_tasks_by_page_id<'a>(
-        executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
-        page_id: Uuid,
-    ) -> Result<Vec<Task>, ErrorResponse> {
-        TaskRepository::get_all_tasks_by_page_id(executor, page_id)
             .await
             .map_err(ErrorResponse::from)
     }

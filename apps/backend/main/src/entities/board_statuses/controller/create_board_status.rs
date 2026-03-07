@@ -10,9 +10,7 @@ use crate::{
     entities::board_statuses::{
         BoardStatusService,
         dto::{BoardStatusResponse, CreateBoardStatusRequest},
-    },
-    shared::extractors::json::ValidatedJson,
-    types::app_state::AppState,
+    }, repos::board_statuses::CreateBoardStatusDto, shared::extractors::json::ValidatedJson, types::app_state::AppState
 };
 
 #[utoipa::path(
@@ -37,8 +35,7 @@ pub async fn create_board_status(
 ) -> Result<Json<BoardStatusResponse>, ErrorResponse> {
     BoardStatusService::create(
         &app_state.postgres,
-        crate::entities::board_statuses::db::CreateBoardStatusDto {
-            // parent_status_id: dto.parent_status_id,
+        CreateBoardStatusDto {
             page_id,
             initial: dto.initial,
             position: dto.position,

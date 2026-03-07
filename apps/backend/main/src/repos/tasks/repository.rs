@@ -1,28 +1,18 @@
 use uuid::Uuid;
 
-use sql::shared::{
-    traits::{
-        PostgresqlRepositoryCreate, PostgresqlRepositoryDelete, PostgresqlRepositoryGetOneById,
-        PostgresqlRepositoryUpdate, RepositoryBase,
-    },
-    types::ShiftAction,
-};
+use sql::shared::types::ShiftAction;
 
 use sql::task::model::Task;
 
+use super::{CreateTaskDto, UpdateTaskDto};
+
 pub struct TaskRepository;
 
-impl RepositoryBase for TaskRepository {
-    type Response = Task;
-}
-
-impl PostgresqlRepositoryCreate for TaskRepository {
-    type CreateDto = super::dto::CreateTaskDto;
-
-    async fn create<'a>(
+impl TaskRepository {
+    pub async fn create<'a>(
         executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
-        dto: Self::CreateDto,
-    ) -> Result<Self::Response, sqlx::Error> {
+        dto: CreateTaskDto,
+    ) -> Result<Task, sqlx::Error> {
         sqlx::query_as::<_, Task>(
             r#"
             INSERT INTO tasks
@@ -45,14 +35,12 @@ impl PostgresqlRepositoryCreate for TaskRepository {
     }
 }
 
-impl PostgresqlRepositoryUpdate for TaskRepository {
-    type UpdateDto = super::dto::UpdateTaskDto;
-
-    async fn update<'a>(
+impl TaskRepository {
+    pub async fn update<'a>(
         executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
         id: Uuid,
-        dto: Self::UpdateDto,
-    ) -> Result<Self::Response, sqlx::Error> {
+        dto: UpdateTaskDto,
+    ) -> Result<Task, sqlx::Error> {
         let mut query_builder = sqlx::QueryBuilder::new("UPDATE tasks SET ");
 
         let mut separated = query_builder.separated(", ");
@@ -99,33 +87,27 @@ impl PostgresqlRepositoryUpdate for TaskRepository {
             .fetch_one(executor)
             .await
     }
-}
 
-impl PostgresqlRepositoryGetOneById for TaskRepository {
-    async fn get_one_by_id<'a>(
+    pub async fn get_one_by_id<'a>(
         executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
         id: Uuid,
-    ) -> Result<Self::Response, sqlx::Error> {
+    ) -> Result<Task, sqlx::Error> {
         sqlx::query_as::<_, Task>("SELECT * FROM tasks WHERE id = $1")
             .bind(id)
             .fetch_one(executor)
             .await
     }
-}
 
-impl PostgresqlRepositoryDelete for TaskRepository {
-    async fn delete<'a>(
+    pub async fn delete<'a>(
         executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
         id: Uuid,
-    ) -> Result<Self::Response, sqlx::Error> {
+    ) -> Result<Task, sqlx::Error> {
         sqlx::query_as::<_, Task>("DELETE FROM tasks WHERE id = $1 RETURNING *")
             .bind(id)
             .fetch_one(executor)
             .await
     }
-}
 
-impl TaskRepository {
     pub async fn get_all_tasks_by_page_id<'a>(
         executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
         page_id: Uuid,

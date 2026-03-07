@@ -1,8 +1,16 @@
-use axum::{Json, extract::{Path, State}};
-use axum_extra::{TypedHeader, headers::{Header, HeaderName, HeaderValue}};
+use crate::{
+    repos::{assets::AssetsRepository, pages::PageRepository, tasks::TaskRepository},
+};
+use axum::{
+    Json,
+    extract::{Path, State},
+};
+use axum_extra::{
+    TypedHeader,
+    headers::{Header, HeaderName, HeaderValue},
+};
 use error_handlers::handlers::ErrorResponse;
-use sql::{assets::model::EntityType, shared::traits::PostgresqlRepositoryGetOneById};
-use crate::entities::{assets::db::AssetsRepository, page::db::PageRepository, task::db::TaskRepository};
+use sql::assets::model::EntityType;
 use uuid::Uuid;
 
 pub struct XUserId(pub Uuid);
@@ -18,8 +26,12 @@ impl Header for XUserId {
     where
         I: Iterator<Item = &'i HeaderValue>,
     {
-        let value = values.next().ok_or_else(axum_extra::headers::Error::invalid)?;
-        let s = value.to_str().map_err(|_| axum_extra::headers::Error::invalid())?;
+        let value = values
+            .next()
+            .ok_or_else(axum_extra::headers::Error::invalid)?;
+        let s = value
+            .to_str()
+            .map_err(|_| axum_extra::headers::Error::invalid())?;
         let uuid = Uuid::parse_str(s).map_err(|_| axum_extra::headers::Error::invalid())?;
         Ok(XUserId(uuid))
     }
@@ -59,12 +71,9 @@ pub async fn validate_access(
 
     let is_valid = match asset.entity_type {
         EntityType::PageText => {
-            let page = PageRepository::get_one_page_access(
-                &state.postgres,
-                user_id,
-                asset.entity_id,
-            )
-            .await;
+            let page =
+                PageRepository::get_one_page_access(&state.postgres, user_id, asset.entity_id)
+                    .await;
 
             match page {
                 Ok(_) => Ok(true),
@@ -90,5 +99,8 @@ pub async fn validate_access(
         ));
     }
 
-    Ok(Json(ValidateAccessResponse { blob_id: asset.blob_id, name: asset.name }))
+    Ok(Json(ValidateAccessResponse {
+        blob_id: asset.blob_id,
+        name: asset.name,
+    }))
 }

@@ -5,15 +5,16 @@ use utoipa::OpenApi;
 
 use crate::{config::Config, types::app_state::AppState};
 
+mod authentik_api;
 mod config;
 mod db_connections;
 mod entities;
 mod middleware;
+mod repos;
 mod shared;
 mod swagger;
 mod types;
 mod webhooks;
-mod authentik_api;
 
 pub fn openapi_json() -> String {
     serde_json::to_string_pretty(&swagger::ApiDoc::openapi()).unwrap()

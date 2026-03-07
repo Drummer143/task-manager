@@ -2,7 +2,11 @@ use axum::{Extension, Json, extract::State};
 use error_handlers::handlers::ErrorResponse;
 
 use crate::{
-    entities::workspace::dto::{CreateWorkspaceRequest, WorkspaceResponse},
+    entities::workspace::{
+        WorkspaceService,
+        dto::{CreateWorkspaceRequest, WorkspaceResponse},
+    },
+    repos::workspaces::CreateWorkspaceDto,
     shared::extractors::json::ValidatedJson,
 };
 
@@ -24,9 +28,9 @@ pub async fn create_workspace(
     Extension(user_id): Extension<uuid::Uuid>,
     ValidatedJson(dto): ValidatedJson<CreateWorkspaceRequest>,
 ) -> Result<Json<WorkspaceResponse>, ErrorResponse> {
-    crate::entities::workspace::WorkspaceService::create(
+    WorkspaceService::create(
         &state.postgres,
-        crate::entities::workspace::db::CreateWorkspaceDto {
+        CreateWorkspaceDto {
             name: dto.name,
             owner_id: user_id,
         },

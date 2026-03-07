@@ -1,10 +1,11 @@
 use axum::{Extension, Json, extract::State};
 use error_handlers::handlers::ErrorResponse;
-use sql::{shared::traits::PostgresqlRepositoryUpdate, user::model::User};
+use sql::user::model::User;
 use uuid::Uuid;
 
 use crate::{
-    entities::{profile::dto::UpdateProfileRequest, user::db::UserRepository},
+    entities::profile::dto::UpdateProfileRequest,
+    repos::users::{UpdateUserDto, UserRepository},
     types::app_state::AppState,
 };
 
@@ -27,7 +28,7 @@ pub async fn update_profile(
     let user = UserRepository::update(
         &app_state.postgres,
         user_id,
-        crate::entities::user::db::dto::UpdateUserDto {
+        UpdateUserDto {
             username: body.username,
             is_active: None,
             email: body.email,

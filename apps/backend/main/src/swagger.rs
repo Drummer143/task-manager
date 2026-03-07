@@ -59,8 +59,8 @@ use utils::swagger::SecurityAddon;
 
         crate::entities::page::dto::PageListFormat,
 
-        crate::entities::workspace::db::WorkspaceSortBy,
-        crate::entities::user::db::dto::UserSortBy,
+        crate::repos::workspaces::WorkspaceSortBy,
+        crate::repos::users::UserSortBy,
     )),
     security(
         ("bearer_auth" = [])

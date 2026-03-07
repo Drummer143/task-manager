@@ -1,12 +1,16 @@
 use axum::{
-    Json, Extension,
+    Extension, Json,
     extract::{Path, State},
 };
 use error_handlers::handlers::ErrorResponse;
 use uuid::Uuid;
 
 use crate::{
-    entities::page::dto::{CreatePageRequest, PageResponse},
+    entities::page::{
+        PageService,
+        dto::{CreatePageRequest, PageResponse},
+    },
+    repos::pages::CreatePageDto,
     shared::extractors::json::ValidatedJson,
     types::app_state::AppState,
 };
@@ -32,9 +36,9 @@ pub async fn create_page(
     Path(workspace_id): Path<Uuid>,
     ValidatedJson(create_page_dto): ValidatedJson<CreatePageRequest>,
 ) -> Result<Json<PageResponse>, ErrorResponse> {
-    crate::entities::page::PageService::create(
+    PageService::create(
         &state.postgres,
-        crate::entities::page::db::dto::CreatePageDto {
+        CreatePageDto {
             title: create_page_dto.title,
             r#type: create_page_dto.r#type,
             parent_page_id: create_page_dto.parent_page_id,

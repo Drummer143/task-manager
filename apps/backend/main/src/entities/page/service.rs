@@ -1,45 +1,33 @@
 use std::collections::{HashMap, HashSet};
 
 use error_handlers::handlers::ErrorResponse;
+use sql::page::model::{Page, PageAccess, PageType};
 use uuid::Uuid;
 
 use crate::{
     entities::{
-        board_statuses::{
-            db::{BoardStatusRepository, CreateBoardStatusDto},
-            dto::BoardStatusResponse,
+        board_statuses::dto::BoardStatusResponse,
+        page::dto::{
+            DetailedPageResponse, DetailedPageResponseBase, DetailedPageResponseBoard,
+            DetailedPageResponseGroup, DetailedPageResponseText, PageAccessResponse, PageSummary,
+            TaskSummary, UpdatePageRequest,
         },
-        page::{
-            db::{
-                CreatePageAccessDto, CreatePageDto, PageRepository, UpdatePageAccessDto,
-                UpdatePageDto,
-            },
-            dto::{
-                DetailedPageResponse, DetailedPageResponseBase, DetailedPageResponseBoard,
-                DetailedPageResponseGroup, DetailedPageResponseText, PageAccessResponse,
-                PageSummary, TaskSummary, UpdatePageRequest,
-            },
+    },
+    repos::{
+        board_statuses::{BoardStatusRepository, CreateBoardStatusDto},
+        pages::{
+            CreatePageAccessDto, CreatePageDto, PageRepository, UpdatePageAccessDto, UpdatePageDto,
         },
-        task::db::TaskRepository,
-        user::db::UserRepository,
+        tasks::TaskRepository,
+        users::UserRepository,
     },
     shared::extractors::x_user_language::DEFAULT_LANGUAGE,
-};
-use sql::{
-    page::model::{Page, PageAccess, PageType},
-    shared::traits::{
-        PostgresqlRepositoryCreate, PostgresqlRepositoryDelete, PostgresqlRepositoryGetOneById,
-        PostgresqlRepositoryUpdate,
-    },
 };
 
 pub struct PageService;
 
 impl PageService {
-    pub async fn create(
-        pool: &sqlx::PgPool,
-        dto: CreatePageDto,
-    ) -> Result<Page, ErrorResponse> {
+    pub async fn create(pool: &sqlx::PgPool, dto: CreatePageDto) -> Result<Page, ErrorResponse> {
         let mut tx = pool.begin().await.map_err(ErrorResponse::from)?;
 
         let page = PageRepository::create(&mut *tx, dto)
@@ -224,8 +212,7 @@ impl PageService {
 
         match page.r#type {
             PageType::Text => {
-                let content =
-                    PageRepository::get_text_page_content(pool, page_id).await?;
+                let content = PageRepository::get_text_page_content(pool, page_id).await?;
 
                 Ok(DetailedPageResponse::Text(DetailedPageResponseText {
                     base,
@@ -260,8 +247,7 @@ impl PageService {
                     .collect();
 
                 let assignee_ids: Vec<Uuid> = assignee_ids.into_iter().collect();
-                let assignees =
-                    UserRepository::get_users_by_ids(pool, &assignee_ids).await?;
+                let assignees = UserRepository::get_users_by_ids(pool, &assignee_ids).await?;
 
                 Ok(DetailedPageResponse::Board(DetailedPageResponseBoard {
                     base,
@@ -280,15 +266,11 @@ impl PageService {
                 }))
             }
             PageType::Group => {
-                let child_pages =
-                    PageRepository::get_child_pages(pool, page_id).await?;
+                let child_pages = PageRepository::get_child_pages(pool, page_id).await?;
 
                 Ok(DetailedPageResponse::Group(DetailedPageResponseGroup {
                     base,
-                    child_pages: child_pages
-                        .iter()
-                        .map(PageSummary::from)
-                        .collect(),
+                    child_pages: child_pages.iter().map(PageSummary::from).collect(),
                 }))
             }
         }

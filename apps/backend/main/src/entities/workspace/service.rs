@@ -2,26 +2,23 @@ use std::collections::HashMap;
 
 use error_handlers::handlers::ErrorResponse;
 use sql::{
-    shared::{
-        traits::{
-            PostgresqlRepositoryCreate, PostgresqlRepositoryGetOneById, PostgresqlRepositoryUpdate,
-        },
-        types::SortOrder,
-    },
+    shared::types::SortOrder,
     user::model::User,
     workspace::model::{Workspace, WorkspaceAccess},
 };
 use uuid::Uuid;
 
-use crate::entities::{
-    page::db::PageRepository,
-    user::db::UserRepository,
-    workspace::{
-        db::{
-            CreateWorkspaceAccessDto, UpdateWorkspaceAccessDto, WorkspaceRepository,
-            WorkspaceSortBy,
+use crate::{
+    entities::workspace::dto::{
+        DetailedWorkspaceResponse, WorkspaceAccessResponse, WorkspaceResponse,
+    },
+    repos::{
+        pages::PageRepository,
+        users::UserRepository,
+        workspaces::{
+            CreateWorkspaceAccessDto, CreateWorkspaceDto, UpdateWorkspaceAccessDto,
+            UpdateWorkspaceDto, WorkspaceRepository, WorkspaceSortBy,
         },
-        dto::{DetailedWorkspaceResponse, WorkspaceAccessResponse, WorkspaceResponse},
     },
 };
 
@@ -30,7 +27,7 @@ pub struct WorkspaceService;
 impl WorkspaceService {
     pub async fn create<'a>(
         executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
-        dto: crate::entities::workspace::db::CreateWorkspaceDto,
+        dto: CreateWorkspaceDto,
     ) -> Result<Workspace, ErrorResponse> {
         WorkspaceRepository::create(executor, dto)
             .await
@@ -40,7 +37,7 @@ impl WorkspaceService {
     pub async fn update<'a>(
         executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
         id: Uuid,
-        dto: crate::entities::workspace::db::UpdateWorkspaceDto,
+        dto: UpdateWorkspaceDto,
     ) -> Result<Workspace, ErrorResponse> {
         WorkspaceRepository::update(executor, id, dto)
             .await

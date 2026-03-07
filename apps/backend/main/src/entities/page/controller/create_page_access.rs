@@ -1,13 +1,21 @@
 use std::collections::HashMap;
 
-use axum::{Extension, extract::State};
+use axum::{Extension, Json, extract::State};
 use sql::page::model::PageAccess;
 
-use error_handlers::handlers::ErrorResponse;
+use error_handlers::{codes, handlers::ErrorResponse};
 
 use crate::{
-    entities::page::dto::{CreatePageAccessRequest, PageAccessResponse},
+    entities::{
+        page::{
+            PageService,
+            dto::{CreatePageAccessRequest, PageAccessResponse},
+        },
+        user::UserService,
+    },
+    repos::pages::CreatePageAccessDto,
     shared::extractors::json::ValidatedJson,
+    types::app_state::AppState,
 };
 
 #[utoipa::path(
@@ -28,13 +36,13 @@ use crate::{
     tags = ["Page Access"],
 )]
 pub async fn create_page_access(
-    State(state): State<crate::types::app_state::AppState>,
+    State(state): State<AppState>,
     Extension(user_page_access): Extension<PageAccess>,
     ValidatedJson(dto): ValidatedJson<CreatePageAccessRequest>,
-) -> Result<axum::Json<PageAccessResponse>, ErrorResponse> {
+) -> Result<Json<PageAccessResponse>, ErrorResponse> {
     if user_page_access.role < sql::page::model::Role::Admin {
-        return Err(error_handlers::handlers::ErrorResponse::forbidden(
-            error_handlers::codes::ForbiddenErrorCode::InsufficientPermissions,
+        return Err(ErrorResponse::forbidden(
+            codes::ForbiddenErrorCode::InsufficientPermissions,
             Some(HashMap::from([(
                 "message".to_string(),
                 "Insufficient permissions".to_string(),
@@ -46,8 +54,8 @@ pub async fn create_page_access(
     if dto.role > sql::page::model::Role::Admin
         && user_page_access.role < sql::page::model::Role::Owner
     {
-        return Err(error_handlers::handlers::ErrorResponse::forbidden(
-            error_handlers::codes::ForbiddenErrorCode::InsufficientPermissions,
+        return Err(ErrorResponse::forbidden(
+            codes::ForbiddenErrorCode::InsufficientPermissions,
             Some(HashMap::from([(
                 "message".to_string(),
                 "Insufficient permissions".to_string(),
@@ -56,12 +64,12 @@ pub async fn create_page_access(
         ));
     }
 
-    let target_user = crate::entities::user::UserService::get_one_by_id(&state.postgres, dto.user_id)
+    let target_user = UserService::get_one_by_id(&state.postgres, dto.user_id)
         .await
         .map_err(|e| {
             if e.status_code == 404 {
-                return error_handlers::handlers::ErrorResponse::not_found(
-                    error_handlers::codes::NotFoundErrorCode::NotFound,
+                return ErrorResponse::not_found(
+                    codes::NotFoundErrorCode::NotFound,
                     e.details,
                     e.dev_details,
                 );
@@ -70,9 +78,9 @@ pub async fn create_page_access(
             e
         })?;
 
-    let page_access = crate::entities::page::PageService::create_page_access(
+    let page_access = PageService::create_page_access(
         &state.postgres,
-        crate::entities::page::db::dto::CreatePageAccessDto {
+        CreatePageAccessDto {
             user_id: target_user.id,
             page_id: user_page_access.page_id,
             role: dto.role,
@@ -80,7 +88,7 @@ pub async fn create_page_access(
     )
     .await?;
 
-    Ok(axum::Json(crate::entities::page::dto::PageAccessResponse {
+    Ok(Json(PageAccessResponse {
         id: page_access.id,
         user: target_user,
         role: page_access.role,

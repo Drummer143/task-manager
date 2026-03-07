@@ -1,26 +1,35 @@
 use std::collections::HashMap;
 
 use axum::{
-    Extension,
+    Extension, Json,
     extract::{Path, State},
 };
+use error_handlers::{codes, handlers::ErrorResponse};
 use uuid::Uuid;
 
 use crate::{
-    entities::workspace::dto::{UpdateWorkspaceAccessRequest, WorkspaceAccessResponse},
+    entities::{
+        user::UserService,
+        workspace::{
+            WorkspaceService,
+            dto::{UpdateWorkspaceAccessRequest, WorkspaceAccessResponse},
+        },
+    },
+    repos::workspaces::UpdateWorkspaceAccessDto,
     shared::extractors::json::ValidatedJson,
+    types::app_state::AppState,
 };
 
 #[utoipa::path(
     put,
     path = "/workspaces/{workspace_id}/access",
     responses(
-        (status = 200, description = "Workspace access updated successfully", body = crate::entities::workspace::dto::WorkspaceAccessResponse),
-        (status = 400, description = "Invalid request", body = error_handlers::handlers::ErrorResponse),
-        (status = 401, description = "Unauthorized", body = error_handlers::handlers::ErrorResponse),
-        (status = 403, description = "Forbidden", body = error_handlers::handlers::ErrorResponse),
-        (status = 404, description = "Not found", body = error_handlers::handlers::ErrorResponse),
-        (status = 500, description = "Internal server error", body = error_handlers::handlers::ErrorResponse),
+        (status = 200, description = "Workspace access updated successfully", body = WorkspaceAccessResponse),
+        (status = 400, description = "Invalid request", body = ErrorResponse),
+        (status = 401, description = "Unauthorized", body = ErrorResponse),
+        (status = 403, description = "Forbidden", body = ErrorResponse),
+        (status = 404, description = "Not found", body = ErrorResponse),
+        (status = 500, description = "Internal server error", body = ErrorResponse),
     ),
     params(
         ("workspace_id" = Uuid, Path, description = "Workspace ID"),
@@ -29,35 +38,32 @@ use crate::{
     tags = ["Workspace Access"],
 )]
 pub async fn update_workspace_access(
-    State(state): State<crate::types::app_state::AppState>,
+    State(state): State<AppState>,
     Extension(user_id): Extension<Uuid>,
     Path(workspace_id): Path<Uuid>,
     ValidatedJson(dto): ValidatedJson<UpdateWorkspaceAccessRequest>,
-) -> Result<axum::Json<WorkspaceAccessResponse>, error_handlers::handlers::ErrorResponse> {
-    let user_workspace_access = crate::entities::workspace::WorkspaceService::get_workspace_access(
-        &state.postgres,
-        user_id,
-        workspace_id,
-    )
-    .await
-    .map_err(|e| {
-        if e.status_code == 404 {
-            return error_handlers::handlers::ErrorResponse::forbidden(
-                error_handlers::codes::ForbiddenErrorCode::InsufficientPermissions,
-                Some(HashMap::from([(
-                    "message".to_string(),
-                    "Insufficient permissions".to_string(),
-                )])),
-                None,
-            );
-        }
+) -> Result<Json<WorkspaceAccessResponse>, ErrorResponse> {
+    let user_workspace_access =
+        WorkspaceService::get_workspace_access(&state.postgres, user_id, workspace_id)
+            .await
+            .map_err(|e| {
+                if e.status_code == 404 {
+                    return ErrorResponse::forbidden(
+                        codes::ForbiddenErrorCode::InsufficientPermissions,
+                        Some(HashMap::from([(
+                            "message".to_string(),
+                            "Insufficient permissions".to_string(),
+                        )])),
+                        None,
+                    );
+                }
 
-        e
-    })?;
+                e
+            })?;
 
     if user_workspace_access.role < sql::workspace::model::Role::Admin {
-        return Err(error_handlers::handlers::ErrorResponse::forbidden(
-            error_handlers::codes::ForbiddenErrorCode::InsufficientPermissions,
+        return Err(ErrorResponse::forbidden(
+            codes::ForbiddenErrorCode::InsufficientPermissions,
             Some(HashMap::from([(
                 "message".to_string(),
                 "Insufficient permissions".to_string(),
@@ -68,9 +74,9 @@ pub async fn update_workspace_access(
 
     // TODO: complete access checks
 
-    let workspace_access = crate::entities::workspace::WorkspaceService::update_workspace_access(
+    let workspace_access = WorkspaceService::update_workspace_access(
         &state.postgres,
-        crate::entities::workspace::db::UpdateWorkspaceAccessDto {
+        UpdateWorkspaceAccessDto {
             user_id: dto.user_id,
             workspace_id,
             role: dto.role,
@@ -78,9 +84,9 @@ pub async fn update_workspace_access(
     )
     .await?;
 
-    Ok(axum::Json(WorkspaceAccessResponse {
+    Ok(Json(WorkspaceAccessResponse {
         id: workspace_access.id,
-        user: crate::entities::user::UserService::get_one_by_id(&state.postgres, dto.user_id).await?,
+        user: UserService::get_one_by_id(&state.postgres, dto.user_id).await?,
         role: workspace_access.role,
         created_at: workspace_access.created_at,
         updated_at: workspace_access.updated_at,

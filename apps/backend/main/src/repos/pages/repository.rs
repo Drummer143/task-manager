@@ -3,40 +3,28 @@ use uuid::Uuid;
 
 use sql::{
     page::model::{Page, PageAccess, PageType, Role, TextPageContent},
-    shared::{
-        tiptap_content::TipTapContent,
-        traits::{
-            PostgresqlRepositoryCreate, PostgresqlRepositoryDelete, PostgresqlRepositoryGetOneById,
-            PostgresqlRepositoryUpdate, RepositoryBase, UpdateDto,
-        },
-    },
+    shared::{tiptap_content::TipTapContent, traits::UpdateDto},
 };
+
+use super::dto::{CreatePageAccessDto, CreatePageDto, UpdatePageAccessDto, UpdatePageDto};
 
 pub struct PageRepository;
 
-impl RepositoryBase for PageRepository {
-    type Response = Page;
-}
-
-impl PostgresqlRepositoryGetOneById for PageRepository {
-    async fn get_one_by_id<'a>(
+impl PageRepository {
+    pub async fn get_one_by_id<'a>(
         executor: impl Executor<'a, Database = Postgres>,
         id: Uuid,
-    ) -> Result<Self::Response, sqlx::Error> {
+    ) -> Result<Page, sqlx::Error> {
         sqlx::query_as::<_, Page>("SELECT * FROM pages WHERE id = $1")
             .bind(id)
             .fetch_one(executor)
             .await
     }
-}
 
-impl PostgresqlRepositoryCreate for PageRepository {
-    type CreateDto = super::dto::CreatePageDto;
-
-    async fn create<'a>(
+    pub async fn create<'a>(
         executor: impl Executor<'a, Database = Postgres>,
-        dto: Self::CreateDto,
-    ) -> Result<Self::Response, sqlx::Error> {
+        dto: CreatePageDto,
+    ) -> Result<Page, sqlx::Error> {
         sqlx::query_as::<_, Page>(
             r#"
             WITH new_page AS (
@@ -72,14 +60,12 @@ impl PostgresqlRepositoryCreate for PageRepository {
     }
 }
 
-impl PostgresqlRepositoryUpdate for PageRepository {
-    type UpdateDto = super::dto::UpdatePageDto;
-
-    async fn update<'a>(
+impl PageRepository {
+    pub async fn update<'a>(
         executor: impl Executor<'a, Database = Postgres>,
         id: Uuid,
-        dto: Self::UpdateDto,
-    ) -> Result<Self::Response, sqlx::Error> {
+        dto: UpdatePageDto,
+    ) -> Result<Page, sqlx::Error> {
         if dto.is_empty() {
             return Self::get_one_by_id(executor, id).await;
         }
@@ -98,21 +84,17 @@ impl PostgresqlRepositoryUpdate for PageRepository {
             .fetch_one(executor)
             .await
     }
-}
 
-impl PostgresqlRepositoryDelete for PageRepository {
-    async fn delete<'a>(
+    pub async fn delete<'a>(
         executor: impl Executor<'a, Database = Postgres>,
         id: Uuid,
-    ) -> Result<Self::Response, sqlx::Error> {
+    ) -> Result<Page, sqlx::Error> {
         sqlx::query_as::<_, Page>("DELETE FROM pages WHERE id = $1 RETURNING *")
             .bind(id)
             .fetch_one(executor)
             .await
     }
-}
 
-impl PageRepository {
     pub async fn get_all_in_workspace<'a>(
         executor: impl Executor<'a, Database = Postgres>,
         workspace_id: Uuid,
@@ -137,12 +119,10 @@ impl PageRepository {
         executor: impl Executor<'a, Database = Postgres>,
         page_id: Uuid,
     ) -> Result<TextPageContent, sqlx::Error> {
-        sqlx::query_as::<_, TextPageContent>(
-            "SELECT * FROM text_page_contents WHERE page_id = $1",
-        )
-        .bind(page_id)
-        .fetch_one(executor)
-        .await
+        sqlx::query_as::<_, TextPageContent>("SELECT * FROM text_page_contents WHERE page_id = $1")
+            .bind(page_id)
+            .fetch_one(executor)
+            .await
     }
 
     pub async fn update_content<'a>(
@@ -179,7 +159,7 @@ impl PageRepository {
 
     pub async fn create_page_access<'a>(
         executor: impl Executor<'a, Database = sqlx::Postgres>,
-        dto: super::dto::CreatePageAccessDto,
+        dto: CreatePageAccessDto,
     ) -> Result<PageAccess, sqlx::Error> {
         sqlx::query_as::<_, PageAccess>(
             r#"
@@ -229,7 +209,7 @@ impl PageRepository {
 
     pub async fn update_page_access<'a>(
         executor: impl Executor<'a, Database = sqlx::Postgres>,
-        dto: super::dto::UpdatePageAccessDto,
+        dto: UpdatePageAccessDto,
     ) -> Result<PageAccess, sqlx::Error> {
         if dto.role.is_none() {
             return sqlx::query_as::<_, PageAccess>(

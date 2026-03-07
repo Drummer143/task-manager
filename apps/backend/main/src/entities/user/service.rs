@@ -1,9 +1,8 @@
-use sql::shared::traits::PostgresqlRepositoryGetOneById;
 use uuid::Uuid;
 
 use error_handlers::handlers::ErrorResponse;
 
-use crate::entities::user::db::{UserFilterBy, UserRepository, UserSortBy};
+use crate::repos::users::{UserFilterBy, UserRepository, UserSortBy};
 
 pub struct UserService;
 

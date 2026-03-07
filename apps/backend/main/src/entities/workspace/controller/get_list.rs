@@ -4,7 +4,12 @@ use sql::shared::types::SortOrder;
 use uuid::Uuid;
 
 use crate::{
-    entities::workspace::{WorkspaceService, db::WorkspaceSortBy, dto::{WorkspaceListQuery, WorkspaceResponse}}, shared::extractors::query::ValidatedQuery,
+    entities::workspace::{
+        WorkspaceService,
+        dto::{WorkspaceListQuery, WorkspaceResponse},
+    },
+    repos::workspaces::WorkspaceSortBy,
+    shared::extractors::query::ValidatedQuery,
     types::{app_state::AppState, pagination::Pagination},
 };
 

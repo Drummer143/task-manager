@@ -1,23 +1,32 @@
 use std::collections::HashMap;
 
 use axum::{
-    Extension,
+    Extension, Json,
     extract::{Path, State},
 };
 
-use error_handlers::handlers::ErrorResponse;
+use error_handlers::{codes, handlers::ErrorResponse};
 use sql::workspace::model::WorkspaceAccess;
+use uuid::Uuid;
 
 use crate::{
-    entities::workspace::dto::CreateWorkspaceAccessRequest,
+    entities::{
+        user::UserService,
+        workspace::{
+            WorkspaceService,
+            dto::{CreateWorkspaceAccessRequest, WorkspaceAccessResponse},
+        },
+    },
+    repos::workspaces::CreateWorkspaceAccessDto,
     shared::extractors::json::ValidatedJson,
+    types::app_state::AppState,
 };
 
 #[utoipa::path(
     post,
     path = "/workspaces/{workspace_id}/access",
     responses(
-        (status = 200, description = "Workspace access created successfully", body = crate::entities::workspace::dto::WorkspaceAccessResponse),
+        (status = 200, description = "Workspace access created successfully", body = WorkspaceAccessResponse),
         (status = 400, description = "Invalid request", body = ErrorResponse),
         (status = 401, description = "Unauthorized", body = ErrorResponse),
         (status = 403, description = "Forbidden", body = ErrorResponse),
@@ -31,14 +40,14 @@ use crate::{
     tags = ["Workspace Access"],
 )]
 pub async fn create_workspace_access(
-    State(state): State<crate::types::app_state::AppState>,
+    State(state): State<AppState>,
     Extension(user_workspace_access): Extension<WorkspaceAccess>,
-    Path(workspace_id): Path<uuid::Uuid>,
+    Path(workspace_id): Path<Uuid>,
     ValidatedJson(dto): ValidatedJson<CreateWorkspaceAccessRequest>,
-) -> Result<axum::Json<crate::entities::workspace::dto::WorkspaceAccessResponse>, error_handlers::handlers::ErrorResponse> {
+) -> Result<Json<WorkspaceAccessResponse>, ErrorResponse> {
     if user_workspace_access.role < sql::workspace::model::Role::Admin {
-        return Err(error_handlers::handlers::ErrorResponse::forbidden(
-            error_handlers::codes::ForbiddenErrorCode::InsufficientPermissions,
+        return Err(ErrorResponse::forbidden(
+            codes::ForbiddenErrorCode::InsufficientPermissions,
             Some(HashMap::from([(
                 "message".to_string(),
                 "Insufficient permissions".to_string(),
@@ -50,8 +59,8 @@ pub async fn create_workspace_access(
     if dto.role > sql::workspace::model::Role::Admin
         && user_workspace_access.role < sql::workspace::model::Role::Owner
     {
-        return Err(error_handlers::handlers::ErrorResponse::forbidden(
-            error_handlers::codes::ForbiddenErrorCode::InsufficientPermissions,
+        return Err(ErrorResponse::forbidden(
+            codes::ForbiddenErrorCode::InsufficientPermissions,
             Some(HashMap::from([(
                 "message".to_string(),
                 "Insufficient permissions".to_string(),
@@ -60,12 +69,12 @@ pub async fn create_workspace_access(
         ));
     }
 
-    let target_user = crate::entities::user::UserService::get_one_by_id(&state.postgres, dto.user_id)
+    let target_user = UserService::get_one_by_id(&state.postgres, dto.user_id)
         .await
         .map_err(|e| {
             if e.status_code == 404 {
-                return error_handlers::handlers::ErrorResponse::not_found(
-                    error_handlers::codes::NotFoundErrorCode::NotFound,
+                return ErrorResponse::not_found(
+                    codes::NotFoundErrorCode::NotFound,
                     Some(HashMap::from([(
                         "message".to_string(),
                         "User not found".to_string(),
@@ -77,9 +86,9 @@ pub async fn create_workspace_access(
             e
         })?;
 
-    let workspace_access = crate::entities::workspace::WorkspaceService::create_workspace_access(
+    let workspace_access = WorkspaceService::create_workspace_access(
         &state.postgres,
-        crate::entities::workspace::db::CreateWorkspaceAccessDto {
+        CreateWorkspaceAccessDto {
             user_id: dto.user_id,
             workspace_id,
             role: dto.role,
@@ -87,7 +96,7 @@ pub async fn create_workspace_access(
     )
     .await?;
 
-    Ok(axum::Json(crate::entities::workspace::dto::WorkspaceAccessResponse {
+    Ok(Json(WorkspaceAccessResponse {
         id: workspace_access.id,
         user: target_user,
         role: workspace_access.role,

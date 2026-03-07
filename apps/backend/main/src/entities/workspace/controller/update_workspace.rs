@@ -1,10 +1,12 @@
-use axum::{Json, extract::{Path, State}};
+use axum::{
+    Json,
+    extract::{Path, State},
+};
 use error_handlers::handlers::ErrorResponse;
-use crate::entities::workspace::db::UpdateWorkspaceDto;
 use uuid::Uuid;
 
 use crate::{
-    entities::workspace::dto::WorkspaceResponse,
+    entities::workspace::dto::WorkspaceResponse, repos::workspaces::UpdateWorkspaceDto,
     shared::extractors::json::ValidatedJson,
 };
 

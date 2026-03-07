@@ -4,11 +4,17 @@ use axum::extract::State;
 use chrono::{DateTime, Utc};
 use error_handlers::handlers::ErrorResponse;
 use serde::{Deserialize, Serialize};
-use sql::{assets::model::EntityType, shared::traits::PostgresqlRepositoryCreate};
+use sql::assets::model::EntityType;
 use uuid::Uuid;
 
-use crate::shared::{
-    extractors::json::ValidatedJson, generate_initials_avatar::fetch_png_avatar,
+use crate::{
+    entities::workspace::WorkspaceService,
+    repos::{
+        assets::{AssetsRepository, CreateAssetDto},
+        users::{CreateUserDto, UpdateUserDto, UserRepository},
+        workspaces::CreateWorkspaceDto,
+    },
+    shared::{extractors::json::ValidatedJson, generate_initials_avatar::fetch_png_avatar},
 };
 
 #[derive(serde::Deserialize)]
@@ -57,14 +63,12 @@ pub async fn user_sync(
     State(state): State<crate::types::app_state::AppState>,
     ValidatedJson(payload): ValidatedJson<UserLifecycleEvents>,
 ) -> Result<axum::http::StatusCode, ErrorResponse> {
-    use crate::entities::user::db as user;
-
     match payload {
         UserLifecycleEvents::Updated(payload) => {
-            match user::UserRepository::update_by_authentik_id(
+            match UserRepository::update_by_authentik_id(
                 &state.postgres,
                 payload.pk,
-                user::UpdateUserDto {
+                UpdateUserDto {
                     email: Some(payload.email),
 
                     is_active: Some(payload.is_active),
@@ -102,10 +106,10 @@ pub async fn user_sync(
                     payload.pk
                 );
 
-                user::UserRepository::update_by_authentik_id(
+                UserRepository::update_by_authentik_id(
                     &state.postgres,
                     payload.pk,
-                    user::UpdateUserDto {
+                    UpdateUserDto {
                         email: Some(payload.email),
                         username: Some(payload.username),
                         is_active: Some(payload.is_active),
@@ -153,9 +157,9 @@ pub async fn user_sync(
 
                 let blob = resp.unwrap();
 
-                let asset = crate::entities::assets::db::AssetsRepository::create(
+                let asset = AssetsRepository::create(
                     &state.postgres,
-                    crate::entities::assets::db::CreateAssetDto {
+                    CreateAssetDto {
                         id: Some(Uuid::new_v4()),
                         name: "avatar.png".to_string(),
                         blob_id: blob.id,
@@ -173,9 +177,9 @@ pub async fn user_sync(
 
                 let asset = asset.unwrap();
 
-                let created_user = user::UserRepository::create(
+                let created_user = UserRepository::create(
                     &state.postgres,
-                    user::CreateUserDto {
+                    CreateUserDto {
                         email: payload.email,
                         username: payload.username,
                         authentik_id: payload.pk,
@@ -184,15 +188,15 @@ pub async fn user_sync(
                         is_active: Some(payload.is_active),
                         created_at: Some(payload.created_at),
                         picture: Some(format!("/files/{}", asset.id)),
-                        is_avatar_default: Some(false)
+                        is_avatar_default: Some(false),
                     },
                 )
                 .await
                 .map_err(ErrorResponse::from)?;
 
-                crate::entities::workspace::WorkspaceService::create(
+                WorkspaceService::create(
                     &state.postgres,
-                    crate::entities::workspace::db::CreateWorkspaceDto {
+                    CreateWorkspaceDto {
                         name: format!("{}'s workspace", created_user.username),
                         owner_id: created_user.id,
                     },
@@ -200,8 +204,9 @@ pub async fn user_sync(
                 .await?;
             }
         }
+
         UserLifecycleEvents::Deleted(payload) => {
-            user::UserRepository::delete_by_authentik_id(&state.postgres, payload.pk)
+            UserRepository::delete_by_authentik_id(&state.postgres, payload.pk)
                 .await
                 .map_err(ErrorResponse::from)?;
         }

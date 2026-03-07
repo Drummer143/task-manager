@@ -2,19 +2,13 @@ use std::collections::HashMap;
 
 use axum::{Extension, Json, extract::State, http::StatusCode};
 use error_handlers::handlers::ErrorResponse;
-use sql::{
-    assets::model::EntityType,
-    shared::traits::{
-        PostgresqlRepositoryCreate, PostgresqlRepositoryGetOneById, PostgresqlRepositoryUpdate,
-    },
-    user::model::User,
-};
+use sql::{assets::model::EntityType, user::model::User};
 use uuid::Uuid;
 
 use crate::{
-    entities::{
-        assets::db::{AssetsRepository, CreateAssetDto, UpdateAssetDto},
-        user::db::UserRepository,
+    repos::{
+        assets::{AssetsRepository, CreateAssetDto, UpdateAssetDto},
+        users::{UpdateUserDto, UserRepository},
     },
     shared::generate_initials_avatar::fetch_png_avatar,
     types::app_state::AppState,
@@ -47,9 +41,10 @@ pub async fn delete_avatar(
     if user.is_avatar_default {
         return Err(ErrorResponse::bad_request(
             error_handlers::codes::BadRequestErrorCode::InvalidBody,
-            Some(HashMap::from([
-                ("message".to_string(), "User has default avatar".to_string()),
-            ])),
+            Some(HashMap::from([(
+                "message".to_string(),
+                "User has default avatar".to_string(),
+            )])),
             None,
         ));
     }
@@ -129,7 +124,7 @@ pub async fn delete_avatar(
     let user = UserRepository::update(
         &state.postgres,
         user_id,
-        crate::entities::user::db::dto::UpdateUserDto {
+        UpdateUserDto {
             username: None,
             is_active: None,
             email: None,

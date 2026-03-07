@@ -1,12 +1,12 @@
-use axum::{Json, extract::{Path, State}};
+use crate::{entities::task::TaskService, repos::tasks::UpdateTaskDto, types::app_state::AppState};
+use axum::{
+    Json,
+    extract::{Path, State},
+};
 use error_handlers::handlers::ErrorResponse;
-use crate::entities::task::db::UpdateTaskDto;
 use uuid::Uuid;
 
-use crate::{
-    entities::task::dto::TaskResponse,
-    shared::extractors::json::ValidatedJson,
-};
+use crate::{entities::task::dto::TaskResponse, shared::extractors::json::ValidatedJson};
 
 #[utoipa::path(
     put,
@@ -23,11 +23,11 @@ use crate::{
     tag = "Tasks",
 )]
 pub async fn update_task(
-    State(state): State<crate::types::app_state::AppState>,
+    State(state): State<AppState>,
     Path(task_id): Path<Uuid>,
     ValidatedJson(dto): ValidatedJson<UpdateTaskDto>,
 ) -> Result<Json<TaskResponse>, ErrorResponse> {
-    crate::entities::task::TaskService::update(&state.postgres, task_id, dto)
+    TaskService::update(&state.postgres, task_id, dto)
         .await
         .map(|t| Json(TaskResponse::from(t)))
 }

@@ -1,19 +1,16 @@
 use chrono::{Duration, Utc};
 use error_handlers::handlers::ErrorResponse;
 use serde::{Deserialize, Serialize};
-use sql::{
-    assets::model::{Asset, EntityType},
-    shared::traits::{PostgresqlRepositoryCreate, PostgresqlRepositoryGetOneById, PostgresqlRepositoryUpdate},
-};
+use sql::assets::model::{Asset, EntityType};
 use uuid::Uuid;
 
 use crate::{
-    entities::{
-        assets::db::{AssetsRepository, CreateAssetDto},
-        page::db::PageRepository,
-        task::db::{TaskRepository, UpdateTaskDto},
-    },
     entities::assets::dto::{AssetTarget, CreateAssetRequest, CreateUploadTokenRequest},
+    repos::tasks::{TaskRepository, UpdateTaskDto},
+    repos::{
+        assets::{AssetsRepository, CreateAssetDto},
+        pages::PageRepository,
+    },
     types::app_state::AppState,
 };
 
@@ -163,8 +160,7 @@ impl AssetsService {
             }
             EntityType::TaskDescription => {
                 let task =
-                    TaskRepository::get_one_by_id(&state.postgres, token.claims.entity_id)
-                        .await?;
+                    TaskRepository::get_one_by_id(&state.postgres, token.claims.entity_id).await?;
 
                 let Some(mut content) = task.description.0 else {
                     return Err(ErrorResponse::not_found(

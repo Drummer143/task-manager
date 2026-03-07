@@ -1,85 +1,16 @@
-use sql::shared::{
-    traits::{
-        PostgresqlRepositoryCreate, PostgresqlRepositoryGetOneById, PostgresqlRepositoryUpdate,
-        RepositoryBase, UpdateDto,
-    },
-    types::SortOrder,
-};
+use sql::shared::{traits::UpdateDto, types::SortOrder};
 use sqlx::Postgres;
 use uuid::Uuid;
 
-use super::dto::{UpdateUserDto, UserFilterBy, UserSortBy};
+use crate::repos::users::utils::apply_filter;
+
+use super::dto::{CreateUserDto, UpdateUserDto, UserFilterBy, UserSortBy};
 use sql::user::model::User;
-
-fn apply_filter<'a>(
-    mut builder: sqlx::QueryBuilder<'a, Postgres>,
-    filter: &'a UserFilterBy,
-) -> sqlx::QueryBuilder<'a, Postgres> {
-    if let Some(workspace_id) = filter.workspace_id {
-        builder.push(" JOIN workspace_accesses ON users.id = workspace_accesses.user_id AND workspace_accesses.workspace_id = ").push_bind(workspace_id);
-    }
-
-    if let Some(query) = &filter.query {
-        builder
-            .push(" WHERE (")
-            .push("users.email ILIKE ")
-            .push_bind(format!("%{}%", query))
-            .push(" OR users.username ILIKE ")
-            .push_bind(format!("%{}%", query))
-            .push(")");
-    } else if filter.has_any_user_filter() {
-        let mut where_started = false;
-
-        builder.push(" WHERE (");
-
-        if let Some(email) = &filter.email {
-            builder
-                .push("users.email ILIKE ")
-                .push_bind(format!("%{}%", email));
-            where_started = true;
-        }
-
-        if let Some(username) = &filter.username {
-            if where_started {
-                builder.push(" AND ");
-            }
-            where_started = true;
-            builder
-                .push("users.username ILIKE ")
-                .push_bind(format!("%{}%", username));
-        }
-
-        if let Some(ref exclude) = filter.exclude
-            && !exclude.is_empty()
-        {
-            if where_started {
-                builder.push(" AND ");
-            }
-
-            builder.push("users.id NOT IN (");
-
-            let mut separated = builder.separated(", ");
-            for id in exclude {
-                separated.push_bind(id);
-            }
-
-            builder.push(")");
-        }
-
-        builder.push(")");
-    }
-
-    builder
-}
 
 pub struct UserRepository;
 
-impl RepositoryBase for UserRepository {
-    type Response = User;
-}
-
-impl PostgresqlRepositoryGetOneById for UserRepository {
-    async fn get_one_by_id<'a>(
+impl UserRepository {
+    pub async fn get_one_by_id<'a>(
         executor: impl sqlx::Executor<'a, Database = Postgres>,
         id: Uuid,
     ) -> Result<User, sqlx::Error> {
@@ -92,12 +23,10 @@ impl PostgresqlRepositoryGetOneById for UserRepository {
     }
 }
 
-impl PostgresqlRepositoryCreate for UserRepository {
-    type CreateDto = super::dto::CreateUserDto;
-
-    async fn create<'a>(
+impl UserRepository {
+    pub async fn create<'a>(
         executor: impl sqlx::Executor<'a, Database = Postgres>,
-        dto: Self::CreateDto,
+        dto: CreateUserDto,
     ) -> Result<User, sqlx::Error> {
         sqlx::query_as::<_, User>(
             "INSERT INTO users (id, authentik_id, email, username, picture, created_at, is_avatar_default) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING *",
@@ -112,16 +41,12 @@ impl PostgresqlRepositoryCreate for UserRepository {
         .fetch_one(executor)
         .await
     }
-}
 
-impl PostgresqlRepositoryUpdate for UserRepository {
-    type UpdateDto = super::dto::UpdateUserDto;
-
-    async fn update<'a>(
+    pub async fn update<'a>(
         executor: impl sqlx::Executor<'a, Database = Postgres>,
         id: Uuid,
-        dto: Self::UpdateDto,
-    ) -> Result<Self::Response, sqlx::Error> {
+        dto: UpdateUserDto,
+    ) -> Result<User, sqlx::Error> {
         if dto.is_empty() {
             return Self::get_one_by_id(executor, id).await;
         }
@@ -168,18 +93,6 @@ impl PostgresqlRepositoryUpdate for UserRepository {
             .fetch_one(executor)
             .await
     }
-}
-
-impl UserRepository {
-    // pub async fn get_one_by_email<'a>(
-    //     executor: impl sqlx::Executor<'a, Database = Postgres>,
-    //     email: &str,
-    // ) -> Result<User, sqlx::Error> {
-    //     sqlx::query_as::<_, User>("SELECT * FROM users WHERE email = $1")
-    //         .bind(email)
-    //         .fetch_one(executor)
-    //         .await
-    // }
 
     pub async fn get_one_by_authentik_id<'a>(
         executor: impl sqlx::Executor<'a, Database = Postgres>,

@@ -3,7 +3,7 @@ use axum::http::StatusCode;
 use error_handlers::{codes, handlers::ErrorResponse};
 use uuid::Uuid;
 
-use crate::{entities::workspace::db::WorkspaceRepository, types::app_state::AppState};
+use crate::{repos::workspaces::WorkspaceRepository, types::app_state::AppState};
 
 use super::json_error_response;
 

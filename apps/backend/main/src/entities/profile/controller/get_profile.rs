@@ -1,12 +1,8 @@
 use axum::{Extension, Json, extract::State};
 use axum_extra::extract::cookie;
-use error_handlers::handlers::ErrorResponse;
-use sql::shared::traits::PostgresqlRepositoryGetOneById;
+use error_handlers::{codes, handlers::ErrorResponse};
 
-use crate::{
-    entities::{profile::dto::ProfileResponse, workspace::db::WorkspaceRepository},
-    types::app_state::AppState,
-};
+use crate::{entities::{profile::dto::ProfileResponse, user::UserService, workspace::WorkspaceService}, repos::workspaces::WorkspaceRepository, types::app_state::AppState};
 
 #[utoipa::path(
     get,
@@ -23,7 +19,7 @@ pub async fn get_profile(
     Extension(user_id): Extension<uuid::Uuid>,
     mut cookie_jar: axum_extra::extract::CookieJar,
 ) -> Result<impl axum::response::IntoResponse, ErrorResponse> {
-    let user = crate::entities::user::UserService::get_one_by_id(&state.postgres, user_id).await?;
+    let user = UserService::get_one_by_id(&state.postgres, user_id).await?;
 
     let workspace_id = cookie_jar.get("workspace_id");
 
@@ -31,7 +27,7 @@ pub async fn get_profile(
         let workspace_id = workspace_id.value();
         let workspace_id = uuid::Uuid::parse_str(workspace_id).map_err(|_| {
             ErrorResponse::bad_request(
-                error_handlers::codes::BadRequestErrorCode::InvalidParams,
+                codes::BadRequestErrorCode::InvalidParams,
                 None,
                 None,
             )
@@ -40,8 +36,9 @@ pub async fn get_profile(
         WorkspaceRepository::get_one_by_id(&state.postgres, workspace_id).await?
     } else {
         let workspace =
-            crate::entities::workspace::WorkspaceService::get_any_workspace_user_has_access_to(
-                &state.postgres, user_id,
+            WorkspaceService::get_any_workspace_user_has_access_to(
+                &state.postgres,
+                user_id,
             )
             .await?;
 
@@ -58,9 +55,6 @@ pub async fn get_profile(
     Ok((
         axum::http::StatusCode::OK,
         cookie_jar,
-        Json(ProfileResponse {
-            user,
-            workspace,
-        }),
+        Json(ProfileResponse { user, workspace }),
     ))
 }

@@ -1,12 +1,13 @@
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
 use sql::{
+    shared::types::SortOrder,
     user::model::User,
     workspace::model::{Role, Workspace, WorkspaceWithRole},
 };
 use uuid::Uuid;
 
-use crate::entities::page::dto::PageSummary;
+use crate::{entities::page::dto::PageSummary, repos::workspaces::WorkspaceSortBy};
 
 // WORKSPACE
 
@@ -65,8 +66,8 @@ pub struct WorkspaceListQuery {
     pub limit: Option<i64>,
     pub offset: Option<i64>,
     pub search: Option<String>,
-    pub sort_by: Option<crate::entities::workspace::db::WorkspaceSortBy>,
-    pub sort_order: Option<sql::shared::types::SortOrder>,
+    pub sort_by: Option<WorkspaceSortBy>,
+    pub sort_order: Option<SortOrder>,
 }
 
 // WORKSPACE ACCESS

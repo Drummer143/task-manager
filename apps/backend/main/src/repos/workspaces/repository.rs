@@ -2,30 +2,18 @@ use chrono::Duration;
 use uuid::Uuid;
 
 use sql::{
+    shared::types::SortOrder,
     workspace::model::{Role, Workspace, WorkspaceAccess, WorkspaceWithRole},
-    shared::{
-        traits::{
-            PostgresqlRepositoryCreate, PostgresqlRepositoryGetOneById, PostgresqlRepositoryUpdate,
-            RepositoryBase,
-        },
-        types::SortOrder,
-    },
 };
 
-use super::dto::WorkspaceSortBy;
+use super::dto::{CreateWorkspaceDto, UpdateWorkspaceDto, WorkspaceSortBy};
 
 pub struct WorkspaceRepository;
 
-impl RepositoryBase for WorkspaceRepository {
-    type Response = Workspace;
-}
-
-impl PostgresqlRepositoryCreate for WorkspaceRepository {
-    type CreateDto = super::dto::CreateWorkspaceDto;
-
-    async fn create<'a>(
+impl WorkspaceRepository {
+    pub async fn create<'a>(
         executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
-        dto: Self::CreateDto,
+        dto: CreateWorkspaceDto,
     ) -> Result<Workspace, sqlx::Error> {
         sqlx::query_as::<_, Workspace>(
             r#"
@@ -50,15 +38,11 @@ impl PostgresqlRepositoryCreate for WorkspaceRepository {
         .fetch_one(executor)
         .await
     }
-}
 
-impl PostgresqlRepositoryUpdate for WorkspaceRepository {
-    type UpdateDto = super::dto::UpdateWorkspaceDto;
-
-    async fn update<'a>(
+    pub async fn update<'a>(
         executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
         workspace_id: Uuid,
-        dto: Self::UpdateDto,
+        dto: UpdateWorkspaceDto,
     ) -> Result<Workspace, sqlx::Error> {
         let mut builder = sqlx::QueryBuilder::new("UPDATE workspaces SET");
 
@@ -76,10 +60,8 @@ impl PostgresqlRepositoryUpdate for WorkspaceRepository {
             .fetch_one(executor)
             .await
     }
-}
 
-impl PostgresqlRepositoryGetOneById for WorkspaceRepository {
-    async fn get_one_by_id<'a>(
+    pub async fn get_one_by_id<'a>(
         executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
         workspace_id: Uuid,
     ) -> Result<Workspace, sqlx::Error> {
@@ -88,9 +70,7 @@ impl PostgresqlRepositoryGetOneById for WorkspaceRepository {
             .fetch_one(executor)
             .await
     }
-}
 
-impl WorkspaceRepository {
     pub async fn get_list<'a>(
         executor: impl sqlx::Executor<'a, Database = sqlx::Postgres> + Copy,
         user_id: Uuid,

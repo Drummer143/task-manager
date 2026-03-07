@@ -4,7 +4,9 @@ use sql::{shared::types::SortOrder, user::model::User};
 use uuid::Uuid;
 
 use crate::{
-    entities::user::db::UserSortBy, shared::extractors::query::ValidatedQuery, types::{app_state::AppState, pagination::Pagination}
+    repos::users::{UserFilterBy, UserSortBy},
+    shared::extractors::query::ValidatedQuery,
+    types::{app_state::AppState, pagination::Pagination},
 };
 
 #[derive(serde::Deserialize, Debug)]
@@ -20,7 +22,7 @@ pub struct GetListQuery {
         deserialize_with = "crate::shared::deserialization::deserialize_comma_separated_query_param"
     )]
     exclude: Option<Vec<Uuid>>,
-    sort_by: Option<crate::entities::user::db::UserSortBy>,
+    sort_by: Option<UserSortBy>,
     sort_order: Option<sql::shared::types::SortOrder>,
 }
 
@@ -51,7 +53,7 @@ pub async fn get_list(
     State(state): State<AppState>,
     ValidatedQuery(query): ValidatedQuery<GetListQuery>,
 ) -> Result<Pagination<User>, ErrorResponse> {
-    let filters = crate::entities::user::db::UserFilterBy {
+    let filters = UserFilterBy {
         email: query.email,
         username: query.username,
         query: query.query,
@@ -84,9 +86,7 @@ pub async fn get_list(
     Ok(Pagination::new(
         users,
         total,
-        query
-            .limit
-            .unwrap_or(sql::shared::constants::DEFAULT_LIMIT),
+        query.limit.unwrap_or(sql::shared::constants::DEFAULT_LIMIT),
         query
             .offset
             .unwrap_or(sql::shared::constants::DEFAULT_OFFSET),

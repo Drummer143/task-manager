@@ -3,33 +3,17 @@ use std::io::Cursor;
 use axum::{Extension, Json, extract::Multipart, extract::State, http::StatusCode};
 use error_handlers::handlers::ErrorResponse;
 use image::GenericImageView;
-use sql::{
-    assets::model::EntityType,
-    shared::traits::{PostgresqlRepositoryCreate, PostgresqlRepositoryUpdate},
-    user::model::User,
-};
+use sql::{assets::model::EntityType, user::model::User};
 use uuid::Uuid;
 
 use crate::{
-    entities::{
-        assets::db::{AssetsRepository, CreateAssetDto, UpdateAssetDto},
-        user::db::UserRepository,
+    entities::profile::dto::{StorageBlobResponse, UploadAvatarForm},
+    repos::{
+        assets::{AssetsRepository, CreateAssetDto, UpdateAssetDto},
+        users::{UpdateUserDto, UserRepository},
     },
     types::app_state::AppState,
 };
-
-#[derive(serde::Deserialize)]
-struct StorageBlobResponse {
-    id: Uuid,
-    #[allow(dead_code)]
-    hash: String,
-    #[allow(dead_code)]
-    size: i64,
-    #[allow(dead_code)]
-    path: String,
-    #[allow(dead_code)]
-    mime_type: String,
-}
 
 fn bad_request(msg: String) -> ErrorResponse {
     ErrorResponse::bad_request(
@@ -37,29 +21,6 @@ fn bad_request(msg: String) -> ErrorResponse {
         None,
         Some(msg),
     )
-}
-
-#[derive(utoipa::ToSchema)]
-struct UploadAvatarForm {
-    #[allow(dead_code)]
-    #[schema(format = "binary")]
-    file: String,
-
-    #[allow(dead_code)]
-    #[schema(nullable, minimum = 0.0)]
-    x: Option<f64>,
-
-    #[allow(dead_code)]
-    #[schema(nullable, minimum = 0.0)]
-    y: Option<f64>,
-
-    #[allow(dead_code)]
-    #[schema(nullable, minimum = 0.0)]
-    width: Option<f64>,
-
-    #[allow(dead_code)]
-    #[schema(nullable, minimum = 0.0)]
-    height: Option<f64>,
 }
 
 #[utoipa::path(
@@ -244,7 +205,7 @@ pub async fn upload_avatar(
     let user = UserRepository::update(
         &state.postgres,
         user_id,
-        crate::entities::user::db::dto::UpdateUserDto {
+        UpdateUserDto {
             username: None,
             is_active: None,
             email: None,
