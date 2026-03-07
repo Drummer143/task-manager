@@ -4,8 +4,9 @@ use sql::page::model::PageAccess;
 use uuid::Uuid;
 
 use crate::{
-    entities::page::{PageService, dto::DetailedPageResponse},
+    entities::page::dto::DetailedPageResponse,
     shared::extractors::{path::ValidatedPath, x_user_language::XUserLanguage},
+    services::pages::PageService,
     types::app_state::AppState,
 };
 

@@ -5,7 +5,7 @@ use axum::{
 use error_handlers::handlers::ErrorResponse;
 use uuid::Uuid;
 
-use crate::entities::task::dto::TaskResponse;
+use crate::{entities::task::dto::TaskResponse, services::tasks::TaskService};
 
 #[utoipa::path(
     get,
@@ -30,7 +30,7 @@ pub async fn get_tasks_in_page(
         .map(|h| h.to_str().unwrap_or("en"))
         .unwrap_or("en");
 
-    crate::entities::task::TaskService::get_tasks_in_page_with_details(&state.postgres, page_id, lang)
+    TaskService::get_tasks_in_page_with_details(&state.postgres, page_id, lang)
         .await
         .map(Json)
 }

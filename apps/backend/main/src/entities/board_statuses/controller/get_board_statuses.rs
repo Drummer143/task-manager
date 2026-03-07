@@ -1,14 +1,14 @@
 use axum::{
+    Json,
     extract::{Path, State},
     http::header::HeaderMap,
-    Json,
 };
 use error_handlers::handlers::ErrorResponse;
 use uuid::Uuid;
 
 use crate::{
     entities::board_statuses::dto::BoardStatusResponse,
-    types::app_state::AppState,
+    services::board_statuses::BoardStatusService, types::app_state::AppState,
 };
 
 #[utoipa::path(
@@ -34,22 +34,20 @@ pub async fn get_board_statuses(
         .map(|lang| lang.to_str().unwrap_or("en"))
         .unwrap_or("en");
 
-    crate::entities::board_statuses::BoardStatusService::get_board_statuses_by_page_id(
-        &state.postgres, page_id,
-    )
-    .await
-    .map(|statuses| {
-        let statuses = statuses
-            .iter()
-            .map(|status| BoardStatusResponse {
-                id: status.id,
-                initial: status.initial,
-                title: status.localizations.get(lang).unwrap().to_string(),
-            })
-            .collect::<Vec<BoardStatusResponse>>();
+    BoardStatusService::get_board_statuses_by_page_id(&state.postgres, page_id)
+        .await
+        .map(|statuses| {
+            let statuses = statuses
+                .iter()
+                .map(|status| BoardStatusResponse {
+                    id: status.id,
+                    initial: status.initial,
+                    title: status.localizations.get(lang).unwrap().to_string(),
+                })
+                .collect::<Vec<BoardStatusResponse>>();
 
-        Json(statuses)
-    })
+            Json(statuses)
+        })
 
     // for status in statuses.iter_mut() {
     //     let child_statuses: Vec<ChildBoardStatusResponse> = sql::board_statuses::BoardStatusRepository::get_child_statuses_by_parent_status_id(

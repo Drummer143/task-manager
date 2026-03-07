@@ -4,11 +4,9 @@ use sql::shared::types::SortOrder;
 use uuid::Uuid;
 
 use crate::{
-    entities::workspace::{
-        WorkspaceService,
-        dto::{WorkspaceListQuery, WorkspaceResponse},
-    },
+    entities::workspace::dto::{WorkspaceListQuery, WorkspaceResponse},
     repos::workspaces::WorkspaceSortBy,
+    services::workspaces::WorkspaceService,
     shared::extractors::query::ValidatedQuery,
     types::{app_state::AppState, pagination::Pagination},
 };
@@ -37,7 +35,7 @@ pub async fn get_list(
     Extension(user_id): Extension<Uuid>,
     ValidatedQuery(query): ValidatedQuery<WorkspaceListQuery>,
 ) -> Result<Pagination<WorkspaceResponse>, ErrorResponse> {
-    let (workspaces, count) = WorkspaceService::get_list(
+    WorkspaceService::get_list(
         &state.postgres,
         user_id,
         query.limit,
@@ -46,14 +44,15 @@ pub async fn get_list(
         query.sort_by,
         query.sort_order,
     )
-    .await?;
-
-    Ok(Pagination::new(
-        workspaces,
-        count,
-        query.limit.unwrap_or(sql::shared::constants::DEFAULT_LIMIT),
-        query
-            .offset
-            .unwrap_or(sql::shared::constants::DEFAULT_OFFSET),
-    ))
+    .await
+    .map(|(workspaces, count)| {
+        Pagination::new(
+            workspaces,
+            count,
+            query.limit.unwrap_or(sql::shared::constants::DEFAULT_LIMIT),
+            query
+                .offset
+                .unwrap_or(sql::shared::constants::DEFAULT_OFFSET),
+        )
+    })
 }

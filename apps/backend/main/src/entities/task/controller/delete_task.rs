@@ -2,7 +2,7 @@ use axum::{Json, extract::{Path, State}};
 use error_handlers::handlers::ErrorResponse;
 use uuid::Uuid;
 
-use crate::entities::task::dto::TaskResponse;
+use crate::{entities::task::dto::TaskResponse, services::tasks::TaskService};
 
 #[utoipa::path(
     delete,
@@ -22,7 +22,7 @@ pub async fn delete_task(
     State(state): State<crate::types::app_state::AppState>,
     Path(task_id): Path<Uuid>,
 ) -> Result<Json<TaskResponse>, ErrorResponse> {
-    crate::entities::task::TaskService::delete(&state.postgres, task_id)
+    TaskService::delete(&state.postgres, task_id)
         .await
         .map(|t| Json(TaskResponse::from(t)))
 }

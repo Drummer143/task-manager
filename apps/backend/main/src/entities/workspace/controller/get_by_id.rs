@@ -1,7 +1,10 @@
-use axum::{Json, extract::{Path, State}};
+use axum::{
+    Json,
+    extract::{Path, State},
+};
 use error_handlers::handlers::ErrorResponse;
 
-use crate::entities::workspace::{WorkspaceService, dto::WorkspaceResponse};
+use crate::{entities::workspace::dto::WorkspaceResponse, services::workspaces::WorkspaceService};
 
 #[utoipa::path(
     get,

@@ -6,16 +6,7 @@ use sql::page::model::PageAccess;
 use error_handlers::{codes, handlers::ErrorResponse};
 
 use crate::{
-    entities::{
-        page::{
-            PageService,
-            dto::{CreatePageAccessRequest, PageAccessResponse},
-        },
-        user::UserService,
-    },
-    repos::pages::CreatePageAccessDto,
-    shared::extractors::json::ValidatedJson,
-    types::app_state::AppState,
+    entities::page::dto::{CreatePageAccessRequest, PageAccessResponse}, repos::pages::CreatePageAccessDto, services::{pages::PageService, users::UserService}, shared::extractors::json::ValidatedJson, types::app_state::AppState
 };
 
 #[utoipa::path(

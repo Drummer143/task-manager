@@ -8,13 +8,11 @@ use sql::assets::model::EntityType;
 use uuid::Uuid;
 
 use crate::{
-    entities::workspace::WorkspaceService,
     repos::{
         assets::{AssetsRepository, CreateAssetDto},
         users::{CreateUserDto, UpdateUserDto, UserRepository},
         workspaces::CreateWorkspaceDto,
-    },
-    shared::{extractors::json::ValidatedJson, generate_initials_avatar::fetch_png_avatar},
+    }, services::workspaces::WorkspaceService, shared::{extractors::json::ValidatedJson, generate_initials_avatar::fetch_png_avatar}
 };
 
 #[derive(serde::Deserialize)]

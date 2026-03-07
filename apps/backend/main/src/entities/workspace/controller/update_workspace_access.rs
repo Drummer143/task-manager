@@ -8,14 +8,9 @@ use error_handlers::{codes, handlers::ErrorResponse};
 use uuid::Uuid;
 
 use crate::{
-    entities::{
-        user::UserService,
-        workspace::{
-            WorkspaceService,
-            dto::{UpdateWorkspaceAccessRequest, WorkspaceAccessResponse},
-        },
-    },
+    entities::workspace::dto::{UpdateWorkspaceAccessRequest, WorkspaceAccessResponse},
     repos::workspaces::UpdateWorkspaceAccessDto,
+    services::{users::UserService, workspaces::WorkspaceService},
     shared::extractors::json::ValidatedJson,
     types::app_state::AppState,
 };

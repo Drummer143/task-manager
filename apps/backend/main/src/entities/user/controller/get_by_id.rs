@@ -1,8 +1,8 @@
-use axum::{extract::State, Json};
+use axum::{Json, extract::State};
 use error_handlers::handlers::ErrorResponse;
 use sql::user::model::User;
 
-use crate::shared::extractors::path::ValidatedPath;
+use crate::{services::users::UserService, shared::extractors::path::ValidatedPath};
 
 #[utoipa::path(
     get,
@@ -22,7 +22,7 @@ pub async fn get_by_id(
     State(state): State<crate::types::app_state::AppState>,
     ValidatedPath(id): ValidatedPath<uuid::Uuid>,
 ) -> Result<Json<User>, ErrorResponse> {
-    let user = crate::entities::user::UserService::get_one_by_id(&state.postgres, id).await?;
-
-    Ok(Json(user))
+    UserService::get_one_by_id(&state.postgres, id)
+        .await
+        .map(Json)
 }

@@ -5,6 +5,8 @@ use axum::{
 
 use error_handlers::handlers::ErrorResponse;
 
+use crate::services::workspaces::WorkspaceService;
+
 #[utoipa::path(
     delete,
     path = "/workspaces/{workspace_id}",
@@ -23,5 +25,5 @@ pub async fn soft_delete(
     State(state): State<crate::types::app_state::AppState>,
     Path(workspace_id): Path<uuid::Uuid>,
 ) -> impl IntoResponse {
-    crate::entities::workspace::WorkspaceService::soft_delete(&state.postgres, workspace_id).await
+    WorkspaceService::soft_delete(&state.postgres, workspace_id).await
 }

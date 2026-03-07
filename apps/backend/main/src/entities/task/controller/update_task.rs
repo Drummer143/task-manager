@@ -1,4 +1,4 @@
-use crate::{entities::task::TaskService, repos::tasks::UpdateTaskDto, types::app_state::AppState};
+use crate::{repos::tasks::UpdateTaskDto, services::tasks::TaskService, types::app_state::AppState};
 use axum::{
     Json,
     extract::{Path, State},

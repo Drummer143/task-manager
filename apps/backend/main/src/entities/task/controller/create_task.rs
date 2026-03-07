@@ -3,8 +3,7 @@ use error_handlers::handlers::ErrorResponse;
 use uuid::Uuid;
 
 use crate::{
-    entities::task::dto::{CreateTaskRequest, TaskResponse},
-    shared::extractors::json::ValidatedJson,
+    entities::task::dto::{CreateTaskRequest, TaskResponse}, services::tasks::TaskService, shared::extractors::json::ValidatedJson
 };
 
 #[utoipa::path(
@@ -28,7 +27,7 @@ pub async fn create_task(
     Path(page_id): Path<Uuid>,
     ValidatedJson(dto): ValidatedJson<CreateTaskRequest>,
 ) -> Result<Json<TaskResponse>, ErrorResponse> {
-    crate::entities::task::TaskService::create_for_page(&state.postgres, page_id, reporter_id, dto)
+    TaskService::create_for_page(&state.postgres, page_id, reporter_id, dto)
         .await
         .map(|t| Json(TaskResponse::from(t)))
 }

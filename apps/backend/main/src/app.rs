@@ -15,6 +15,7 @@ mod shared;
 mod swagger;
 mod types;
 mod webhooks;
+mod services;
 
 pub fn openapi_json() -> String {
     serde_json::to_string_pretty(&swagger::ApiDoc::openapi()).unwrap()

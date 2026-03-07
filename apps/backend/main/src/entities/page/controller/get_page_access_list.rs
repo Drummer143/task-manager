@@ -5,7 +5,7 @@ use error_handlers::{codes, handlers::ErrorResponse};
 use sql::page::model::PageAccess;
 
 use crate::{
-    entities::page::{PageService, dto::PageAccessResponse},
+    entities::page::dto::PageAccessResponse, services::pages::PageService,
     types::app_state::AppState,
 };
 
@@ -41,22 +41,23 @@ pub async fn get_page_access_list(
         ));
     }
 
-    let page_access_list = PageService::get_page_access_list(&state.postgres, user_page_access.page_id)
-        .await
-        .map_err(|e| {
-            if e.status_code == 404 {
-                return ErrorResponse::forbidden(
-                    codes::ForbiddenErrorCode::InsufficientPermissions,
-                    Some(HashMap::from([(
-                        "message".to_string(),
-                        "Insufficient permissions".to_string(),
-                    )])),
-                    None,
-                );
-            }
+    let page_access_list =
+        PageService::get_page_access_list(&state.postgres, user_page_access.page_id)
+            .await
+            .map_err(|e| {
+                if e.status_code == 404 {
+                    return ErrorResponse::forbidden(
+                        codes::ForbiddenErrorCode::InsufficientPermissions,
+                        Some(HashMap::from([(
+                            "message".to_string(),
+                            "Insufficient permissions".to_string(),
+                        )])),
+                        None,
+                    );
+                }
 
-            e
-        })?;
+                e
+            })?;
 
     Ok(axum::Json(page_access_list))
 }

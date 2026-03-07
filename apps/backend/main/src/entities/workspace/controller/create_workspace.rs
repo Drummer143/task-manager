@@ -2,11 +2,9 @@ use axum::{Extension, Json, extract::State};
 use error_handlers::handlers::ErrorResponse;
 
 use crate::{
-    entities::workspace::{
-        WorkspaceService,
-        dto::{CreateWorkspaceRequest, WorkspaceResponse},
-    },
+    entities::workspace::dto::{CreateWorkspaceRequest, WorkspaceResponse},
     repos::workspaces::CreateWorkspaceDto,
+    services::workspaces::WorkspaceService,
     shared::extractors::json::ValidatedJson,
 };
 
@@ -36,6 +34,6 @@ pub async fn create_workspace(
         },
     )
     .await
-    .map_err(|_| ErrorResponse::internal_server_error(None))
+    .map_err(ErrorResponse::from)
     .map(|w| Json(w.into()))
 }

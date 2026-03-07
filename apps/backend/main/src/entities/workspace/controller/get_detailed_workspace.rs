@@ -1,5 +1,6 @@
 use crate::{
-    entities::workspace::{dto::DetailedWorkspaceResponse, service::WorkspaceService},
+    entities::workspace::dto::DetailedWorkspaceResponse,
+    services::workspaces::WorkspaceService,
     types::app_state::AppState,
 };
 use axum::{Extension, Json, extract::State};

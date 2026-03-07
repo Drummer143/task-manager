@@ -10,14 +10,9 @@ use sql::workspace::model::WorkspaceAccess;
 use uuid::Uuid;
 
 use crate::{
-    entities::{
-        user::UserService,
-        workspace::{
-            WorkspaceService,
-            dto::{CreateWorkspaceAccessRequest, WorkspaceAccessResponse},
-        },
-    },
+    entities::workspace::dto::{CreateWorkspaceAccessRequest, WorkspaceAccessResponse},
     repos::workspaces::CreateWorkspaceAccessDto,
+    services::{users::UserService, workspaces::WorkspaceService},
     shared::extractors::json::ValidatedJson,
     types::app_state::AppState,
 };

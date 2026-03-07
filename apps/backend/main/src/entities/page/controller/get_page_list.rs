@@ -9,7 +9,8 @@ use sql::page::model::{Page, PageType};
 use uuid::Uuid;
 
 use crate::{
-    entities::page::dto::{PageSummary, PageListFormat, PageListQuery, PageResponse},
+    entities::page::dto::{PageListFormat, PageListQuery, PageResponse, PageSummary},
+    services::pages::PageService,
     shared::extractors::query::ValidatedQuery,
     types::app_state::AppState,
 };
@@ -76,8 +77,7 @@ pub async fn get_page_list(
     ValidatedQuery(query): ValidatedQuery<PageListQuery>,
     Path(workspace_id): Path<Uuid>,
 ) -> Result<Json<Vec<PageResponse>>, ErrorResponse> {
-    let pages =
-        crate::entities::page::PageService::get_all_in_workspace(&state.postgres, workspace_id).await?;
+    let pages = PageService::get_all_in_workspace(&state.postgres, workspace_id).await?;
 
     let is_tree = query.format == Some(PageListFormat::Tree);
 

@@ -5,14 +5,9 @@ use error_handlers::{codes, handlers::ErrorResponse};
 use sql::page::model::PageAccess;
 
 use crate::{
-    entities::{
-        page::{
-            PageService,
-            dto::{PageAccessResponse, UpdatePageAccessRequest},
-        },
-        user::UserService,
-    },
+    entities::page::dto::{PageAccessResponse, UpdatePageAccessRequest},
     repos::pages::UpdatePageAccessDto,
+    services::{pages::PageService, users::UserService},
     shared::extractors::json::ValidatedJson,
     types::app_state::AppState,
 };

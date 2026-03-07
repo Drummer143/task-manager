@@ -1,9 +1,13 @@
-use axum::{Json, extract::{Path, State}};
+use axum::{
+    Json,
+    extract::{Path, State},
+};
 use error_handlers::handlers::ErrorResponse;
 use uuid::Uuid;
 
 use crate::{
     entities::page::dto::{PageResponse, UpdatePageRequest},
+    services::pages::PageService,
     shared::extractors::json::ValidatedJson,
     types::app_state::AppState,
 };
@@ -29,7 +33,11 @@ pub async fn update_page(
     Path(page_id): Path<Uuid>,
     ValidatedJson(update_page_dto): ValidatedJson<UpdatePageRequest>,
 ) -> Result<Json<PageResponse>, ErrorResponse> {
-    crate::entities::page::PageService::update(&state.postgres, page_id, update_page_dto)
-        .await
-        .map(|p| Json(PageResponse::from(p)))
+    let mut tx = state.postgres.begin().await?;
+
+    let page = PageService::update(&mut tx, page_id, update_page_dto).await?;
+
+    tx.commit().await?;
+
+    Ok(Json(PageResponse::from(page)))
 }

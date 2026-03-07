@@ -1,6 +1,4 @@
-use crate::{
-    repos::{assets::AssetsRepository, pages::PageRepository, tasks::TaskRepository},
-};
+use crate::services::assets::AssetsService;
 use axum::{
     Json,
     extract::{Path, State},
@@ -10,7 +8,6 @@ use axum_extra::{
     headers::{Header, HeaderName, HeaderValue},
 };
 use error_handlers::handlers::ErrorResponse;
-use sql::assets::model::EntityType;
 use uuid::Uuid;
 
 pub struct XUserId(pub Uuid);
@@ -65,42 +62,12 @@ pub async fn validate_access(
     Path(asset_id): Path<Uuid>,
     TypedHeader(XUserId(user_id)): TypedHeader<XUserId>,
 ) -> Result<Json<ValidateAccessResponse>, ErrorResponse> {
-    let asset = AssetsRepository::get_one_by_id(&state.postgres, asset_id)
+    AssetsService::validate_access(&state.postgres, asset_id, user_id)
         .await
-        .map_err(ErrorResponse::from)?;
-
-    let is_valid = match asset.entity_type {
-        EntityType::PageText => {
-            let page =
-                PageRepository::get_one_page_access(&state.postgres, user_id, asset.entity_id)
-                    .await;
-
-            match page {
-                Ok(_) => Ok(true),
-                Err(sqlx::Error::RowNotFound) => Ok(false),
-                Err(err) => return Err(ErrorResponse::from(err)),
-            }
-        }
-
-        EntityType::TaskDescription => {
-            TaskRepository::has_access(&state.postgres, asset.entity_id, user_id)
-                .await
-                .map_err(ErrorResponse::from)
-        }
-
-        EntityType::UserAvatar => Ok(true),
-    }?;
-
-    if !is_valid {
-        return Err(ErrorResponse::forbidden(
-            error_handlers::codes::ForbiddenErrorCode::AccessDenied,
-            None,
-            None,
-        ));
-    }
-
-    Ok(Json(ValidateAccessResponse {
-        blob_id: asset.blob_id,
-        name: asset.name,
-    }))
+        .map(|asset| {
+            Json(ValidateAccessResponse {
+                blob_id: asset.blob_id,
+                name: asset.name,
+            })
+        })
 }

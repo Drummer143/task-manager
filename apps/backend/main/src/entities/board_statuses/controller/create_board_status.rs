@@ -7,10 +7,11 @@ use error_handlers::handlers::ErrorResponse;
 use uuid::Uuid;
 
 use crate::{
-    entities::board_statuses::{
-        BoardStatusService,
-        dto::{BoardStatusResponse, CreateBoardStatusRequest},
-    }, repos::board_statuses::CreateBoardStatusDto, shared::extractors::json::ValidatedJson, types::app_state::AppState
+    entities::board_statuses::dto::{BoardStatusResponse, CreateBoardStatusRequest},
+    repos::board_statuses::CreateBoardStatusDto,
+    services::board_statuses::BoardStatusService,
+    shared::extractors::json::ValidatedJson,
+    types::app_state::AppState,
 };
 
 #[utoipa::path(
@@ -33,8 +34,10 @@ pub async fn create_board_status(
     Path(page_id): Path<Uuid>,
     ValidatedJson(dto): ValidatedJson<CreateBoardStatusRequest>,
 ) -> Result<Json<BoardStatusResponse>, ErrorResponse> {
-    BoardStatusService::create(
-        &app_state.postgres,
+    let mut tx = app_state.postgres.begin().await?;
+
+    let board_status = BoardStatusService::create(
+        &mut tx,
         CreateBoardStatusDto {
             page_id,
             initial: dto.initial,
@@ -56,5 +59,9 @@ pub async fn create_board_status(
             initial: status.initial,
             title,
         })
-    })
+    })?;
+
+    tx.commit().await.map_err(ErrorResponse::from)?;
+    
+    Ok(board_status)
 }

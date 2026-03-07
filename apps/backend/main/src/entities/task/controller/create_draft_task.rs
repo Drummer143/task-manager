@@ -5,9 +5,7 @@ use utoipa::ToSchema;
 use uuid::Uuid;
 
 use crate::{
-    entities::task::{TaskService, dto::TaskResponse},
-    shared::extractors::path::ValidatedPath,
-    types::app_state::AppState,
+    entities::task::dto::TaskResponse, services::tasks::TaskService, shared::extractors::path::ValidatedPath, types::app_state::AppState
 };
 
 #[derive(Debug, Deserialize, ToSchema)]

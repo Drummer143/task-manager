@@ -1,13 +1,14 @@
 use std::collections::HashMap;
 
 use axum::{
-    Extension, Json, extract::{Path, State}
+    Extension, Json,
+    extract::{Path, State},
 };
 
 use error_handlers::{codes, handlers::ErrorResponse};
 use uuid::Uuid;
 
-use crate::{entities::workspace::{WorkspaceService, dto::WorkspaceAccessResponse}, types::app_state::AppState};
+use crate::{entities::workspace::dto::WorkspaceAccessResponse, services::workspaces::WorkspaceService, types::app_state::AppState};
 
 #[utoipa::path(
     get,
@@ -29,31 +30,24 @@ pub async fn get_workspace_access_list(
     State(state): State<AppState>,
     Extension(user_id): Extension<Uuid>,
     Path(workspace_id): Path<Uuid>,
-) -> Result<
-    Json<Vec<WorkspaceAccessResponse>>,
-    ErrorResponse,
-> {
+) -> Result<Json<Vec<WorkspaceAccessResponse>>, ErrorResponse> {
     let user_workspace_access =
-        WorkspaceService::get_workspace_access(
-            &state.postgres,
-            user_id,
-            workspace_id,
-        )
-        .await
-        .map_err(|e| {
-            if e.status_code == 404 {
-                return ErrorResponse::forbidden(
-                    codes::ForbiddenErrorCode::InsufficientPermissions,
-                    Some(HashMap::from([(
-                        "message".to_string(),
-                        "Insufficient permissions".to_string(),
-                    )])),
-                    None,
-                );
-            }
+        WorkspaceService::get_workspace_access(&state.postgres, user_id, workspace_id)
+            .await
+            .map_err(|e| {
+                if e.status_code == 404 {
+                    return ErrorResponse::forbidden(
+                        codes::ForbiddenErrorCode::InsufficientPermissions,
+                        Some(HashMap::from([(
+                            "message".to_string(),
+                            "Insufficient permissions".to_string(),
+                        )])),
+                        None,
+                    );
+                }
 
-            e
-        })?;
+                e
+            })?;
 
     if user_workspace_access.role < sql::workspace::model::Role::Member {
         return Err(ErrorResponse::forbidden(
@@ -67,25 +61,22 @@ pub async fn get_workspace_access_list(
     }
 
     let workspace_access_list =
-        WorkspaceService::get_workspace_access_list(
-            &state.postgres,
-            workspace_id,
-        )
-        .await
-        .map_err(|e| {
-            if e.status_code == 404 {
-                return ErrorResponse::forbidden(
-                    codes::ForbiddenErrorCode::InsufficientPermissions,
-                    Some(HashMap::from([(
-                        "message".to_string(),
-                        "Insufficient permissions".to_string(),
-                    )])),
-                    None,
-                );
-            }
+        WorkspaceService::get_workspace_access_list(&state.postgres, workspace_id)
+            .await
+            .map_err(|e| {
+                if e.status_code == 404 {
+                    return ErrorResponse::forbidden(
+                        codes::ForbiddenErrorCode::InsufficientPermissions,
+                        Some(HashMap::from([(
+                            "message".to_string(),
+                            "Insufficient permissions".to_string(),
+                        )])),
+                        None,
+                    );
+                }
 
-            e
-        })?;
+                e
+            })?;
 
     Ok(Json(workspace_access_list))
 }

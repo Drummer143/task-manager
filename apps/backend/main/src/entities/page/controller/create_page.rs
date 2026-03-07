@@ -6,11 +6,9 @@ use error_handlers::handlers::ErrorResponse;
 use uuid::Uuid;
 
 use crate::{
-    entities::page::{
-        PageService,
-        dto::{CreatePageRequest, PageResponse},
-    },
+    entities::page::dto::{CreatePageRequest, PageResponse},
     repos::pages::CreatePageDto,
+    services::pages::PageService,
     shared::extractors::json::ValidatedJson,
     types::app_state::AppState,
 };
@@ -36,8 +34,10 @@ pub async fn create_page(
     Path(workspace_id): Path<Uuid>,
     ValidatedJson(create_page_dto): ValidatedJson<CreatePageRequest>,
 ) -> Result<Json<PageResponse>, ErrorResponse> {
-    PageService::create(
-        &state.postgres,
+    let mut tx = state.postgres.begin().await?;
+
+    let page = PageService::create(
+        &mut tx,
         CreatePageDto {
             title: create_page_dto.title,
             r#type: create_page_dto.r#type,
@@ -47,6 +47,9 @@ pub async fn create_page(
             owner_id: user_id,
         },
     )
-    .await
-    .map(|p| Json(PageResponse::from(p)))
+    .await?;
+
+    tx.commit().await?;
+
+    Ok(Json(PageResponse::from(page)))
 }

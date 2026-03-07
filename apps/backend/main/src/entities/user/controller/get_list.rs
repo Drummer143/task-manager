@@ -5,6 +5,7 @@ use uuid::Uuid;
 
 use crate::{
     repos::users::{UserFilterBy, UserSortBy},
+    services::users::UserService,
     shared::extractors::query::ValidatedQuery,
     types::{app_state::AppState, pagination::Pagination},
 };
@@ -73,7 +74,7 @@ pub async fn get_list(
         ));
     }
 
-    let (users, total) = crate::entities::user::UserService::get_all_with_pagination(
+    UserService::get_all_with_pagination(
         &state.postgres,
         query.limit,
         query.offset,
@@ -81,14 +82,15 @@ pub async fn get_list(
         query.sort_by,
         query.sort_order,
     )
-    .await?;
-
-    Ok(Pagination::new(
-        users,
-        total,
-        query.limit.unwrap_or(sql::shared::constants::DEFAULT_LIMIT),
-        query
-            .offset
-            .unwrap_or(sql::shared::constants::DEFAULT_OFFSET),
-    ))
+    .await
+    .map(|(users, total)| {
+        Pagination::new(
+            users,
+            total,
+            query.limit.unwrap_or(sql::shared::constants::DEFAULT_LIMIT),
+            query
+                .offset
+                .unwrap_or(sql::shared::constants::DEFAULT_OFFSET),
+        )
+    })
 }

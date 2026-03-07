@@ -4,15 +4,13 @@ use serde::{Deserialize, Serialize};
 use sql::assets::model::{Asset, EntityType};
 use uuid::Uuid;
 
-use crate::{
-    entities::assets::dto::{AssetTarget, CreateAssetRequest, CreateUploadTokenRequest},
-    repos::tasks::{TaskRepository, UpdateTaskDto},
-    repos::{
-        assets::{AssetsRepository, CreateAssetDto},
-        pages::PageRepository,
-    },
-    types::app_state::AppState,
+use crate::repos::{
+    assets::{AssetsRepository, CreateAssetDto as RepoCreateAssetDto},
+    pages::PageRepository,
+    tasks::{TaskRepository, UpdateTaskDto},
 };
+
+use super::dto::{AssetTarget, CreateAssetDto as ServiceCreateAssetDto, CreateUploadTokenDto};
 
 fn hydrate_asset(
     content: &mut sql::shared::tiptap_content::TipTapContent,
@@ -48,16 +46,18 @@ pub struct UploadToken {
 }
 
 impl AssetsService {
+    // COMMANDS
+
     /// Needs AppState for jwt_secret + postgres
     pub async fn create_upload_token(
-        state: &AppState,
-        body: CreateUploadTokenRequest,
+        executor: impl sqlx::Executor<'_, Database = sqlx::Postgres>,
+        jwt_secret: &str,
+        body: CreateUploadTokenDto,
         user_id: Uuid,
     ) -> Result<String, ErrorResponse> {
         let (entity_type, entity_id) = match body.target {
             AssetTarget::PageText(page_id) => {
-                let result =
-                    PageRepository::get_one_page_access(&state.postgres, user_id, page_id).await;
+                let result = PageRepository::get_one_page_access(executor, user_id, page_id).await;
 
                 match result {
                     Ok(_) => Ok((EntityType::PageText, page_id)),
@@ -75,7 +75,7 @@ impl AssetsService {
             }
 
             AssetTarget::TaskDescription(task_id) => {
-                let result = TaskRepository::has_access(&state.postgres, user_id, task_id).await?;
+                let result = TaskRepository::has_access(executor, user_id, task_id).await?;
 
                 if !result {
                     return Err(ErrorResponse::forbidden(
@@ -104,19 +104,21 @@ impl AssetsService {
                     .expect("invalid timestamp")
                     .timestamp() as usize,
             },
-            &jsonwebtoken::EncodingKey::from_secret(state.jwt_secret.as_bytes()),
+            &jsonwebtoken::EncodingKey::from_secret(jwt_secret.as_bytes()),
         )
         .map_err(|error| ErrorResponse::internal_server_error(Some(error.to_string())))
     }
 
     /// Needs AppState for jwt_secret + storage_service_url + postgres
     pub async fn create_asset(
-        state: &AppState,
-        body: CreateAssetRequest,
+        executor: &mut sqlx::PgConnection,
+        jwt_secret: &str,
+        storage_service_url: &str,
+        body: ServiceCreateAssetDto,
     ) -> Result<Asset, ErrorResponse> {
         let token = jsonwebtoken::decode::<UploadToken>(
             &body.token,
-            &jsonwebtoken::DecodingKey::from_secret(state.jwt_secret.as_bytes()),
+            &jsonwebtoken::DecodingKey::from_secret(jwt_secret.as_bytes()),
             &jsonwebtoken::Validation::default(),
         )
         .map_err(|error| ErrorResponse::internal_server_error(Some(error.to_string())))?;
@@ -126,7 +128,7 @@ impl AssetsService {
         match token.claims.entity_type {
             EntityType::PageText => {
                 let page_content =
-                    PageRepository::get_text_page_content(&state.postgres, token.claims.entity_id)
+                    PageRepository::get_text_page_content(&mut *executor, token.claims.entity_id)
                         .await?;
 
                 let Some(content_json) = page_content.content.0 else {
@@ -145,12 +147,12 @@ impl AssetsService {
                     &body.blob.mime_type,
                     body.blob.size,
                     &token.claims.name,
-                    &state.storage_service_url,
+                    storage_service_url,
                 );
 
                 if found {
                     PageRepository::update_content(
-                        &state.postgres,
+                        &mut *executor,
                         token.claims.entity_id,
                         Some(content),
                     )
@@ -160,7 +162,7 @@ impl AssetsService {
             }
             EntityType::TaskDescription => {
                 let task =
-                    TaskRepository::get_one_by_id(&state.postgres, token.claims.entity_id).await?;
+                    TaskRepository::get_one_by_id(&mut *executor, token.claims.entity_id).await?;
 
                 let Some(mut content) = task.description.0 else {
                     return Err(ErrorResponse::not_found(
@@ -176,12 +178,12 @@ impl AssetsService {
                     &body.blob.mime_type,
                     body.blob.size,
                     &token.claims.name,
-                    &state.storage_service_url,
+                    storage_service_url,
                 );
 
                 if found {
                     TaskRepository::update(
-                        &state.postgres,
+                        &mut *executor,
                         token.claims.entity_id,
                         UpdateTaskDto {
                             description: Some(Some(content)),
@@ -206,8 +208,8 @@ impl AssetsService {
         }
 
         AssetsRepository::create(
-            &state.postgres,
-            CreateAssetDto {
+            &mut *executor,
+            RepoCreateAssetDto {
                 blob_id: body.blob.id,
                 entity_id: token.claims.entity_id,
                 entity_type: token.claims.entity_type,
@@ -217,5 +219,46 @@ impl AssetsService {
         )
         .await
         .map_err(ErrorResponse::from)
+    }
+
+    pub async fn validate_access(
+        executor: impl sqlx::Executor<'_, Database = sqlx::Postgres> + Copy,
+        asset_id: Uuid,
+        user_id: Uuid,
+    ) -> Result<Asset, ErrorResponse> {
+        let asset = AssetsRepository::get_one_by_id(executor, asset_id)
+            .await
+            .map_err(ErrorResponse::from)?;
+
+        let is_valid = match asset.entity_type {
+            EntityType::PageText => {
+                let page =
+                    PageRepository::get_one_page_access(executor, user_id, asset.entity_id).await;
+
+                match page {
+                    Ok(_) => Ok(true),
+                    Err(sqlx::Error::RowNotFound) => Ok(false),
+                    Err(err) => return Err(ErrorResponse::from(err)),
+                }
+            }
+
+            EntityType::TaskDescription => {
+                TaskRepository::has_access(executor, asset.entity_id, user_id)
+                    .await
+                    .map_err(ErrorResponse::from)
+            }
+
+            EntityType::UserAvatar => Ok(true),
+        }?;
+
+        if !is_valid {
+            return Err(ErrorResponse::forbidden(
+                error_handlers::codes::ForbiddenErrorCode::AccessDenied,
+                None,
+                None,
+            ));
+        }
+
+        Ok(asset)
     }
 }
