@@ -81,10 +81,10 @@ jobs:
             export IMAGE_TAG=${IMAGE_TAG}
 
             # Pull latest images (repo is public, no auth needed)
-            docker compose -f docker/docker-compose.prod.yml pull
+            docker compose -f docker/docker-compose.prod.yml --env-file .env pull
 
             # Restart services with zero-downtime for stateless containers
-            docker compose -f docker/docker-compose.prod.yml up -d --remove-orphans
+            docker compose -f docker/docker-compose.prod.yml --env-file .env up -d --remove-orphans
 
             # Cleanup old images
             docker image prune -f
