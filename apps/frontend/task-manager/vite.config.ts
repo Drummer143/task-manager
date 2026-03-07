@@ -1,9 +1,26 @@
+import fs from "node:fs";
+import path from "node:path";
 import { nxCopyAssetsPlugin } from "@nx/vite/plugins/nx-copy-assets.plugin";
 import { nxViteTsPaths } from "@nx/vite/plugins/nx-tsconfig-paths.plugin";
 import react from "@vitejs/plugin-react";
 import { visualizer } from "rollup-plugin-visualizer";
 import { loadEnv } from "vite";
 import { defineConfig } from "vitest/config";
+
+function loadCerts() {
+	const certsDir = path.resolve(__dirname, "../../../certs");
+	const keyPath = path.join(certsDir, "localhost-key.pem");
+	const certPath = path.join(certsDir, "localhost.pem");
+
+	if (fs.existsSync(keyPath) && fs.existsSync(certPath)) {
+		return {
+			key: fs.readFileSync(keyPath),
+			cert: fs.readFileSync(certPath)
+		};
+	}
+
+	return undefined;
+}
 
 export default defineConfig(({ mode }) => {
 	const env = loadEnv(mode, __dirname, "");
@@ -12,11 +29,14 @@ export default defineConfig(({ mode }) => {
 	const storageUrl = env.STORAGE_URL || "http://localhost:8082";
 	const socketUrl = env.SOCKET_URL || "http://localhost:8078";
 
+	const https = loadCerts();
+
 	return {
 		root: __dirname,
 		cacheDir: "../../../node_modules/.vite/apps/task-manager",
 		server: {
 			port: 1346,
+			https,
 			proxy: {
 				"/api": {
 					target: apiUrl,

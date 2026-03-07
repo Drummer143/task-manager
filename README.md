@@ -87,6 +87,58 @@ authentik/                 # Authentik configuration and blueprints
 - Elixir 1.14+
 - Docker & Docker Compose
 
+### HTTPS (Local Development)
+
+To run the frontend dev server over HTTPS you need to generate local certificates.
+
+#### Option 1: mkcert (recommended, no browser warnings)
+
+1. Install [mkcert](https://github.com/FiloSottile/mkcert#installation):
+
+    ```bash
+    # Windows (chocolatey)
+    choco install mkcert
+
+    # Windows (scoop)
+    scoop bucket add extras && scoop install mkcert
+
+    # macOS
+    brew install mkcert
+
+    # Linux
+    # see https://github.com/FiloSottile/mkcert#linux
+    ```
+
+2. Generate certificates:
+
+    ```bash
+    # bash / git bash
+    bash scripts/generate-certs.sh
+
+    # PowerShell
+    .\scripts\generate-certs.ps1
+    ```
+
+    This will install a local CA in your system trust store and create `certs/localhost.pem` + `certs/localhost-key.pem`.
+
+#### Option 2: openssl (self-signed, browser will show a warning)
+
+If you don't want to install mkcert, the same scripts fall back to openssl automatically:
+
+```bash
+bash scripts/generate-certs.sh
+```
+
+The browser will show a "Not Secure" warning which you can bypass.
+
+#### Result
+
+Once certificates are in `certs/`, the Vite dev server will automatically pick them up and serve on `https://localhost:1346`. If the `certs/` directory is empty or missing, the server falls back to plain HTTP.
+
+> **Note:** Backend services don't need HTTPS — the Vite dev server proxies API requests to them over HTTP.
+
+---
+
 ### Development
 
 1. Start infrastructure services:

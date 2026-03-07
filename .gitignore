@@ -50,6 +50,7 @@ vitest.config.*.timestamp*
 .env.tunnel
 
 *.pem
+/certs/
 
 # Next.js
 .next
