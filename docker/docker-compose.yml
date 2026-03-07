@@ -217,8 +217,8 @@ services:
                     memory: 128M
                     cpus: "0.25"
         build:
-            context: .
-            dockerfile: Dockerfile.backend-rust
+            context: ..
+            dockerfile: docker/Dockerfile.backend-rust
             args:
                 APP_NAME: main
                 PROFILE: ${PROFILE:-build-optimized}
@@ -256,8 +256,8 @@ services:
                     memory: 192M
                     cpus: "0.25"
         build:
-            context: .
-            dockerfile: Dockerfile.backend-rust
+            context: ..
+            dockerfile: docker/Dockerfile.backend-rust
             args:
                 APP_NAME: storage
                 PROFILE: ${PROFILE:-build-optimized}
@@ -274,7 +274,7 @@ services:
         networks:
             - net
         volumes:
-            - ./apps/backend/storage/static:/static
+            - ../apps/backend/storage/static:/static
 
     socket-service:
         # restart: always
@@ -293,8 +293,8 @@ services:
                     memory: 256M
                     cpus: "0.25"
         build:
-            context: .
-            dockerfile: Dockerfile.backend-elixir
+            context: ..
+            dockerfile: docker/Dockerfile.backend-elixir
             args:
                 APP_NAME: socket_service
         environment:
@@ -310,8 +310,8 @@ services:
     task-manager:
         # restart: always
         build:
-            context: .
-            dockerfile: Dockerfile.frontend
+            context: ..
+            dockerfile: docker/Dockerfile.frontend
             args:
                 APP_NAME: task-manager
                 VITE_AUTHORITY: ${VITE_AUTHORITY:-http://localhost:9000/application/o/task-manager/}

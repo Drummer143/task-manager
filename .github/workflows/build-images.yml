@@ -41,27 +41,27 @@ jobs:
               - 'Cargo.toml'
               - 'Cargo.lock'
               - 'migrations/**'
-              - 'Dockerfile.backend-rust'
+              - 'docker/Dockerfile.backend-rust'
             storage-service:
               - 'apps/backend/storage/**'
               - 'libs/backend/**'
               - 'Cargo.toml'
               - 'Cargo.lock'
               - 'migrations/**'
-              - 'Dockerfile.backend-rust'
+              - 'docker/Dockerfile.backend-rust'
             socket-service:
               - 'apps/elixir/socket_service/**'
               - 'config/**'
               - 'mix.exs'
               - 'mix.lock'
-              - 'Dockerfile.backend-elixir'
+              - 'docker/Dockerfile.backend-elixir'
             task-manager:
               - 'apps/frontend/task-manager/**'
               - 'libs/frontend/**'
               - 'libs/workers/**'
               - 'package.json'
               - 'pnpm-lock.yaml'
-              - 'Dockerfile.frontend'
+              - 'docker/Dockerfile.frontend'
 
   build-main-service:
     name: Build main-service
@@ -90,7 +90,7 @@ jobs:
       - uses: docker/build-push-action@v6
         with:
           context: .
-          file: Dockerfile.backend-rust
+          file: docker/Dockerfile.backend-rust
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -127,7 +127,7 @@ jobs:
       - uses: docker/build-push-action@v6
         with:
           context: .
-          file: Dockerfile.backend-rust
+          file: docker/Dockerfile.backend-rust
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -164,7 +164,7 @@ jobs:
       - uses: docker/build-push-action@v6
         with:
           context: .
-          file: Dockerfile.backend-elixir
+          file: docker/Dockerfile.backend-elixir
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
@@ -199,7 +199,7 @@ jobs:
       - uses: docker/build-push-action@v6
         with:
           context: .
-          file: Dockerfile.frontend
+          file: docker/Dockerfile.frontend
           push: true
           tags: ${{ steps.meta.outputs.tags }}
           labels: ${{ steps.meta.outputs.labels }}
