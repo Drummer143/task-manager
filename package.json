@@ -43,6 +43,7 @@
 		"axios": "^1.12.2",
 		"dayjs": "1.11.13",
 		"framer-motion": "^12.23.12",
+		"idb": "^8.0.3",
 		"minimatch": "^10.1.1",
 		"oidc-client-ts": "^3.4.1",
 		"phoenix": "^1.7.21",
