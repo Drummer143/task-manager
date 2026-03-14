@@ -11,7 +11,8 @@ import { useSnapshot } from "valtio";
 import { useStyles } from "./styles";
 
 import { chatStore } from "../../state";
-import { deleteImage, DraftImage, getImagesByDraftId, saveImage } from "../../utils/idb";
+import { deleteImage, getImagesByDraftId, saveImage } from "../../utils/idb";
+import { AttachmentHandlers, DraftImage } from "../../types";
 
 interface NewMessageInputProps {
 	chatId?: string;
@@ -20,6 +21,8 @@ interface NewMessageInputProps {
 	onSend: (payload: { text: string; replyTo?: string }) => void;
 
 	onTypingChange?: () => void;
+
+	attachmentHandlers?: AttachmentHandlers;
 }
 
 interface FormValues {
@@ -30,7 +33,8 @@ const NewMessageInput: React.FC<NewMessageInputProps> = ({
 	onSend,
 	onTypingChange,
 	hasTopBar,
-	chatId
+	chatId,
+	attachmentHandlers
 }) => {
 	const { styles, cx } = useStyles({ hasTopBar });
 

@@ -64,7 +64,8 @@ const Chat: React.FC<ChatProps> = ({
 	pinMessage,
 	loadPins,
 	loadMessagesAround,
-	buildAvatarUrl
+	buildAvatarUrl,
+	attachmentHandlers
 }) => {
 	const modal = App.useApp().modal;
 
@@ -515,6 +516,7 @@ const Chat: React.FC<ChatProps> = ({
 					hasTopBar={!!presence?.typingUsers?.length}
 					onTypingChange={onTypingChange}
 					onSend={sendMessage}
+					attachmentHandlers={attachmentHandlers}
 				/>
 			</div>
 		</ContextMenuManager>

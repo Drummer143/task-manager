@@ -1,4 +1,14 @@
 import { MessageProps } from "./ui/Message";
+import type { MessageToHost } from "@task-manager/file-transfer-worker"
+
+export interface DraftImage {
+	id: string;
+	draftId: string;
+	file: File;
+	fileName: string;
+	mimeType: string;
+	createdAt: number;
+}
 
 export interface UserInfo {
 	id: string;
@@ -20,6 +30,12 @@ export interface MessageData {
 
 export interface PresenceInfo {
 	typingUsers?: UserInfo[];
+}
+
+export interface AttachmentHandlers {
+	uploadFile: (file: File) => Promise<DraftImage>;
+	cancelUpload: (fileId: string) => void;
+	subscribeToUploadEvents: (cb: (event: MessageToHost) => void) => () => void;
 }
 
 export interface ChatProps {
@@ -49,6 +65,8 @@ export interface ChatProps {
 		messageId: string,
 		limit?: number
 	) => void;
+
+	attachmentHandlers?: AttachmentHandlers;
 
 	buildAvatarUrl: (avatar: string) => string;
 

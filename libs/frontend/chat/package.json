@@ -12,6 +12,7 @@
 		"antd-style": "^3.7.1",
 		"@ant-design/icons": "^6.0.0",
 		"@task-manager/context-menu": "0.0.1",
+		"idb": "^8.0.3",
 		"framer-motion": "^12.23.12",
 		"react-virtuoso": "^4.14.0",
 		"valtio": "^2.1.8",

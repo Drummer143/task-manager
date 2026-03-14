@@ -1,13 +1,16 @@
-import React, { useCallback, useEffect, useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 
-import Chat, { PresenceInfo, UserInfo } from "@task-manager/chat";
+import Chat, { PresenceInfo, UserInfo, AttachmentHandlers } from "@task-manager/chat";
 import { type ChatProps } from "@task-manager/chat";
 import { Channel, Presence } from "phoenix";
+import { v4 as uuidV4 } from "uuid";
 
 import { useAuthStore } from "../../app/store/auth";
 import { useSocketStore } from "../../app/store/socket";
 import { userManager } from "../../app/userManager";
 import { buildStorageUrl } from "../../shared/utils/buildStorageUrl";
+import { initWorker } from "../../app/worker";
+import { createUploadToken } from "@task-manager/api/main";
 
 interface RawPresenceInfo {
 	[key: string]: {
@@ -113,6 +116,38 @@ const TaskChat: React.FC<{ taskId?: string }> = ({ taskId }) => {
 		[channel]
 	);
 
+	const attachmentHandlers = useMemo<AttachmentHandlers>(() => {
+		return {
+			uploadFile: async file => {
+				const worker = await initWorker(token);
+
+				const fileId = uuidV4();
+
+				const uploadToken = await createUploadToken({
+					assetId: fileId,
+					name: file.name,
+					target: {
+						id: fileId,
+						type: "avatar"
+					}
+				});
+
+				worker.uploadFile(fileId, uploadToken.token, file);
+
+				return {
+					createdAt: Date.now(),
+					draftId: fileId,
+					file,
+					fileName: file.name,
+					id: fileId,
+					mimeType: file.type
+				};
+			},
+			cancelUpload: fileId => initWorker(token).cancelUpload(fileId),
+			subscribeToUploadEvents: cb => initWorker(token).on("message", e => cb(e.data))
+		};
+	}, []);
+
 	useEffect(() => {
 		if (!taskId) {
 			return;
@@ -197,6 +232,7 @@ const TaskChat: React.FC<{ taskId?: string }> = ({ taskId }) => {
 			updateMessage={handleUpdateMessage}
 			pinMessage={handlePinMessage}
 			loadPins={handleGetPinnedMessages}
+			attachmentHandlers={attachmentHandlers}
 		/>
 	);
 };

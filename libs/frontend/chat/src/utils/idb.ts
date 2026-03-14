@@ -1,19 +1,11 @@
 import { DBSchema, IDBPDatabase, openDB } from "idb";
-
-export interface DraftImage {
-	id: string; // unique ID (uuid)
-	draftId: string; // ID of the draft this image belongs to
-	file: File; // The actual binary file
-	fileName: string;
-	mimeType: string;
-	createdAt: number;
-}
+import { DraftImage } from "../types";
 
 export interface AppDraftsDB extends DBSchema {
 	draft_images: {
-		key: string; // primary key (image id)
+		key: string; 
 		value: DraftImage;
-		indexes: { "by-draft": string }; // Index to find images by draftId
+		indexes: { "by-draft": string }; 
 	};
 }
 
