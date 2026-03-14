@@ -14,4 +14,6 @@ export type AssetTarget = {
 } | {
   id: string;
   type: 'avatar';
+} | {
+  type: 'userDraft';
 };

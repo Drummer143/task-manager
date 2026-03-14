@@ -13,7 +13,7 @@ export * from './createDraftRequest';
 export * from './createPageAccessRequest';
 export * from './createPageRequest';
 export * from './createTaskRequest';
-export * from './createUploadTokenRequest';
+export * from './createUploadTokenDto';
 export * from './createUploadTokenResponse';
 export * from './createWorkspaceAccessRequest';
 export * from './createWorkspaceRequest';

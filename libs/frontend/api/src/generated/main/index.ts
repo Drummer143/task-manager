@@ -11,7 +11,7 @@ import type {
   CreatePageAccessRequest,
   CreatePageRequest,
   CreateTaskRequest,
-  CreateUploadTokenRequest,
+  CreateUploadTokenDto,
   CreateUploadTokenResponse,
   CreateWorkspaceAccessRequest,
   CreateWorkspaceRequest,
@@ -45,12 +45,12 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 
   export const createUploadToken = (
-    createUploadTokenRequest: CreateUploadTokenRequest,
+    createUploadTokenDto: CreateUploadTokenDto,
  options?: SecondParameter<typeof fetcher<CreateUploadTokenResponse>>,) => {
       return fetcher<CreateUploadTokenResponse>(
       {url: `/api/assets/token`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
-      data: createUploadTokenRequest
+      data: createUploadTokenDto
     },
       options);
     }

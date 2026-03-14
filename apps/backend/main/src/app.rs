@@ -17,6 +17,7 @@ mod shared;
 mod swagger;
 mod types;
 mod webhooks;
+mod workers;
 
 pub fn openapi_json() -> String {
     serde_json::to_string_pretty(&swagger::ApiDoc::openapi()).unwrap()
@@ -79,6 +80,12 @@ pub async fn build() -> (axum::Router, Config) {
         authentik_api_token: Arc::new(config.authentik_api_token.clone()),
         storage_service_url: Arc::new(config.storage_service_url.clone()),
     };
+
+    let arc_state = Arc::new(app_state.clone());
+
+    workers::asset_cleanup::init_asset_cleanup_worker(arc_state, &config.draft_cleanup_cron)
+        .await
+        .expect("Failed to init asset cleanup worker");
 
     let router = axum::Router::new()
         .merge(router::init_router(app_state.clone()))

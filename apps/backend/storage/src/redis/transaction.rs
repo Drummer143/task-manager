@@ -61,6 +61,48 @@ impl TransactionRepository {
         format!("tx:{}:active", transaction_id)
     }
 
+    /// Key for the ZSET containing transaction activity timestamps
+    fn activity_zset_key() -> &'static str {
+        "tx_activity"
+    }
+
+    /// Updates the last activity timestamp for a transaction
+    pub async fn update_activity(
+        pool: &Arc<deadpool_redis::Pool>,
+        transaction_id: Uuid,
+    ) -> Result<(), RedisError> {
+        let mut conn = pool.get().await?;
+        let now = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_secs() as f64;
+            
+        conn.zadd::<_, _, _, ()>(Self::activity_zset_key(), transaction_id.to_string(), now)
+            .await?;
+            
+        Ok(())
+    }
+
+    /// Gets inactive transaction IDs older than the given timestamp
+    pub async fn get_inactive_transactions(
+        pool: &Arc<deadpool_redis::Pool>,
+        older_than_timestamp: f64,
+    ) -> Result<Vec<Uuid>, RedisError> {
+        let mut conn = pool.get().await?;
+        let inactive: Vec<String> = conn
+            .zrangebyscore(Self::activity_zset_key(), 0.0, older_than_timestamp)
+            .await?;
+
+        let mut uuids = Vec::new();
+        for id_str in inactive {
+            if let Ok(uuid) = Uuid::parse_str(&id_str) {
+                uuids.push(uuid);
+            }
+        }
+        
+        Ok(uuids)
+    }
+
     /// Creates a new upload transaction
     pub async fn create(
         pool: &Arc<deadpool_redis::Pool>,
@@ -89,6 +131,14 @@ impl TransactionRepository {
         let key = Self::meta_key(transaction_id);
 
         conn.set_ex::<_, _, ()>(&key, &meta_json, DEFAULT_TTL_SECONDS)
+            .await?;
+
+        // Update activity timestamp
+        let now = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_secs() as f64;
+        conn.zadd::<_, _, _, ()>(Self::activity_zset_key(), transaction_id.to_string(), now)
             .await?;
 
         Ok(meta)
@@ -122,6 +172,9 @@ impl TransactionRepository {
         let active_key = Self::active_uploads_key(transaction_id);
 
         conn.del::<_, ()>(&[&meta_key, &chunks_key, &active_key])
+            .await?;
+            
+        conn.zrem::<_, _, ()>(Self::activity_zset_key(), transaction_id.to_string())
             .await?;
 
         Ok(())
@@ -183,6 +236,14 @@ impl TransactionRepository {
 
         // Refresh TTL for bitmap
         conn.expire::<_, ()>(&key, DEFAULT_TTL_SECONDS as i64)
+            .await?;
+
+        // Update activity timestamp
+        let now = std::time::SystemTime::now()
+            .duration_since(std::time::UNIX_EPOCH)
+            .unwrap_or_default()
+            .as_secs() as f64;
+        conn.zadd::<_, _, _, ()>(Self::activity_zset_key(), transaction_id.to_string(), now)
             .await?;
 
         Ok(())

@@ -11,6 +11,7 @@ pub mod entities;
 pub mod redis;
 pub mod swagger;
 pub mod types;
+pub mod workers;
 
 pub fn openapi_json() -> String {
     serde_json::to_string_pretty(&swagger::ApiDoc::openapi()).unwrap()
@@ -103,6 +104,22 @@ pub async fn build() -> axum::Router {
         main_service_url: Arc::new(main_service_url),
         auth,
     };
+
+    let arc_state = Arc::new(app_state.clone());
+
+    let transaction_cleanup_cron = std::env::var("TRANSACTION_CLEANUP_CRON")
+        .unwrap_or_else(|_| "0 1/5 * * * *".to_string());
+        
+    let blob_cleanup_cron = std::env::var("BLOB_CLEANUP_CRON")
+        .unwrap_or_else(|_| "0 0 3 * * * *".to_string());
+
+    workers::transaction_cleanup::init_transaction_cleanup_worker(arc_state.clone(), &transaction_cleanup_cron)
+        .await
+        .expect("Failed to init transaction cleanup worker");
+        
+    workers::blob_cleanup::init_blob_cleanup_worker(arc_state, &blob_cleanup_cron)
+        .await
+        .expect("Failed to init blob cleanup worker");
 
     axum::Router::new()
         .merge(entities::actions::router::init(app_state.clone()))

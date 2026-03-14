@@ -19,7 +19,7 @@
           "content": {
             "application/json": {
               "schema": {
-                "$ref": "#/components/schemas/CreateUploadTokenRequest"
+                "$ref": "#/components/schemas/CreateUploadTokenDto"
               }
             }
           },
@@ -2217,6 +2217,20 @@
                 ]
               }
             }
+          },
+          {
+            "type": "object",
+            "required": [
+              "type"
+            ],
+            "properties": {
+              "type": {
+                "type": "string",
+                "enum": [
+                  "userDraft"
+                ]
+              }
+            }
           }
         ]
       },
@@ -2368,7 +2382,7 @@
           }
         }
       },
-      "CreateUploadTokenRequest": {
+      "CreateUploadTokenDto": {
         "type": "object",
         "required": [
           "target",

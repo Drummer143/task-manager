@@ -89,6 +89,7 @@ impl AssetsService {
             }
 
             AssetTarget::Avatar(user_id) => Ok((EntityType::UserAvatar, user_id)),
+            AssetTarget::UserDraft => Ok((EntityType::UserDraft, user_id)),
         }?;
 
         jsonwebtoken::encode(
@@ -198,6 +199,9 @@ impl AssetsService {
                     .map_err(ErrorResponse::from)?;
                 }
             }
+            EntityType::UserDraft => {
+                // Draft assets are created without hydration. They will be linked later.
+            }
             _ => {
                 return Err(ErrorResponse::forbidden(
                     error_handlers::codes::ForbiddenErrorCode::AccessDenied,
@@ -249,6 +253,7 @@ impl AssetsService {
             }
 
             EntityType::UserAvatar => Ok(true),
+            EntityType::UserDraft => Ok(asset.entity_id == user_id),
         }?;
 
         if !is_valid {

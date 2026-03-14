@@ -6,7 +6,7 @@
  */
 import type { AssetTarget } from './assetTarget';
 
-export interface CreateUploadTokenRequest {
+export interface CreateUploadTokenDto {
   assetId: string;
   name: string;
   target: AssetTarget;

@@ -10,6 +10,7 @@ pub struct Config {
     pub cors_origins: Vec<axum::http::HeaderValue>,
     pub db_max_connections: u32,
     pub log_filter: String,
+    pub draft_cleanup_cron: String,
 }
 
 impl Config {
@@ -72,6 +73,9 @@ impl Config {
         let log_filter = std::env::var("LOG_FILTER")
             .unwrap_or_else(|_| "debug,lapin=warn,sqlx=warn".to_string());
 
+        let draft_cleanup_cron = std::env::var("DRAFT_CLEANUP_CRON")
+            .unwrap_or_else(|_| "0 0 2,14 * * * *".to_string());
+
         Ok(Config {
             database_url: database_url.unwrap(),
             port,
@@ -84,6 +88,7 @@ impl Config {
             cors_origins,
             db_max_connections,
             log_filter,
+            draft_cleanup_cron,
         })
     }
 }
