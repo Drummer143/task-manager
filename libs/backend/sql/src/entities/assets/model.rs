@@ -8,6 +8,7 @@ pub enum EntityType {
     PageText,
     TaskDescription,
     UserAvatar,
+    UserDraft,
 }
 
 #[derive(Debug, Clone, utoipa::ToSchema, Serialize, Deserialize, sqlx::FromRow)]

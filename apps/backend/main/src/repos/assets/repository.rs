@@ -81,4 +81,34 @@ impl AssetsRepository {
             .fetch_one(executor)
             .await
     }
+
+    pub async fn get_existing_blobs<'a>(
+        executor: impl sqlx::Executor<'a, Database = Postgres>,
+        blob_ids: &[String],
+    ) -> Result<Vec<String>, sqlx::Error> {
+        let mut uuids = Vec::new();
+        for id in blob_ids {
+            if let Ok(u) = Uuid::parse_str(id) {
+                uuids.push(u);
+            }
+        }
+        
+        if uuids.is_empty() {
+            return Ok(vec![]);
+        }
+
+        let mut query_builder = sqlx::QueryBuilder::new("SELECT blob_id FROM assets WHERE blob_id = ANY(");
+        query_builder.push_bind(uuids);
+        query_builder.push(")");
+        
+        // Use an anonymous tuple with FromRow
+        #[derive(sqlx::FromRow)]
+        struct BlobIdRow {
+            blob_id: Uuid,
+        }
+        
+        let existing: Vec<BlobIdRow> = query_builder.build_query_as::<BlobIdRow>().fetch_all(executor).await?;
+        
+        Ok(existing.into_iter().map(|row| row.blob_id.to_string()).collect())
+    }
 }

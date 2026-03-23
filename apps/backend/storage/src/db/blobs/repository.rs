@@ -63,4 +63,41 @@ impl BlobsRepository {
             .fetch_one(executor)
             .await
     }
+
+    pub async fn get_all_blob_ids<'a>(
+        executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
+        limit: i64,
+        offset: i64,
+    ) -> Result<Vec<uuid::Uuid>, sqlx::Error> {
+        #[derive(sqlx::FromRow)]
+        struct BlobIdRow {
+            id: uuid::Uuid,
+        }
+        
+        let rows: Vec<BlobIdRow> = sqlx::query_as::<_, BlobIdRow>("SELECT id FROM blobs LIMIT $1 OFFSET $2")
+            .bind(limit)
+            .bind(offset)
+            .fetch_all(executor)
+            .await?;
+            
+        Ok(rows.into_iter().map(|r| r.id).collect())
+    }
+    
+    pub async fn delete_blobs<'a>(
+        executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
+        ids: &[uuid::Uuid],
+    ) -> Result<Vec<Blob>, sqlx::Error> {
+        if ids.is_empty() {
+            return Ok(vec![]);
+        }
+        
+        let mut query_builder = sqlx::QueryBuilder::new("DELETE FROM blobs WHERE id = ANY(");
+        query_builder.push_bind(ids);
+        query_builder.push(") RETURNING *");
+        
+        query_builder
+            .build_query_as::<Blob>()
+            .fetch_all(executor)
+            .await
+    }
 }

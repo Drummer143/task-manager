@@ -8,15 +8,15 @@ static GLOBAL: MiMalloc = MiMalloc;
 async fn main() {
     let _ = dotenvy::dotenv();
 
-    let (app, config) = app::build().await;
+    let (router, config) = app::build().await;
 
     let addr = format!("0.0.0.0:{}", config.port);
 
     tracing::info!("Listening on {}", addr);
 
-    let listener = tokio::net::TcpListener::bind(&addr).await.unwrap();
+    let listener = tokio::net::TcpListener::bind(addr).await.unwrap();
 
-    axum::serve(listener, app)
+    axum::serve(listener, router)
         .with_graceful_shutdown(shutdown_signal())
         .await
         .expect("Failed to start server");

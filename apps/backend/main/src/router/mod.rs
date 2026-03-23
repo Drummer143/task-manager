@@ -19,4 +19,5 @@ pub fn init_router(state: AppState) -> Router<AppState> {
         .merge(profile::init(state.clone()))
         .merge(users::init(state.clone()))
         .merge(workspaces::init(state.clone()))
+        .merge(crate::controllers::internal::init())
 }
