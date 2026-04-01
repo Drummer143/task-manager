@@ -1,5 +1,5 @@
 # Stage 1: Chef (env prepare)
-FROM rust:1.91.1-slim-bookworm AS chef
+FROM rust:1.94.1-slim-bookworm AS chef
 
 # perl for ring
 # curl for utoipa
