@@ -21,7 +21,7 @@ axum-extra = { version = "0.10", features = ["cookie", "typed-header"] }
 axum-macros = "0.5"
 bcrypt = "0.18"
 error_handlers = { path = "../../../libs/backend/error-handlers" }
-insta = { version = "1.45", features = ["json", "redactions"] }
+insta = { version = "1.47", features = ["json", "redactions"] }
 http-body-util = "0.1"
 sql = { path = "../../../libs/backend/sql" }
 migrator = { path = "../../../libs/backend/migrator" }
