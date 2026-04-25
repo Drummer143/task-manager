@@ -2,13 +2,13 @@
 import React, { memo, useEffect, useMemo, useRef } from "react";
 
 import { EnterOutlined, PushpinOutlined } from "@ant-design/icons";
-import { Avatar, Button, Flex, Tooltip, Typography } from "antd";
+import { Avatar, Button, Flex, Image, Tooltip, Typography } from "antd";
 import { motion } from "framer-motion";
 
 import { useStyles } from "./styles";
 
 import { chatStore } from "../../state";
-import { MessageData, UserInfo } from "../../types";
+import { MessageAttachment, MessageData, UserInfo } from "../../types";
 import { getPlaceholderAvatarUrl } from "../../utils";
 import { generateListItemDataAttributes } from "../../utils/listItemDataAttributes";
 
@@ -22,6 +22,7 @@ export interface MessageProps {
 	showUserInfo: boolean;
 	sentByCurrentUser: boolean;
 
+	attachments?: readonly MessageAttachment[];
 	pinnedBy?: UserInfo | null;
 	avatarUrl?: string | null;
 	updatedAt?: string | null;
@@ -52,7 +53,8 @@ const Message: React.FC<MessageProps> = ({
 	updatedAt,
 	replyTo,
 	highlighted,
-	editing
+	editing,
+	attachments
 }) => {
 	// const chatStoreSnapshot = useSnapshot(chatStore);
 	const inputValue = useRef(text);
@@ -231,6 +233,24 @@ const Message: React.FC<MessageProps> = ({
 						</>
 					)}
 				</Typography.Paragraph>
+
+				{!!attachments?.length && (
+					<Flex gap="var(--ant-padding-xs)" wrap="wrap" style={{ marginTop: "var(--ant-padding-xxs)" }}>
+						{attachments.map(attachment => (
+							<Image
+								key={attachment.id}
+								src={`/storage${attachment.url}`}
+								alt={attachment.name}
+								style={{
+									maxWidth: 300,
+									maxHeight: 300,
+									borderRadius: "var(--ant-border-radius)",
+									objectFit: "cover"
+								}}
+							/>
+						))}
+					</Flex>
+				)}
 
 				{editing && (
 					<Flex

@@ -4,6 +4,7 @@ defmodule SocketService.Messages do
   alias SocketService.Repo
 
   alias SocketService.Messages.Model, as: ChatMessageModel
+  alias SocketService.Messages.AttachmentModel
 
   def has_more_messages_before(task_id, before_date, first_message_id) do
     ChatMessageModel
@@ -19,7 +20,7 @@ defmodule SocketService.Messages do
     query =
       from m in ChatMessageModel,
         where: m.task_id == ^task_id and is_nil(m.deleted_at),
-        preload: [:sender, :pinner, :reply_target, reply_target: :sender],
+        preload: [:sender, :pinner, :reply_target, reply_target: :sender, attachments: :asset],
         order_by: [desc: m.created_at],
         limit: ^limit
 
@@ -67,7 +68,7 @@ defmodule SocketService.Messages do
       ChatMessageModel
       |> where([m], m.task_id == ^task_id and is_nil(m.deleted_at) and m.created_at > ^after_date)
       |> limit(^limit)
-      |> preload([:sender, :pinner, :reply_target, reply_target: :sender])
+      |> preload([:sender, :pinner, :reply_target, reply_target: :sender, attachments: :asset])
       |> order_by([m], asc: m.created_at)
       |> Repo.all()
 
@@ -98,7 +99,7 @@ defmodule SocketService.Messages do
     base_query =
       from u in ChatMessageModel,
         where: u.task_id == ^task_id and is_nil(u.deleted_at),
-        preload: [:sender, :pinner, :reply_target, reply_target: :sender],
+        preload: [:sender, :pinner, :reply_target, reply_target: :sender, attachments: :asset],
         limit: ^limit
 
     messages_before =
@@ -137,20 +138,37 @@ defmodule SocketService.Messages do
     |> Repo.one()
   end
 
-  def create_message(task_id, user_id, text, reply_to \\ nil) do
-    ChatMessageModel.changeset(%ChatMessageModel{}, %{
-      task_id: task_id,
-      user_id: user_id,
-      text: text,
-      reply_to: reply_to
-    })
-    |> Repo.insert(returning: true)
+  def create_message(task_id, user_id, text, reply_to \\ nil, attachment_ids \\ []) do
+    result =
+      ChatMessageModel.changeset(%ChatMessageModel{}, %{
+        task_id: task_id,
+        user_id: user_id,
+        text: text,
+        reply_to: reply_to
+      })
+      |> Repo.insert(returning: true)
+
+    case result do
+      {:ok, message} ->
+        Enum.each(attachment_ids, fn asset_id ->
+          AttachmentModel.changeset(%AttachmentModel{}, %{
+            message_id: message.id,
+            asset_id: asset_id
+          })
+          |> Repo.insert()
+        end)
+
+        {:ok, Repo.preload(message, attachments: :asset)}
+
+      error ->
+        error
+    end
   end
 
   def get_message_by_id(id) do
     ChatMessageModel
     |> where([m], m.id == ^id)
-    |> preload([:sender, :pinner, :reply_target, reply_target: :sender])
+    |> preload([:sender, :pinner, :reply_target, reply_target: :sender, attachments: :asset])
     |> Repo.one()
   end
 
@@ -178,7 +196,7 @@ defmodule SocketService.Messages do
   def get_pinned_messages(task_id) do
     ChatMessageModel
     |> where([m], m.task_id == ^task_id and not is_nil(m.pinned_by))
-    |> preload([:pinner, :sender, :reply_target, reply_target: :sender])
+    |> preload([:pinner, :sender, :reply_target, reply_target: :sender, attachments: :asset])
     |> order_by([m], desc: m.created_at)
     |> Repo.all()
   end

@@ -7,12 +7,20 @@ export interface UserInfo {
 	avatar?: string | null;
 }
 
+export interface MessageAttachment {
+	id: string;
+	assetId: string;
+	url: string;
+	name: string;
+}
+
 export interface MessageData {
 	id: string;
 	text: string;
 	sender: UserInfo;
 	createdAt: string;
 
+	attachments?: MessageAttachment[];
 	pinnedBy?: UserInfo | null;
 	updatedAt?: string | null;
 	replyTarget?: Pick<MessageData, "id" | "text" | "sender"> | null;
@@ -24,11 +32,12 @@ export interface PresenceInfo {
 
 export interface ChatProps {
 	currentUserId: string;
+	chatId: string;
 
 	presence?: PresenceInfo;
 	className?: string;
 
-	sendMessage: (payload: { text: string; replyTo?: string }) => void;
+	sendMessage: (payload: { text: string; replyTo?: string; attachments?: File[] }) => void;
 	loadMessages: (
 		cb: (response: {
 			messages: MessageData[];

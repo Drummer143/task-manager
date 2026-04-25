@@ -11,7 +11,25 @@ defmodule SocketService.Messages.Mappers do
           else: SocketService.Users.Mappers.to_response(message.pinner)
         ),
       sender: SocketService.Users.Mappers.to_response(message.sender),
-      replyTarget: reply_target_to_response(message)
+      replyTarget: reply_target_to_response(message),
+      attachments: attachments_to_response(message)
+    }
+  end
+
+  def attachments_to_response(message) do
+    case message.attachments do
+      %Ecto.Association.NotLoaded{} -> []
+      nil -> []
+      attachments -> Enum.map(attachments, &attachment_to_response/1)
+    end
+  end
+
+  def attachment_to_response(attachment) do
+    %{
+      id: attachment.id,
+      assetId: attachment.asset_id,
+      url: "/files/#{attachment.asset_id}",
+      name: if(attachment.asset, do: attachment.asset.name, else: "attachment")
     }
   end
 

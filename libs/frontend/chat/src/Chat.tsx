@@ -50,6 +50,7 @@ function pluralizeMessages(count: number) {
 
 const Chat: React.FC<ChatProps> = ({
 	currentUserId,
+	chatId,
 	onUserClick,
 	loadMessages,
 	sendMessage,
@@ -512,6 +513,7 @@ const Chat: React.FC<ChatProps> = ({
 				</AnimatePresence>
 
 				<NewMessageInput
+					chatId={chatId}
 					hasTopBar={!!presence?.typingUsers?.length}
 					onTypingChange={onTypingChange}
 					onSend={sendMessage}

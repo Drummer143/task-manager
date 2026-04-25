@@ -10,13 +10,37 @@ export const useStyles = createStyles(({ css }, { hasTopBar }: StyleProps) => ({
 
 		position: relative;
 	`,
+	attachButton: css`
+		position: absolute;
+		bottom: 2px;
+		right: 34px;
+	`,
 	sendButton: css`
 		position: absolute;
 		bottom: 2px;
 		right: 2px;
 	`,
+	inputWrapper: css`
+		background-color: var(--ant-color-bg-container);
+		border: var(--ant-line-width) var(--ant-line-type) var(--ant-color-border);
+		border-radius: var(--ant-border-radius);
+		transition: border-color var(--ant-motion-duration-slow);
+
+		&:hover {
+			border-color: #3c89c8;
+		}
+
+		&.focused {
+			border-color: #1668dc;
+		}
+
+		.ProseMirror {
+			min-height: 40px;
+			outline: none;
+		}
+	`,
 	textarea: css`
-		padding-right: 36px;
+		padding-right: 68px;
 
 		transition: border-radius var(--ant-motion-duration-fast) var(--ant-motion-ease-out-circ)
 			var(--ant-motion-duration-fast);

@@ -90,6 +90,19 @@ impl AssetsService {
 
             AssetTarget::Avatar(user_id) => Ok((EntityType::UserAvatar, user_id)),
             AssetTarget::UserDraft => Ok((EntityType::UserDraft, user_id)),
+            AssetTarget::ChatMessage(task_id) => {
+                let result = TaskRepository::has_access(executor, user_id, task_id).await?;
+
+                if !result {
+                    return Err(ErrorResponse::forbidden(
+                        error_handlers::codes::ForbiddenErrorCode::AccessDenied,
+                        None,
+                        None,
+                    ));
+                }
+
+                Ok((EntityType::ChatMessage, task_id))
+            }
         }?;
 
         jsonwebtoken::encode(
@@ -199,8 +212,8 @@ impl AssetsService {
                     .map_err(ErrorResponse::from)?;
                 }
             }
-            EntityType::UserDraft => {
-                // Draft assets are created without hydration. They will be linked later.
+            EntityType::UserDraft | EntityType::ChatMessage => {
+                // Draft and chat message assets are created without hydration.
             }
             _ => {
                 return Err(ErrorResponse::forbidden(
@@ -254,6 +267,11 @@ impl AssetsService {
 
             EntityType::UserAvatar => Ok(true),
             EntityType::UserDraft => Ok(asset.entity_id == user_id),
+            EntityType::ChatMessage => {
+                TaskRepository::has_access(executor, asset.entity_id, user_id)
+                    .await
+                    .map_err(ErrorResponse::from)
+            }
         }?;
 
         if !is_valid {

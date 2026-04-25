@@ -10,6 +10,7 @@ pub enum AssetTarget {
     TaskDescription(Uuid),
     Avatar(Uuid),
     UserDraft,
+    ChatMessage(Uuid),
 }
 
 #[derive(Deserialize, ToSchema)]

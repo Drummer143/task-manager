@@ -182,10 +182,10 @@ defmodule SocketService.ChatChannel do
     chat_id = socket.assigns.chat_id
     user_id = socket.assigns.user.id
 
-    text = Map.get(payload, "text")
+    text = Map.get(payload, "text", "")
     reply_to = Map.get(payload, "replyTo", nil)
 
-    case SocketService.Messages.create_message(chat_id, user_id, text, reply_to) do
+    case SocketService.Messages.create_message(chat_id, user_id, text, reply_to, attachment_ids) do
       {:ok, message} ->
         sender = SocketService.Users.get_user_by_id(user_id)
 
@@ -196,7 +196,8 @@ defmodule SocketService.ChatChannel do
           createdAt: message.created_at,
           updatedAt: message.updated_at,
           sender: sender,
-          replyTo: message.reply_to
+          replyTo: message.reply_to,
+          attachments: SocketService.Messages.Mappers.attachments_to_response(message)
         }
 
         Presence.update(socket, user_id, fn meta ->

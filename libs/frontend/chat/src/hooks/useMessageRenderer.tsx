@@ -44,6 +44,7 @@ export const useMessageRenderer = (
 							updatedAt={item.message.updatedAt}
 							highlighted={chatStoreSnapshot.highlightedItemId === item.id}
 							editing={chatStoreSnapshot.edit?.messageId === item.id}
+							attachments={item.message.attachments}
 						/>
 					);
 				default:

@@ -17,6 +17,8 @@ defmodule SocketService.Messages.Model do
     belongs_to :sender, SocketService.Users.Model, foreign_key: :user_id, type: :binary_id
     belongs_to :pinner, SocketService.Users.Model, foreign_key: :pinned_by, type: :binary_id
     belongs_to :reply_target, SocketService.Messages.Model, foreign_key: :reply_to, type: :binary_id
+
+    has_many :attachments, SocketService.Messages.AttachmentModel, foreign_key: :message_id
   end
 
   def changeset(chat_message, attrs) do

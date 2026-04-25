@@ -1,20 +1,23 @@
-import React, { memo, useCallback, useMemo } from "react";
+/* eslint-disable max-lines */
+import React, { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
 
-import { CloseOutlined, SendOutlined } from "@ant-design/icons";
-import { useLocalStorage } from "@task-manager/react-utils";
-import { Button, Flex, Form, Input, Typography } from "antd";
+import { CloseOutlined, PaperClipOutlined, SendOutlined } from "@ant-design/icons";
+import { useDisclosure, useLocalStorage } from "@task-manager/react-utils";
+import { Button, Flex, Form, Image, Input, Typography } from "antd";
 import { throttle } from "throttle-debounce";
+import { v4 as uuidV4 } from "uuid";
 import { useSnapshot } from "valtio";
 
 import { useStyles } from "./styles";
 
 import { chatStore } from "../../state";
+import { clearDraft, deleteImage, DraftImage, getImagesByDraftId, saveImage } from "../../utils/idb";
 
 interface NewMessageInputProps {
 	chatId?: string;
 	hasTopBar?: boolean;
 
-	onSend: (payload: { text: string; replyTo?: string }) => void;
+	onSend: (payload: { text: string; replyTo?: string; attachments?: File[] }) => void;
 
 	onTypingChange?: () => void;
 }
@@ -29,11 +32,17 @@ const NewMessageInput: React.FC<NewMessageInputProps> = ({
 	hasTopBar,
 	chatId
 }) => {
-	const styles = useStyles({ hasTopBar }).styles;
+	const { styles, cx } = useStyles({ hasTopBar });
 
 	const chatStoreSnapshot = useSnapshot(chatStore);
 
+	const fileInputRef = useRef<HTMLInputElement>(null);
+
 	const [draft, setDraft] = useLocalStorage(`chat:${chatId}:draft`, "");
+
+	const { open: inputFocused, onClose: onBlur, onOpen: onFocus } = useDisclosure();
+
+	const [attachments, setAttachments] = useState<DraftImage[]>([]);
 
 	const [form] = Form.useForm<FormValues>();
 
@@ -43,17 +52,23 @@ const NewMessageInput: React.FC<NewMessageInputProps> = ({
 		(values: FormValues) => {
 			const text = values.text.trim();
 
-			if (!text) return;
+			if (!text && !attachments.length) return;
 
-			onSend({ text, replyTo: chatStore.replayMessage?.id });
+			onSend({
+				text,
+				replyTo: chatStore.replayMessage?.id,
+				attachments: attachments.length ? attachments.map(a => a.file) : undefined
+			});
 
 			queueMicrotask(() => {
 				form.resetFields();
 				chatStore.replayMessage = undefined;
 				setDraft("");
+				setAttachments([]);
+				clearDraft(`chat:${chatId}:draft`);
 			});
 		},
-		[onSend, form, setDraft]
+		[onSend, form, setDraft, attachments, chatId]
 	);
 
 	const handleTextareaPressEnter: React.KeyboardEventHandler<HTMLTextAreaElement> = useCallback(
@@ -67,13 +82,86 @@ const NewMessageInput: React.FC<NewMessageInputProps> = ({
 	const handleTypingChange = useMemo(
 		() =>
 			throttle<React.KeyboardEventHandler<HTMLTextAreaElement>>(750, e => {
-				if (e.code !== "Enter") {
+				if (e.code !== "Enter" && e.currentTarget) {
 					onTypingChange?.();
 					setDraft(e.currentTarget.value);
 				}
 			}),
 		[onTypingChange, setDraft]
 	);
+
+	const handlePaste = useCallback(
+		(e: React.ClipboardEvent<HTMLTextAreaElement>) => {
+			const files: DraftImage[] = [];
+
+			for (let i = 0; i < e.clipboardData.items.length; i++) {
+				const item = e.clipboardData.items[i];
+
+				if (item.kind === "file") {
+					const file = item.getAsFile();
+
+					if (file) {
+						files.push({
+							createdAt: Date.now(),
+							draftId: `chat:${chatId}:draft`,
+							file,
+							fileName: file.name,
+							mimeType: file.type,
+							id: uuidV4()
+						});
+					}
+				}
+			}
+
+			if (files.length) {
+				e.preventDefault();
+
+				setAttachments(prev => [...prev, ...files]);
+				files.forEach(file => {
+					saveImage(file);
+				});
+			}
+		},
+		[chatId]
+	);
+
+	const handleRemoveAttachment = useCallback((id: string) => {
+		setAttachments(prev => prev.filter(attachment => attachment.id !== id));
+		deleteImage(id);
+	}, []);
+
+	const handleFileSelect = useCallback(
+		(e: React.ChangeEvent<HTMLInputElement>) => {
+			const selectedFiles = e.target.files;
+
+			if (!selectedFiles?.length) return;
+
+			const newFiles: DraftImage[] = [];
+
+			for (let i = 0; i < selectedFiles.length; i++) {
+				const file = selectedFiles[i];
+
+				newFiles.push({
+					createdAt: Date.now(),
+					draftId: `chat:${chatId}:draft`,
+					file,
+					fileName: file.name,
+					mimeType: file.type,
+					id: uuidV4()
+				});
+			}
+
+			setAttachments(prev => [...prev, ...newFiles]);
+			newFiles.forEach(f => saveImage(f));
+
+			e.target.value = "";
+		},
+		[chatId]
+	);
+
+	useEffect(() => {
+		getImagesByDraftId(`chat:${chatId}:draft`).then(setAttachments);
+	}, [chatId]);
 
 	return (
 		<Form
@@ -114,17 +202,113 @@ const NewMessageInput: React.FC<NewMessageInputProps> = ({
 				</Flex>
 			)}
 
-			<Form.Item name="text" noStyle>
-				<Input.TextArea
-					className={styles.textarea}
-					aria-autocomplete="none"
-					autoComplete="off"
-					placeholder="Type your message"
-					onKeyDown={handleTypingChange}
-					onPressEnter={handleTextareaPressEnter}
-					autoSize={{ minRows: 2, maxRows: 5 }}
-				/>
-			</Form.Item>
+			<div className={cx(styles.inputWrapper, inputFocused && "focused")}>
+				<Form.Item name="text" noStyle>
+					<Input.TextArea
+						variant="borderless"
+						className={styles.textarea}
+						aria-autocomplete="none"
+						autoComplete="off"
+						onFocus={onFocus}
+						onBlur={onBlur}
+						onPaste={handlePaste}
+						placeholder="Type your message"
+						onKeyDown={handleTypingChange}
+						onPressEnter={handleTextareaPressEnter}
+						autoSize={{ minRows: 2, maxRows: 5 }}
+					/>
+				</Form.Item>
+
+				{attachments.length > 0 && (
+					<div
+						style={{
+							display: "flex",
+							gap: "var(--ant-padding-xs)",
+							margin: "var(--ant-padding-sm)",
+							width: "calc(100% - 44px)",
+							overflow: "auto visible"
+						}}
+					>
+						{attachments.map(attachment => (
+							<div key={attachment.id} style={{ position: "relative" }}>
+								{attachment.mimeType.startsWith("image/") ? (
+									<div
+										style={{
+											borderRadius: "var(--ant-border-radius-sm)",
+											overflow: "hidden"
+										}}
+									>
+										<Image
+											preview={{
+												actionsRender: () => null,
+												movable: false,
+												mask: {
+													blur: false
+												}
+											}}
+											width="50px"
+											height="50px"
+											src={URL.createObjectURL(attachment.file)}
+											alt={attachment.fileName}
+										/>
+									</div>
+								) : (
+									<div
+										title={attachment.fileName}
+										style={{
+											height: "50px",
+											width: "50px",
+											backgroundColor: "var(--ant-color-border)",
+											borderRadius: "var(--ant-border-radius-sm)",
+											overflow: "hidden",
+											display: "flex",
+											alignItems: "center",
+											justifyContent: "flex-start",
+											textOverflow: "ellipsis",
+											whiteSpace: "nowrap",
+											userSelect: "none"
+										}}
+									>
+										<Typography.Text ellipsis>
+											{attachment.fileName}
+										</Typography.Text>
+									</div>
+								)}
+
+								<Button
+									size="small"
+									shape="round"
+									style={{
+										position: "absolute",
+										top: 0,
+										right: 0,
+										scale: 0.8,
+										transform: "translate(20%, -20%)"
+									}}
+									icon={<CloseOutlined />}
+									onClick={() => handleRemoveAttachment(attachment.id)}
+								/>
+							</div>
+						))}
+					</div>
+				)}
+			</div>
+
+			<input
+				ref={fileInputRef}
+				type="file"
+				accept="image/*"
+				multiple
+				style={{ display: "none" }}
+				onChange={handleFileSelect}
+			/>
+
+			<Button
+				type="text"
+				icon={<PaperClipOutlined />}
+				className={styles.attachButton}
+				onClick={() => fileInputRef.current?.click()}
+			/>
 
 			<Button
 				type="text"
