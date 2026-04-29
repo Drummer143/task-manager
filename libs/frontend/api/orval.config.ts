@@ -38,6 +38,32 @@ export default defineConfig({
 				}
 			}
 		}
+	},
+	"main-angular": {
+		input: {
+			target: "./specs/openapi-main.json"
+		},
+		output: {
+			target: "./src/generated-angular/main/index.ts",
+			schemas: "./src/generated-angular/main/schemas",
+			client: "angular",
+			mode: "split",
+			clean: true,
+			baseUrl: "/api"
+		}
+	},
+	"storage-angular": {
+		input: {
+			target: "./specs/openapi-storage.json"
+		},
+		output: {
+			target: "./src/generated-angular/storage/index.ts",
+			schemas: "./src/generated-angular/storage/schemas",
+			client: "angular",
+			mode: "split",
+			clean: true,
+			baseUrl: "/storage"
+		}
 	}
 });
 

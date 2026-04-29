@@ -1,0 +1,20 @@
+{
+	"/api": {
+		"target": "https://api.evgenyberg.xyz",
+		"changeOrigin": true,
+		"secure": false,
+		"pathRewrite": { "^/api": "" }
+	},
+	"/storage": {
+		"target": "https://storage.evgenyberg.xyz",
+		"changeOrigin": true,
+		"secure": false,
+		"pathRewrite": { "^/storage": "" }
+	},
+	"/socket": {
+		"target": "wss://socket.evgenyberg.xyz",
+		"changeOrigin": true,
+		"secure": false,
+		"ws": true
+	}
+}

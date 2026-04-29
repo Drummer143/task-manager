@@ -1,0 +1,93 @@
+{
+	"name": "task-manager-angular",
+	"$schema": "../../../node_modules/nx/schemas/project-schema.json",
+	"projectType": "application",
+	"prefix": "app",
+	"sourceRoot": "apps/frontend/task-manager-angular/src",
+	"tags": ["frontend"],
+	"targets": {
+		"build": {
+			"executor": "@angular/build:application",
+			"outputs": ["{options.outputPath}"],
+			"options": {
+				"outputPath": "dist/apps/frontend/task-manager-angular",
+				"browser": "apps/frontend/task-manager-angular/src/main.ts",
+				"tsConfig": "apps/frontend/task-manager-angular/tsconfig.app.json",
+				"inlineStyleLanguage": "scss",
+				"assets": [
+					{
+						"glob": "**/*",
+						"input": "apps/frontend/task-manager-angular/public"
+					}
+				],
+				"styles": ["apps/frontend/task-manager-angular/src/styles.scss"]
+			},
+			"configurations": {
+				"production": {
+					"fileReplacements": [
+						{
+							"replace": "apps/frontend/task-manager-angular/src/environments/environment.ts",
+							"with": "apps/frontend/task-manager-angular/src/environments/environment.prod.ts"
+						}
+					],
+					"budgets": [
+						{
+							"type": "initial",
+							"maximumWarning": "500kb",
+							"maximumError": "1mb"
+						},
+						{
+							"type": "anyComponentStyle",
+							"maximumWarning": "4kb",
+							"maximumError": "8kb"
+						}
+					],
+					"outputHashing": "all"
+				},
+				"development": {
+					"optimization": false,
+					"extractLicenses": false,
+					"sourceMap": true
+				}
+			},
+			"defaultConfiguration": "production"
+		},
+		"serve": {
+			"continuous": true,
+			"executor": "@angular/build:dev-server",
+			"options": {
+				"port": 1346,
+				"proxyConfig": "apps/frontend/task-manager-angular/proxy.conf.json",
+				"ssl": true,
+				"sslKey": "certs/localhost-key.pem",
+				"sslCert": "certs/localhost.pem"
+			},
+			"configurations": {
+				"production": {
+					"buildTarget": "task-manager-angular:build:production"
+				},
+				"development": {
+					"buildTarget": "task-manager-angular:build:development"
+				}
+			},
+			"defaultConfiguration": "development"
+		},
+		"lint": {
+			"executor": "@nx/eslint:lint"
+		},
+		"test": {
+			"executor": "@angular/build:unit-test",
+			"options": {}
+		},
+		"serve-static": {
+			"continuous": true,
+			"executor": "@nx/web:file-server",
+			"options": {
+				"buildTarget": "task-manager-angular:build",
+				"port": 1346,
+				"staticFilePath": "dist/apps/frontend/task-manager-angular/browser",
+				"spa": true
+			}
+		}
+	}
+}

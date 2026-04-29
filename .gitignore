@@ -84,3 +84,7 @@ erl_crash.dump
 **/e2e/.auth/
 **/playwright-report/
 **/test-results/
+
+.angular
+
+__screenshots__/

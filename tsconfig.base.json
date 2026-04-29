@@ -19,6 +19,7 @@
 			"@task-manager/ant-validation": ["libs/frontend/ant-validation/src/index.ts"],
 			"@task-manager/api": ["libs/frontend/api/src/index.ts"],
 			"@task-manager/api/*": ["libs/frontend/api/src/generated/*"],
+			"@task-manager/api-angular/*": ["libs/frontend/api/src/generated-angular/*"],
 			"@task-manager/chat": ["libs/frontend/chat/src/index.ts"],
 			"@task-manager/react-utils": ["libs/frontend/react-utils/src/index.ts"],
 			"@task-manager/tiptap-file-plugin": [

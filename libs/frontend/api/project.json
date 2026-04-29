@@ -21,6 +21,21 @@
 				"command": "npx orval --config ./orval.config.ts"
 			}
 		},
+		"prepare-angular": {
+			"executor": "nx:run-commands",
+			"options": {
+				"cwd": "libs/frontend/api",
+				"command": "npx orval --config ./orval.config.ts --project main-angular --project storage-angular"
+			}
+		},
+		"prepare-angular-local": {
+			"executor": "nx:run-commands",
+			"dependsOn": ["main:export-openapi", "storage:export-openapi"],
+			"options": {
+				"cwd": "libs/frontend/api",
+				"command": "npx orval --config ./orval.config.ts --project main-angular --project storage-angular"
+			}
+		},
 		"build": {
 			"dependsOn": ["prepare"]
 		},
