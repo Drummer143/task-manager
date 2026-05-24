@@ -19,6 +19,7 @@ services:
             - net
         depends_on:
             - task-manager
+            - calls
             - main-service
             - storage-service
             - socket-service
@@ -242,6 +243,8 @@ services:
             AUTHENTIK_AUDIENCE: ${AUTHENTIK_AUDIENCE}
             AUTHENTIK_API_URL: ${AUTHENTIK_API_URL}
             AUTHENTIK_API_TOKEN: ${AUTHENTIK_API_TOKEN}
+            LIVEKIT_API_KEY: ${LIVEKIT_API_KEY}
+            LIVEKIT_API_SECRET: ${LIVEKIT_API_SECRET}
             STORAGE_SERVICE_URL: http://storage-service:8082
             CORS_ORIGINS: https://${DOMAIN}
         networks:
@@ -309,6 +312,18 @@ services:
         restart: unless-stopped
         container_name: task-manager
         image: ghcr.io/drummer143/task-manager/task-manager:${IMAGE_TAG:-latest}
+        deploy:
+            resources:
+                limits:
+                    memory: 48M
+                    cpus: "0.25"
+        networks:
+            - net
+
+    calls:
+        restart: unless-stopped
+        container_name: calls
+        image: ghcr.io/drummer143/task-manager/calls:${IMAGE_TAG:-latest}
         deploy:
             resources:
                 limits:
