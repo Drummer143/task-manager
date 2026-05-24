@@ -11,6 +11,8 @@ pub struct Config {
     pub db_max_connections: u32,
     pub log_filter: String,
     pub draft_cleanup_cron: String,
+    pub livekit_api_key: String,
+    pub livekit_api_secret: String,
 }
 
 impl Config {
@@ -24,6 +26,8 @@ impl Config {
         let authentik_audience = std::env::var("AUTHENTIK_AUDIENCE").ok();
         let jwt_secret = std::env::var("JWT_SECRET").ok();
         let storage_service_url = std::env::var("STORAGE_SERVICE_URL").ok();
+        let livekit_api_key = std::env::var("LIVEKIT_API_KEY").ok();
+        let livekit_api_secret = std::env::var("LIVEKIT_API_SECRET").ok();
 
         if database_url.is_none() {
             errors.push("DATABASE_URL");
@@ -45,6 +49,12 @@ impl Config {
         }
         if storage_service_url.is_none() {
             errors.push("STORAGE_SERVICE_URL");
+        }
+        if livekit_api_key.is_none() {
+            errors.push("LIVEKIT_API_KEY");
+        }
+        if livekit_api_secret.is_none() {
+            errors.push("LIVEKIT_API_SECRET");
         }
 
         if !errors.is_empty() {
@@ -85,6 +95,8 @@ impl Config {
             authentik_audience: authentik_audience.unwrap(),
             jwt_secret: jwt_secret.unwrap(),
             storage_service_url: storage_service_url.unwrap(),
+            livekit_api_key: livekit_api_key.unwrap(),
+            livekit_api_secret: livekit_api_secret.unwrap(),
             cors_origins,
             db_max_connections,
             log_filter,

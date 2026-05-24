@@ -4,6 +4,7 @@ use crate::types::app_state::AppState;
 
 pub mod assets;
 pub mod board_statuses;
+pub mod calls;
 pub mod pages;
 pub mod profile;
 pub mod tasks;
@@ -19,5 +20,6 @@ pub fn init_router(state: AppState) -> Router<AppState> {
         .merge(profile::init(state.clone()))
         .merge(users::init(state.clone()))
         .merge(workspaces::init(state.clone()))
+        .merge(calls::init(state.clone()))
         .merge(crate::controllers::internal::init())
 }

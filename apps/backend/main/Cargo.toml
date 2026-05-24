@@ -23,6 +23,7 @@ bcrypt = "0.18"
 error_handlers = { path = "../../../libs/backend/error-handlers" }
 insta = { version = "1.45", features = ["json", "redactions"] }
 http-body-util = "0.1"
+livekit-api = "0.4.24"
 sql = { path = "../../../libs/backend/sql" }
 migrator = { path = "../../../libs/backend/migrator" }
 image = { version = "0.25", default-features = false, features = ["jpeg", "png", "webp"] }

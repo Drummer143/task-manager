@@ -7,8 +7,8 @@ use crate::{config::Config, types::app_state::AppState};
 
 mod authentik_api;
 mod config;
-mod db_connections;
 mod controllers;
+mod db_connections;
 mod middleware;
 mod repos;
 mod router;
@@ -79,6 +79,8 @@ pub async fn build() -> (axum::Router, Config) {
         authentik_api_url: Arc::new(config.authentik_api_url.clone()),
         authentik_api_token: Arc::new(config.authentik_api_token.clone()),
         storage_service_url: Arc::new(config.storage_service_url.clone()),
+        livekit_api_key: Arc::new(config.livekit_api_key.clone()),
+        livekit_api_secret: Arc::new(config.livekit_api_secret.clone()),
     };
 
     let arc_state = Arc::new(app_state.clone());

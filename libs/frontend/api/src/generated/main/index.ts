@@ -6,6 +6,7 @@
  */
 import type {
   BoardStatusResponse,
+  CallTokenResponse,
   CreateBoardStatusRequest,
   CreateDraftRequest,
   CreatePageAccessRequest,
@@ -51,6 +52,15 @@ type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
       {url: `/api/assets/token`, method: 'POST',
       headers: {'Content-Type': 'application/json', },
       data: createUploadTokenDto
+    },
+      options);
+    }
+  
+export const createCallToken = (
+    
+ options?: SecondParameter<typeof fetcher<CallTokenResponse>>,) => {
+      return fetcher<CallTokenResponse>(
+      {url: `/api/calls/token`, method: 'POST'
     },
       options);
     }
@@ -414,6 +424,7 @@ type AwaitedInput<T> = PromiseLike<T> | T;
     type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
 
 export type CreateUploadTokenResult = NonNullable<Awaited<ReturnType<typeof createUploadToken>>>
+export type CreateCallTokenResult = NonNullable<Awaited<ReturnType<typeof createCallToken>>>
 export type GetPageResult = NonNullable<Awaited<ReturnType<typeof getPage>>>
 export type UpdatePageResult = NonNullable<Awaited<ReturnType<typeof updatePage>>>
 export type DeletePageResult = NonNullable<Awaited<ReturnType<typeof deletePage>>>

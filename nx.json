@@ -50,12 +50,17 @@
 		"@nx/react": {
 			"application": {
 				"babel": true,
+				"style": "styled-components",
 				"linter": "eslint",
 				"bundler": "vite"
 			},
 			"library": {
+				"style": "styled-components",
 				"linter": "eslint",
 				"unitTestRunner": "vitest"
+			},
+			"component": {
+				"style": "styled-components"
 			}
 		}
 	}

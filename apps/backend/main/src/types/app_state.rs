@@ -11,6 +11,8 @@ pub struct AppState {
     pub authentik_api_url: Arc<String>,
     pub authentik_api_token: Arc<String>,
     pub storage_service_url: Arc<String>,
+    pub livekit_api_key: Arc<String>,
+    pub livekit_api_secret: Arc<String>,
 }
 
 impl FromRef<AppState> for InternalAuthState {
