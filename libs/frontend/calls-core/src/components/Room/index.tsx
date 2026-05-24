@@ -14,9 +14,9 @@ const Room: React.FC<RoomProps> = props => {
 			<LiveKitRoom
 				token={props.token}
 				serverUrl={props.serverUrl}
-				connect={true}
+				connect
 				video={false}
-				audio={false}
+				audio
 				onError={e => console.error("LiveKit error:", e)}
 				onDisconnected={() => console.log("disconnected")}
 			>
