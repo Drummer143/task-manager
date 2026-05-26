@@ -1,7 +1,9 @@
-import Room from "../pages/Room";
+import { RouterProvider } from "react-router";
+
+import { router } from "./router";
 
 export function App() {
-	return <Room />;
+	return <RouterProvider router={router} />;
 }
 
 export default App;
