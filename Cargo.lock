@@ -370,6 +370,37 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d71b6127be86fdcfddb610f7182ac57211d4b18a3e9c82eb2d17662f2227ad6a"
 
 [[package]]
+name = "calls"
+version = "0.1.0"
+dependencies = [
+ "axum",
+ "axum-extra 0.10.1",
+ "axum-macros",
+ "chrono",
+ "dotenvy",
+ "error_handlers",
+ "jsonwebtoken",
+ "livekit-api",
+ "migrator",
+ "mimalloc",
+ "reqwest",
+ "serde",
+ "serde_json",
+ "sql",
+ "sqlx",
+ "tokio",
+ "tower",
+ "tower-http",
+ "tracing",
+ "tracing-subscriber",
+ "utils",
+ "utoipa",
+ "utoipa-axum",
+ "utoipa-swagger-ui",
+ "uuid",
+]
+
+[[package]]
 name = "cc"
 version = "1.2.49"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2008,7 +2039,6 @@ dependencies = [
  "image",
  "insta",
  "jsonwebtoken",
- "livekit-api",
  "migrator",
  "mimalloc",
  "mime",

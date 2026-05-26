@@ -7,10 +7,9 @@ pub use utils::auth_middleware::InternalAuthState;
 pub struct AppState {
     pub postgres: sqlx::postgres::PgPool,
     pub auth: InternalAuthState,
-    pub jwt_secret: Arc<String>,
-    pub authentik_api_url: Arc<String>,
-    pub authentik_api_token: Arc<String>,
-    pub storage_service_url: Arc<String>,
+    pub livekit_url: Arc<String>,
+    pub livekit_api_key: Arc<String>,
+    pub livekit_api_secret: Arc<String>,
 }
 
 impl FromRef<AppState> for InternalAuthState {

@@ -5,19 +5,13 @@ use utoipa::OpenApi;
 
 use crate::{config::Config, types::app_state::AppState};
 
-mod authentik_api;
 mod config;
 mod controllers;
 mod db_connections;
-mod middleware;
-mod repos;
 mod router;
 mod services;
-mod shared;
 mod swagger;
 mod types;
-mod webhooks;
-mod workers;
 
 pub fn openapi_json() -> String {
     serde_json::to_string_pretty(&swagger::ApiDoc::openapi()).unwrap()
@@ -75,32 +69,22 @@ pub async fn build() -> (axum::Router, Config) {
     let app_state = AppState {
         postgres,
         auth,
-        jwt_secret: Arc::new(config.jwt_secret.clone()),
-        authentik_api_url: Arc::new(config.authentik_api_url.clone()),
-        authentik_api_token: Arc::new(config.authentik_api_token.clone()),
-        storage_service_url: Arc::new(config.storage_service_url.clone()),
+        livekit_url: Arc::new(config.livekit_url.clone()),
+        livekit_api_key: Arc::new(config.livekit_api_key.clone()),
+        livekit_api_secret: Arc::new(config.livekit_api_secret.clone()),
     };
-
-    let arc_state = Arc::new(app_state.clone());
-
-    workers::asset_cleanup::init_asset_cleanup_worker(arc_state, &config.draft_cleanup_cron)
-        .await
-        .expect("Failed to init asset cleanup worker");
 
     let router = axum::Router::new()
         .merge(router::init_router(app_state.clone()))
         .merge(
             utoipa_swagger_ui::SwaggerUi::new("/api")
                 .url("/api/api.json", swagger::ApiDoc::openapi())
-                .url("/api/webhooks.json", swagger::WebhooksDoc::openapi())
-                .url("/api/internal.json", swagger::InternalApiDoc::openapi())
                 .config(
                     utoipa_swagger_ui::Config::default()
                         .doc_expansion("none")
                         .display_request_duration(true),
                 ),
         )
-        .merge(webhooks::authentik::router::init())
         .with_state(app_state)
         .layer(tower_http::trace::TraceLayer::new_for_http())
         .layer(cors);

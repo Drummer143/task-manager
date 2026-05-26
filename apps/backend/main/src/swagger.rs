@@ -6,8 +6,6 @@ use utils::swagger::SecurityAddon;
         crate::controllers::board_statuses::controller::create_board_status::create_board_status,
         crate::controllers::board_statuses::controller::get_board_statuses::get_board_statuses,
 
-        crate::controllers::calls::controller::create_token::create_call_token,
-
         crate::controllers::page::controller::get_page_list::get_page_list,
         crate::controllers::page::controller::get_page::get_page,
         crate::controllers::page::controller::create_page::create_page,

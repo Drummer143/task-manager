@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 
 import { useMutation } from "@tanstack/react-query";
-import { createCallToken } from "@task-manager/api/main";
+import { createCallToken } from "@task-manager/api/calls";
 import { Room as LiveKitRoom } from "@task-manager/calls-core";
 import { Flex, Spin } from "antd";
 

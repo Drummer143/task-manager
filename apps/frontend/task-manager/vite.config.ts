@@ -1,8 +1,8 @@
-import fs from "node:fs";
-import path from "node:path";
 import { nxCopyAssetsPlugin } from "@nx/vite/plugins/nx-copy-assets.plugin";
 import { nxViteTsPaths } from "@nx/vite/plugins/nx-tsconfig-paths.plugin";
 import react from "@vitejs/plugin-react";
+import fs from "node:fs";
+import path from "node:path";
 import { visualizer } from "rollup-plugin-visualizer";
 import { loadEnv } from "vite";
 import { defineConfig } from "vitest/config";
@@ -28,6 +28,7 @@ export default defineConfig(({ mode }) => {
 	const apiUrl = env.API_URL || "http://localhost:8080";
 	const storageUrl = env.STORAGE_URL || "http://localhost:8082";
 	const socketUrl = env.SOCKET_URL || "http://localhost:8078";
+	const callsApiUrl = env.CALLS_API_URL || "http://localhost:8084";
 
 	const https = loadCerts();
 
@@ -55,6 +56,12 @@ export default defineConfig(({ mode }) => {
 					changeOrigin: true,
 					secure: false,
 					ws: true
+				},
+				"/calls-api": {
+					target: callsApiUrl,
+					changeOrigin: true,
+					secure: false,
+					rewrite: path => path.replace(/^\/calls-api/, "")
 				}
 			}
 		},

@@ -1,0 +1,61 @@
+{
+	"name": "calls-service",
+	"$schema": "../../../node_modules/nx/schemas/project-schema.json",
+	"projectType": "application",
+	"sourceRoot": "apps/backend/calls/src",
+	"tags": ["backend", "rust"],
+	"targets": {
+		"build": {
+			"cache": true,
+			"executor": "nx:run-commands",
+			"outputs": ["{workspaceRoot}/target/debug/calls", "{workspaceRoot}/target/release/calls"],
+			"options": {
+				"cwd": ".",
+				"command": "cargo build -p calls"
+			},
+			"configurations": {
+				"production": {
+					"command": "cargo build -p calls --release"
+				}
+			}
+		},
+		"test": {
+			"cache": true,
+			"executor": "nx:run-commands",
+			"outputs": [],
+			"options": {
+				"cwd": ".",
+				"command": "cargo test -p calls"
+			}
+		},
+		"lint": {
+			"cache": true,
+			"executor": "nx:run-commands",
+			"options": {
+				"cwd": ".",
+				"command": "cargo clippy -p calls -- -D warnings"
+			}
+		},
+		"export-openapi": {
+			"cache": true,
+			"executor": "nx:run-commands",
+			"outputs": ["{workspaceRoot}/libs/frontend/api/specs/openapi-calls.json"],
+			"options": {
+				"cwd": ".",
+				"command": "cargo run --bin export-openapi-calls -- libs/frontend/api/specs/openapi-calls.json"
+			}
+		},
+		"dev": {
+			"executor": "nx:run-commands",
+			"options": {
+				"cwd": ".",
+				"command": "cargo run --bin calls"
+			},
+			"configurations": {
+				"production": {
+					"command": "cargo run --bin calls --release"
+				}
+			}
+		}
+	}
+}

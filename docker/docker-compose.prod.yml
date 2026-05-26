@@ -23,6 +23,7 @@ services:
             - main-service
             - storage-service
             - socket-service
+            - calls-service
             - authentik_server
 
     postgres:
@@ -291,6 +292,32 @@ services:
             - net
         volumes:
             - storage_data:/static
+
+    calls-service:
+        restart: unless-stopped
+        container_name: calls-service
+        image: ghcr.io/drummer143/task-manager/calls-service:${IMAGE_TAG:-latest}
+        depends_on:
+            postgres:
+                condition: service_healthy
+            authentik_server:
+                condition: service_healthy
+        deploy:
+            resources:
+                limits:
+                    memory: 128M
+                    cpus: "0.25"
+        environment:
+            DATABASE_URL: ${DATABASE_URL}
+            PORT: ${CALLS_SERVICE_PORT}
+            AUTHENTIK_JWKS_URL: ${AUTHENTIK_JWKS_URL}
+            AUTHENTIK_AUDIENCE: ${AUTHENTIK_AUDIENCE}
+            LIVEKIT_URL: ${LIVEKIT_URL}
+            LIVEKIT_API_KEY: ${LIVEKIT_API_KEY}
+            LIVEKIT_API_SECRET: ${LIVEKIT_API_SECRET}
+            CORS_ORIGINS: https://${DOMAIN},https://calls.${DOMAIN}
+        networks:
+            - net
 
     socket-service:
         restart: unless-stopped

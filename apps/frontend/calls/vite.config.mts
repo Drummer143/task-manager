@@ -27,6 +27,7 @@ export default defineConfig(({ mode }) => {
 	const apiUrl = env.API_URL || "http://localhost:8080";
 	const storageUrl = env.STORAGE_URL || "http://localhost:8082";
 	const socketUrl = env.SOCKET_URL || "http://localhost:8078";
+	const callsApiUrl = env.CALLS_API_URL || "http://localhost:8084";
 
 	const https = loadCerts();
 
@@ -55,6 +56,12 @@ export default defineConfig(({ mode }) => {
 					changeOrigin: true,
 					secure: false,
 					ws: true
+				},
+				"/calls-api": {
+					target: callsApiUrl,
+					changeOrigin: true,
+					secure: false,
+					rewrite: path => path.replace(/^\/calls-api/, "")
 				}
 			}
 		},

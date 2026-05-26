@@ -1,52 +1,44 @@
 [package]
-name = "main"
+name = "calls"
 version = "0.1.0"
 edition = "2024"
 
-[features]
-test_auth_guard = []
-
 [lib]
-name = "app"
+name = "calls_app"
 path = "src/app.rs"
 
 [[bin]]
-name = "export-openapi"
+name = "calls"
+path = "src/main.rs"
+
+[[bin]]
+name = "export-openapi-calls"
 path = "src/bin/export_openapi.rs"
 
 [dependencies]
 mimalloc = { version = "0.1", default-features = false }
-axum = { version = "0.8", features = ["multipart"] }
-axum-extra = { version = "0.10", features = ["cookie", "typed-header"] }
+axum = "0.8"
+axum-extra = { version = "0.10", features = ["typed-header"] }
 axum-macros = "0.5"
-bcrypt = "0.18"
 error_handlers = { path = "../../../libs/backend/error-handlers" }
-insta = { version = "1.45", features = ["json", "redactions"] }
-http-body-util = "0.1"
+livekit-api = "0.4.24"
 sql = { path = "../../../libs/backend/sql" }
 migrator = { path = "../../../libs/backend/migrator" }
-image = { version = "0.25", default-features = false, features = ["jpeg", "png", "webp"] }
-mime = "0.3"
 tokio = { version = "1", features = ["full"] }
 tower = "0.5"
 tower-http = { version = "0.6", features = ["trace", "cors"] }
 serde = { version = "1", features = ["derive"] }
 serde_json = "1"
-serde_urlencoded = "0.7"
-serde_path_to_error = "0.1"
 jsonwebtoken = { version = "10", default-features = false, features = [
     "rust_crypto",
 ] }
-# lapin = { version = "2.5", default-features = false, features = ["rustls"] }
 reqwest = { version = "0.12", default-features = false, features = [
     "json",
-    "multipart",
     "rustls-tls",
     "charset",
     "http2",
     "macos-system-configuration",
 ] }
-form_urlencoded = "1.2"
 tracing = "0.1"
 tracing-subscriber = { version = "0.3", features = ["fmt", "env-filter"] }
 chrono = { version = "0.4", features = ["serde"] }
@@ -63,4 +55,3 @@ sqlx = { version = "0.8", features = [
 ] }
 uuid = { version = "1", features = ["v4", "serde"] }
 utils = { path = "../../../libs/backend/utils" }
-tokio-cron-scheduler = "0.15.1"

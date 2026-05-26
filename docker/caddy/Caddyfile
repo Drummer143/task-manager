@@ -10,6 +10,10 @@ api.{$DOMAIN} {
     reverse_proxy main-service:8080
 }
 
+calls.api.{$DOMAIN} {
+    reverse_proxy calls-service:8084
+}
+
 storage.{$DOMAIN} {
     reverse_proxy storage-service:8082
 }

@@ -7,7 +7,6 @@
 
 export * from './assetTarget';
 export * from './boardStatusResponse';
-export * from './callTokenResponse';
 export * from './createBoardStatusRequest';
 export * from './createBoardStatusRequestLocalizations';
 export * from './createDraftRequest';
