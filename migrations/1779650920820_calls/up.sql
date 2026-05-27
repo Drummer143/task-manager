@@ -2,6 +2,7 @@ CREATE TABLE
     IF NOT EXISTS "rooms" (
         "id" uuid PRIMARY KEY NOT NULL DEFAULT (uuid_generate_v4 ()),
         "name" text,
+        "visibility" text NOT NULL DEFAULT 'private',
         "created_by" uuid NOT NULL,
         "created_at" timestamp NOT NULL DEFAULT (CURRENT_TIMESTAMP),
         "updated_at" timestamp NOT NULL DEFAULT (CURRENT_TIMESTAMP),

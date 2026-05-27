@@ -8,6 +8,8 @@ use crate::{config::Config, types::app_state::AppState};
 mod config;
 mod controllers;
 mod db_connections;
+mod redis;
+mod repos;
 mod router;
 mod services;
 mod swagger;
@@ -34,8 +36,12 @@ pub async fn build() -> (axum::Router, Config) {
         .await
         .expect("Failed to parse JWKS");
 
-    let postgres =
-        db_connections::init_databases(&config.database_url, config.db_max_connections).await;
+    let (postgres, redis_pool) = db_connections::init_databases(
+        &config.database_url,
+        &config.redis_url,
+        config.db_max_connections,
+    )
+    .await;
 
     migrator::migrator::migrate(migrator::MigrationDirection::Up)
         .await
@@ -68,10 +74,12 @@ pub async fn build() -> (axum::Router, Config) {
 
     let app_state = AppState {
         postgres,
+        redis: Arc::new(redis_pool),
         auth,
         livekit_url: Arc::new(config.livekit_url.clone()),
         livekit_api_key: Arc::new(config.livekit_api_key.clone()),
         livekit_api_secret: Arc::new(config.livekit_api_secret.clone()),
+        access_token_default_ttl_seconds: config.access_token_default_ttl_seconds,
     };
 
     let router = axum::Router::new()

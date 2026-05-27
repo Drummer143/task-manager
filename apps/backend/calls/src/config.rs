@@ -1,5 +1,6 @@
 pub struct Config {
     pub database_url: String,
+    pub redis_url: String,
     pub port: u16,
     pub authentik_jwks_url: String,
     pub authentik_audience: String,
@@ -9,6 +10,7 @@ pub struct Config {
     pub cors_origins: Vec<axum::http::HeaderValue>,
     pub db_max_connections: u32,
     pub log_filter: String,
+    pub access_token_default_ttl_seconds: u64,
 }
 
 impl Config {
@@ -16,6 +18,7 @@ impl Config {
         let mut errors = Vec::new();
 
         let database_url = std::env::var("DATABASE_URL").ok();
+        let redis_url = std::env::var("REDIS_URL").ok();
         let authentik_jwks_url = std::env::var("AUTHENTIK_JWKS_URL").ok();
         let authentik_audience = std::env::var("AUTHENTIK_AUDIENCE").ok();
         let livekit_url = std::env::var("LIVEKIT_URL").ok();
@@ -24,6 +27,9 @@ impl Config {
 
         if database_url.is_none() {
             errors.push("DATABASE_URL");
+        }
+        if redis_url.is_none() {
+            errors.push("REDIS_URL");
         }
         if authentik_jwks_url.is_none() {
             errors.push("AUTHENTIK_JWKS_URL");
@@ -67,8 +73,14 @@ impl Config {
         let log_filter =
             std::env::var("LOG_FILTER").unwrap_or_else(|_| "debug,sqlx=warn".to_string());
 
+        let access_token_default_ttl_seconds = std::env::var("ACCESS_TOKEN_DEFAULT_TTL_SECONDS")
+            .unwrap_or_else(|_| "43200".to_string()) // 12h
+            .parse::<u64>()
+            .map_err(|_| "ACCESS_TOKEN_DEFAULT_TTL_SECONDS must be a valid u64".to_string())?;
+
         Ok(Config {
             database_url: database_url.unwrap(),
+            redis_url: redis_url.unwrap(),
             port,
             authentik_jwks_url: authentik_jwks_url.unwrap(),
             authentik_audience: authentik_audience.unwrap(),
@@ -78,6 +90,7 @@ impl Config {
             cors_origins,
             db_max_connections,
             log_filter,
+            access_token_default_ttl_seconds,
         })
     }
 }

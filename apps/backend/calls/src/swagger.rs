@@ -3,7 +3,7 @@ use utils::swagger::SecurityAddon;
 #[derive(utoipa::OpenApi)]
 #[openapi(
     paths(
-        crate::controllers::calls::controller::create_token::create_token,
+        crate::controllers::rooms::controller::create_room::create_room,
     ),
     components(schemas(
         error_handlers::handlers::ErrorResponse,

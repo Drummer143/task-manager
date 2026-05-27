@@ -53,5 +53,9 @@ sqlx = { version = "0.8", features = [
     "macros",
     "chrono",
 ] }
+deadpool-redis = "0.22"
+base64 = "0.22"
+rand = "0.9"
+subtle = "2.6"
 uuid = { version = "1", features = ["v4", "serde"] }
 utils = { path = "../../../libs/backend/utils" }

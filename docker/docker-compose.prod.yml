@@ -300,6 +300,8 @@ services:
         depends_on:
             postgres:
                 condition: service_healthy
+            redis:
+                condition: service_healthy
             authentik_server:
                 condition: service_healthy
         deploy:
@@ -309,6 +311,7 @@ services:
                     cpus: "0.25"
         environment:
             DATABASE_URL: ${DATABASE_URL}
+            REDIS_URL: ${REDIS_URL}
             PORT: ${CALLS_SERVICE_PORT}
             AUTHENTIK_JWKS_URL: ${AUTHENTIK_JWKS_URL}
             AUTHENTIK_AUDIENCE: ${AUTHENTIK_AUDIENCE}
