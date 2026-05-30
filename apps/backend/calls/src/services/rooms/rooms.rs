@@ -5,7 +5,10 @@ use uuid::Uuid;
 
 use crate::{
     redis::AccessTokenRepository,
-    repos::rooms::{RoomsRepository, dto::CreateRoomDto},
+    repos::{
+        rooms::{RoomsRepository, dto::CreateRoomDto},
+        users::UsersRepository,
+    },
     types::app_state::AppState,
 };
 
@@ -132,9 +135,16 @@ impl RoomsService {
             }
         }
 
+        // Fetch user to include username in the LiveKit JWT — other participants
+        // see the human name instead of a UUID.
+        let user = UsersRepository::get_one_by_id(&app_state.postgres, user_id)
+            .await
+            .map_err(ErrorResponse::from)?;
+
         let jwt =
             AccessToken::with_api_key(&app_state.livekit_api_key, &app_state.livekit_api_secret)
                 .with_identity(&user_id.to_string())
+                .with_name(&user.username)
                 .with_grants(VideoGrants {
                     room_join: true,
                     room: room_id.to_string(),

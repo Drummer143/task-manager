@@ -32,7 +32,7 @@ const RoomInfo: React.FC<RoomInfoProps> = ({ onJoinComplete }) => {
 	});
 
 	const { isPending: isJoining, mutateAsync: join } = useMutation({
-		mutationFn: () => joinRoom(roomData!.id, { accessToken: roomToken! }),
+		mutationFn: () => joinRoom(roomData!.id, { accessToken: roomToken }),
 		onSuccess: data =>
 			onJoinComplete({
 				token: data.token,

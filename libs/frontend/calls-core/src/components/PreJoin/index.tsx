@@ -45,23 +45,32 @@ const PreJoin: React.FC<PreJoinProps> = ({ onJoinComplete }) => {
 
 	const handleJoinComplete = useCallback(
 		(params: Pick<OnJoinCompleteParams, "token" | "serverUrl">) => {
-			onJoinComplete({
-				...params,
-				audioEnabled,
-				camId,
-				micId,
-				videoEnabled
-			});
+			audioTrack?.stop();
+			videoTrack?.stop();
+
+			setTimeout(
+				() =>
+					onJoinComplete({
+						...params,
+						audioEnabled,
+						camId,
+						micId,
+						videoEnabled
+					}),
+				50
+			);
 		},
-		[onJoinComplete, audioEnabled, camId, micId, videoEnabled]
+		[onJoinComplete, audioEnabled, camId, micId, videoEnabled, audioTrack, videoTrack]
 	);
 
 	useEffect(() => {
-		if (!camId && cams.length) setCamId(cams[0].deviceId);
+		// `deviceId` is empty until the browser grants getUserMedia permission;
+		// don't write that placeholder to the store.
+		if (!camId && cams.length && cams[0].deviceId) setCamId(cams[0].deviceId);
 	}, [cams, camId, setCamId]);
 
 	useEffect(() => {
-		if (!micId && mics.length) setMicId(mics[0].deviceId);
+		if (!micId && mics.length && mics[0].deviceId) setMicId(mics[0].deviceId);
 	}, [mics, micId, setMicId]);
 
 	useEffect(() => {

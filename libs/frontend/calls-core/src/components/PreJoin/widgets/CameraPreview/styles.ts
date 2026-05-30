@@ -4,6 +4,7 @@ export const useStyles = createStyles(({ css }) => ({
 	videoContainer: css`
 		width: 100%;
 		max-width: 750px;
+		aspect-ratio: 16 / 9;
 
 		display: flex;
 		align-items: center;
