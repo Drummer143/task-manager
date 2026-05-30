@@ -1,9 +1,10 @@
 import React, { useCallback, useMemo } from "react";
 
-import { LiveKitRoom, VideoConference } from "@livekit/components-react";
+import { LiveKitRoom } from "@livekit/components-react";
 import "@livekit/components-styles";
 import { DisconnectReason, RoomOptions } from "livekit-client";
 
+import MeetingShell from "./MeetingShell";
 import { useStyles } from "./styles";
 
 import { OnJoinCompleteParams } from "../PreJoin/types";
@@ -64,10 +65,7 @@ const Room: React.FC<RoomProps> = props => {
 				onError={handleError}
 				onDisconnected={handleDisconnected}
 			>
-				{/* TODO(custom-ui): replace <VideoConference /> with own layout
-				    (tiles grid + custom <ControlBar />) when the prebuilt UI
-				    stops being enough. Prebuilt is fine for MVP. */}
-				<VideoConference />
+				<MeetingShell />
 			</LiveKitRoom>
 		</div>
 	);

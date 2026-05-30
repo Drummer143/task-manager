@@ -5,19 +5,12 @@ import { Button, Flex, Popover, PopoverProps, Select, Space } from "antd";
 
 import { useStyles } from "./styles";
 
+import { buildDeviceOption } from "../../../../helpers/devices";
 import { useDevicePrefs } from "../../../../store/devicePrefs";
 import { STATUS_MESSAGE } from "../../helpers";
 import { DeviceStatus } from "../../types";
 
 const micPopoverTrigger: PopoverProps["trigger"] = ["hover"];
-
-// "Default - Speakers (Realtek) (3142:7301)" -> "Speakers (Realtek)"
-// "Communications - Microphone (USB Audio)" -> "Microphone (USB Audio)"
-const cleanDeviceLabel = (label: string): string =>
-	label
-		.replace(/\s*\([0-9a-f]{4}:[0-9a-f]{4}\)\s*$/i, "")
-		// .replace(/^(Default|Communications)\s*-\s*/i, "")
-		.trim();
 
 interface DeviceSelectsProps {
 	cams: MediaDeviceInfo[];
@@ -50,23 +43,8 @@ const DeviceSelects: React.FC<DeviceSelectsProps> = ({
 
 	const { micId, camId, setMicId, setCamId } = useDevicePrefs();
 
-	const camOptions = useMemo(
-		() =>
-			cams.map(cam => ({
-				label: cleanDeviceLabel(cam.label) || `Camera ${cam.deviceId.slice(0, 6)}`,
-				value: cam.deviceId
-			})),
-		[cams]
-	);
-
-	const micOptions = useMemo(
-		() =>
-			mics.map(mic => ({
-				label: cleanDeviceLabel(mic.label) || `Mic ${mic.deviceId.slice(0, 6)}`,
-				value: mic.deviceId
-			})),
-		[mics]
-	);
+	const camOptions = useMemo(() => cams.map(cam => buildDeviceOption(cam, "Camera")), [cams]);
+	const micOptions = useMemo(() => mics.map(mic => buildDeviceOption(mic, "Mic")), [mics]);
 
 	return (
 		<Flex gap="var(--ant-padding-sm)">
