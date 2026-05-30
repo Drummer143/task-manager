@@ -9,19 +9,299 @@
     "version": "0.1.0"
   },
   "paths": {
-    "/calls/token": {
-      "post": {
+    "/calls/rooms": {
+      "get": {
         "tags": [
-          "Calls"
+          "Rooms"
         ],
-        "operationId": "create_call_token",
+        "operationId": "list_call_rooms",
         "responses": {
           "200": {
-            "description": "Call token created",
+            "description": "Rooms created by the current user",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/CallTokenResponse"
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/Room"
+                  }
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "Rooms"
+        ],
+        "operationId": "create_call_room",
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/CreateRoomDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Call room created",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Room"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/calls/rooms/{room_id}": {
+      "get": {
+        "tags": [
+          "Rooms"
+        ],
+        "operationId": "get_call_room",
+        "parameters": [
+          {
+            "name": "room_id",
+            "in": "path",
+            "description": "Room ID",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Room",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/Room"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Room not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "Rooms"
+        ],
+        "operationId": "delete_call_room",
+        "parameters": [
+          {
+            "name": "room_id",
+            "in": "path",
+            "description": "Room ID",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Room deleted"
+          },
+          "403": {
+            "description": "Only the room owner can delete the room",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Room not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/calls/rooms/{room_id}/access-tokens": {
+      "post": {
+        "tags": [
+          "Rooms"
+        ],
+        "operationId": "generate_room_access_token",
+        "parameters": [
+          {
+            "name": "room_id",
+            "in": "path",
+            "description": "Room ID",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/GenerateRoomTokenDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "Access token generated",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/GenerateRoomTokenResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Only the room owner can issue access tokens",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Internal server error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/calls/rooms/{room_id}/join": {
+      "post": {
+        "tags": [
+          "Rooms"
+        ],
+        "operationId": "join_room",
+        "parameters": [
+          {
+            "name": "room_id",
+            "in": "path",
+            "description": "Room ID",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid"
+            }
+          }
+        ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/JoinRoomDto"
+              }
+            }
+          },
+          "required": true
+        },
+        "responses": {
+          "200": {
+            "description": "LiveKit credentials for the room",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/JoinRoomResponse"
+                }
+              }
+            }
+          },
+          "403": {
+            "description": "Access denied",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Room not found",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ErrorResponse"
                 }
               }
             }
@@ -42,14 +322,25 @@
   },
   "components": {
     "schemas": {
-      "CallTokenResponse": {
+      "CreateRoomDto": {
         "type": "object",
-        "required": [
-          "token"
-        ],
         "properties": {
-          "token": {
-            "type": "string"
+          "name": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "description": "Optional. Falls back to the room id (as string) when omitted."
+          },
+          "visibility": {
+            "oneOf": [
+              {
+                "type": "null"
+              },
+              {
+                "$ref": "#/components/schemas/RoomVisibility"
+              }
+            ]
           }
         }
       },
@@ -91,6 +382,116 @@
             "minimum": 0
           }
         }
+      },
+      "GenerateRoomTokenDto": {
+        "type": "object",
+        "description": "Body for issuing a new access token for a private room (host only).",
+        "properties": {
+          "ttlSeconds": {
+            "type": [
+              "integer",
+              "null"
+            ],
+            "format": "int64",
+            "description": "Optional TTL in seconds. Falls back to the service default when omitted.",
+            "minimum": 0
+          }
+        }
+      },
+      "GenerateRoomTokenResponse": {
+        "type": "object",
+        "required": [
+          "token",
+          "expiresIn"
+        ],
+        "properties": {
+          "expiresIn": {
+            "type": "integer",
+            "format": "int64",
+            "minimum": 0
+          },
+          "token": {
+            "type": "string"
+          }
+        }
+      },
+      "JoinRoomDto": {
+        "type": "object",
+        "description": "Body for joining a room. `access_token` is required only for private rooms.",
+        "properties": {
+          "accessToken": {
+            "type": [
+              "string",
+              "null"
+            ]
+          }
+        }
+      },
+      "JoinRoomResponse": {
+        "type": "object",
+        "required": [
+          "token",
+          "serverUrl"
+        ],
+        "properties": {
+          "serverUrl": {
+            "type": "string",
+            "description": "LiveKit server URL (wss://...)."
+          },
+          "token": {
+            "type": "string",
+            "description": "LiveKit access JWT used by the client to connect."
+          }
+        }
+      },
+      "Room": {
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "visibility",
+          "createdBy",
+          "createdAt",
+          "updatedAt"
+        ],
+        "properties": {
+          "createdAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "createdBy": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "deletedAt": {
+            "type": [
+              "string",
+              "null"
+            ],
+            "format": "date-time"
+          },
+          "id": {
+            "type": "string",
+            "format": "uuid"
+          },
+          "name": {
+            "type": "string"
+          },
+          "updatedAt": {
+            "type": "string",
+            "format": "date-time"
+          },
+          "visibility": {
+            "$ref": "#/components/schemas/RoomVisibility"
+          }
+        }
+      },
+      "RoomVisibility": {
+        "type": "string",
+        "enum": [
+          "public",
+          "private"
+        ]
       }
     },
     "securitySchemes": {

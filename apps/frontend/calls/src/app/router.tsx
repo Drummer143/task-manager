@@ -2,21 +2,28 @@ import React from "react";
 
 import { createBrowserRouter, Navigate } from "react-router";
 
+import Layout from "../widgets/Layout";
+
 const Room = React.lazy(() => import("../pages/Room"));
-const PreJoin = React.lazy(() => import("../pages/PreJoin"));
+const Lobby = React.lazy(() => import("../pages/Lobby"));
 
 export const router = createBrowserRouter([
 	{
-		path: "/room/:id",
-		Component: Room
-	},
-	{
-		path: "/pre-join",
-		Component: PreJoin
-	},
-	{
-		path: "*",
-		element: <Navigate to="/pre-join" replace />
+		path: "/",
+		Component: Layout,
+		children: [
+			{
+				index: true,
+				Component: Lobby
+			},
+			{
+				path: "room/:id",
+				Component: Room
+			},
+			{
+				path: "*",
+				element: <Navigate to="/" replace />
+			}
+		]
 	}
 ]);
-

@@ -45,7 +45,9 @@ export const parseApiError = (
 
 	return (
 		customErrorHandle?.[errorData.statusCode] ||
+		customErrorHandle?.["unknown"] ||
 		defaultErrorMap[error.response.status] ||
 		defaultErrorMap["unknown"]
 	);
 };
+

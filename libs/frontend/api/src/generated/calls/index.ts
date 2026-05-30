@@ -5,7 +5,12 @@
  * OpenAPI spec version: 0.1.0
  */
 import type {
-  CallTokenResponse
+  CreateRoomDto,
+  GenerateRoomTokenDto,
+  GenerateRoomTokenResponse,
+  JoinRoomDto,
+  JoinRoomResponse,
+  Room
 } from './schemas';
 
 import { fetcher } from '../../fetcher';
@@ -14,11 +19,64 @@ import { fetcher } from '../../fetcher';
 type SecondParameter<T extends (...args: never) => unknown> = Parameters<T>[1];
 
 
-  export const createCallToken = (
+  export const listCallRooms = (
     
- options?: SecondParameter<typeof fetcher<CallTokenResponse>>,) => {
-      return fetcher<CallTokenResponse>(
-      {url: `/calls-api/calls/token`, method: 'POST'
+ options?: SecondParameter<typeof fetcher<Room[]>>,) => {
+      return fetcher<Room[]>(
+      {url: `/calls-api/calls/rooms`, method: 'GET'
+    },
+      options);
+    }
+  
+export const createCallRoom = (
+    createRoomDto: CreateRoomDto,
+ options?: SecondParameter<typeof fetcher<Room>>,) => {
+      return fetcher<Room>(
+      {url: `/calls-api/calls/rooms`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: createRoomDto
+    },
+      options);
+    }
+  
+export const getCallRoom = (
+    roomId: string,
+ options?: SecondParameter<typeof fetcher<Room>>,) => {
+      return fetcher<Room>(
+      {url: `/calls-api/calls/rooms/${roomId}`, method: 'GET'
+    },
+      options);
+    }
+  
+export const deleteCallRoom = (
+    roomId: string,
+ options?: SecondParameter<typeof fetcher<void>>,) => {
+      return fetcher<void>(
+      {url: `/calls-api/calls/rooms/${roomId}`, method: 'DELETE'
+    },
+      options);
+    }
+  
+export const generateRoomAccessToken = (
+    roomId: string,
+    generateRoomTokenDto: GenerateRoomTokenDto,
+ options?: SecondParameter<typeof fetcher<GenerateRoomTokenResponse>>,) => {
+      return fetcher<GenerateRoomTokenResponse>(
+      {url: `/calls-api/calls/rooms/${roomId}/access-tokens`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: generateRoomTokenDto
+    },
+      options);
+    }
+  
+export const joinRoom = (
+    roomId: string,
+    joinRoomDto: JoinRoomDto,
+ options?: SecondParameter<typeof fetcher<JoinRoomResponse>>,) => {
+      return fetcher<JoinRoomResponse>(
+      {url: `/calls-api/calls/rooms/${roomId}/join`, method: 'POST',
+      headers: {'Content-Type': 'application/json', },
+      data: joinRoomDto
     },
       options);
     }
@@ -28,4 +86,9 @@ type AwaitedInput<T> = PromiseLike<T> | T;
 
     type Awaited<O> = O extends AwaitedInput<infer T> ? T : never;
 
-export type CreateCallTokenResult = NonNullable<Awaited<ReturnType<typeof createCallToken>>>
+export type ListCallRoomsResult = NonNullable<Awaited<ReturnType<typeof listCallRooms>>>
+export type CreateCallRoomResult = NonNullable<Awaited<ReturnType<typeof createCallRoom>>>
+export type GetCallRoomResult = NonNullable<Awaited<ReturnType<typeof getCallRoom>>>
+export type DeleteCallRoomResult = NonNullable<Awaited<ReturnType<typeof deleteCallRoom>>>
+export type GenerateRoomAccessTokenResult = NonNullable<Awaited<ReturnType<typeof generateRoomAccessToken>>>
+export type JoinRoomResult = NonNullable<Awaited<ReturnType<typeof joinRoom>>>

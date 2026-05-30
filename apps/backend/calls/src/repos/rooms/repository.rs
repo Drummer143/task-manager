@@ -11,10 +11,21 @@ impl RoomsRepository {
         executor: impl sqlx::Executor<'a, Database = Postgres>,
         dto: &CreateRoomDto,
     ) -> Result<Room, sqlx::Error> {
+        // Pre-generate id so we can use it as a name fallback in a single INSERT.
+        let id = Uuid::new_v4();
+        let name = dto
+            .name
+            .as_deref()
+            .map(str::trim)
+            .filter(|s| !s.is_empty())
+            .map(str::to_string)
+            .unwrap_or_else(|| id.to_string());
+
         let room = sqlx::query_as::<_, Room>(
-            "INSERT INTO rooms (name, visibility, created_by) VALUES ($1, $2, $3) RETURNING *",
+            "INSERT INTO rooms (id, name, visibility, created_by) VALUES ($1, $2, $3, $4) RETURNING *",
         )
-        .bind(&dto.name)
+        .bind(id)
+        .bind(name)
         .bind(dto.visibility.as_ref().unwrap_or(&RoomVisibility::Private))
         .bind(dto.created_by)
         .fetch_one(executor)

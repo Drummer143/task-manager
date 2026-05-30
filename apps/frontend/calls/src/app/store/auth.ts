@@ -1,0 +1,65 @@
+import { getProfile } from "@task-manager/api/main";
+import { User } from "@task-manager/api/main/schemas";
+import { User as OidcUser } from "oidc-client-ts";
+import { create } from "zustand";
+
+import { userManager } from "../userManager";
+
+type GetSessionResponse = {
+	user: User;
+	identity: OidcUser;
+};
+
+interface AuthState {
+	user: User;
+	loading: boolean;
+	identity: OidcUser;
+
+	getSession: () => Promise<GetSessionResponse>;
+}
+
+let promise: Promise<GetSessionResponse> | undefined = undefined;
+
+export const useAuthStore = create<AuthState>((set, get) => ({
+	loading: false,
+
+	user: undefined as unknown as User,
+
+	identity: undefined as unknown as OidcUser,
+
+	getSession: async () => {
+		if (promise) {
+			return promise;
+		}
+
+		const { loading, user, identity } = get();
+
+		if (loading && user) {
+			return { user, identity };
+		}
+
+		set({ loading: true });
+
+		try {
+			promise = Promise.all([getProfile(), userManager.getUser()]).then(
+				([user, identity]) => {
+					if (!identity) {
+						throw new Error("Failed to get user profile");
+					}
+
+					return { user, identity };
+				}
+			);
+
+			const data = await promise;
+
+			set(data);
+
+			return data;
+		} finally {
+			set({ loading: false });
+
+			promise = undefined;
+		}
+	}
+}));

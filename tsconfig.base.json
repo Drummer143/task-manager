@@ -28,7 +28,8 @@
 			"@task-manager/file-transfer-worker": [
 				"libs/workers/file-transfer-worker/src/index.ts"
 			],
-			"@task-manager/calls-core": ["libs/frontend/calls-core/src/index.ts"]
+			"@task-manager/calls-core": ["libs/frontend/calls-core/src/index.ts"],
+			"@task-manager/calls-core/*": ["libs/frontend/calls-core/src/*"]
 		}
 	},
 	"exclude": ["node_modules", "tmp"]

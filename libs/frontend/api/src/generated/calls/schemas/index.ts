@@ -5,6 +5,12 @@
  * OpenAPI spec version: 0.1.0
  */
 
-export * from './callTokenResponse';
+export * from './createRoomDto';
 export * from './errorResponse';
 export * from './errorResponseDetails';
+export * from './generateRoomTokenDto';
+export * from './generateRoomTokenResponse';
+export * from './joinRoomDto';
+export * from './joinRoomResponse';
+export * from './room';
+export * from './roomVisibility';

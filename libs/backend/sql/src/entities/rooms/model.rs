@@ -65,6 +65,7 @@ impl Type<Postgres> for RoomVisibility {
 }
 
 #[derive(Debug, Clone, FromRow, ToSchema, Serialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Room {
     pub id: Uuid,
     pub name: String,
