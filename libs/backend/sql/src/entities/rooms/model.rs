@@ -2,11 +2,16 @@ use std::{fmt::Display, str::FromStr};
 
 use chrono::{DateTime, Utc};
 use serde::{Deserialize, Serialize};
-use sqlx::{Decode, Encode, FromRow, Postgres, Type, encode::IsNull, postgres::{PgArgumentBuffer, PgValueRef}};
+use sqlx::{
+    Decode, Encode, FromRow, Postgres, Type,
+    encode::IsNull,
+    postgres::{PgArgumentBuffer, PgValueRef},
+};
 use utoipa::ToSchema;
 use uuid::Uuid;
 
 #[derive(Debug, Clone, ToSchema, Serialize, Deserialize)]
+#[serde(rename_all = "lowercase")]
 pub enum RoomVisibility {
     Public,
     Private,
@@ -70,13 +75,3 @@ pub struct Room {
     pub updated_at: DateTime<Utc>,
     pub deleted_at: Option<DateTime<Utc>>,
 }
-
-// CREATE TABLE
-//     IF NOT EXISTS "rooms" (
-//         "id" uuid PRIMARY KEY NOT NULL DEFAULT (uuid_generate_v4 ()),
-//         "name" text,
-//         "created_by" uuid NOT NULL,
-//         "created_at" timestamp NOT NULL DEFAULT (CURRENT_TIMESTAMP),
-//         "updated_at" timestamp NOT NULL DEFAULT (CURRENT_TIMESTAMP),
-//         "deleted_at" timestamp
-//     );

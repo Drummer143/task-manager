@@ -1,3 +1,3 @@
 pub mod rooms;
 
-pub use rooms::CallsService;
+pub use rooms::RoomsService;
