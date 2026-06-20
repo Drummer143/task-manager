@@ -1,0 +1,9 @@
+{
+	"name": "tiptap-slash-menu",
+	"$schema": "../../../node_modules/nx/schemas/project-schema.json",
+	"sourceRoot": "libs/frontend/tiptap-slash-menu/src",
+	"projectType": "library",
+	"tags": [],
+	"// targets": "to see all targets run: nx show project tiptap-slash-menu --web",
+	"targets": {}
+}
