@@ -23,7 +23,8 @@ export type SlashMenuRef = {
 
 interface SlashMenuProps extends Omit<SuggestionProps, "items"> {
 	items: SlashMenuGroup[];
-	ref: React.Ref<SlashMenuRef>;
+
+	ref?: React.Ref<SlashMenuRef>;
 }
 
 const SlashMenu: React.FC<SlashMenuProps> = ({ ref, items, ...props }) => {

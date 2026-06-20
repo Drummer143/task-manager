@@ -1,5 +1,6 @@
 import { Extension } from "@tiptap/core";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
+import { ReplaceStep } from "@tiptap/pm/transform";
 import { Suggestion } from "@tiptap/suggestion";
 
 import { getSuggestionConfig } from "./renderMenu";
@@ -48,15 +49,18 @@ export const SlashCommandsExtension = Extension.create<SlashCommandsOptions>({
 				},
 				shouldResetDismissed: ({ transaction }) => {
 					if (transaction.getMeta(RESET_DISMISSED_META)) return true;
+
 					if (!transaction.docChanged) return false;
+
 					return transaction.steps.some(step => {
-						const slice = (step as any).slice;
-						if (!slice?.content) return false;
-						const inserted = slice.content.textBetween(
-							0,
-							slice.content.size,
-							"\n"
-						);
+						if (!(step instanceof ReplaceStep)) return false;
+
+						const { content } = step.slice;
+
+						if (!content.size) return false;
+
+						const inserted = content.textBetween(0, content.size, "\n");
+
 						return inserted.length > 0 && !/^\s+$/.test(inserted);
 					});
 				},
