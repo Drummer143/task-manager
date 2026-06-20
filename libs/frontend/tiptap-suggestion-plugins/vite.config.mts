@@ -8,7 +8,7 @@ import { nxCopyAssetsPlugin } from "@nx/vite/plugins/nx-copy-assets.plugin";
 
 export default defineConfig(() => ({
 	root: import.meta.dirname,
-	cacheDir: "../../../node_modules/.vite/libs/frontend/tiptap-slash-menu",
+	cacheDir: "../../../node_modules/.vite/libs/frontend/tiptap-suggestion-plugins",
 	plugins: [
 		react(),
 		nxViteTsPaths(),
@@ -19,42 +19,32 @@ export default defineConfig(() => ({
 			pathsToAliases: false
 		})
 	],
-	// Uncomment this if you are using workers.
-	// worker: {
-	//   plugins: () => [ nxViteTsPaths() ],
-	// },
-	// Configuration for building your library.
-	// See: https://vite.dev/guide/build.html#library-mode
 	build: {
-		outDir: "../../../dist/libs/frontend/tiptap-slash-menu",
+		outDir: "../../../dist/libs/frontend/tiptap-suggestion-plugins",
 		emptyOutDir: true,
 		reportCompressedSize: true,
 		commonjsOptions: {
 			transformMixedEsModules: true
 		},
 		lib: {
-			// Could also be a dictionary or array of multiple entry points.
 			entry: "src/index.ts",
-			name: "tiptap-slash-menu",
+			name: "tiptap-suggestion-plugins",
 			fileName: "index",
-			// Change this to the formats you want to support.
-			// Don't forget to update your package.json as well.
 			formats: ["es" as const]
 		},
 		rollupOptions: {
-			// External packages that should not be bundled into your library.
 			external: ["react", "react-dom", "react/jsx-runtime"]
 		}
 	},
 	test: {
-		name: "tiptap-slash-menu",
+		name: "tiptap-suggestion-plugins",
 		watch: false,
 		globals: true,
 		environment: "jsdom",
 		include: ["{src,tests}/**/*.{test,spec}.{js,mjs,cjs,ts,mts,cts,jsx,tsx}"],
 		reporters: ["default"],
 		coverage: {
-			reportsDirectory: "../../../coverage/libs/frontend/tiptap-slash-menu",
+			reportsDirectory: "../../../coverage/libs/frontend/tiptap-suggestion-plugins",
 			provider: "v8" as const
 		}
 	}

@@ -1,0 +1,9 @@
+{
+	"name": "tiptap-suggestion-plugins",
+	"$schema": "../../../node_modules/nx/schemas/project-schema.json",
+	"sourceRoot": "libs/frontend/tiptap-suggestion-plugins/src",
+	"projectType": "library",
+	"tags": [],
+	"// targets": "to see all targets run: nx show project tiptap-suggestion-plugins --web",
+	"targets": {}
+}

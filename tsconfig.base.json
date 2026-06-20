@@ -30,7 +30,7 @@
 			"@task-manager/file-transfer-worker": [
 				"libs/workers/file-transfer-worker/src/index.ts"
 			],
-			"@task-manager/tiptap-slash-menu": ["libs/frontend/tiptap-slash-menu/src/index.ts"]
+			"@task-manager/tiptap-suggestion-plugins": ["libs/frontend/tiptap-suggestion-plugins/src/index.ts"]
 		}
 	},
 	"exclude": ["node_modules", "tmp"]

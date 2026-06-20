@@ -156,4 +156,3 @@ const SlashMenu: React.FC<SlashMenuProps> = ({ ref, items, ...props }) => {
 };
 
 export default SlashMenu;
-

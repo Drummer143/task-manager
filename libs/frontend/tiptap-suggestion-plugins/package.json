@@ -1,5 +1,5 @@
 {
-	"name": "@task-manager/tiptap-slash-menu",
+	"name": "@task-manager/tiptap-suggestion-plugins",
 	"version": "0.0.1",
 	"main": "./index.js",
 	"types": "./index.d.ts",

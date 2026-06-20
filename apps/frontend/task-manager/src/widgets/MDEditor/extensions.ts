@@ -2,7 +2,7 @@ import React from "react";
 
 import { BoldOutlined, ItalicOutlined } from "@ant-design/icons";
 import { FileRendererPlugin, FileUploadPlugin } from "@task-manager/tiptap-file-plugin";
-import { SlashCommandsExtension } from "@task-manager/tiptap-slash-menu";
+import { SlashCommandsExtension } from "@task-manager/tiptap-suggestion-plugins";
 import { type Extension, type Node } from "@tiptap/core";
 import Placeholder from "@tiptap/extension-placeholder";
 import StarterKit from "@tiptap/starter-kit";
