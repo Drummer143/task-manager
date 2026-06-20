@@ -1,8 +1,8 @@
-import fs from "node:fs";
-import path from "node:path";
 import { nxCopyAssetsPlugin } from "@nx/vite/plugins/nx-copy-assets.plugin";
 import { nxViteTsPaths } from "@nx/vite/plugins/nx-tsconfig-paths.plugin";
 import react from "@vitejs/plugin-react";
+import fs from "node:fs";
+import path from "node:path";
 import { visualizer } from "rollup-plugin-visualizer";
 import { loadEnv } from "vite";
 import { defineConfig } from "vitest/config";

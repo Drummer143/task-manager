@@ -6,8 +6,8 @@
 	"main": "./index.js",
 	"types": "./index.d.ts",
 	"dependencies": {
-		"@tiptap/core": "^2.11.9",
-		"@tiptap/pm": "^2.11.9",
+		"@tiptap/core": "^3.20.1",
+		"@tiptap/pm": "^3.20.1",
 		"minimatch": "^10.0.1"
 	}
 }
