@@ -34,6 +34,5 @@ pub async fn create_workspace(
         },
     )
     .await
-    .map_err(ErrorResponse::from)
     .map(|w| Json(w.into()))
 }

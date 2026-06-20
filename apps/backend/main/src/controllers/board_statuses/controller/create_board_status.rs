@@ -34,10 +34,8 @@ pub async fn create_board_status(
     Path(page_id): Path<Uuid>,
     ValidatedJson(dto): ValidatedJson<CreateBoardStatusRequest>,
 ) -> Result<Json<BoardStatusResponse>, ErrorResponse> {
-    let mut tx = app_state.postgres.begin().await?;
-
     let board_status = BoardStatusService::create(
-        &mut tx,
+        &app_state.postgres,
         CreateBoardStatusDto {
             page_id,
             initial: dto.initial,
@@ -61,7 +59,5 @@ pub async fn create_board_status(
         })
     })?;
 
-    tx.commit().await.map_err(ErrorResponse::from)?;
-    
     Ok(board_status)
 }

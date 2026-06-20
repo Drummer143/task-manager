@@ -1,3 +1,3 @@
-mod board_statuses;
+mod service;
 
-pub use board_statuses::BoardStatusService;
+pub use service::BoardStatusService;

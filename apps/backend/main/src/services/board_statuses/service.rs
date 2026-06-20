@@ -1,5 +1,4 @@
 use error_handlers::handlers::ErrorResponse;
-use sqlx::PgConnection;
 
 use crate::repos::board_statuses::{
     BoardStatusRepository, CreateBoardStatusDto, UpdateBoardStatusDto,
@@ -12,31 +11,31 @@ pub struct BoardStatusService;
 impl BoardStatusService {
     // QUERIES
 
-    pub async fn get_board_statuses_by_page_id<'a>(
-        executor: impl sqlx::Executor<'a, Database = sqlx::Postgres>,
+    pub async fn get_board_statuses_by_page_id(
+        pool: &sqlx::PgPool,
         page_id: Uuid,
     ) -> Result<Vec<BoardStatus>, ErrorResponse> {
-        BoardStatusRepository::get_board_statuses_by_page_id(executor, page_id)
+        BoardStatusRepository::get_board_statuses_by_page_id(pool, page_id)
             .await
             .map_err(ErrorResponse::from)
     }
 
     // COMMANDS
 
-    pub async fn create<'a>(
-        executor: &mut PgConnection,
+    pub async fn create(
+        pool: &sqlx::PgPool,
         dto: CreateBoardStatusDto,
     ) -> Result<BoardStatus, ErrorResponse> {
         let initial = dto.initial.unwrap_or(false);
 
         if initial {
             let initial_status =
-                BoardStatusRepository::get_initial_board_status_by_page_id(&mut *executor, dto.page_id)
+                BoardStatusRepository::get_initial_board_status_by_page_id(pool, dto.page_id)
                     .await
                     .map_err(ErrorResponse::from)?;
 
             BoardStatusRepository::update(
-                &mut *executor,
+                pool,
                 initial_status.id,
                 UpdateBoardStatusDto {
                     initial: Some(false),
@@ -48,7 +47,7 @@ impl BoardStatusService {
             .map_err(ErrorResponse::from)?;
         }
 
-        BoardStatusRepository::create(&mut *executor, dto)
+        BoardStatusRepository::create(pool, dto)
             .await
             .map_err(ErrorResponse::from)
     }
