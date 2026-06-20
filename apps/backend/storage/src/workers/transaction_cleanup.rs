@@ -39,7 +39,7 @@ async fn run_cleanup(state: &AppState) -> Result<(), Box<dyn std::error::Error>>
         Ok(txs) => txs,
         Err(e) => {
             error!("Failed to get inactive transactions: {:?}", e);
-            return Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, format!("{:?}", e))));
+            return Err(Box::new(std::io::Error::other(format!("{:?}", e))));
         }
     };
 
@@ -80,22 +80,21 @@ async fn run_cleanup(state: &AppState) -> Result<(), Box<dyn std::error::Error>>
             // Delete if some chunks uploaded but inactive > 24 hours
             let mut conn = state.redis.get().await?;
             let score: Option<f64> = deadpool_redis::redis::AsyncCommands::zscore(&mut conn, "tx_activity", tx_id.to_string()).await?;
-            if let Some(s) = score {
-                if s < twenty_four_hours_ago {
-                    should_delete = true;
-                }
+            if let Some(s) = score
+                && s < twenty_four_hours_ago
+            {
+                should_delete = true;
             }
         }
 
         if should_delete {
             // Remove temp file
-            if let crate::redis::transaction::TransactionType::ChunkedUpload { path_to_file } 
-                | crate::redis::transaction::TransactionType::WholeFileUpload { path_to_file } = meta.transaction_type {
-                if let Err(e) = tokio::fs::remove_file(&path_to_file).await {
-                    if e.kind() != std::io::ErrorKind::NotFound {
-                        error!("Failed to remove temp file {} for tx {}: {}", path_to_file, tx_id, e);
-                    }
-                }
+            if let crate::redis::transaction::TransactionType::ChunkedUpload { path_to_file }
+                | crate::redis::transaction::TransactionType::WholeFileUpload { path_to_file } = meta.transaction_type
+                && let Err(e) = tokio::fs::remove_file(&path_to_file).await
+                && e.kind() != std::io::ErrorKind::NotFound
+            {
+                error!("Failed to remove temp file {} for tx {}: {}", path_to_file, tx_id, e);
             }
 
             // Remove from Redis

@@ -51,7 +51,7 @@ async fn run_blob_cleanup(state: &AppState) -> Result<(), Box<dyn std::error::Er
     loop {
         let blob_ids = BlobsRepository::get_all_blob_ids(&state.postgres, limit, offset)
             .await
-            .map_err(|e| Box::new(std::io::Error::new(std::io::ErrorKind::Other, format!("{:?}", e))))?;
+            .map_err(|e| Box::new(std::io::Error::other(format!("{:?}", e))))?;
 
         if blob_ids.is_empty() {
             break;
@@ -96,14 +96,14 @@ async fn run_blob_cleanup(state: &AppState) -> Result<(), Box<dyn std::error::Er
         if !to_delete.is_empty() {
             let deleted_blobs = BlobsRepository::delete_blobs(&state.postgres, &to_delete)
                 .await
-                .map_err(|e| Box::new(std::io::Error::new(std::io::ErrorKind::Other, format!("{:?}", e))))?;
+                .map_err(|e| Box::new(std::io::Error::other(format!("{:?}", e))))?;
 
             for blob in deleted_blobs {
                 // Delete physical file
-                if let Err(e) = tokio::fs::remove_file(&blob.path).await {
-                    if e.kind() != std::io::ErrorKind::NotFound {
-                        error!("Failed to delete file {} for blob {}: {}", blob.path, blob.id, e);
-                    }
+                if let Err(e) = tokio::fs::remove_file(&blob.path).await
+                    && e.kind() != std::io::ErrorKind::NotFound
+                {
+                    error!("Failed to delete file {} for blob {}: {}", blob.path, blob.id, e);
                 }
                 total_deleted += 1;
             }

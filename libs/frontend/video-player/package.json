@@ -10,7 +10,7 @@
 		"antd": "^6.0.0",
 		"antd-style": "^3.7.1",
 		"react": "^19.0.0",
-		"@tiptap/react": "2.11.9"
+		"@tiptap/react": "3.20.1"
 	}
 }
 
