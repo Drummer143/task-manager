@@ -2,6 +2,7 @@ import { Extension } from "@tiptap/core";
 import { Plugin, PluginKey } from "@tiptap/pm/state";
 import { Suggestion } from "@tiptap/suggestion";
 
+import { isSuggestionOpenHotkey } from "./hotkeys";
 import { getSuggestionConfig } from "./renderMenu";
 import { SlashMenuGroup } from "./SlashMenu";
 
@@ -28,7 +29,7 @@ export const SlashCommandsExtension = Extension.create<SlashCommandsOptions>({
 				key: ctrlSpacePluginKey,
 				props: {
 					handleKeyDown(view, event) {
-						if (event.ctrlKey && event.key === " ") {
+						if (isSuggestionOpenHotkey(event)) {
 							view.dispatch(
 								view.state.tr.setMeta(RESET_DISMISSED_META, true)
 							);
@@ -49,12 +50,15 @@ export const SlashCommandsExtension = Extension.create<SlashCommandsOptions>({
 					if (!transaction.docChanged) return false;
 					return transaction.steps.some(step => {
 						const slice = (step as any).slice;
+
 						if (!slice?.content) return false;
+
 						const inserted = slice.content.textBetween(
 							0,
 							slice.content.size,
 							"\n"
 						);
+
 						return inserted.length > 0 && !/^\s+$/.test(inserted);
 					});
 				},
