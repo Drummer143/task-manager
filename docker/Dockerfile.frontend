@@ -13,7 +13,7 @@ RUN cd wasm-hasher && wasm-pack build --target web --out-dir ../hasher-out
 
 FROM node:24-alpine AS builder
 
-RUN corepack enable && corepack prepare pnpm@latest --activate
+RUN corepack enable && corepack prepare pnpm@11.11.0 --activate
 
 RUN apk add --no-cache libc6-compat
 

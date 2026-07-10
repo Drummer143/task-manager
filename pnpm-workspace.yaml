@@ -1,0 +1,13 @@
+allowBuilds:
+  '@parcel/watcher': true
+  '@swc/core': true
+  esbuild: true
+  nx: true
+
+onlyBuiltDependencies:
+  - '@parcel/watcher'
+  - '@swc/core'
+  - es5-ext
+  - esbuild
+  - nx
+  - unrs-resolver
