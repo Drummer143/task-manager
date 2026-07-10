@@ -317,6 +317,18 @@ services:
         networks:
             - net
 
+    task-manager-new:
+        restart: unless-stopped
+        container_name: task-manager-new
+        image: ghcr.io/drummer143/task-manager/task-manager-new:${IMAGE_TAG:-latest}
+        deploy:
+            resources:
+                limits:
+                    memory: 48M
+                    cpus: "0.25"
+        networks:
+            - net
+
 networks:
     net:
 

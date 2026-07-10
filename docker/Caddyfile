@@ -2,6 +2,10 @@
     reverse_proxy task-manager:80
 }
 
+new.{$DOMAIN} {
+    reverse_proxy task-manager-new:80
+}
+
 api.{$DOMAIN} {
     reverse_proxy main-service:8080
 }
