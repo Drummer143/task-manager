@@ -1,7 +1,7 @@
 import { BaseThemeToken, ExtraThemeToken } from "./types";
 
 export const base: BaseThemeToken = {
-	fontSizeXs: "11px"
+	fontSizeXs: "10px"
 };
 
 export const lightExtra: ExtraThemeToken = {

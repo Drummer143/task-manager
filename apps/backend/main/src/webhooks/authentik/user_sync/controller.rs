@@ -185,8 +185,8 @@ pub async fn user_sync(
                         id: Some(payload.uuid),
                         is_active: Some(payload.is_active),
                         created_at: Some(payload.created_at),
-                        picture: Some(format!("/files/{}", asset.id)),
-                        is_avatar_default: Some(false),
+                        picture: format!("/files/{}", asset.id),
+                        is_avatar_default: Some(true),
                     },
                 )
                 .await

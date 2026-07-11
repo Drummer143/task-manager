@@ -15,8 +15,7 @@ export interface User {
   id: string;
   isActive: boolean;
   isAvatarDefault: boolean;
-  /** @nullable */
-  picture?: string | null;
+  picture: string;
   updatedAt: string;
   username: string;
 }

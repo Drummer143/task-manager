@@ -43,6 +43,7 @@
 		"antd": "^6.0.0",
 		"antd-style": "^3.7.1",
 		"axios": "^1.12.2",
+		"classnames": "^2.5.1",
 		"dayjs": "1.11.13",
 		"framer-motion": "^12.23.12",
 		"minimatch": "^10.1.1",

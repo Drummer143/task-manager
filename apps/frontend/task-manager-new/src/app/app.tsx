@@ -1,13 +1,15 @@
-// Uncomment this line to use CSS modules
-// import styles from './app.module.scss';
-import NxWelcome from "./nx-welcome";
+import { ContextMenu } from "@task-manager/context-menu";
+import { RouterProvider } from "react-router";
 
-export function App() {
+import router from "./router";
+
+function App() {
 	return (
-		<div>
-			<NxWelcome title="task-manager-new" />
-		</div>
+		<ContextMenu>
+			<RouterProvider router={router} />
+		</ContextMenu>
 	);
 }
 
 export default App;
+

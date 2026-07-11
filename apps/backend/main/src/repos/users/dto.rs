@@ -13,7 +13,7 @@ pub struct CreateUserDto {
     pub username: String,
     pub authentik_id: i32,
 
-    pub picture: Option<String>,
+    pub picture: String,
     #[allow(dead_code)]
     pub is_active: Option<bool>,
     pub is_avatar_default: Option<bool>,

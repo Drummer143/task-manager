@@ -2984,6 +2984,7 @@
                 "isActive",
                 "username",
                 "authentikId",
+                "picture",
                 "isAvatarDefault",
                 "createdAt",
                 "updatedAt"
@@ -3021,10 +3022,7 @@
                   "type": "boolean"
                 },
                 "picture": {
-                  "type": [
-                    "string",
-                    "null"
-                  ]
+                  "type": "string"
                 },
                 "updatedAt": {
                   "type": "string",
@@ -3501,6 +3499,7 @@
           "isActive",
           "username",
           "authentikId",
+          "picture",
           "isAvatarDefault",
           "createdAt",
           "updatedAt"
@@ -3538,10 +3537,7 @@
             "type": "boolean"
           },
           "picture": {
-            "type": [
-              "string",
-              "null"
-            ]
+            "type": "string"
           },
           "updatedAt": {
             "type": "string",
